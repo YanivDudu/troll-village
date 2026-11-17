@@ -261,3 +261,96 @@ t('number-line hops: tens first, then units through the round ten', () => {
   }
 });
 console.log('all ' + n + ' passed (explanations)');
+t('world: stage stars, opening rules, stars never go down', () => {
+  const R = (ok, n) => Array.from({ length: n }, (_, i) => i < ok);
+  assert.deepStrictEqual([R(7, 7), R(6, 7), R(5, 7), R(4, 7), R(0, 7), R(5, 5), R(4, 5), R(3, 5)].map(L.stageStars), [3, 2, 2, 1, 1, 3, 2, 1]);
+  let s = L.newState();
+  assert.strictEqual(s.levels.add, 3);
+  assert(L.stageOpen(s, 'add', 1, 2) && L.stageOpen(s, 'add', 2, 0), 'clearings below the newest are fully open');
+  assert(L.stageOpen(s, 'add', 3, 0) && !L.stageOpen(s, 'add', 3, 1) && !L.stageOpen(s, 'add', 4, 0));
+  let r = L.finishStage(s, 'add', 3, 0, R(2, 5));
+  assert.strictEqual(r.stars, 1); assert.strictEqual(r.gained, 1); assert.strictEqual(r.opened, 0); assert.strictEqual(r.clearingDone, false);
+  assert.strictEqual(s.stars, 0, 'the input state is not mutated'); assert.strictEqual(L.progOf(s, 'add', 3)[0], 0);
+  s = r.state; assert(L.stageOpen(s, 'add', 3, 1) && !L.stageOpen(s, 'add', 3, 2));
+  r = L.finishStage(s, 'add', 3, 0, R(5, 5)); assert.strictEqual(r.gained, 2); s = r.state; assert.strictEqual(s.stars, 3);
+  r = L.finishStage(s, 'add', 3, 0, R(0, 5)); assert.strictEqual(r.gained, 0); assert.strictEqual(L.progOf(r.state, 'add', 3)[0], 3, 'a weaker replay keeps the stars');
+  s = L.finishStage(s, 'add', 3, 1, R(7, 7)).state;
+  r = L.finishStage(s, 'add', 3, 2, R(5, 7));
+  assert.strictEqual(r.opened, 4); assert.strictEqual(r.clearingDone, true); s = r.state;
+  assert.strictEqual(s.levels.add, 4); assert(L.stageOpen(s, 'add', 4, 0));
+  r = L.finishStage(s, 'add', 3, 2, R(7, 7)); assert.strictEqual(r.clearingDone, false); assert.strictEqual(r.opened, 0);
+  assert.strictEqual(L.topicStars(r.state, 'add'), 9);
+  const last = L.TOPICS.find(x => x.id === 'frac').levels.length; let f = L.newState(); f.levels.frac = last;
+  assert.strictEqual(L.finishStage(f, 'frac', last, 2, R(7, 7)).opened, 0, 'nothing opens after the last clearing');
+  const ld = L.loadState(JSON.stringify({ prog: { add: [[3, 9, -1], 'x', [1]], mul: 5 }, boss: { add: { 2: true, 3: 'yes' } }, intro: { add: true, zz: true } }));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(ld.prog.add.slice(0, 3))), [[3, 3, 0], [0, 0, 0], [1, 0, 0]]);
+  assert.strictEqual(ld.prog.add.length, L.TOPICS[0].levels.length); assert.deepStrictEqual(Array.from(ld.prog.mul), []);
+  assert(L.bossDone(ld, 'add', 2) && !L.bossDone(ld, 'add', 3) && ld.intro.add === true && ld.intro.zz === undefined);
+});
+t('world: milestone missions and rescued heroes', () => {
+  const R = n => Array.from({ length: n }, () => true);
+  for (const tp of L.TOPICS) for (const g of [2, 3]) {
+    const lv = L.bossLevels(tp.id, g);
+    if (!lv.length) { assert(!L.bossReady(L.newState(), tp.id, g)); continue; }
+    let s = L.newState(); s.levels[tp.id] = tp.levels.length;
+    assert(!L.bossReady(s, tp.id, g));
+    for (const l of lv) for (const st of [0, 1, 2]) s = L.finishStage(s, tp.id, l, st, R(L.STAGE_SIZE[st])).state;
+    assert(L.bossReady(s, tp.id, g), tp.id + ' grade ' + g);
+    const b = L.createBoss(tp.id, g, Math.random);
+    assert.strictEqual(b.qs.length, 10); assert(b.qs.every(q => q.topic === tp.id && lv.includes(q.level) && q.g === g && !q.enr));
+    assert.strictEqual(new Set(b.qs.map(q => q.key)).size, 10);
+    s.boss[tp.id][g] = true; assert(!L.bossReady(s, tp.id, g));
+    const hero = L.trollFromId(L.heroId(tp.id, g));
+    assert(hero.hero && hero.acc === 'crown' && L.HEROES.includes(hero.name), tp.id);
+  }
+  const ids = new Set(); for (const tp of L.TOPICS) for (const g of [2, 3]) ids.add(L.heroId(tp.id, g));
+  assert.strictEqual(ids.size, 16);
+  for (let i = 0; i < 500; i++) assert(L.rollTroll([], Math.random).id < L.HERO_BASE);
+});
+t('challenge stage mixes in at most two review questions from open levels', () => {
+  const open = { add: 3, sub: 2, mul: 2, div: 1, num: 3, frac: 4, ord: 1, miss: 2 }; let withReview = 0;
+  for (let i = 0; i < 300; i++) {
+    const r = L.createRound('add', { add: 3 }, Math.random, 7, [], open), rev = r.qs.filter(q => q.review);
+    assert.strictEqual(r.qs.length, 7); assert(rev.length <= 2); assert(!r.qs[0].review);
+    for (const q of rev) assert(q.level <= open[q.topic] && !q.enr, JSON.stringify([q.topic, q.level]));
+    for (const q of r.qs.filter(x => !x.review)) assert(q.topic === 'add' && q.level === 3);
+    if (rev.length) withReview++;
+  }
+  assert(withReview > 100);
+  assert(L.createRound('add', { add: 3 }, Math.random, 7).qs.every(q => !q.review));
+});
+console.log('all ' + n + ' passed (world)');
+t('activity formats: every variant is consistent with its exercise', () => {
+  const seen = {};
+  const check = (q, s) => {
+    seen[q.fmt] = (seen[q.fmt] || 0) + 1;
+    const text = strip(q.text);
+    assert(q.ex && q.ex.steps.length >= 2, s);
+    assert.strictEqual(q.options.filter(o => o === q.answer).length, 1, s);
+    if (q.fmt === 'tf') { const [l, r] = text.split(' = '); assert.strictEqual(ev(l) === ev(r), q.answer === 'yes', s); }
+    else if (q.fmt === 'cmp') { const [l, r] = text.split(' ◯ '), a = ev(l), b = ev(r); assert.strictEqual(a < b ? '<' : a > b ? '>' : '=', q.answer, s); }
+    else if (q.fmt === 'line') { assert(q.lo <= q.answer && q.answer <= q.hi && q.hi - q.lo === 10 && q.lo >= 0, s); assert.strictEqual(ev(text.replace(' = ?', '')), q.answer, s); }
+    else if (q.fmt === 'use') { const [l, r] = q.pre.split(' = '); assert.strictEqual(ev(l), +r, s); assert.strictEqual(ev(text.replace(' = ?', '')), q.answer, s); assert.strictEqual(Math.abs(+r - q.answer), 1, s); }
+    else if (q.fmt === 'lefteq') { const [l, r] = text.replace('□', q.answer).split('='); assert.strictEqual(ev(l), ev(r), s); assert.strictEqual(q.options.length, 4, s); }
+    else if (q.fmt === 'word') { assert(q.rtl && q.pic && Number.isInteger(q.answer) && q.options.length === 4, s); const nums = text.match(/\d+/g).map(Number); assert.strictEqual(nums.length, 2, s);
+      assert([nums[0] + nums[1], nums[0] - nums[1], nums[0] * nums[1], nums[0] / nums[1]].includes(q.answer), s); }
+    else if (q.fmt === 'build') assert(q.answer >= 11 && q.answer <= 9999, s);
+    else if (q.fmt === 'array') assert(q.a >= 2 && q.b >= 2 && q.a <= 10 && q.b <= 10 && q.answer === 'ok', s);
+    else if (q.fmt === 'pairs') { assert.strictEqual(q.pairs.length, 4, s); assert.strictEqual(new Set(q.pairs.map(p => p.r)).size, 4, s);
+      for (const p of q.pairs) assert.strictEqual(ev(strip(p.l)), p.r, s); assert.deepStrictEqual(Array.from(q.rights).sort((a, b) => a - b), Array.from(q.pairs, p => p.r).sort((a, b) => a - b), s); }
+    else assert.strictEqual(q.fmt, 'choice', s);
+  };
+  for (const tp of L.TOPICS) for (let lv = 1; lv <= tp.levels.length; lv++) for (const stage of [0, 1, 2]) for (let i = 0; i < 40; i++) {
+    const r = L.createRound(tp.id, { [tp.id]: lv }, Math.random, L.STAGE_SIZE[stage], [], null, stage);
+    assert.strictEqual(r.qs.length, L.STAGE_SIZE[stage]);
+    assert(r.qs.filter(q => q.fmt === 'pairs').length <= 1, 'at most one matching game per stage');
+    for (const q of r.qs) check(q, tp.id + ' L' + lv + ' S' + stage + ' ' + JSON.stringify([q.fmt, q.text, q.answer, q.pre, q.lo]));
+    if (stage === 0) assert(r.qs.every(q => ['choice', 'array', 'build', 'line'].includes(q.fmt)), 'discovery is hands-on');
+  }
+  for (const tp of L.TOPICS) for (const g of [2, 3]) if (L.bossLevels(tp.id, g).length) for (let i = 0; i < 20; i++) L.createBoss(tp.id, g, Math.random).qs.forEach(q => check(q, 'boss ' + tp.id));
+  for (const k of ['choice', 'tf', 'cmp', 'line', 'use', 'lefteq', 'word', 'build', 'array', 'pairs']) assert(seen[k] > 20, 'format never produced: ' + k + ' ' + JSON.stringify(seen));
+  assert(L.createRound('add', { add: 3 }, Math.random, 10).qs.every(q => q.fmt === 'choice'), 'without a stage, questions stay plain');
+  const r = L.createRound('add', { add: 1 }, Math.random); r.miss(); r.miss();
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(r.answer(r.current().answer))), { correct: true, firstTry: false });
+});
+console.log('all ' + n + ' passed (formats)');
