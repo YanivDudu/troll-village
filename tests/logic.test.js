@@ -329,7 +329,7 @@ t('activity formats: every variant is consistent with its exercise', () => {
     assert.strictEqual(q.options.filter(o => o === q.answer).length, 1, s);
     if (q.fmt === 'tf') { const [l, r] = text.split(' = '); assert.strictEqual(ev(l) === ev(r), q.answer === 'yes', s); }
     else if (q.fmt === 'cmp') { const [l, r] = text.split(' ◯ '), a = ev(l), b = ev(r); assert.strictEqual(a < b ? '<' : a > b ? '>' : '=', q.answer, s); }
-    else if (q.fmt === 'line') { assert(q.lo <= q.answer && q.answer <= q.hi && q.hi - q.lo === 10 && q.lo >= 0, s); assert.strictEqual(ev(text.replace(' = ?', '')), q.answer, s); }
+    else if (q.fmt === 'line') { assert(q.lo <= q.answer && q.answer <= q.hi && q.hi - q.lo === 10 && q.lo >= 0, s); assert(q.start === q.lo || q.start === q.hi || q.start < 10, 'the line starts at the first number: ' + s); assert(q.lo <= q.start && q.start <= q.hi, s); assert.strictEqual(ev(text.replace(' = ?', '')), q.answer, s); }
     else if (q.fmt === 'use') { const [l, r] = q.pre.split(' = '); assert.strictEqual(ev(l), +r, s); assert.strictEqual(ev(text.replace(' = ?', '')), q.answer, s); assert.strictEqual(Math.abs(+r - q.answer), 1, s); }
     else if (q.fmt === 'lefteq') { const [l, r] = text.replace('□', q.answer).split('='); assert.strictEqual(ev(l), ev(r), s); assert.strictEqual(q.options.length, 4, s); }
     else if (q.fmt === 'word') { assert(q.rtl && q.pic && Number.isInteger(q.answer) && q.options.length === 4, s); const nums = text.match(/\d+/g).map(Number); assert.strictEqual(nums.length, 2, s);

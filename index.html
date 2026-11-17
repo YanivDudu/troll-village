@@ -330,7 +330,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .mdot.p{background:#ff5fa2}
 .mexpr{font-weight:700;font-size:clamp(24px,6vmin,52px);white-space:nowrap}
 .mexpr b{background:#ffe39a;border-radius:12px;padding:0 8px;box-shadow:0 0 0 3px #ffb300}
-@media (max-height:520px){.msvg{max-height:36vh}.say{padding:3px 10px}.orow .btn{min-height:44px}.ohead .icon,.orow .icon{width:40px;height:40px}}
+@media (max-height:520px){.msvg{max-height:31vh}.say{padding:2px 10px;font-size:14px}.ovl .card{gap:3px;padding:6px 10px}.orow .btn{min-height:44px}.ohead .icon,.orow .icon{width:40px;height:40px}}
 
 /* ---------- world: region screen, clearings, stages ---------- */
 .sign{font:inherit;color:inherit;cursor:pointer;transition:transform .12s}
@@ -343,7 +343,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .clr{background:rgba(255,250,235,.96);border:3px solid #b9783a;border-radius:16px;padding:4px 6px 6px;display:flex;flex-direction:column;gap:3px;min-width:0;box-shadow:0 4px 0 #8a5524,0 8px 10px rgba(0,0,0,.25);animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
 .cplot{display:flex;flex-direction:column;align-items:center;min-width:0}
 .cplot.far{filter:grayscale(.75);opacity:.9}
-.cbld{position:relative;height:clamp(28px,11.5vmin,116px);width:100%;display:flex;align-items:flex-end;justify-content:center;background:none;padding:0;filter:drop-shadow(0 5px 4px rgba(0,0,0,.4));transition:transform .15s}
+.cbld{position:relative;height:clamp(28px,10.6vmin,112px);width:100%;display:flex;align-items:flex-end;justify-content:center;background:none;padding:0;filter:drop-shadow(0 5px 4px rgba(0,0,0,.4));transition:transform .15s}
 button.cbld:hover{transform:scale(1.06)}
 button.cbld:active{transform:scale(.94)}
 .cbld img{height:calc(var(--s,1)*100%);max-width:92%;object-fit:contain;display:block}
@@ -394,6 +394,8 @@ button.cbld:active{transform:scale(.94)}
 .tick{flex:1 1 0;min-width:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:clamp(60px,12vmin,92px);position:relative}
 .tick i{display:block;width:clamp(12px,2.6vmin,20px);height:clamp(28px,6.4vmin,44px);border-radius:10px;background:#fff;border:4px solid #3b2a55;transition:transform .12s}
 .tick.major i{background:#efe8ff}
+.tick.start i{background:#8e5cff;border-color:#6337cf}
+.tick.start span{color:#6337cf;font-size:clamp(14px,3.1vmin,25px)}
 .tick:active i{transform:scale(.85)}
 .tick span{font-weight:700;font-size:clamp(12px,2.6vmin,21px);min-height:1.2em;color:#6b5b8c}
 .tick.major span{color:#3b2a55;font-size:clamp(13px,2.9vmin,23px)}
@@ -424,6 +426,11 @@ button.cbld:active{transform:scale(.94)}
 .screen.handson .buddy{width:clamp(48px,11vmin,110px)}
 .screen.handson .qcard{font-size:clamp(20px,5vmin,44px);padding:6px 10px}
 @media (max-height:520px){.acell{width:12px;height:12px}.pbtn{min-height:32px;font-size:16px}.tick{min-height:50px}.bview{min-height:40px}.qhint{font-size:11px}.screen.handson .buddy{display:none}}
+
+/* ---------- picture icons ---------- */
+.ico{height:1.2em;width:1.2em;vertical-align:-0.24em;display:inline-block;object-fit:contain;pointer-events:none}
+.icon .ico{height:1.35em;width:1.35em}
+.sbtn .ico,.gift .ico,.emo .ico{vertical-align:middle}
 
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}.cloud,.mote,.fly{display:none}}
 </style>
@@ -1180,9 +1187,9 @@ var TrollLogic = (function () {
       return clone(q, { fmt: 'cmp', text: body + ' ◯ ' + fmt(q.answer + d), answer: d > 0 ? '<' : d < 0 ? '>' : '=', options: ['<', '=', '>'] });
     }
     if (kind === 'line') {
-      var lo = Math.floor(q.answer / 10) * 10;
-      if (q.answer % 10 === 0 && lo >= 10 && rng() < 0.5) lo -= 10;
-      return clone(q, { fmt: 'line', lo: lo, hi: lo + 10 });
+      // the line begins at the number we start from: a ... a + 10 when adding, a - 10 ... a when subtracting
+      var lo = s.op === '+' ? s.a : Math.max(0, s.a - 10);
+      return clone(q, { fmt: 'line', lo: lo, hi: lo + 10, start: s.a });
     }
     if (kind === 'use') {
       d = rng() < 0.5 ? 1 : -1;
@@ -1220,11 +1227,12 @@ var TrollLogic = (function () {
     if (stage === 0) {
       if (s && s.op === '×' && s.a >= 2 && s.b >= 2 && s.a <= 10 && s.b <= 10) out.push('array');
       if (buildable) out.push('build');
-      if (addsub && small) out.push('line');
+      if (addsub && small && s.b <= 10) out.push('line');
       return out;
     }
     if (!q.rtl && /= \?$/.test(plain(q.text)) && q.answer >= 1) out.push('tf', 'cmp');
-    if (addsub && small) out.push('line', 'word');
+    if (addsub && small) out.push('word');
+    if (addsub && small && s.b <= 10) out.push('line');
     if (s && s.op === '+' && small) out.push('lefteq');
     if (addsub && s.a >= 11 && s.b >= 11 && s.a <= 100) out.push('use');
     if (s && s.op === '×' && s.a <= 10 && s.b <= 10) out.push('word');
@@ -1598,7 +1606,11 @@ var TrollArt = (function () {
     hat: '<g transform="rotate(16 130 104)"><path d="M108,110 L130,56 L152,110 Z" fill="#5bd1ff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M116,92 L144,92 M122,76 L138,76" stroke="#fff" stroke-width="4"/><circle cx="130" cy="54" r="8" fill="#ffd23f"/></g>'
   };
   var BACK = { wings: '<g fill="#fff" stroke="#9fdcff" stroke-width="3" opacity=".95"><path d="M52,186 Q-14,120 4,196 Q-6,236 54,216 Z"/><path d="M148,186 Q214,120 196,196 Q206,236 146,216 Z"/></g>' }; // accessories drawn behind the body
-  function em(ch, x, y, size, cls) { return ch ? '<text class="em' + (cls || '') + '" x="' + x + '" y="' + y + '" font-size="' + size + '" text-anchor="middle">' + ch + '</text>' : ''; }
+  function em(ch, x, y, size, cls) {
+    if (!ch) return '';
+    var cp = Array.from(ch).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (c) { return c !== 'fe0f'; }).join('-');
+    return '<image class="em' + (cls || '') + '" href="assets/ico/' + cp + '.png" x="' + (x - size / 2) + '" y="' + (y - size * 0.9) + '" width="' + size + '" height="' + size + '"/>';
+  }
   // spec: {id, body, hairColor, hair, acc, eyes} + optional emoji items hatE, faceE, handE, petE; opts.mood: 'happy' | 'think' | 'cheer'
   function trollSVG(s, o) {
     o = o || {};
@@ -1870,6 +1882,38 @@ var TrollModels = (function () {
   function buddySpec() { var id = buddyId(); return id == null ? GUIDE : specOf(id); }
   function topicOf(id) { for (var i = 0; i < L.TOPICS.length; i++) if (L.TOPICS[i].id === id) return L.TOPICS[i]; return MIX; }
 
+  // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
+  // the same on every device; if a picture is missing the emoji itself stays as the fallback ----------
+  var ICO = {};
+  '1f302 1f308 1f309 1f30a 1f333 1f338 1f344 1f349 1f34e 1f353 1f355 1f366 1f369 1f36a 1f36d 1f380 1f381 1f388 1f392 1f393 1f3a8 1f3a9 1f3aa 1f3ad 1f3b5 1f3b8 1f3ba 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f419 1f41d 1f41e 1f422 1f425 1f427 1f430 1f431 1f436 1f438 1f439 1f43c 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58d 1f5d1 1f6ab 1f6cd 1f90d 1f947 1f948 1f949 1f95a 1f97d 1f984 1f989 1f98a 1f98b 1f995 1f9c1 1f9cc 1f9e2 1f9f8 1fa99 1fab5 26bd 26d1 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
+  var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
+  function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
+  function swapEmoji(node) {
+    if (node.nodeType === 1) {
+      if (node.namespaceURI === XHTML && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') Array.prototype.slice.call(node.childNodes).forEach(swapEmoji);
+      return;
+    }
+    var p = node.parentNode, s = node.nodeValue;
+    if (node.nodeType !== 3 || !p || !s || p.namespaceURI !== XHTML || p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || p.nodeName === 'TITLE') return;
+    var frag = null, last = 0, m;
+    ICO_RE.lastIndex = 0;
+    while ((m = ICO_RE.exec(s))) {
+      var cp = cpOf(m[0]);
+      if (!ICO[cp]) continue;
+      if (!frag) frag = document.createDocumentFragment();
+      if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+      var img = document.createElement('img');
+      img.className = 'ico'; img.src = 'assets/ico/' + cp + '.png'; img.alt = m[0]; img.draggable = false;
+      frag.appendChild(img); last = m.index + m[0].length;
+    }
+    if (!frag) return;
+    if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+    p.replaceChild(frag, node);
+  }
+  if (window.MutationObserver) new MutationObserver(function (list) {
+    list.forEach(function (mu) { if (mu.type === 'characterData') swapEmoji(mu.target); else Array.prototype.forEach.call(mu.addedNodes, swapEmoji); });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+
   // ---------- sound: everything is synthesised (bells, marimba, noise, music) ----------
   var ac = null, master = null, nbuf = null, musicT = 0, musicStep = 0;
   function actx() {
@@ -2033,14 +2077,14 @@ var TrollModels = (function () {
     return h('div', { class: 'top' },
       h('div', { class: 'chips' },
         h('div', { class: 'chip', title: 'יָמִים בְּרֶצֶף', 'aria-label': state.streak + ' יָמִים בְּרֶצֶף', text: '🔥 ' + Math.max(1, state.streak) }),
-        h('div', { class: 'chip starchip', text: '⭐ ' + state.stars }),
-        h('div', { class: 'chip coinchip', title: 'מַטְבְּעוֹת', text: '🪙 ' + state.coins })),
+        h('div', { class: 'chip starchip', 'data-n': state.stars, text: '⭐ ' + state.stars }),
+        h('div', { class: 'chip coinchip', 'data-n': state.coins, title: 'מַטְבְּעוֹת', text: '🪙 ' + state.coins })),
       h('div', { class: 'chips' }, backB, homeB, music, mute));
   }
   function bumpStars(el) {
     var chip = el.querySelector('.starchip'), coin = el.querySelector('.coinchip');
-    if (chip && chip.textContent !== '⭐ ' + state.stars) { chip.textContent = '⭐ ' + state.stars; restart(chip, 'bump'); }
-    if (coin && coin.textContent !== '🪙 ' + state.coins) { coin.textContent = '🪙 ' + state.coins; restart(coin, 'bump'); }
+    if (chip && chip.getAttribute('data-n') !== String(state.stars)) { chip.setAttribute('data-n', state.stars); chip.textContent = '⭐ ' + state.stars; restart(chip, 'bump'); }
+    if (coin && coin.getAttribute('data-n') !== String(state.coins)) { coin.setAttribute('data-n', state.coins); coin.textContent = '🪙 ' + state.coins; restart(coin, 'bump'); }
   }
 
   function home() {
@@ -2112,7 +2156,7 @@ var TrollModels = (function () {
       });
       plot(MIX, L.TOPICS.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
       el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים).' }));
+      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים).' }));
       if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
     });
   }
@@ -2125,7 +2169,7 @@ var TrollModels = (function () {
       el.appendChild(topBar(true, topics));
       el.style.backgroundImage = 'url(assets/forest' + (2 + L.TOPICS.indexOf(t) % 3) + '.jpg)';
       el.appendChild(h('h2', { class: 'h2', text: t.icon + ' ' + t.world }));
-      var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי שָׁלָב: גִּלּוּי, תִּרְגּוּל אוֹ אֶתְגָּר' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל קָרַחַת יַעַר שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
+      var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי שָׁלָב: גִּלּוּי, תִּרְגּוּל אוֹ אֶתְגָּר' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
       if (!state.intro[t.id]) { state.intro[t.id] = true; save(); }
       var grid = h('div', { class: 'clearings' });
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
@@ -2155,7 +2199,7 @@ var TrollModels = (function () {
           var b = h('button', { class: 'sbtn' + (open ? '' : ' locked') + (pr[k] ? ' won' : ''), 'data-stage': lv + '-' + k, 'aria-label': sg[1] + ': ' + d.name },
             h('span', { class: 'si', text: open ? sg[0] : '🔒' }), h('span', { class: 'sl', text: sg[1] }), h('span', { class: 'ss', text: starStr(pr[k]) }));
           b.addEventListener('click', function () {
-            if (!open) { restart(b, 'shake'); sfx.wrong(); say(far ? 'הַקָּרַחַת הַזֹּאת תִּפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַקָּרַחַת שֶׁלְּפָנֶיהָ' : 'קֹדֶם מְסַיְּמִים אֶת הַשָּׁלָב שֶׁלְּפָנָיו'); return; }
+            if (!open) { restart(b, 'shake'); sfx.wrong(); say(far ? 'הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו' : 'קֹדֶם מְסַיְּמִים אֶת הַשָּׁלָב שֶׁלְּפָנָיו'); return; }
             sfx.pop(); startRound(t.id, { level: lv, stage: k });
           });
           row.appendChild(b);
@@ -2180,7 +2224,7 @@ var TrollModels = (function () {
           state.levels[t.id] = nl; save(); sfx.tap(); region(t.id);
         } } });
       }
-      el.appendChild(h('div', { class: 'note pctl' }, step('+', 1, 'לִפְתֹּחַ קָרַחַת נוֹסֶפֶת'), h('span', { text: 'לַהוֹרִים: קָרְחוֹת פְּתוּחוֹת ' + state.levels[t.id] + '/' + t.levels.length }), step('−', -1, 'לִסְגֹּר קָרַחַת')));
+      el.appendChild(h('div', { class: 'note pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), h('span', { text: 'לַהוֹרִים: בָּתִּים פְּתוּחִים ' + state.levels[t.id] + '/' + t.levels.length }), step('−', -1, 'לִסְגֹּר בַּיִת')));
     });
   }
 
@@ -2340,8 +2384,8 @@ var TrollModels = (function () {
         line: function (q) {
           var row = h('div', { class: 'nline', dir: 'ltr' });
           for (var x = q.lo; x <= q.hi; x++) (function (v) {
-            var major = (v - q.lo) % 5 === 0;
-            var b = h('button', { class: 'tick' + (major ? ' major' : ''), 'data-v': v, 'aria-label': String(v) }, h('i'), h('span', { text: String(v) }));
+            var major = v % 5 === 0;
+            var b = h('button', { class: 'tick' + (major ? ' major' : '') + (v === q.start ? ' start' : ''), 'data-v': v, 'aria-label': String(v) }, h('i'), h('span', { text: String(v) }));
             b.addEventListener('click', function () { onAnswer(b, v, q); });
             row.appendChild(b);
           })(x);
@@ -2537,12 +2581,12 @@ var TrollModels = (function () {
         if (k < r.stars) later(function () { sfx.star(k * 2 + 2); }, 300 + k * 350);
       });
       extra.appendChild(h('div', { class: 'banner chest ' + rw.tier, style: 'animation-delay:1.4s', text: CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙' }));
-      if (r.opened) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:1.7s', text: '🌳 נִפְתְּחָה קָרַחַת יַעַר חֲדָשָׁה: ' + t.levels[r.opened - 1].name }));
+      if (r.opened) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:1.7s', text: '🏠 נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name }));
       if (bossG) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:2s', text: '🌉 מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!' }));
       function buttons() {
         if (bossG) btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', '', function () { startRound(topicId, { boss: bossG }); }));
         else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', '', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
-        else if (r.opened) btns.appendChild(btn('לַקָּרַחַת הַבָּאָה ◀', '', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
+        else if (r.opened) btns.appendChild(btn('לַבַּיִת הַבָּא ◀', '', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
         if (r.stars < 3) btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', 'b3', function () { startRound(topicId, cfg); }));
         btns.appendChild(btn('לַמַּפָּה', 'b2', back));
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll;
