@@ -1908,7 +1908,10 @@ var TrollModels = (function () {
     var old = lsGet(KEY); // progress saved before profiles existed becomes the first player
     if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY + profiles.cur, old); saveProfiles(); lsDel(KEY); }
   }
-  function load() { state = L.loadState(profiles.cur ? lsGet(DKEY + profiles.cur) : null); }
+  function load() {
+    state = L.loadState(profiles.cur ? lsGet(DKEY + profiles.cur) : null);
+    if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(); }
+  }
   function save() { if (profiles.cur) lsSet(DKEY + profiles.cur, JSON.stringify(state)); }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
   function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
@@ -2678,7 +2681,7 @@ var TrollModels = (function () {
     return [msg, stage];
   }
   function endStage(round, topicId, cfg) {
-    var t = topicOf(topicId), first = state.owned.length === 0;
+    var t = topicOf(topicId), first = state.rounds === 0; // the very first finished stage also hatches an egg
     var r = L.finishStage(state, topicId, cfg.level, cfg.stage, round.results), rw = L.stageReward(r.stars);
     state = r.state; state.rounds++; state.coins += rw.coins;
     state = L.updateStreak(state, L.todayStr());
