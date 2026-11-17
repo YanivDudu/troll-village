@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Layout check: loads every screen at phone / tablet / laptop sizes and reports overflow.
+     Usage: fit.html            -> all sizes, result in document.title + table
+            fit.html#390x800    -> only that size (handy for screenshots) -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}td,th{padding:2px 8px;border:1px solid #777}.bad{background:#a00}</style>
+<div id="frames"></div><table id="out"></table>
+<script>
+var SIZES = [[360, 640], [390, 800], [800, 380], [768, 1024], [1024, 768], [1280, 620], [1366, 650], [1920, 950]];
+var SCREENS = ['home', 'topics', 'round', 'hint&t=add&l=3', 'hint&t=mul&l=2', 'round&t=ord&l=4', 'round&t=num&l=4', 'end&hatch&t=add', 'dress', 'dress&tab=7', 'who', 'gift'];
+var only = /(\d+)x(\d+)/.exec(location.hash);
+if (only) SIZES = [[+only[1], +only[2]]];
+var want = SIZES.length * SCREENS.length, got = 0, fails = [];
+SIZES.forEach(function (s) {
+  SCREENS.forEach(function (sc) {
+    var f = document.createElement('iframe');
+    f.width = s[0]; f.height = s[1];
+    f.src = '../index.html#demo&fit&s=' + sc;
+    document.getElementById('frames').appendChild(f);
+  });
+});
+addEventListener('message', function (e) {
+  var d = e.data; if (!d || !d.id) return;
+  got++;
+  var bad = d.oh > 1 || d.ow > 1 || d.off > 0 || d.nav < 1;
+  if (bad) fails.push(d.w + 'x' + d.h + ' ' + d.id.replace('#demo&fit&s=', '') + ' oh=' + d.oh + ' ow=' + d.ow + ' off=' + d.off + ' nav=' + d.nav);
+  var tr = document.createElement('tr'); if (bad) tr.className = 'bad';
+  tr.innerHTML = '<td>' + d.w + 'x' + d.h + '</td><td>' + d.id + '</td><td>overflow-y ' + d.oh + '</td><td>overflow-x ' + d.ow + '</td><td>off-screen buttons ' + d.off + '</td><td>nav buttons ' + d.nav + '</td>';
+  document.getElementById('out').appendChild(tr);
+  if (got === want) document.title = 'FIT ' + (fails.length ? 'FAIL ' + fails.join(' | ') : 'OK ' + got);
+});
+</script>

@@ -1,0 +1,4 @@
+Forest background (forest.jpg): "Cartoon Forest 2D Backgrounds" by CraftPix.net 2D Game Assets
+  https://opengameart.org/content/cartoon-forest-2d-backgrounds  -  license: OGA-BY 3.0 (attribution required)
+Buildings (house*.png, tower*.png, castleSmall.png, pyramid*.png): "Background Elements Remastered" by Kenney
+  https://kenney.nl/assets/background-elements-redux  -  license: CC0
