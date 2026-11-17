@@ -1963,7 +1963,7 @@ var TrollModels = (function () {
   function hz(semi) { return 523.25 * Math.pow(2, semi / 12); }
   function bell(semi, t0, d, vol) { note(hz(semi), t0, d || 0.5, { partials: [1, 2, 3.01, 4.2], gains: [1, 0.45, 0.2, 0.1], vol: vol || 0.1 }); }
   function marimba(semi, t0, vol) { note(hz(semi), t0, 0.28, { partials: [1, 4], gains: [1, 0.25], vol: vol || 0.13, attack: 0.004 }); }
-  var sfx = {
+  var synth = {
     tap: function () { note(880, 0, 0.07, { type: 'triangle', vol: 0.07 }); note(1320, 0, 0.05, { vol: 0.035 }); },
     pop: function () { note(300, 0, 0.16, { to: 1100, vol: 0.13 }); noise(0, 0.05, { freq: 2600, vol: 0.05 }); },
     whoosh: function () { noise(0, 0.38, { freq: 350, to: 3200, q: 0.7, vol: 0.05, attack: 0.12 }); },
@@ -1991,10 +1991,63 @@ var TrollModels = (function () {
     levelup: function () { PENTA.slice(0, 9).forEach(function (s, k) { bell(s, k * 0.06, 0.4, 0.07); }); noise(0, 0.6, { freq: 500, to: 5000, q: 0.8, vol: 0.04, attack: 0.3 }); },
     item: function () { [0, 4, 7, 12, 16].forEach(function (s, k) { bell(s + 12, k * 0.09, 0.9, 0.07); }); noise(0.3, 0.5, { freq: 8000, q: 2, vol: 0.03 }); }
   };
+  // ---------- recorded sound (assets/snd): effects by Kenney (CC0), music by Kevin MacLeod (CC BY 4.0).
+  // If a file cannot be played, the synthesised version above is used instead. ----------
+  var sndPool = {}, sndBad = {};
+  function playFile(name, vol, rate) {
+    if (state.mute) return true;
+    if (sndBad[name]) return false;
+    try {
+      var base = sndPool[name];
+      if (!base) {
+        base = sndPool[name] = new Audio('assets/snd/' + name + '.mp3'); base.preload = 'auto';
+        base.addEventListener('error', function () { sndBad[name] = true; });
+      }
+      var a = base.cloneNode();
+      a.volume = vol;
+      if (rate) { a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.playbackRate = rate; }
+      var p = a.play(); if (p && p.catch) p.catch(function () {});
+      return true;
+    } catch (e) { return false; }
+  }
+  var sfx = {
+    tap: function () { playFile('click_001', 0.6) || synth.tap(); },
+    pop: function () { playFile('drop_002', 0.7) || synth.pop(); },
+    whoosh: function () { playFile('maximize_003', 0.35) || synth.whoosh(); },
+    giggle: function () { if (!playFile('pluck_001', 0.6, 1.3)) { synth.giggle(); return; } setTimeout(function () { playFile('pluck_001', 0.6, 1.7); }, 90); setTimeout(function () { playFile('pluck_002', 0.6, 1.5); }, 180); },
+    correct: function (combo) { // a different chime each time, a little higher with every answer in a row
+      var c = Math.min(combo || 0, 6);
+      playFile('confirmation_00' + (1 + (combo || 0) % 4), 0.55, 1 + c * 0.04) || synth.correct(combo);
+    },
+    wrong: function () { playFile('error_008', 0.45, 0.85) || synth.wrong(); },
+    star: function (i) { playFile('pluck_002', 0.6, 0.8 + i * 0.09) || synth.star(i); },
+    hatch: function () { playFile('pizzi03', 0.6) || synth.hatch(); },
+    win: function () { playFile('steel03', 0.6) || synth.win(); },
+    levelup: function () { playFile('pizzi12', 0.6) || synth.levelup(); },
+    item: function () { playFile('pizzi07', 0.55) || synth.item(); }
+  };
+  // Background music: one track per place, each keeps its position while another one plays.
+  var TRACKS = { home: 'carefree', play: 'wholesome', shop: 'easylemon' }, bgm = {}, bgmWant = 'home', bgmBad = false, unlocked = false;
+  function applyMusic() {
+    var on = !state.mute && state.music && unlocked && !document.hidden && !bgmBad, k;
+    for (k in bgm) if (!on || k !== bgmWant) bgm[k].pause();
+    if (!on) return;
+    try {
+      var a = bgm[bgmWant];
+      if (!a) {
+        a = bgm[bgmWant] = new Audio('assets/snd/' + TRACKS[bgmWant] + '.mp3'); a.loop = true; a.volume = 0.2;
+        a.addEventListener('error', function () { bgmBad = true; });
+      }
+      var p = a.play(); if (p && p.catch) p.catch(function () {});
+    } catch (e) { bgmBad = true; }
+  }
+  function setMusic(name) { if (bgmWant !== name) { bgmWant = name; } applyMusic(); }
+
   // Quiet background tune: pentatonic melody with a soft bass, scheduled a little ahead of time.
   var MEL = [0, 2, 4, 7, 4, 2, 0, null, 4, 7, 9, 7, 4, 2, 4, null, 0, 4, 7, 12, 9, 7, 4, null, 7, 4, 2, 4, 0, null, 0, null];
   var BASS = [-24, -24, -15, -15, -19, -19, -17, -17];
   function musicTick() {
+    if (!bgmBad) return; // the recorded music is playing; this synthesised tune is only the fallback
     if (state.mute || !state.music || !ac || document.hidden) { musicT = 0; return; }
     if (musicT < ac.currentTime) musicT = ac.currentTime + 0.1;
     while (musicT < ac.currentTime + 0.5) {
@@ -2069,9 +2122,9 @@ var TrollModels = (function () {
   function btn(text, cls, fn) { return h('button', { class: 'btn ' + (cls || ''), text: text, on: { click: function () { sfx.tap(); fn(); } } }); }
   function topBar(withHome, backFn) {
     var mute = h('button', { class: 'icon', 'aria-label': 'צְלִילִים', text: state.mute ? '🔇' : '🔊' });
-    mute.addEventListener('click', function () { state.mute = !state.mute; save(); mute.textContent = state.mute ? '🔇' : '🔊'; sfx.tap(); });
+    mute.addEventListener('click', function () { state.mute = !state.mute; save(); mute.textContent = state.mute ? '🔇' : '🔊'; sfx.tap(); applyMusic(); });
     var music = h('button', { class: 'icon' + (state.music ? '' : ' dim'), 'aria-label': 'מוּזִיקַת רֶקַע', text: '🎵' });
-    music.addEventListener('click', function () { state.music = !state.music; save(); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); });
+    music.addEventListener('click', function () { state.music = !state.music; save(); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); applyMusic(); });
     var homeB = withHome ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה לַכְּפָר', text: '🏠', on: { click: function () { sfx.tap(); home(); } } }) : null;
     var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
     return h('div', { class: 'top' },
@@ -2088,7 +2141,7 @@ var TrollModels = (function () {
   }
 
   function home() {
-    tv.round = null;
+    tv.round = null; setMusic('home');
     show(function (el) {
       var tb = topBar(false);
       tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
@@ -2132,6 +2185,7 @@ var TrollModels = (function () {
   var REG_BLD = ['houseSmall1', 'houseSmallAlt1', 'houseSmall2', 'houseAlt1', 'house1', 'houseAlt2', 'house2', 'castleSmall'];
   function starStr(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n); }
   function topics() {
+    setMusic('home');
     show(function (el) {
       el.classList.add('map');
       el.appendChild(topBar(true, home));
@@ -2156,7 +2210,7 @@ var TrollModels = (function () {
       });
       plot(MIX, L.TOPICS.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
       el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים).' }));
+      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים, צְלִילִים). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
       if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
     });
   }
@@ -2164,6 +2218,7 @@ var TrollModels = (function () {
   // ---------- region: the clearings of one topic, three stages each, and the milestone missions ----------
   function region(topicId) {
     var t = topicOf(topicId);
+    setMusic('home');
     show(function (el) {
       el.classList.add('map');
       el.appendChild(topBar(true, topics));
@@ -2316,6 +2371,7 @@ var TrollModels = (function () {
   // cfg: nothing (free mixed round), {level, stage} (one stage of a clearing) or {boss: grade} (milestone mission)
   function startRound(topicId, cfg) {
     cfg = cfg || {};
+    setMusic('play');
     var avoid = [], lvmap = {};
     lvmap[topicId] = cfg.level;
     L.TOPICS.forEach(function (t) { if (topicId === 'mix' || topicId === t.id) avoid = avoid.concat(state.recent[t.id]); });
@@ -2621,6 +2677,7 @@ var TrollModels = (function () {
   // ---------- who is playing ----------
   function enter(id) { profiles.cur = id; saveProfiles(); load(); state = L.updateStreak(state, L.todayStr()); save(); sfx.pop(); home(); }
   function who() {
+    setMusic('home');
     show(function (el) {
       el.appendChild(topBar(!!profiles.cur, profiles.cur ? home : null));
       el.appendChild(h('h2', { class: 'h2', text: 'מִי מְשַׂחֵק הַיּוֹם?' }));
@@ -2657,6 +2714,7 @@ var TrollModels = (function () {
     var ids = state.owned;
     if (!ids.length) { home(); return; }
     idx = ((idx == null ? Math.max(0, ids.indexOf(buddyId())) : idx) + ids.length) % ids.length; tab = tab || 0;
+    setMusic('shop');
     var id = ids[idx], base = L.trollFromId(id), trying = null; // trying: an unbought item being previewed
     show(function (el) {
       el.appendChild(topBar(true, home));
@@ -2738,7 +2796,8 @@ var TrollModels = (function () {
   load(); buildBg();
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.mul = 5; state.levels.add = 3; state.prog.add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1], [1, 0, 0]]; }
   state = L.updateStreak(state, L.todayStr()); save();
-  document.addEventListener('pointerdown', function () { actx(); }, { passive: true }); // browsers allow sound only after a tap
+  document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
+  document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
   setInterval(musicTick, 150);
   var scr = (/s=(\w+)/.exec(hash) || [])[1], ht = (/t=(\w+)/.exec(hash) || [])[1] || 'add', hl = (/l=(\d+)/.exec(hash) || [])[1];
   if (hl && state.levels[ht]) state.levels[ht] = L.clampLevel(ht, +hl);

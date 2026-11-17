@@ -5,3 +5,6 @@ Buildings (house*.png, tower*.png, castleSmall.png, pyramid*.png): "Background E
 Icons (ico/*.png): "Fluent Emoji" 3D by Microsoft, resized
   https://github.com/microsoft/fluentui-emoji  -  license: MIT
 More forest backgrounds (forest2-4.jpg) and small houses: same sources as above (CraftPix.net OGA-BY 3.0, Kenney CC0)
+Music (snd/carefree.mp3, snd/wholesome.mp3, snd/easylemon.mp3): "Carefree", "Wholesome", "Easy Lemon" by Kevin MacLeod (incompetech.com)
+  Licensed under Creative Commons: By Attribution 4.0  https://creativecommons.org/licenses/by/4.0/  (re-encoded; "Wholesome" shortened)
+Sound effects (other snd/*.mp3): "Interface Sounds" and "Music Jingles" by Kenney (www.kenney.nl)  -  license: CC0
