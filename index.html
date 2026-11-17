@@ -344,19 +344,19 @@ var TrollLogic = (function () {
     if (r() < 0.5) { t = a; a = b; b = t; }
     return expr(r, a + ' × ' + b, a * b, {
       extra: [a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b],
-      tip: a + ' קבוצות של ' + b + '. אפשר לחשב בחיבור חוזר', vis: { t: 'groups', a: a, b: b }
+      tip: a + ' קְבוּצוֹת שֶׁל ' + b + '. אֶפְשָׁר לְחַשֵּׁב בְּחִבּוּר חוֹזֵר', vis: { t: 'groups', a: a, b: b }
     });
   }
   function tableDiv(r, divs) {
     var b = pick(r, divs), q = ri(r, 2, 10), c = b * q;
     return expr(r, c + ' : ' + b, q, {
       extra: [q + 1, q - 1, b],
-      tip: 'כמה קבוצות של ' + b + ' יש ב-' + c + '? אפשר להיעזר בלוח הכפל של ' + b,
+      tip: 'כַּמָּה קְבוּצוֹת שֶׁל ' + b + ' יֵשׁ בְּ-' + c + '? אֶפְשָׁר לְהֵעָזֵר בְּלוּחַ הַכֶּפֶל שֶׁל ' + b,
       vis: c <= 60 ? { t: 'div', a: c, b: b } : null
     });
   }
   function missAdd(r, a, b, visOk) {
-    var c = a + b, f = ri(r, 0, 3), tip = 'הפעולה ההפוכה עוזרת: חיסור בודק חיבור, וחיבור בודק חיסור';
+    var c = a + b, f = ri(r, 0, 3), tip = 'הַפְּעֻלָּה הַהֲפוּכָה עוֹזֶרֶת: חִסּוּר בּוֹדֵק חִבּוּר, וְחִבּוּר בּוֹדֵק חִסּוּר';
     if (f === 0) return Q(r, '□ + ' + fmt(b) + ' = ' + fmt(c), a, { tip: tip, vis: visOk ? { t: 'missing', a: b, b: c } : null });
     if (f === 1) return Q(r, fmt(a) + ' + □ = ' + fmt(c), b, { tip: tip, vis: visOk ? { t: 'missing', a: a, b: c } : null });
     if (f === 2) return Q(r, fmt(c) + ' − □ = ' + fmt(a), b, { tip: tip });
@@ -369,13 +369,13 @@ var TrollLogic = (function () {
     if (down) terms.reverse();
     var ans = terms[hide];
     return Q(r, terms.map(function (x, k) { return k === hide ? '?' : fmt(x); }).join(' → '), ans, {
-      extra: [ans + step, ans - step, ans + 1, ans - 1], tip: 'בכמה קופצים בכל פעם? הקפיצה תמיד שווה'
+      extra: [ans + step, ans - step, ans + 1, ans - 1], tip: 'בְּכַמָּה קוֹפְצִים בְּכָל פַּעַם? הַקְּפִיצָה תָּמִיד שָׁוָה'
     });
   }
   function extreme(r, nums) {
     var big = r() < 0.5, ans = big ? Math.max.apply(null, nums) : Math.min.apply(null, nums);
     return Q(r, big ? 'אֵיזֶה מִסְפָּר הֲכִי גָּדוֹל?' : 'אֵיזֶה מִסְפָּר הֲכִי קָטָן?', ans, {
-      rtl: true, options: nums, tip: 'משווים קודם את הספרה השמאלית ביותר, ורק אחר כך את הבאות'
+      rtl: true, options: nums, tip: 'מַשְׁוִים קֹדֶם אֶת הַסִּפְרָה הַשְּׂמָאלִית בְּיוֹתֵר, וְרַק אַחַר כָּךְ אֶת הַבָּאוֹת'
     });
   }
   var PLACES = ['הָאֲחָדוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים'];
@@ -383,7 +383,7 @@ var TrollLogic = (function () {
     var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), used = ds.slice(0, len), n = Number(used.join('')), p = ri(r, 0, len - 1);
     var opts = len === 4 ? used : used.concat([ds[len]]);
     return Q(r, 'מַהִי סִפְרַת ' + PLACES[p] + ' בַּמִּסְפָּר ' + fmt(n) + '?', used[len - 1 - p], {
-      rtl: true, options: opts, tip: 'מימין לשמאל: אחדות, עשרות, מאות, אלפים'
+      rtl: true, options: opts, tip: 'מִיָּמִין לִשְׂמֹאל: אֲחָדוֹת, עֲשָׂרוֹת, מֵאוֹת, אֲלָפִים'
     });
   }
   function roundQ(r, unit) {
@@ -393,7 +393,7 @@ var TrollLogic = (function () {
     var ans = n - lo < unit / 2 ? lo : lo + unit;
     return Q(r, 'עַגְּלִי אֶת ' + fmt(n) + (unit === 10 ? ' לָעֲשֶׂרֶת הַקְּרוֹבָה' : ' לַמֵּאָה הַקְּרוֹבָה'), ans, {
       rtl: true, options: [lo, lo + unit, lo - unit >= 0 ? lo - unit : lo + 3 * unit, lo + 2 * unit],
-      tip: unit === 10 ? 'ספרת האחדות קובעת: 1 עד 4 יורדים, 6 עד 9 עולים' : 'מסתכלים על שתי הספרות האחרונות: פחות מ-50 יורדים, יותר מ-50 עולים'
+      tip: unit === 10 ? 'סִפְרַת הָאֲחָדוֹת קוֹבַעַת: 1 עַד 4 יוֹרְדִים, 6 עַד 9 עוֹלִים' : 'מִסְתַּכְּלִים עַל שְׁתֵּי הַסְּפָרוֹת הָאַחֲרוֹנוֹת: פָּחוֹת מִ-50 יוֹרְדִים, יוֹתֵר מִ-50 עוֹלִים'
     });
   }
   var UNIT_FRAC = { 3: 'שְׁלִישׁ', 4: 'רֶבַע', 5: 'חֲמִישִׁית', 6: 'שִׁשִּׁית', 8: 'שְׁמִינִית', 10: 'עֲשִׂירִית' };
@@ -401,128 +401,128 @@ var TrollLogic = (function () {
 
   // ---------- topics. g = school grade (2 or 3); grade 3 levels come last ----------
   var TOPICS = [
-    { id: 'add', name: 'חיבור', world: 'בית החיבור', icon: '🌳', levels: [
-      { g: 2, name: 'חיבור עד 20', f: function (r) {
+    { id: 'add', name: 'חִבּוּר', world: 'בֵּית הַחִבּוּר', icon: '🌳', levels: [
+      { g: 2, name: 'חִבּוּר עַד 20', f: function (r) {
         var a, b;
         if (r() < 0.6) { a = ri(r, 5, 9); b = ri(r, 11 - a, 9); } else { a = ri(r, 11, 16); b = ri(r, 2, 19 - a); }
-        return expr(r, a + ' + ' + b, a + b, { tip: 'משלימים קודם ל-10 ואז מוסיפים את השאר', vis: { t: 'add', a: a, b: b } });
+        return expr(r, a + ' + ' + b, a + b, { tip: 'מַשְׁלִימִים קֹדֶם לְ-10 וְאָז מוֹסִיפִים אֶת הַשְּׁאָר', vis: { t: 'add', a: a, b: b } });
       } },
-      { g: 2, name: 'דו-ספרתי ועוד חד-ספרתי', f: function (r) {
+      { g: 2, name: 'דּוּ-סִפְרָתִי וְעוֹד חַד-סִפְרָתִי', f: function (r) {
         var u = ri(r, 2, 9), a = ri(r, 1, 8) * 10 + u, b = ri(r, 10 - u, 9);
-        return expr(r, a + ' + ' + b, a + b, { extra: [a + b - 10], tip: 'משלימים לעשרת הקרובה ואז מוסיפים את מה שנשאר', vis: { t: 'add', a: a, b: b } });
+        return expr(r, a + ' + ' + b, a + b, { extra: [a + b - 10], tip: 'מַשְׁלִימִים לָעֲשֶׂרֶת הַקְּרוֹבָה וְאָז מוֹסִיפִים אֶת מַה שֶּׁנִּשְׁאַר', vis: { t: 'add', a: a, b: b } });
       } },
-      { g: 2, name: 'דו-ספרתי ועוד דו-ספרתי', f: function (r) {
+      { g: 2, name: 'דּוּ-סִפְרָתִי וְעוֹד דּוּ-סִפְרָתִי', f: function (r) {
         var c = ri(r, 41, 100), a = ri(r, 12, c - 12), b = c - a;
-        return expr(r, a + ' + ' + b, c, { extra: [c - 10, c + 10], tip: 'מחברים עשרות עם עשרות ואחדות עם אחדות. לא לשכוח את העשרת החדשה!', vis: { t: 'add', a: a, b: b } });
+        return expr(r, a + ' + ' + b, c, { extra: [c - 10, c + 10], tip: 'מְחַבְּרִים עֲשָׂרוֹת עִם עֲשָׂרוֹת וַאֲחָדוֹת עִם אֲחָדוֹת. לֹא לִשְׁכֹּחַ אֶת הָעֲשֶׂרֶת הַחֲדָשָׁה!', vis: { t: 'add', a: a, b: b } });
       } },
-      { g: 2, name: 'שלושה מחוברים', f: function (r) {
+      { g: 2, name: 'שְׁלוֹשָׁה מְחֻבָּרִים', f: function (r) {
         var t = ri(r, 35, 100), a = ri(r, 8, t - 15), b = ri(r, 4, t - a - 3), c = t - a - b;
-        return expr(r, a + ' + ' + b + ' + ' + c, t, { extra: [t - 10, t + 10], tip: 'אפשר לחבר קודם שני מספרים שנוח לחבר, ואז להוסיף את השלישי' });
+        return expr(r, a + ' + ' + b + ' + ' + c, t, { extra: [t - 10, t + 10], tip: 'אֶפְשָׁר לְחַבֵּר קֹדֶם שְׁנֵי מִסְפָּרִים שֶׁנּוֹחַ לְחַבֵּר, וְאָז לְהוֹסִיף אֶת הַשְּׁלִישִׁי' });
       } },
-      { g: 3, name: 'חיבור עד 1,000', f: function (r) {
+      { g: 3, name: 'חִבּוּר עַד 1,000', f: function (r) {
         var a = ri(r, 105, 899), b = ri(r, 12, 99);
-        return expr(r, a + ' + ' + b, a + b, { extra: [a + b - 10, a + b + 100], tip: 'מחברים אחדות, אחר כך עשרות, ואחר כך מאות' });
+        return expr(r, a + ' + ' + b, a + b, { extra: [a + b - 10, a + b + 100], tip: 'מְחַבְּרִים אֲחָדוֹת, אַחַר כָּךְ עֲשָׂרוֹת, וְאַחַר כָּךְ מֵאוֹת' });
       } },
-      { g: 3, name: 'תלת-ספרתי ועוד תלת-ספרתי', f: function (r) {
+      { g: 3, name: 'תְּלַת-סִפְרָתִי וְעוֹד תְּלַת-סִפְרָתִי', f: function (r) {
         var c = ri(r, 320, 1000), a = ri(r, 105, c - 105);
-        return expr(r, a + ' + ' + (c - a), c, { extra: [c - 100, c - 10], tip: 'מחברים מאות עם מאות, עשרות עם עשרות ואחדות עם אחדות' });
+        return expr(r, a + ' + ' + (c - a), c, { extra: [c - 100, c - 10], tip: 'מְחַבְּרִים מֵאוֹת עִם מֵאוֹת, עֲשָׂרוֹת עִם עֲשָׂרוֹת וַאֲחָדוֹת עִם אֲחָדוֹת' });
       } },
-      { g: 3, name: 'חיבור עד 10,000', f: function (r) {
+      { g: 3, name: 'חִבּוּר עַד 10,000', f: function (r) {
         var a, b;
         if (r() < 0.5) { var c = ri(r, 30, 100); a = ri(r, 11, c - 11) * 100; b = c * 100 - a; } else { a = ri(r, 1005, 8995); b = ri(r, 105, 995); }
-        return expr(r, fmt(a) + ' + ' + fmt(b), a + b, { extra: [a + b - 1000, a + b + 100], tip: 'מחברים כל סוג בנפרד: אלפים, מאות, עשרות ואחדות' });
+        return expr(r, fmt(a) + ' + ' + fmt(b), a + b, { extra: [a + b - 1000, a + b + 100], tip: 'מְחַבְּרִים כָּל סוּג בְּנִפְרָד: אֲלָפִים, מֵאוֹת, עֲשָׂרוֹת וַאֲחָדוֹת' });
       } }
     ] },
-    { id: 'sub', name: 'חיסור', world: 'בית החיסור', icon: '🏔️', levels: [
-      { g: 2, name: 'חיסור עד 20', f: function (r) {
+    { id: 'sub', name: 'חִסּוּר', world: 'בֵּית הַחִסּוּר', icon: '🏔️', levels: [
+      { g: 2, name: 'חִסּוּר עַד 20', f: function (r) {
         var a = ri(r, 11, 18), b = ri(r, a - 9, 9);
-        return expr(r, a + ' − ' + b, a - b, { tip: 'יורדים קודם ל-10 ואז ממשיכים לרדת', vis: { t: 'sub', a: a, b: b } });
+        return expr(r, a + ' − ' + b, a - b, { tip: 'יוֹרְדִים קֹדֶם לְ-10 וְאָז מַמְשִׁיכִים לָרֶדֶת', vis: { t: 'sub', a: a, b: b } });
       } },
-      { g: 2, name: 'דו-ספרתי פחות חד-ספרתי', f: function (r) {
+      { g: 2, name: 'דּוּ-סִפְרָתִי פָּחוֹת חַד-סִפְרָתִי', f: function (r) {
         var u = ri(r, 0, 7), a = ri(r, 2, 9) * 10 + u, b = ri(r, u + 1, 9);
-        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10], tip: 'יורדים קודם לעשרת העגולה ואז ממשיכים', vis: { t: 'sub', a: a, b: b } });
+        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10], tip: 'יוֹרְדִים קֹדֶם לָעֲשֶׂרֶת הָעֲגֻלָּה וְאָז מַמְשִׁיכִים', vis: { t: 'sub', a: a, b: b } });
       } },
-      { g: 2, name: 'דו-ספרתי פחות דו-ספרתי', f: function (r) {
+      { g: 2, name: 'דּוּ-סִפְרָתִי פָּחוֹת דּוּ-סִפְרָתִי', f: function (r) {
         var a = ri(r, 32, 100), b = ri(r, 12, a - 12);
-        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10, a - b - 10], tip: 'מורידים קודם את העשרות ואחר כך את האחדות', vis: { t: 'sub', a: a, b: b } });
+        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10, a - b - 10], tip: 'מוֹרִידִים קֹדֶם אֶת הָעֲשָׂרוֹת וְאַחַר כָּךְ אֶת הָאֲחָדוֹת', vis: { t: 'sub', a: a, b: b } });
       } },
-      { g: 2, name: 'שרשרת חיסור', f: function (r) {
+      { g: 2, name: 'שַׁרְשֶׁרֶת חִסּוּר', f: function (r) {
         var a = ri(r, 45, 100), b = ri(r, 6, a - 25), c = ri(r, 4, a - b - 5);
-        return expr(r, a + ' − ' + b + ' − ' + c, a - b - c, { extra: [a - b + c, a - b - c + 10], tip: 'פותרים משמאל לימין, צעד אחרי צעד' });
+        return expr(r, a + ' − ' + b + ' − ' + c, a - b - c, { extra: [a - b + c, a - b - c + 10], tip: 'פּוֹתְרִים מִשְּׂמֹאל לְיָמִין, צַעַד אַחֲרֵי צַעַד' });
       } },
-      { g: 3, name: 'חיסור עד 1,000', f: function (r) {
+      { g: 3, name: 'חִסּוּר עַד 1,000', f: function (r) {
         var a = ri(r, 130, 999), b = ri(r, 12, 99);
-        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10, a - b - 100], tip: 'מורידים עשרות ואז אחדות. אם חסר, פורטים מאה או עשרת' });
+        return expr(r, a + ' − ' + b, a - b, { extra: [a - b + 10, a - b - 100], tip: 'מוֹרִידִים עֲשָׂרוֹת וְאָז אֲחָדוֹת. אִם חָסֵר, פּוֹרְטִים מֵאָה אוֹ עֲשֶׂרֶת' });
       } },
-      { g: 3, name: 'תלת-ספרתי פחות תלת-ספרתי', f: function (r) {
+      { g: 3, name: 'תְּלַת-סִפְרָתִי פָּחוֹת תְּלַת-סִפְרָתִי', f: function (r) {
         var a = ri(r, 320, 1000), b = ri(r, 105, a - 105);
-        return expr(r, fmt(a) + ' − ' + b, a - b, { extra: [a - b + 100, a - b + 10], tip: 'אפשר גם לספור קדימה מהמספר הקטן עד הגדול' });
+        return expr(r, fmt(a) + ' − ' + b, a - b, { extra: [a - b + 100, a - b + 10], tip: 'אֶפְשָׁר גַּם לִסְפֹּר קָדִימָה מֵהַמִּסְפָּר הַקָּטָן עַד הַגָּדוֹל' });
       } },
-      { g: 3, name: 'חיסור עד 10,000', f: function (r) {
+      { g: 3, name: 'חִסּוּר עַד 10,000', f: function (r) {
         var a, b;
         if (r() < 0.5) { a = ri(r, 30, 100) * 100; b = ri(r, 11, a / 100 - 11) * 100; } else { a = ri(r, 2005, 9995); b = ri(r, 105, 995); }
-        return expr(r, fmt(a) + ' − ' + fmt(b), a - b, { extra: [a - b + 1000, a - b - 100], tip: 'מחסרים כל סוג בנפרד: אלפים, מאות, עשרות ואחדות' });
+        return expr(r, fmt(a) + ' − ' + fmt(b), a - b, { extra: [a - b + 1000, a - b - 100], tip: 'מְחַסְּרִים כָּל סוּג בְּנִפְרָד: אֲלָפִים, מֵאוֹת, עֲשָׂרוֹת וַאֲחָדוֹת' });
       } }
     ] },
-    { id: 'mul', name: 'כפל', world: 'אחוזת הכפל', icon: '🍄', levels: [
-      { g: 2, name: 'כפל ב-2, ב-5 וב-10', f: function (r) { return table(r, [2, 5, 10]); } },
-      { g: 2, name: 'כפל ב-3 וב-4', f: function (r) { return table(r, [3, 4]); } },
-      { g: 2, name: 'לוח הכפל המלא', f: function (r) { return table(r, [6, 7, 8, 9]); } },
-      { g: 2, name: 'גורם חסר', f: function (r) {
+    { id: 'mul', name: 'כֶּפֶל', world: 'אֲחֻזַּת הַכֶּפֶל', icon: '🍄', levels: [
+      { g: 2, name: 'כֶּפֶל בְּ-2, בְּ-5 וּבְ-10', f: function (r) { return table(r, [2, 5, 10]); } },
+      { g: 2, name: 'כֶּפֶל בְּ-3 וּבְ-4', f: function (r) { return table(r, [3, 4]); } },
+      { g: 2, name: 'לוּחַ הַכֶּפֶל הַמָּלֵא', f: function (r) { return table(r, [6, 7, 8, 9]); } },
+      { g: 2, name: 'גּוֹרֵם חָסֵר', f: function (r) {
         var a = ri(r, 2, 9), b = ri(r, 2, 10), c = a * b;
-        return Q(r, r() < 0.5 ? '□ × ' + a + ' = ' + c : a + ' × □ = ' + c, b, { extra: [b + 1, b - 1, a], tip: 'איזה מספר בלוח הכפל של ' + a + ' נותן ' + c + '?' });
+        return Q(r, r() < 0.5 ? '□ × ' + a + ' = ' + c : a + ' × □ = ' + c, b, { extra: [b + 1, b - 1, a], tip: 'אֵיזֶה מִסְפָּר בְּלוּחַ הַכֶּפֶל שֶׁל ' + a + ' נוֹתֵן ' + c + '?' });
       } },
-      { g: 3, name: 'כפל בעשרות ובמאות', f: function (r) {
+      { g: 3, name: 'כֶּפֶל בַּעֲשָׂרוֹת וּבְמֵאוֹת', f: function (r) {
         var v = ri(r, 0, 3), a, b;
         if (v === 0) { a = ri(r, 11, 99); b = 10; } else if (v === 1) { a = ri(r, 2, 60); b = 100; }
         else if (v === 2) { a = ri(r, 2, 9) * 10; b = ri(r, 2, 9); } else { a = ri(r, 2, 9) * 100; b = ri(r, 2, 9); }
-        return expr(r, fmt(a) + ' × ' + b, a * b, { extra: [a * b / 10, a * b * 10], tip: 'כופלים את המספרים בלי האפסים, ואז מחזירים את האפסים' });
+        return expr(r, fmt(a) + ' × ' + b, a * b, { extra: [a * b / 10, a * b * 10], tip: 'כּוֹפְלִים אֶת הַמִּסְפָּרִים בְּלִי הָאֲפָסִים, וְאָז מַחְזִירִים אֶת הָאֲפָסִים' });
       } },
-      { g: 3, name: 'דו-ספרתי כפול חד-ספרתי', f: function (r) {
+      { g: 3, name: 'דּוּ-סִפְרָתִי כָּפוּל חַד-סִפְרָתִי', f: function (r) {
         var a = ri(r, 12, 49), b = ri(r, 2, 6);
         if (a % 10 === 0) a += 3;
         var t = Math.floor(a / 10) * 10, u = a % 10;
-        return expr(r, a + ' × ' + b, a * b, { extra: [a * b + b, a * b - b, t * b + u], tip: 'מפרקים: ' + ltr(a + ' × ' + b + ' = ' + t + ' × ' + b + ' + ' + u + ' × ' + b) });
+        return expr(r, a + ' × ' + b, a * b, { extra: [a * b + b, a * b - b, t * b + u], tip: 'מְפָרְקִים: ' + ltr(a + ' × ' + b + ' = ' + t + ' × ' + b + ' + ' + u + ' × ' + b) });
       } },
-      { g: 3, name: 'כפל במספרים גדולים', f: function (r) {
+      { g: 3, name: 'כֶּפֶל בְּמִסְפָּרִים גְּדוֹלִים', f: function (r) {
         var a, b;
         if (r() < 0.6) { a = ri(r, 26, 99); b = ri(r, 4, 9); } else { a = ri(r, 105, 330); b = ri(r, 2, 3); }
         if (a % 10 === 0) a += 4;
         var big = a >= 100 ? Math.floor(a / 100) * 100 : Math.floor(a / 10) * 10, rest = a - big;
-        return expr(r, a + ' × ' + b, a * b, { extra: [a * b + b, a * b - b, a * b + 10 * b], tip: 'מפרקים: ' + ltr(a + ' × ' + b + ' = ' + big + ' × ' + b + ' + ' + rest + ' × ' + b) });
+        return expr(r, a + ' × ' + b, a * b, { extra: [a * b + b, a * b - b, a * b + 10 * b], tip: 'מְפָרְקִים: ' + ltr(a + ' × ' + b + ' = ' + big + ' × ' + b + ' + ' + rest + ' × ' + b) });
       } }
     ] },
-    { id: 'div', name: 'חילוק', world: 'אחוזת החילוק', icon: '🌊', levels: [
-      { g: 2, name: 'חילוק ב-2, ב-5 וב-10', f: function (r) { return tableDiv(r, [2, 5, 10]); } },
-      { g: 2, name: 'חילוק ב-3, ב-4 וב-6', f: function (r) { return tableDiv(r, [3, 4, 6]); } },
-      { g: 2, name: 'חילוק בכל לוח הכפל', f: function (r) { return tableDiv(r, [6, 7, 8, 9]); } },
-      { g: 2, name: 'מספר חסר בחילוק', f: function (r) {
+    { id: 'div', name: 'חִלּוּק', world: 'אֲחֻזַּת הַחִלּוּק', icon: '🌊', levels: [
+      { g: 2, name: 'חִלּוּק בְּ-2, בְּ-5 וּבְ-10', f: function (r) { return tableDiv(r, [2, 5, 10]); } },
+      { g: 2, name: 'חִלּוּק בְּ-3, בְּ-4 וּבְ-6', f: function (r) { return tableDiv(r, [3, 4, 6]); } },
+      { g: 2, name: 'חִלּוּק בְּכָל לוּחַ הַכֶּפֶל', f: function (r) { return tableDiv(r, [6, 7, 8, 9]); } },
+      { g: 2, name: 'מִסְפָּר חָסֵר בְּחִלּוּק', f: function (r) {
         var b = ri(r, 2, 9), q = ri(r, 2, 10), c = b * q;
         return r() < 0.5
-          ? Q(r, '□ : ' + b + ' = ' + q, c, { extra: [c + b, c - b], tip: 'הפעולה ההפוכה לחילוק היא כפל' })
-          : Q(r, c + ' : □ = ' + q, b, { extra: [b + 1, b - 1, q], tip: 'איזה מספר כפול ' + q + ' נותן ' + c + '?' });
+          ? Q(r, '□ : ' + b + ' = ' + q, c, { extra: [c + b, c - b], tip: 'הַפְּעֻלָּה הַהֲפוּכָה לְחִלּוּק הִיא כֶּפֶל' })
+          : Q(r, c + ' : □ = ' + q, b, { extra: [b + 1, b - 1, q], tip: 'אֵיזֶה מִסְפָּר כָּפוּל ' + q + ' נוֹתֵן ' + c + '?' });
       } },
-      { g: 3, name: 'חילוק עם שארית', f: function (r) {
+      { g: 3, name: 'חִלּוּק עִם שְׁאֵרִית', f: function (r) {
         var b = ri(r, 2, 9), q = ri(r, 2, 9), rem = ri(r, 1, b - 1), c = b * q + rem;
-        var tip = 'מה המספר הגדול ביותר בלוח הכפל של ' + b + ' שלא עובר את ' + c + '?';
+        var tip = 'מָה הַמִּסְפָּר הַגָּדוֹל בְּיוֹתֵר בְּלוּחַ הַכֶּפֶל שֶׁל ' + b + ' שֶׁלֹּא עוֹבֵר אֶת ' + c + '?';
         return r() < 0.5
           ? Q(r, 'מָה הַשְּׁאֵרִית בַּתַּרְגִּיל ' + ltr(c + ' : ' + b) + '?', rem, { rtl: true, tip: tip })
           : Q(r, 'כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס ' + b + ' בְּתוֹךְ ' + c + '?', q, { rtl: true, extra: [q + 1, q - 1, rem], tip: tip });
       } },
-      { g: 3, name: 'חילוק עשרות ומאות', f: function (r) {
+      { g: 3, name: 'חִלּוּק עֲשָׂרוֹת וּמֵאוֹת', f: function (r) {
         var b = ri(r, 2, 9), q = ri(r, 2, 9), m = r() < 0.6 ? 10 : 100, c = b * q * m;
-        return expr(r, fmt(c) + ' : ' + b, q * m, { extra: [q * m / 10, q * m * 10, q * m + m], tip: 'מחלקים בלי האפסים, ואז מחזירים את האפסים' });
+        return expr(r, fmt(c) + ' : ' + b, q * m, { extra: [q * m / 10, q * m * 10, q * m + m], tip: 'מְחַלְּקִים בְּלִי הָאֲפָסִים, וְאָז מַחְזִירִים אֶת הָאֲפָסִים' });
       } },
-      { g: 3, name: 'חילוק מעבר ללוח הכפל', f: function (r) {
+      { g: 3, name: 'חִלּוּק מֵעֵבֶר לְלוּחַ הַכֶּפֶל', f: function (r) {
         var b = ri(r, 2, 8), q = ri(r, 11, Math.floor(99 / b)), c = b * q;
-        return expr(r, c + ' : ' + b, q, { extra: [q + 1, q - 1, q + 10], tip: 'מפרקים: ' + ltr(c + ' = ' + b * 10 + ' + ' + (c - b * 10)) + ' ומחלקים כל חלק ב-' + b });
+        return expr(r, c + ' : ' + b, q, { extra: [q + 1, q - 1, q + 10], tip: 'מְפָרְקִים: ' + ltr(c + ' = ' + b * 10 + ' + ' + (c - b * 10)) + ' וּמְחַלְּקִים כָּל חֵלֶק בְּ-' + b });
       } }
     ] },
-    { id: 'num', name: 'מספרים וערך המקום', world: 'מגדל המספרים', icon: '🏰', levels: [
-      { g: 2, name: 'עשרות ואחדות', f: function (r) {
+    { id: 'num', name: 'מִסְפָּרִים וְעֵרֶךְ הַמָּקוֹם', world: 'מִגְדַּל הַמִּסְפָּרִים', icon: '🏰', levels: [
+      { g: 2, name: 'עֲשָׂרוֹת וַאֲחָדוֹת', f: function (r) {
         var v = ri(r, 0, 3), n;
-        if (v === 0) { var t = ri(r, 1, 9) * 10, u = ri(r, 1, 9); return expr(r, t + ' + ' + u, t + u, { extra: [t / 10 + u, u * 10 + t / 10], tip: 'עשרות שלמות ועוד אחדות' }); }
-        if (v === 1) { n = ri(r, 11, 99); return Q(r, 'כַּמָּה עֲשָׂרוֹת שְׁלֵמוֹת יֵשׁ בַּמִּסְפָּר ' + n + '?', Math.floor(n / 10), { rtl: true, extra: [n % 10], tip: 'הספרה השמאלית מראה כמה עשרות יש' }); }
+        if (v === 0) { var t = ri(r, 1, 9) * 10, u = ri(r, 1, 9); return expr(r, t + ' + ' + u, t + u, { extra: [t / 10 + u, u * 10 + t / 10], tip: 'עֲשָׂרוֹת שְׁלֵמוֹת וְעוֹד אֲחָדוֹת' }); }
+        if (v === 1) { n = ri(r, 11, 99); return Q(r, 'כַּמָּה עֲשָׂרוֹת שְׁלֵמוֹת יֵשׁ בַּמִּסְפָּר ' + n + '?', Math.floor(n / 10), { rtl: true, extra: [n % 10], tip: 'הַסִּפְרָה הַשְּׂמָאלִית מַרְאָה כַּמָּה עֲשָׂרוֹת יֵשׁ' }); }
         if (v === 2) {
           var d = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), base = [d[0] * 10 + d[1], d[1] * 10 + d[0]], seen = {};
           seen[base[0]] = seen[base[1]] = true;
@@ -531,79 +531,79 @@ var TrollLogic = (function () {
         }
         var even = r() < 0.5, want = even ? 0 : 1;
         var one = distinct(1, function () { return ri(r, 6, 49) * 2 + want; }), rest = distinct(3, function () { return ri(r, 6, 49) * 2 + 1 - want; });
-        return Q(r, even ? 'אֵיזֶה מִסְפָּר זוּגִי?' : 'אֵיזֶה מִסְפָּר אִי-זוּגִי?', one[0], { rtl: true, options: one.concat(rest), tip: 'מספר זוגי מסתיים ב-0, 2, 4, 6 או 8' });
+        return Q(r, even ? 'אֵיזֶה מִסְפָּר זוּגִי?' : 'אֵיזֶה מִסְפָּר אִי-זוּגִי?', one[0], { rtl: true, options: one.concat(rest), tip: 'מִסְפָּר זוּגִי מִסְתַּיֵּם בְּ-0, 2, 4, 6 אוֹ 8' });
       } },
-      { g: 2, name: 'סדרות וקפיצות', f: function (r) { return seq(r, [2, 3, 4, 5, 10], 8); } },
-      { g: 2, name: 'מספרים עד 1,000', f: function (r) {
+      { g: 2, name: 'סְדָרוֹת וּקְפִיצוֹת', f: function (r) { return seq(r, [2, 3, 4, 5, 10], 8); } },
+      { g: 2, name: 'מִסְפָּרִים עַד 1,000', f: function (r) {
         var v = ri(r, 0, 4), n;
-        if (v === 0) { var h = ri(r, 1, 9) * 100, t = ri(r, 0, 9) * 10, u = ri(r, 1, 9); return expr(r, t ? h + ' + ' + t + ' + ' + u : h + ' + ' + u, h + t + u, { extra: [h / 10 + t + u, h + t * 10 + u], tip: 'מאות, עשרות ואחדות: כל ספרה במקום שלה' }); }
+        if (v === 0) { var h = ri(r, 1, 9) * 100, t = ri(r, 0, 9) * 10, u = ri(r, 1, 9); return expr(r, t ? h + ' + ' + t + ' + ' + u : h + ' + ' + u, h + t + u, { extra: [h / 10 + t + u, h + t * 10 + u], tip: 'מֵאוֹת, עֲשָׂרוֹת וַאֲחָדוֹת: כָּל סִפְרָה בַּמָּקוֹם שֶׁלָּהּ' }); }
         if (v === 1) return digitQ(r, 3);
         if (v === 2) {
           var up = r() < 0.5, st = r() < 0.5 ? 10 : 100;
           n = st === 10 ? ri(r, 1, 8) * 100 + (up ? 90 : 0) + ri(r, 1, 9) : ri(r, 105, 885);
           if (!up && n < st + 5) n += 200;
-          return expr(r, n + (up ? ' + ' : ' − ') + st, up ? n + st : n - st, { tip: st === 10 ? 'משנים רק את העשרות. שימי לב כשעוברים מאה!' : 'משנים רק את ספרת המאות' });
+          return expr(r, n + (up ? ' + ' : ' − ') + st, up ? n + st : n - st, { tip: st === 10 ? 'מְשַׁנִּים רַק אֶת הָעֲשָׂרוֹת. שִׂימִי לֵב כְּשֶׁעוֹבְרִים מֵאָה!' : 'מְשַׁנִּים רַק אֶת סִפְרַת הַמֵּאוֹת' });
         }
         if (v === 3) { var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r).slice(0, 3); return extreme(r, distinct(4, function () { return Number(shuffle(ds, r).join('')); })); }
         return seq(r, [20, 50, 100], 5);
       } },
-      { g: 3, name: 'מספרים עד 10,000', f: function (r) {
+      { g: 3, name: 'מִסְפָּרִים עַד 10,000', f: function (r) {
         var v = ri(r, 0, 4), n;
         if (v === 0) {
           var parts = [ri(r, 1, 9) * 1000, ri(r, 0, 9) * 100, ri(r, 0, 9) * 10, ri(r, 1, 9)], sum = parts[0] + parts[1] + parts[2] + parts[3];
-          return expr(r, parts.filter(function (x) { return x; }).map(fmt).join(' + '), sum, { extra: [sum + 900, sum - 90, sum + 90], tip: 'אלפים, מאות, עשרות ואחדות. אם חסר סוג אחד, כותבים 0 במקומו' });
+          return expr(r, parts.filter(function (x) { return x; }).map(fmt).join(' + '), sum, { extra: [sum + 900, sum - 90, sum + 90], tip: 'אֲלָפִים, מֵאוֹת, עֲשָׂרוֹת וַאֲחָדוֹת. אִם חָסֵר סוּג אֶחָד, כּוֹתְבִים 0 בִּמְקוֹמוֹ' });
         }
         if (v === 1) return digitQ(r, 4);
         if (v === 2) {
           var up = r() < 0.5, st = r() < 0.5 ? 100 : 1000;
           n = st === 100 ? ri(r, 1, 8) * 1000 + (up ? 900 : 0) + ri(r, 1, 99) : ri(r, 1005, 8995);
           if (!up && n < st + 5) n += 2000;
-          return expr(r, fmt(n) + (up ? ' + ' : ' − ') + fmt(st), up ? n + st : n - st, { tip: st === 100 ? 'משנים רק את המאות. שימי לב כשעוברים אלף!' : 'משנים רק את ספרת האלפים' });
+          return expr(r, fmt(n) + (up ? ' + ' : ' − ') + fmt(st), up ? n + st : n - st, { tip: st === 100 ? 'מְשַׁנִּים רַק אֶת הַמֵּאוֹת. שִׂימִי לֵב כְּשֶׁעוֹבְרִים אֶלֶף!' : 'מְשַׁנִּים רַק אֶת סִפְרַת הָאֲלָפִים' });
         }
         if (v === 3) { var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r).slice(0, 4); return extreme(r, distinct(4, function () { return Number(shuffle(ds, r).join('')); })); }
         return seq(r, [200, 250, 500, 1000], 5);
       } },
-      { g: 3, name: 'עיגול מספרים', f: function (r) { return roundQ(r, r() < 0.5 ? 10 : 100); } }
+      { g: 3, name: 'עִגּוּל מִסְפָּרִים', f: function (r) { return roundQ(r, r() < 0.5 ? 10 : 100); } }
     ] },
-    { id: 'frac', name: 'חצי, רבע ושברים', world: 'טירת השברים', icon: '🍕', levels: [
-      { g: 2, name: 'חצי וכפול', f: function (r) {
+    { id: 'frac', name: 'חֲצִי, רֶבַע וּשְׁבָרִים', world: 'טִירַת הַשְּׁבָרִים', icon: '🍕', levels: [
+      { g: 2, name: 'חֲצִי וְכָפוּל', f: function (r) {
         var n;
-        if (r() < 0.6) { n = 2 * ri(r, 4, 20); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n * 2, n / 2 + 1], tip: 'חצי = מחלקים לשני חלקים שווים' }); }
+        if (r() < 0.6) { n = 2 * ri(r, 4, 20); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n * 2, n / 2 + 1], tip: 'חֲצִי = מְחַלְּקִים לִשְׁנֵי חֲלָקִים שָׁוִים' }); }
         n = ri(r, 6, 25);
-        return Q(r, 'כַּמָּה זֶה פַּעֲמַיִם ' + n + '?', 2 * n, { rtl: true, extra: [n + 2, 2 * n - 2], tip: 'פעמיים = המספר ועוד עצמו' });
+        return Q(r, 'כַּמָּה זֶה פַּעֲמַיִם ' + n + '?', 2 * n, { rtl: true, extra: [n + 2, 2 * n - 2], tip: 'פַּעֲמַיִם = הַמִּסְפָּר וְעוֹד עַצְמוֹ' });
       } },
-      { g: 2, name: 'חצי ורבע', f: function (r) {
+      { g: 2, name: 'חֲצִי וָרֶבַע', f: function (r) {
         var n;
-        if (r() < 0.5) { n = 2 * ri(r, 15, 50); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n / 2 + 10, n / 2 - 10, n / 2 + 5], tip: 'מחלקים לשניים את העשרות ואת האחדות בנפרד' }); }
+        if (r() < 0.5) { n = 2 * ri(r, 15, 50); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n / 2 + 10, n / 2 - 10, n / 2 + 5], tip: 'מְחַלְּקִים לִשְׁנַיִם אֶת הָעֲשָׂרוֹת וְאֶת הָאֲחָדוֹת בְּנִפְרָד' }); }
         n = 4 * ri(r, 2, 25);
-        return Q(r, 'כַּמָּה זֶה רֶבַע שֶׁל ' + n + '?', n / 4, { rtl: true, extra: [n / 2, n / 4 + 1], tip: 'רבע = חצי של חצי' });
+        return Q(r, 'כַּמָּה זֶה רֶבַע שֶׁל ' + n + '?', n / 4, { rtl: true, extra: [n / 2, n / 4 + 1], tip: 'רֶבַע = חֲצִי שֶׁל חֲצִי' });
       } },
-      { g: 3, name: 'שליש, רבע, חמישית...', f: function (r) {
+      { g: 3, name: 'שְׁלִישׁ, רֶבַע, חֲמִישִׁית...', f: function (r) {
         var d = pick(r, [3, 4, 5, 6, 8, 10]), k = ri(r, 2, 12);
-        return Q(r, 'כַּמָּה זֶה ' + UNIT_FRAC[d] + ' שֶׁל ' + d * k + '?', k, { rtl: true, extra: [k + 1, k - 1, d], tip: UNIT_FRAC[d] + ' = מחלקים ל-' + d + ' חלקים שווים' });
+        return Q(r, 'כַּמָּה זֶה ' + UNIT_FRAC[d] + ' שֶׁל ' + d * k + '?', k, { rtl: true, extra: [k + 1, k - 1, d], tip: UNIT_FRAC[d] + ' = מְחַלְּקִים לְ-' + d + ' חֲלָקִים שָׁוִים' });
       } },
-      { g: 3, name: 'חלק מכמות', f: function (r) {
+      { g: 3, name: 'חֵלֶק מִכַּמּוּת', f: function (r) {
         var f = pick(r, FRACS), k = ri(r, 2, 10);
-        return Q(r, 'כַּמָּה זֶה ' + f[0] + ' שֶׁל ' + f[2] * k + '?', f[1] * k, { rtl: true, extra: [k, (f[2] - f[1]) * k, f[1] * k + k], tip: 'מוצאים קודם חלק אחד (מחלקים ל-' + f[2] + '), ואז כופלים ב-' + f[1] });
+        return Q(r, 'כַּמָּה זֶה ' + f[0] + ' שֶׁל ' + f[2] * k + '?', f[1] * k, { rtl: true, extra: [k, (f[2] - f[1]) * k, f[1] * k + k], tip: 'מוֹצְאִים קֹדֶם חֵלֶק אֶחָד (מְחַלְּקִים לְ-' + f[2] + '), וְאָז כּוֹפְלִים בְּ-' + f[1] });
       } }
     ] },
-    { id: 'ord', name: 'סוגריים וסדר פעולות', world: 'מגדל הסוגריים', icon: '🎪', levels: [
-      { g: 2, name: 'סוגריים בחיבור ובחיסור', f: function (r) {
-        var v = ri(r, 0, 2), a, b, c, d, tip = 'קודם פותרים את מה שבתוך הסוגריים';
+    { id: 'ord', name: 'סוֹגְרַיִם וְסֵדֶר פְּעֻלּוֹת', world: 'מִגְדַּל הַסּוֹגְרַיִם', icon: '🎪', levels: [
+      { g: 2, name: 'סוֹגְרַיִם בְּחִבּוּר וּבְחִסּוּר', f: function (r) {
+        var v = ri(r, 0, 2), a, b, c, d, tip = 'קֹדֶם פּוֹתְרִים אֶת מָה שֶׁבְּתוֹךְ הַסּוֹגְרַיִם';
         if (v === 0) { b = ri(r, 2, 9); c = ri(r, 2, 9); a = ri(r, b + c + 2, 45); return expr(r, a + ' − (' + b + ' + ' + c + ')', a - b - c, { extra: [a - b + c], tip: tip }); }
         if (v === 1) { b = ri(r, 5, 15); c = ri(r, 2, b - 2); a = ri(r, b + 3, 45); return expr(r, a + ' − (' + b + ' − ' + c + ')', a - b + c, { extra: [a - b - c], tip: tip }); }
         a = ri(r, 7, 20); b = ri(r, 7, 20); c = ri(r, 2, 6); d = ri(r, 2, 6);
         return expr(r, '(' + a + ' + ' + b + ') − (' + c + ' + ' + d + ')', a + b - c - d, { extra: [a + b - c + d], tip: tip });
       } },
-      { g: 2, name: 'סוגריים עם כפל', f: function (r) {
-        var v = ri(r, 0, 2), a, b, c, tip = 'קודם פותרים את מה שבתוך הסוגריים, ואז כופלים';
+      { g: 2, name: 'סוֹגְרַיִם עִם כֶּפֶל', f: function (r) {
+        var v = ri(r, 0, 2), a, b, c, tip = 'קֹדֶם פּוֹתְרִים אֶת מָה שֶׁבְּתוֹךְ הַסּוֹגְרַיִם, וְאָז כּוֹפְלִים';
         if (v === 0) { a = ri(r, 2, 6); b = ri(r, 1, 5); c = ri(r, 1, 5); return expr(r, a + ' × (' + b + ' + ' + c + ')', a * (b + c), { extra: [a * b + c], tip: tip }); }
         if (v === 1) { a = ri(r, 1, 5); b = ri(r, 1, 5); c = ri(r, 2, 6); return expr(r, '(' + a + ' + ' + b + ') × ' + c, (a + b) * c, { extra: [a + b * c], tip: tip }); }
         a = ri(r, 5, 12); b = ri(r, 1, a - 2); c = ri(r, 2, 6);
         return expr(r, '(' + a + ' − ' + b + ') × ' + c, (a - b) * c, { extra: [a - b * c, (a - b) * c + c], tip: tip });
       } },
-      { g: 3, name: 'סדר פעולות החשבון', f: function (r) {
-        var v = ri(r, 0, 4), a, b, c, d, q, tip = 'כפל וחילוק קודמים לחיבור ולחיסור';
+      { g: 3, name: 'סֵדֶר פְּעֻלּוֹת הַחֶשְׁבּוֹן', f: function (r) {
+        var v = ri(r, 0, 4), a, b, c, d, q, tip = 'כֶּפֶל וְחִלּוּק קוֹדְמִים לְחִבּוּר וּלְחִסּוּר';
         if (v === 0) { a = ri(r, 3, 30); b = ri(r, 2, 9); c = ri(r, 2, 9); return expr(r, a + ' + ' + b + ' × ' + c, a + b * c, { extra: [(a + b) * c], tip: tip }); }
         if (v === 1) { b = ri(r, 2, 6); c = ri(r, 2, 6); a = b * c + ri(r, 2, 40); return expr(r, a + ' − ' + b + ' × ' + c, a - b * c, { extra: [(a - b) * c], tip: tip }); }
         if (v === 2) { c = ri(r, 2, 9); q = ri(r, 2, 9); b = c * q; a = ri(r, 3, 40); return expr(r, a + ' + ' + b + ' : ' + c, a + q, { extra: [(a + b) / c, a + q + c], tip: tip }); }
@@ -611,8 +611,8 @@ var TrollLogic = (function () {
         c = ri(r, 2, 9); q = ri(r, 2, 9); b = c * q; a = ri(r, q + 2, q + 50);
         return expr(r, a + ' − ' + b + ' : ' + c, a - q, { extra: [a - q + c, a - q - 1], tip: tip });
       } },
-      { g: 3, name: 'סוגריים וסדר פעולות יחד', f: function (r) {
-        var v = ri(r, 0, 3), a, b, c, d, q, s, tip = 'קודם סוגריים, אחר כך כפל וחילוק, ובסוף חיבור וחיסור';
+      { g: 3, name: 'סוֹגְרַיִם וְסֵדֶר פְּעֻלּוֹת יַחַד', f: function (r) {
+        var v = ri(r, 0, 3), a, b, c, d, q, s, tip = 'קֹדֶם סוֹגְרַיִם, אַחַר כָּךְ כֶּפֶל וְחִלּוּק, וּבַסּוֹף חִבּוּר וְחִסּוּר';
         if (v === 0) { a = ri(r, 2, 9); b = ri(r, 2, 9); c = ri(r, 2, 6); d = ri(r, 1, Math.min(20, (a + b) * c - 1)); return expr(r, '(' + a + ' + ' + b + ') × ' + c + ' − ' + d, (a + b) * c - d, { extra: [a + b * c - d], tip: tip }); }
         if (v === 1) { a = ri(r, 2, 8); b = ri(r, 5, 12); c = ri(r, 1, b - 2); d = ri(r, 2, 30); return expr(r, a + ' × (' + b + ' − ' + c + ') + ' + d, a * (b - c) + d, { extra: [a * b - c + d], tip: tip }); }
         if (v === 2) { c = ri(r, 2, 9); q = ri(r, 2, 9); s = c * q; a = ri(r, 1, s - 1); d = ri(r, 2, 30); return expr(r, '(' + a + ' + ' + (s - a) + ') : ' + c + ' + ' + d, q + d, { extra: [q + d + c, q + d - 1], tip: tip }); }
@@ -620,20 +620,20 @@ var TrollLogic = (function () {
         return expr(r, a + ' × ' + b + ' − (' + c + ' + ' + d + ')', a * b - c - d, { extra: [a * b - c + d], tip: tip });
       } }
     ] },
-    { id: 'miss', name: 'מספר חסר', world: 'פירמידת המספר החסר', icon: '🔍', levels: [
-      { g: 2, name: 'מספר חסר עד 20', f: function (r) { var c = ri(r, 11, 20), a = ri(r, 3, c - 3); return missAdd(r, a, c - a, true); } },
-      { g: 2, name: 'מספר חסר עד 100', f: function (r) { var c = ri(r, 30, 100), a = ri(r, 11, c - 11); return missAdd(r, a, c - a, false); } },
-      { g: 2, name: 'מספר חסר בכפל ובחילוק', f: function (r) {
-        var a = ri(r, 2, 9), b = ri(r, 2, 10), c = a * b, v = ri(r, 0, 2), tip = 'כפל וחילוק הן פעולות הפוכות';
+    { id: 'miss', name: 'מִסְפָּר חָסֵר', world: 'פִּירָמִידַת הַמִּסְפָּר הֶחָסֵר', icon: '🔍', levels: [
+      { g: 2, name: 'מִסְפָּר חָסֵר עַד 20', f: function (r) { var c = ri(r, 11, 20), a = ri(r, 3, c - 3); return missAdd(r, a, c - a, true); } },
+      { g: 2, name: 'מִסְפָּר חָסֵר עַד 100', f: function (r) { var c = ri(r, 30, 100), a = ri(r, 11, c - 11); return missAdd(r, a, c - a, false); } },
+      { g: 2, name: 'מִסְפָּר חָסֵר בְּכֶפֶל וּבְחִלּוּק', f: function (r) {
+        var a = ri(r, 2, 9), b = ri(r, 2, 10), c = a * b, v = ri(r, 0, 2), tip = 'כֶּפֶל וְחִלּוּק הֵן פְּעֻלּוֹת הֲפוּכוֹת';
         if (v === 0) return Q(r, '□ × ' + a + ' = ' + c, b, { extra: [b + 1, b - 1], tip: tip });
         if (v === 1) return Q(r, c + ' : □ = ' + a, b, { extra: [b + 1, b - 1, a], tip: tip });
         return Q(r, '□ : ' + a + ' = ' + b, c, { extra: [c + a, c - a], tip: tip });
       } },
-      { g: 3, name: 'מספר חסר עד 1,000', f: function (r) { var c = ri(r, 30, 100), a = ri(r, 11, c - 11); return missAdd(r, a * 10, (c - a) * 10, false); } },
-      { g: 3, name: 'תרגיל בשני שלבים', f: function (r) {
+      { g: 3, name: 'מִסְפָּר חָסֵר עַד 1,000', f: function (r) { var c = ri(r, 30, 100), a = ri(r, 11, c - 11); return missAdd(r, a * 10, (c - a) * 10, false); } },
+      { g: 3, name: 'תַּרְגִּיל בִּשְׁנֵי שְׁלַבִּים', f: function (r) {
         var a = ri(r, 2, 9), x = ri(r, 2, 10), b = ri(r, 1, 20);
-        if (r() < 0.5 || a * x - b < 1) return Q(r, a + ' × □ + ' + b + ' = ' + (a * x + b), x, { extra: [x + 1, x - 1], tip: 'הולכים אחורה: קודם מורידים את ' + b + ', ואז מחלקים ב-' + a });
-        return Q(r, a + ' × □ − ' + b + ' = ' + (a * x - b), x, { extra: [x + 1, x - 1], tip: 'הולכים אחורה: קודם מוסיפים את ' + b + ', ואז מחלקים ב-' + a });
+        if (r() < 0.5 || a * x - b < 1) return Q(r, a + ' × □ + ' + b + ' = ' + (a * x + b), x, { extra: [x + 1, x - 1], tip: 'הוֹלְכִים אֲחוֹרָה: קֹדֶם מוֹרִידִים אֶת ' + b + ', וְאָז מְחַלְּקִים בְּ-' + a });
+        return Q(r, a + ' × □ − ' + b + ' = ' + (a * x - b), x, { extra: [x + 1, x - 1], tip: 'הוֹלְכִים אֲחוֹרָה: קֹדֶם מוֹסִיפִים אֶת ' + b + ', וְאָז מְחַלְּקִים בְּ-' + a });
       } }
     ] }
   ];
@@ -727,8 +727,8 @@ var TrollLogic = (function () {
     return s;
   }
 
-  var NAMES_A = ['בובי', 'פופי', 'גוגו', 'ננו', 'זיזי', 'מימי', 'טופי', 'לולי', 'קיקי', 'רומי', 'שוקי', 'דודי'];
-  var NAMES_B = ['נוצץ', 'קפצן', 'חמוד', 'צחקן', 'עליז', 'מתוק', 'פרוע', 'רקדן'];
+  var NAMES_A = ['בּוֹבִּי', 'פּוֹפִּי', 'גּוֹגוֹ', 'נָנוֹ', 'זִיזִי', 'מִימִי', 'טוֹפִי', 'לוּלִי', 'קִיקִי', 'רוֹמִי', 'שׁוּקִי', 'דּוּדִי'];
+  var NAMES_B = ['נוֹצֵץ', 'קַפְצָן', 'חָמוּד', 'צַחְקָן', 'עַלִּיז', 'מָתוֹק', 'פָּרוּעַ', 'רַקְדָן'];
   var BODIES = ['#ff8fb1', '#8fd3ff', '#9be58f', '#ffd36b', '#c3a1ff', '#ffa77a', '#6fe0d0', '#f58ae0'];
   var HAIR_COLORS = ['#ff4f9a', '#3aa0ff', '#34c759', '#ffb300', '#8e5cff', '#ff6a3d', '#14c8b4', '#e040c8'];
   var HAIR_STYLES = 6, BASE_ACC = 6; // new trolls are born with one of the first BASE_ACC accessories
@@ -736,21 +736,21 @@ var TrollLogic = (function () {
   var FREE_ITEMS = ['none', 'bow'];
   // Shop catalogue: [slot, id, emoji ('' = drawn accessory), name, price in coins]
   var ITEMS = [
-    ['acc', 'none', '', 'בלי אביזר', 0], ['acc', 'bow', '', 'סרט', 0], ['acc', 'flower', '', 'פרח', 8], ['acc', 'glasses', '', 'משקפיים', 10],
-    ['acc', 'bowtie', '', 'עניבת פרפר', 10], ['acc', 'star', '', 'סיכת כוכב', 10], ['acc', 'hat', '', 'כובע מסיבה', 12], ['acc', 'scarf', '', 'צעיף', 12],
-    ['acc', 'balloon', '', 'בלון אדום', 12], ['acc', 'butterfly', '', 'פרפר', 14], ['acc', 'sunglasses', '', 'משקפי שמש', 15], ['acc', 'necklace', '', 'שרשרת', 16],
-    ['acc', 'headphones', '', 'אוזניות', 18], ['acc', 'wand', '', 'שרביט קסמים', 20], ['acc', 'crown', '', 'כתר', 25], ['acc', 'wings', '', 'כנפיים', 30],
-    ['hat', 'cap', '🧢', 'כובע מצחייה', 10], ['hat', 'ribbon', '🎀', 'סרט ענק', 10], ['hat', 'straw', '👒', 'כובע קש', 12], ['hat', 'helmet', '⛑️', 'קסדה', 14],
-    ['hat', 'mushroom', '🍄', 'כובע פטרייה', 16], ['hat', 'tophat', '🎩', 'מגבעת קוסם', 20], ['hat', 'dizzy', '💫', 'כוכבים מסתחררים', 22], ['hat', 'grad', '🎓', 'כובע חכמים', 25], ['hat', 'rainbow', '🌈', 'קשת בענן', 30],
-    ['face', 'specs', '👓', 'משקפי קריאה', 8], ['face', 'goggles', '🥽', 'משקפי צלילה', 12], ['face', 'shades', '🕶️', 'משקפיים מגניבים', 14], ['face', 'mask', '🎭', 'מסכת תיאטרון', 20],
-    ['hand', 'apple', '🍎', 'תפוח', 5], ['hand', 'berry', '🍓', 'תות', 5], ['hand', 'lolly', '🍭', 'סוכרייה', 6], ['hand', 'icecream', '🍦', 'גלידה', 6], ['hand', 'blossom', '🌸', 'פרח דובדבן', 6],
-    ['hand', 'crayon', '🖍️', 'צבע', 6], ['hand', 'donut', '🍩', 'סופגנייה', 6], ['hand', 'melon', '🍉', 'אבטיח', 7], ['hand', 'cupcake', '🧁', 'קאפקייק', 8], ['hand', 'books', '📚', 'ספרים', 8],
-    ['hand', 'ball', '⚽', 'כדורגל', 10], ['hand', 'basket', '🏀', 'כדורסל', 10], ['hand', 'umbrella', '🌂', 'מטרייה', 10], ['hand', 'present', '🎁', 'מתנה', 12], ['hand', 'teddy', '🧸', 'דובי', 14],
-    ['hand', 'palette', '🎨', 'צבעי ציור', 14], ['hand', 'trumpet', '🎺', 'חצוצרה', 18], ['hand', 'scope', '🔭', 'טלסקופ', 18], ['hand', 'guitar', '🎸', 'גיטרה', 20],
-    ['pet', 'ladybug', '🐞', 'חיפושית', 10], ['pet', 'bee', '🐝', 'דבורה', 10], ['pet', 'chick', '🐥', 'אפרוח', 15], ['pet', 'frog', '🐸', 'צפרדע', 15], ['pet', 'turtle', '🐢', 'צב', 18],
-    ['pet', 'hamster', '🐹', 'אוגר', 20], ['pet', 'bunny', '🐰', 'ארנב', 22], ['pet', 'puppy', '🐶', 'כלבלב', 25], ['pet', 'kitty', '🐱', 'חתלתול', 25], ['pet', 'penguin', '🐧', 'פינגווין', 28],
-    ['pet', 'fox', '🦊', 'שועל', 30], ['pet', 'owl', '🦉', 'ינשוף', 30], ['pet', 'octopus', '🐙', 'תמנון', 32], ['pet', 'panda', '🐼', 'פנדה', 35], ['pet', 'dino', '🦕', 'דינוזאור', 40],
-    ['pet', 'unicorn', '🦄', 'חד-קרן', 45], ['pet', 'dragon', '🐉', 'דרקון', 50]
+    ['acc', 'none', '', 'בְּלִי אֲבִיזָר', 0], ['acc', 'bow', '', 'סֶרֶט', 0], ['acc', 'flower', '', 'פֶּרַח', 8], ['acc', 'glasses', '', 'מִשְׁקָפַיִם', 10],
+    ['acc', 'bowtie', '', 'עֲנִיבַת פַּרְפַּר', 10], ['acc', 'star', '', 'סִכַּת כּוֹכָב', 10], ['acc', 'hat', '', 'כּוֹבַע מְסִבָּה', 12], ['acc', 'scarf', '', 'צָעִיף', 12],
+    ['acc', 'balloon', '', 'בָּלוֹן אָדֹם', 12], ['acc', 'butterfly', '', 'פַּרְפַּר', 14], ['acc', 'sunglasses', '', 'מִשְׁקְפֵי שֶׁמֶשׁ', 15], ['acc', 'necklace', '', 'שַׁרְשֶׁרֶת', 16],
+    ['acc', 'headphones', '', 'אָזְנִיּוֹת', 18], ['acc', 'wand', '', 'שַׁרְבִיט קְסָמִים', 20], ['acc', 'crown', '', 'כֶּתֶר', 25], ['acc', 'wings', '', 'כְּנָפַיִם', 30],
+    ['hat', 'cap', '🧢', 'כּוֹבַע מִצְחִיָּה', 10], ['hat', 'ribbon', '🎀', 'סֶרֶט עֲנָק', 10], ['hat', 'straw', '👒', 'כּוֹבַע קַשׁ', 12], ['hat', 'helmet', '⛑️', 'קַסְדָּה', 14],
+    ['hat', 'mushroom', '🍄', 'כּוֹבַע פִּטְרִיָּה', 16], ['hat', 'tophat', '🎩', 'מִגְבַּעַת קוֹסֵם', 20], ['hat', 'dizzy', '💫', 'כּוֹכָבִים מִסְתַּחְרְרִים', 22], ['hat', 'grad', '🎓', 'כּוֹבַע חֲכָמִים', 25], ['hat', 'rainbow', '🌈', 'קֶשֶׁת בֶּעָנָן', 30],
+    ['face', 'specs', '👓', 'מִשְׁקְפֵי קְרִיאָה', 8], ['face', 'goggles', '🥽', 'מִשְׁקְפֵי צְלִילָה', 12], ['face', 'shades', '🕶️', 'מִשְׁקָפַיִם מַגְנִיבִים', 14], ['face', 'mask', '🎭', 'מַסֵּכַת תֵּאַטְרוֹן', 20],
+    ['hand', 'apple', '🍎', 'תַּפּוּחַ', 5], ['hand', 'berry', '🍓', 'תּוּת', 5], ['hand', 'lolly', '🍭', 'סֻכָּרִיָּה', 6], ['hand', 'icecream', '🍦', 'גְּלִידָה', 6], ['hand', 'blossom', '🌸', 'פֶּרַח דֻּבְדְּבָן', 6],
+    ['hand', 'crayon', '🖍️', 'צֶבַע', 6], ['hand', 'donut', '🍩', 'סֻפְגָּנִיָּה', 6], ['hand', 'melon', '🍉', 'אֲבַטִּיחַ', 7], ['hand', 'cupcake', '🧁', 'קַאפְּקֵייק', 8], ['hand', 'books', '📚', 'סְפָרִים', 8],
+    ['hand', 'ball', '⚽', 'כַּדּוּרֶגֶל', 10], ['hand', 'basket', '🏀', 'כַּדּוּרְסַל', 10], ['hand', 'umbrella', '🌂', 'מִטְרִיָּה', 10], ['hand', 'present', '🎁', 'מַתָּנָה', 12], ['hand', 'teddy', '🧸', 'דֻּבִּי', 14],
+    ['hand', 'palette', '🎨', 'צִבְעֵי צִיּוּר', 14], ['hand', 'trumpet', '🎺', 'חֲצוֹצְרָה', 18], ['hand', 'scope', '🔭', 'טֵלֵסְקוֹפּ', 18], ['hand', 'guitar', '🎸', 'גִּיטָרָה', 20],
+    ['pet', 'ladybug', '🐞', 'חִפּוּשִׁית', 10], ['pet', 'bee', '🐝', 'דְּבוֹרָה', 10], ['pet', 'chick', '🐥', 'אֶפְרוֹחַ', 15], ['pet', 'frog', '🐸', 'צְפַרְדֵּעַ', 15], ['pet', 'turtle', '🐢', 'צָב', 18],
+    ['pet', 'hamster', '🐹', 'אוֹגֵר', 20], ['pet', 'bunny', '🐰', 'אַרְנָב', 22], ['pet', 'puppy', '🐶', 'כְּלַבְלַב', 25], ['pet', 'kitty', '🐱', 'חֲתַלְתּוּל', 25], ['pet', 'penguin', '🐧', 'פִּינְגְּוִין', 28],
+    ['pet', 'fox', '🦊', 'שׁוּעָל', 30], ['pet', 'owl', '🦉', 'יַנְשׁוּף', 30], ['pet', 'octopus', '🐙', 'תְּמָנוּן', 32], ['pet', 'panda', '🐼', 'פַּנְדָּה', 35], ['pet', 'dino', '🦕', 'דִּינוֹזָאוּר', 40],
+    ['pet', 'unicorn', '🦄', 'חַד-קֶרֶן', 45], ['pet', 'dragon', '🐉', 'דְּרָקוֹן', 50]
   ].map(function (x) { return { slot: x[0], id: x[1], e: x[2], name: x[3], price: x[4] }; });
   var ITEM = {};
   ITEMS.forEach(function (it) { ITEM[it.id] = it; });
@@ -769,7 +769,7 @@ var TrollLogic = (function () {
     return { tier: tier, coins: 10 + 2 * stars + (tier === 'gold' ? 20 : tier === 'silver' ? 10 : 0) };
   }
   // ---- player profiles (kept on this device) ----
-  function cleanName(x, n) { x = typeof x === 'string' ? x.replace(/[<>&"']/g, '').trim().slice(0, 14) : ''; return x || 'שחקן ' + n; }
+  function cleanName(x, n) { x = typeof x === 'string' ? x.replace(/[<>&"']/g, '').trim().slice(0, 14) : ''; return x || 'שַׂחְקָן ' + n; }
   function loadProfiles(raw) {
     var out = { cur: null, list: [] }, o;
     try { o = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return out; }
@@ -960,21 +960,21 @@ var TrollArt = (function () {
 (function () {
   'use strict';
   var L = TrollLogic, A = TrollArt, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.p.';
-  var VILLAGE = 'של הילה'; // second line of the village name on the home screen
-  var CHEST = { bronze: '🥉 תיבת ארד', silver: '🥈 תיבת כסף', gold: '🥇 תיבת זהב' };
+  var VILLAGE = 'שֶׁל הִילָה'; // second line of the village name on the home screen
+  var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
   var state, app = document.getElementById('app'), fx, cur = null, timers = [];
   var tv = window.__tv = { round: null, done: false };
-  var GUIDE = { id: 3, name: 'טרולי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
-  var MIX = { id: 'mix', name: 'כל הנושאים', world: 'מקדש ההפתעות', icon: '🌈' };
+  var GUIDE = { id: 3, name: 'טְרוֹלִי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
+  var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈' };
   // building picture for each topic (assets/, see assets/CREDITS.txt)
   var BLD = { add: 'house1', sub: 'houseAlt1', mul: 'house2', div: 'houseAlt2', num: 'tower', frac: 'castleSmall', ord: 'towerAlt', miss: 'pyramid', mix: 'pyramidMayan' };
   var HAIR_REQ = [0, 0, 0, 5, 12, 20]; // stars needed for each hairstyle
-  var ACC_NAMES = { none: 'בלי אביזר', bow: 'סרט', glasses: 'משקפיים', crown: 'כתר', flower: 'פרח', hat: 'כובע מסיבה', sunglasses: 'משקפי שמש', bowtie: 'עניבת פרפר', scarf: 'צעיף', headphones: 'אוזניות', star: 'סיכת כוכב', butterfly: 'פרפר', balloon: 'בלון', wand: 'שרביט קסמים', wings: 'כנפיים', necklace: 'שרשרת' };
-  var ASK = ['כמה זה?', 'מה התשובה?', 'בואי נחשוב יחד', 'את יכולה!', 'מה דעתך?'];
-  var PRAISE = ['מעולה!', 'כל הכבוד!', 'וואו!', 'אלופה!', 'נכון מאוד!', 'איזה יופי!', 'מדהים!'];
-  var RETRY = ['כמעט! ננסה שוב', 'לא נורא, תסתכלי על הרמז', 'בואי נחשוב יחד', 'עוד ניסיון אחד, את בדרך!'];
+  var ACC_NAMES = { none: 'בְּלִי אֲבִיזָר', bow: 'סֶרֶט', glasses: 'מִשְׁקָפַיִם', crown: 'כֶּתֶר', flower: 'פֶּרַח', hat: 'כּוֹבַע מְסִבָּה', sunglasses: 'מִשְׁקְפֵי שֶׁמֶשׁ', bowtie: 'עֲנִיבַת פַּרְפַּר', scarf: 'צָעִיף', headphones: 'אָזְנִיּוֹת', star: 'סִכַּת כּוֹכָב', butterfly: 'פַּרְפַּר', balloon: 'בָּלוֹן', wand: 'שַׁרְבִיט קְסָמִים', wings: 'כְּנָפַיִם', necklace: 'שַׁרְשֶׁרֶת' };
+  var ASK = ['כַּמָּה זֶה?', 'מָה הַתְּשׁוּבָה?', 'בּוֹאִי נַחְשֹׁב יַחַד', 'אַתְּ יְכוֹלָה!', 'מָה דַּעְתֵּךְ?'];
+  var PRAISE = ['מְעֻלֶּה!', 'כָּל הַכָּבוֹד!', 'וָואוּ!', 'אַלּוּפָה!', 'נָכוֹן מְאוֹד!', 'אֵיזֶה יֹפִי!', 'מַדְהִים!'];
+  var RETRY = ['כִּמְעַט! נְנַסֶּה שׁוּב', 'לֹא נוֹרָא, תִּסְתַּכְּלִי עַל הָרֶמֶז', 'בּוֹאִי נַחְשֹׁב יַחַד', 'עוֹד נִסָּיוֹן אֶחָד, אַתְּ בַּדֶּרֶךְ!'];
 
   // Each player has their own saved progress on this device.
   var profiles = { cur: null, list: [] };
@@ -1174,17 +1174,17 @@ var TrollArt = (function () {
   }
   function btn(text, cls, fn) { return h('button', { class: 'btn ' + (cls || ''), text: text, on: { click: function () { sfx.tap(); fn(); } } }); }
   function topBar(withHome, backFn) {
-    var mute = h('button', { class: 'icon', 'aria-label': 'צלילים', text: state.mute ? '🔇' : '🔊' });
+    var mute = h('button', { class: 'icon', 'aria-label': 'צְלִילִים', text: state.mute ? '🔇' : '🔊' });
     mute.addEventListener('click', function () { state.mute = !state.mute; save(); mute.textContent = state.mute ? '🔇' : '🔊'; sfx.tap(); });
-    var music = h('button', { class: 'icon' + (state.music ? '' : ' dim'), 'aria-label': 'מוזיקת רקע', text: '🎵' });
+    var music = h('button', { class: 'icon' + (state.music ? '' : ' dim'), 'aria-label': 'מוּזִיקַת רֶקַע', text: '🎵' });
     music.addEventListener('click', function () { state.music = !state.music; save(); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); });
-    var homeB = withHome ? h('button', { class: 'icon', 'aria-label': 'חזרה לכפר', text: '🏠', on: { click: function () { sfx.tap(); home(); } } }) : null;
-    var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חזרה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
+    var homeB = withHome ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה לַכְּפָר', text: '🏠', on: { click: function () { sfx.tap(); home(); } } }) : null;
+    var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
     return h('div', { class: 'top' },
       h('div', { class: 'chips' },
-        h('div', { class: 'chip', title: 'ימים ברצף', 'aria-label': state.streak + ' ימים ברצף', text: '🔥 ' + Math.max(1, state.streak) }),
+        h('div', { class: 'chip', title: 'יָמִים בְּרֶצֶף', 'aria-label': state.streak + ' יָמִים בְּרֶצֶף', text: '🔥 ' + Math.max(1, state.streak) }),
         h('div', { class: 'chip starchip', text: '⭐ ' + state.stars }),
-        h('div', { class: 'chip coinchip', title: 'מטבעות', text: '🪙 ' + state.coins })),
+        h('div', { class: 'chip coinchip', title: 'מַטְבְּעוֹת', text: '🪙 ' + state.coins })),
       h('div', { class: 'chips' }, backB, homeB, music, mute));
   }
   function bumpStars(el) {
@@ -1197,22 +1197,22 @@ var TrollArt = (function () {
     tv.round = null;
     show(function (el) {
       var tb = topBar(false);
-      tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'החלפת שחקן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
+      tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
       el.appendChild(tb);
       var title = h('h1', { class: 'title' });
-      'כפר הטרולים'.split('').forEach(function (ch, i) { title.appendChild(ch === ' ' ? document.createTextNode(' ') : h('span', { text: ch, style: 'animation-delay:' + (i * 0.09) + 's' })); });
+      'כְּפַר הַטְּרוֹלִים'.match(/[\u05D0-\u05EA][\u0591-\u05C7]*|[^]/g).forEach(function (ch, i) { title.appendChild(ch === ' ' ? document.createTextNode(' ') : h('span', { text: ch, style: 'animation-delay:' + (i * 0.09) + 's' })); });
       el.appendChild(title);
       el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
       var row = h('div', { class: 'row' });
-      row.appendChild(btn('▶ בואי נשחק!', 'big', topics));
-      if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מתנה יומית', 'b3 wig', gift));
-      if (state.owned.length) row.appendChild(btn('👗 הלבשה וחנות', 'b2', function () { dress(); }));
+      row.appendChild(btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', topics));
+      if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מַתָּנָה יוֹמִית', 'b3 wig', gift));
+      if (state.owned.length) row.appendChild(btn('👗 הַלְבָּשָׁה וַחֲנוּת', 'b2', function () { dress(); }));
       el.appendChild(row);
       var village = h('div', { class: 'village' });
       if (!state.owned.length) {
         village.appendChild(h('div', { class: 'guide' },
           h('div', { class: 'g', html: A.trollSVG(GUIDE) }),
-          h('div', { class: 'bubble', text: 'שלום! אני טרולי. בואי נפתור תרגילים ונמצא חברים חדשים לכפר!' })));
+          h('div', { class: 'bubble', text: 'שָׁלוֹם! אֲנִי טְרוֹלִי. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַכְּפָר!' })));
       } else {
         var small = window.innerWidth < 640 || window.innerHeight < 520;
         var mine = buddyId(), ids = state.owned.slice(small ? -8 : -14).filter(function (x) { return x !== mine; }), sm = ids.length > (small ? 3 : 8);
@@ -1237,7 +1237,7 @@ var TrollArt = (function () {
     show(function (el) {
       el.classList.add('map');
       el.appendChild(topBar(true, home));
-      el.appendChild(h('h2', { class: 'h2', text: 'לאן נטייל היום?' }));
+      el.appendChild(h('h2', { class: 'h2', text: 'לְאָן נְטַיֵּל הַיּוֹם?' }));
       var grid = h('div', { class: 'plots' });
       function plot(t, i, parts) {
         var sign = h('div', { class: 'sign' });
@@ -1253,8 +1253,8 @@ var TrollArt = (function () {
           var lv = state.levels[t.id], d = t.levels[lv - 1], bar = h('div', { class: 'wbar' });
           t.levels.forEach(function (x, k) { bar.appendChild(h('i', { class: (x.g === 3 ? 'g3' : '') + (k < lv ? ' on' : '') })); });
           info.innerHTML = '';
-          info.appendChild(h('span', { class: 'grade g' + d.g, text: d.g === 3 ? "🎓 כיתה ג'" : "כיתה ב'" }));
-          info.appendChild(h('span', { text: 'רמה ' + lv + '/' + t.levels.length }));
+          info.appendChild(h('span', { class: 'grade g' + d.g, text: d.g === 3 ? "🎓 כִּתָּה ג'" : "כִּתָּה ב'" }));
+          info.appendChild(h('span', { text: 'רָמָה ' + lv + '/' + t.levels.length }));
           info.appendChild(bar);
           sub.textContent = d.name; sub.title = d.name;
         }
@@ -1265,12 +1265,12 @@ var TrollArt = (function () {
             state.levels[t.id] = nl; state.hists[t.id] = []; save(); sfx.tap(); draw(); restart(info, 'pop');
           } } });
         }
-        plot(t, i, [h('b', { text: t.world }), sub, h('div', { class: 'wrow' }, step('+', 1, 'רמה קשה יותר'), info, step('−', -1, 'רמה קלה יותר'))]);
+        plot(t, i, [h('b', { text: t.world }), sub, h('div', { class: 'wrow' }, step('+', 1, 'רָמָה קָשָׁה יוֹתֵר'), info, step('−', -1, 'רָמָה קַלָּה יוֹתֵר'))]);
         draw();
       });
-      plot(MIX, L.TOPICS.length, [h('b', { text: MIX.world }), h('small', { text: 'תרגילים מכל הנושאים' })]);
+      plot(MIX, L.TOPICS.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })]);
       el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'להורים: בכפתורי + ו־− קובעים את הרמה בכל נושא; היא גם עולה ויורדת לבד. איורים: CraftPix.net (יער), Kenney.nl (בתים).' }));
+      el.appendChild(h('div', { class: 'note', text: 'לַהוֹרִים: בְּכַפְתּוֹרֵי + ו־− קוֹבְעִים אֶת הָרָמָה בְּכָל נוֹשֵׂא; הִיא גַּם עוֹלָה וְיוֹרֶדֶת לְבַד. אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים).' }));
       if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
     });
   }
@@ -1279,9 +1279,9 @@ var TrollArt = (function () {
     var today = L.todayStr(), buddy = buddySpec();
     show(function (el) {
       el.appendChild(topBar(true, home));
-      el.appendChild(h('h2', { class: 'h2', text: 'מתנה יומית!' }));
-      var msg = h('div', { class: 'banner', text: 'הקישי על המתנה' }), stage = h('div', { class: 'stage', style: 'flex:1 1 auto' });
-      var g = h('button', { class: 'gift', text: '🎁', 'aria-label': 'פתיחת המתנה' }), btns = h('div', { class: 'row' }), opened = false;
+      el.appendChild(h('h2', { class: 'h2', text: 'מַתָּנָה יוֹמִית!' }));
+      var msg = h('div', { class: 'banner', text: 'הַקִּישִׁי עַל הַמַּתָּנָה' }), stage = h('div', { class: 'stage', style: 'flex:1 1 auto' });
+      var g = h('button', { class: 'gift', text: '🎁', 'aria-label': 'פְּתִיחַת הַמַּתָּנָה' }), btns = h('div', { class: 'row' }), opened = false;
       stage.appendChild(g);
       g.addEventListener('click', function () {
         if (opened || state.lastGift === today) return;
@@ -1293,9 +1293,9 @@ var TrollArt = (function () {
           var s = {}, k; for (k in buddy) s[k] = buddy[k]; if (item) { s[L.ITEM[item].slot] = item; resolve(s); }
           stage.innerHTML = '<div class="reveal" style="width:62%">' + A.trollSVG(s, { mood: 'cheer' }) + '</div>';
           var c = center(stage); burst(c[0], c[1], 16); confetti(70); sfx.win();
-          msg.textContent = 'קיבלת ' + bonus + ' מטבעות' + (item ? ' והפתעה: ' + L.ITEM[item].name + '!' : '! 🪙'); restart(msg, 'pop'); bumpStars(el);
-          btns.appendChild(btn('יופי!', '', home));
-          if (item && state.owned.length) btns.appendChild(btn('👗 להלביש', 'b2', function () { dress(null, ['acc', 'hat', 'face', 'hand', 'pet'].indexOf(L.ITEM[item].slot) + 3); }));
+          msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (item ? ' וְהַפְתָּעָה: ' + L.ITEM[item].name + '!' : '! 🪙'); restart(msg, 'pop'); bumpStars(el);
+          btns.appendChild(btn('יֹפִי!', '', home));
+          if (item && state.owned.length) btns.appendChild(btn('👗 לְהַלְבִּישׁ', 'b2', function () { dress(null, ['acc', 'hat', 'face', 'hand', 'pet'].indexOf(L.ITEM[item].slot) + 3); }));
         }, 700);
       });
       el.appendChild(msg); el.appendChild(stage); el.appendChild(btns);
@@ -1356,7 +1356,7 @@ var TrollArt = (function () {
           n.className = 'node' + (k < round.i ? ' done' : k === round.i ? ' cur' : '');
           n.textContent = k < round.i ? (round.results[k] ? '⭐' : '🌸') : String(k + 1);
         });
-        label.textContent = t.icon + ' ' + t.name + ' · ' + t.levels[q.level - 1].name + (q.g === 3 ? " · 🎓 כיתה ג'" : '');
+        label.textContent = t.icon + ' ' + t.name + ' · ' + t.levels[q.level - 1].name + (q.g === 3 ? " · 🎓 כִּתָּה ג'" : '');
         mood('happy', rnd(ASK));
         qslot.innerHTML = '';
         qslot.appendChild(h('div', {
@@ -1379,7 +1379,7 @@ var TrollArt = (function () {
           b.classList.add('right');
           [].forEach.call(answers.children, function (x) { if (x !== b && !x.classList.contains('wrong')) x.classList.add('off'); });
           sfx.correct(combo); var c = center(b); burst(c[0], c[1], 12 + combo * 2);
-          mood('cheer', combo >= 3 ? '🔥 ' + combo + ' ברצף! ' + rnd(PRAISE) : rnd(PRAISE));
+          mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + rnd(PRAISE) : rnd(PRAISE));
           var hs = state.hists[q.topic]; hs.push(res.firstTry); state.hists[q.topic] = hs.slice(-5);
           state.coins += res.firstTry ? 2 : 1;
           if (res.firstTry) { state.stars++; flyStar(b, el.querySelector('.starchip'), function () { bumpStars(el); }); }
@@ -1397,7 +1397,7 @@ var TrollArt = (function () {
   }
 
   function eggSVG(t) {
-    return '<svg class="egg" viewBox="0 0 120 150" role="button" aria-label="ביצת הפתעה"><ellipse cx="60" cy="146" rx="34" ry="4" fill="rgba(0,0,0,.14)"/>' +
+    return '<svg class="egg" viewBox="0 0 120 150" role="button" aria-label="בֵּיצַת הַפְתָּעָה"><ellipse cx="60" cy="146" rx="34" ry="4" fill="rgba(0,0,0,.14)"/>' +
       '<ellipse cx="60" cy="82" rx="46" ry="60" fill="#fff6e0" stroke="#e8c98a" stroke-width="3"/>' +
       '<circle cx="42" cy="58" r="10" fill="' + t.hairColor + '"/><circle cx="80" cy="92" r="13" fill="' + t.body + '"/><circle cx="48" cy="114" r="8" fill="' + t.hairColor + '"/><circle cx="76" cy="46" r="6" fill="' + t.body + '"/>' +
       '<path class="crack" d="M16,80 l14,-11 l13,13 l14,-15 l13,13 l14,-11 l16,11" fill="none" stroke="#a9772c" stroke-width="4" stroke-linejoin="round"/></svg>';
@@ -1418,13 +1418,13 @@ var TrollArt = (function () {
     tv.round = null;
     show(function (el) {
       el.appendChild(topBar(true));
-      el.appendChild(h('h2', { class: 'h2', text: st >= 9 ? 'מושלם!' : st >= 6 ? 'כל הכבוד!' : 'יפה מאוד, סיימת!' }));
+      el.appendChild(h('h2', { class: 'h2', text: st >= 9 ? 'מֻשְׁלָם!' : st >= 6 ? 'כָּל הַכָּבוֹד!' : 'יָפֶה מְאוֹד, סִיַּמְתְּ!' }));
       var stars = h('div', { class: 'stars' });
       for (var i = 0; i < round.qs.length; i++) (function (k) {
         stars.appendChild(h('span', { class: 'star' + (k < st ? ' on' : ''), text: '★', style: 'animation-delay:' + (0.3 + k * 0.14) + 's' }));
         if (k < st) later(function () { sfx.star(k); }, 300 + k * 140);
       })(i);
-      var msg = h('div', { class: 'banner', text: 'קיבלת ביצת הפתעה! הקישי עליה', style: 'animation-delay:1.7s' });
+      var msg = h('div', { class: 'banner', text: 'קִבַּלְתְּ בֵּיצַת הַפְתָּעָה! הַקִּישִׁי עָלֶיהָ', style: 'animation-delay:1.7s' });
       var stage = h('div', { class: 'stage', html: eggSVG(troll) }), egg = stage.firstChild, btns = h('div', { class: 'row' }), extra = h('div', { class: 'banners' }), hatched = false;
       egg.addEventListener('click', function () {
         if (hatched) return;
@@ -1433,22 +1433,22 @@ var TrollArt = (function () {
           el.classList.add('hatched');
           stage.innerHTML = '<div class="reveal">' + A.trollSVG(troll, { mood: 'cheer' }) + '</div>';
           var c = center(stage); burst(c[0], c[1], 18); confetti(90); sfx.win();
-          msg.style.animationDelay = '0s'; msg.textContent = 'הכירי את ' + troll.name + '!'; restart(msg, 'pop');
+          msg.style.animationDelay = '0s'; msg.textContent = 'הַכִּירִי אֶת ' + troll.name + '!'; restart(msg, 'pop');
           if (item) {
             var show1 = {}, k; for (k in troll) show1[k] = troll[k]; show1.acc = item;
             extra.appendChild(h('div', { class: 'banner prize', style: 'animation-delay:.9s' },
-              h('span', { class: 'pz', html: A.trollSVG(show1) }), '🎁 זכית באביזר חדש: ' + ACC_NAMES[item] + '!'));
+              h('span', { class: 'pz', html: A.trollSVG(show1) }), '🎁 זָכִית בַּאֲבִיזָר חָדָשׁ: ' + ACC_NAMES[item] + '!'));
             later(function () { sfx.item(); }, 1500);
           }
           extra.appendChild(h('div', { class: 'banner chest ' + rw.tier, style: 'animation-delay:.9s', text: CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙' }));
           later(function () { sfx.item(); bumpStars(el); }, 1500);
           ups.forEach(function (u, n) {
-            extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:' + (1.3 + n * 0.3) + 's', text: '🎈 עלית רמה ב' + u.t.name + ': ' + u.lv.name + (u.newGrade ? " · 🎓 זה כבר חומר של כיתה ג'!" : '') }));
+            extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:' + (1.3 + n * 0.3) + 's', text: '🎈 עָלִית רָמָה ב' + u.t.name + ': ' + u.lv.name + (u.newGrade ? " · 🎓 זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
           });
           if (ups.length) later(function () { sfx.levelup(); }, 2300);
-          btns.appendChild(btn('עוד סיבוב', '', function () { startRound(round.topic); }));
-          btns.appendChild(btn('נושא אחר', 'b3', topics));
-          btns.appendChild(btn('🛍️ לחנות', 'b2', function () { dress(null, 4); }));
+          btns.appendChild(btn('עוֹד סִבּוּב', '', function () { startRound(round.topic); }));
+          btns.appendChild(btn('נוֹשֵׂא אַחַר', 'b3', topics));
+          btns.appendChild(btn('🛍️ לַחֲנוּת', 'b2', function () { dress(null, 4); }));
           tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
         }, 700);
       });
@@ -1461,36 +1461,36 @@ var TrollArt = (function () {
   function who() {
     show(function (el) {
       el.appendChild(topBar(!!profiles.cur, profiles.cur ? home : null));
-      el.appendChild(h('h2', { class: 'h2', text: 'מי משחק היום?' }));
+      el.appendChild(h('h2', { class: 'h2', text: 'מִי מְשַׂחֵק הַיּוֹם?' }));
       var grid = h('div', { class: 'who-grid' });
       profiles.list.forEach(function (p, i) {
         var st = p.id === profiles.cur ? state : L.loadState(lsGet(DKEY + p.id)), bid = buddyOf(st);
         var card = h('div', { class: 'pcard', style: 'animation-delay:' + (i * 0.07) + 's' });
-        card.appendChild(h('button', { class: 'go', 'aria-label': 'לשחק בתור ' + p.name, on: { click: function () { enter(p.id); } } },
+        card.appendChild(h('button', { class: 'go', 'aria-label': 'לְשַׂחֵק בְּתוֹר ' + p.name, on: { click: function () { enter(p.id); } } },
           h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
-          h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טרולים' })));
-        card.appendChild(h('button', { class: 'pdel', text: '🗑', 'aria-label': 'מחיקת ' + p.name, on: { click: function () {
+          h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' })));
+        card.appendChild(h('button', { class: 'pdel', text: '🗑', 'aria-label': 'מְחִיקַת ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
-          card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'למחוק את ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כן, למחוק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); saveProfiles(); load(); who(); } } }),
-            h('button', { class: 'btn', text: 'לא', on: { click: function () { who(); } } })));
+          card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
+            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); saveProfiles(); load(); who(); } } }),
+            h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
       });
       if (profiles.list.length < 8) {
-        var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'השם שלי', 'aria-label': 'שם השחקן החדש' });
+        var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'הַשֵּׁם שֶׁלִּי', 'aria-label': 'שֵׁם הַשַּׂחְקָן הֶחָדָשׁ' });
         var add = function () { profiles = L.addProfile(profiles, inp.value); enter(profiles.cur); };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
-        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שחקן חדש' }), inp, h('button', { class: 'btn', text: 'יאללה!', on: { click: add } })));
+        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
       el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'ההתקדמות נשמרת במכשיר הזה, לכל שחקן בנפרד.' }));
+      el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
     });
   }
 
   // ---------- dress-up and shop ----------
-  var TABS = [['hair', 'תסרוקת'], ['hairColor', 'צבע שיער'], ['body', 'צבע גוף'], ['acc', 'אביזרים'], ['hat', 'כובעים'], ['face', 'משקפיים'], ['hand', 'ביד'], ['pet', 'חיות מחמד']];
+  var TABS = [['hair', 'תִּסְרֹקֶת'], ['hairColor', 'צֶבַע שֵׂעָר'], ['body', 'צֶבַע גּוּף'], ['acc', 'אֲבִיזָרִים'], ['hat', 'כּוֹבָעִים'], ['face', 'מִשְׁקָפַיִם'], ['hand', 'בַּיָּד'], ['pet', 'חַיּוֹת מַחְמָד']];
   function dress(idx, tab) {
     var ids = state.owned;
     if (!ids.length) { home(); return; }
@@ -1500,10 +1500,10 @@ var TrollArt = (function () {
       el.appendChild(topBar(true, home));
       var prev = h('div', { class: 'prev' }), nameEl = h('div', { class: 'banner' }), opts = h('div', { class: 'opts' }), msg = h('div', { class: 'dmsg' });
       var tabs = h('div', { class: 'tabs' }), count = h('div', { class: 'note' });
-      function arrow(t, d) { return h('button', { class: 'icon', text: t, 'aria-label': 'טרול אחר', on: { click: function () { sfx.tap(); dress(idx + d, tab); } } }); }
+      function arrow(t, d) { return h('button', { class: 'icon', text: t, 'aria-label': 'טְרוֹל אַחַר', on: { click: function () { sfx.tap(); dress(idx + d, tab); } } }); }
       function cur1() { var s = specOf(id); if (trying) { s[trying.key] = trying.val; resolve(s); } return s; }
       function mini(over) { var s = cur1(), k; for (k in over) s[k] = over[k]; return A.trollSVG(resolve(s)); }
-      function drawCount() { count.textContent = '🎒 האוסף שלי: ' + state.items.length + ' מתוך ' + L.ITEMS.length + ' פריטים'; }
+      function drawCount() { count.textContent = '🎒 הָאֹסֶף שֶׁלִּי: ' + state.items.length + ' מִתּוֹךְ ' + L.ITEMS.length + ' פְּרִיטִים'; }
       function drawPrev(celebrate) {
         var s = cur1(); nameEl.textContent = s.name;
         prev.innerHTML = A.trollSVG(s, { mood: celebrate ? 'cheer' : 'happy' });
@@ -1516,10 +1516,10 @@ var TrollArt = (function () {
       function offer(it) { // preview first, then the child decides whether to buy
         msg.innerHTML = '';
         var need = it.price - state.coins;
-        if (need > 0) { msg.textContent = it.name + ': חסרים עוד ' + need + ' 🪙. עוד סיבוב ותוכלי לקנות!'; return; }
-        msg.appendChild(h('button', { class: 'btn b3 buy', text: 'לקנות: ' + it.name + ' ב-🪙 ' + it.price, on: { click: function () {
+        if (need > 0) { msg.textContent = it.name + ': חֲסֵרִים עוֹד ' + need + ' 🪙. עוֹד סִבּוּב וְתוּכְלִי לִקְנוֹת!'; return; }
+        msg.appendChild(h('button', { class: 'btn b3 buy', text: 'לִקְנוֹת: ' + it.name + ' בְּ-🪙 ' + it.price, on: { click: function () {
           var r = L.buy(state, it.id); if (!r.ok) return;
-          state = r.state; sfx.item(); confetti(40); bumpStars(el); wear(it.slot, it.id, 'קנית: ' + it.name + '!'); drawCount();
+          state = r.state; sfx.item(); confetti(40); bumpStars(el); wear(it.slot, it.id, 'קָנִית: ' + it.name + '!'); drawCount();
         } } }));
       }
       // o: {lock: {label, why}, item (unbought shop item), title}
@@ -1539,11 +1539,11 @@ var TrollArt = (function () {
         opts.innerHTML = ''; var key = TABS[tab][0], k;
         var sw = function (c) { return '<span class="sw" style="background:' + c + '"></span>'; };
         if (key === 'hair') for (k = 0; k < L.HAIR_STYLES; k++) option(mini({ hair: k }), 'hair', k,
-          { lock: state.stars < HAIR_REQ[k] && base.hair !== k ? { label: '🔒 ⭐' + HAIR_REQ[k], why: 'צריך עוד ' + (HAIR_REQ[k] - state.stars) + ' כוכבים כדי לפתוח' } : null });
+          { lock: state.stars < HAIR_REQ[k] && base.hair !== k ? { label: '🔒 ⭐' + HAIR_REQ[k], why: 'צָרִיךְ עוֹד ' + (HAIR_REQ[k] - state.stars) + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ' } : null });
         else if (key === 'hairColor') L.HAIR_COLORS.forEach(function (c) { option(sw(c), 'hairColor', c, {}); });
         else if (key === 'body') L.BODIES.forEach(function (c) { option(sw(c), 'body', c, {}); });
         else {
-          if (key !== 'acc') option('<span class="emo">🚫</span>', key, '', { title: 'בלי' });
+          if (key !== 'acc') option('<span class="emo">🚫</span>', key, '', { title: 'בְּלִי' });
           L.ITEMS.filter(function (it) { return it.slot === key; }).forEach(function (it) {
             var own = state.items.indexOf(it.id) >= 0 || (key === 'acc' && base.acc === it.id);
             option(key === 'acc' ? mini({ acc: it.id }) : '<span class="emo">' + it.e + '</span>', key, it.id, { title: it.name, item: own ? null : it });
@@ -1560,7 +1560,7 @@ var TrollArt = (function () {
         tabs.appendChild(b);
       });
       var pickB = h('button', { class: 'btn b3 pick' });
-      function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הטרול המלווה שלי' : '🤍 שיהיה המלווה שלי'; pickB.classList.toggle('is', is); }
+      function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הַטְּרוֹל הַמְּלַוֶּה שֶׁלִּי' : '🤍 שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'; pickB.classList.toggle('is', is); }
       pickB.addEventListener('click', function () { state.buddy = id; save(); sfx.giggle(); drawPick(); drawPrev(true); });
       drawPick();
       var nav = ids.length > 1 ? h('div', { class: 'nav' }, arrow('▶', -1), prev, arrow('◀', 1)) : h('div', { class: 'nav' }, prev);
@@ -1572,7 +1572,7 @@ var TrollArt = (function () {
   }
 
   // ---------- start ----------
-  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דמו' }, { id: 'p2', name: 'נועה' }] }; else loadProfiles();
+  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else loadProfiles();
   load(); buildBg();
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.mul = 5; state.levels.add = 3; }
   state = L.updateStreak(state, L.todayStr()); save();
