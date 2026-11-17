@@ -272,6 +272,66 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .pnew .btn{min-height:50px;font-size:18px;padding:4px 22px}
 .pname{font:inherit;font-weight:700;font-size:18px;text-align:center;border:3px solid #b99bff;border-radius:16px;padding:6px;width:100%;min-height:50px;user-select:text;-webkit-user-select:text}
 
+/* ---------- explanation window and picture models ---------- */
+.lvrow{display:flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;flex-wrap:wrap}
+.helpb{background:#fff7d6;border-radius:999px;padding:4px 14px;font-weight:700;font-size:clamp(13px,2.2vmin,18px);min-height:40px;box-shadow:0 3px 0 rgba(59,42,85,.14);transition:transform .12s}
+.helpb:active{transform:scale(.94)}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+.ovl{position:fixed;inset:0;background:rgba(40,25,70,.5);display:flex;align-items:center;justify-content:center;z-index:40;padding:clamp(6px,2vmin,18px);animation:fadeIn .2s}
+.ovl .card{background:#fff;border-radius:26px;width:100%;max-width:780px;max-height:100%;display:flex;flex-direction:column;gap:clamp(4px,1.2vmin,10px);padding:clamp(8px,2vmin,16px);box-shadow:0 20px 50px rgba(0,0,0,.3);animation:pop .35s cubic-bezier(.2,1.3,.4,1);overflow:hidden}
+.ohead{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.ohead b{font-size:clamp(13px,2.2vmin,19px);color:#8e5cff;flex:1 1 auto;min-width:0}
+.oq{font-weight:700;font-size:clamp(16px,3vmin,26px);background:#f6f2ff;border-radius:12px;padding:2px 12px;white-space:nowrap}
+.oq[dir=rtl]{white-space:normal;font-size:clamp(12px,2.1vmin,18px)}
+.ohead .icon,.orow .icon{width:46px;height:46px;font-size:18px;flex:0 0 auto;background:#f3eefb;box-shadow:none}
+.say{font-weight:700;font-size:clamp(15px,3vmin,25px);text-align:center;background:#fff7d6;border-radius:16px;padding:6px 12px;flex:0 0 auto;line-height:1.35}
+.mdl{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px}
+.msvg{max-width:100%;max-height:min(46vh,340px);width:auto;height:auto;display:block}
+.msvg path.new{stroke-dasharray:420;stroke-dashoffset:420;animation:drawIn .7s ease-out forwards}
+.orow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto}
+.orow .btn{min-height:54px;font-size:clamp(17px,3vmin,24px);padding:6px 26px}
+.pips{display:flex;gap:6px}
+.stepbox{display:flex;flex-direction:column;align-items:center;gap:4px}
+.stepno{font-size:clamp(12px,2vmin,16px);color:#8e5cff}
+.mptab td.gap{background:#fff;box-shadow:inset 0 0 0 3px #e4def2;border:0}
+.mptab td.zero{background:#fff1b8;box-shadow:inset 0 0 0 3px #ffb300;animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+.pips i{width:12px;height:12px;border-radius:50%;background:#e4def2}
+.pips i.on{background:#8e5cff}
+.mpv,.mptab,.mvert{border-collapse:separate;border-spacing:4px;font-weight:700}
+.mpv th,.mptab th{background:#efe8ff;border-radius:10px;padding:2px 10px;font-size:clamp(12px,2.1vmin,17px)}
+.mpv td{background:#f8f6ff;border-radius:12px;padding:6px 10px;vertical-align:bottom;min-width:clamp(104px,26vmin,190px);height:clamp(54px,13vmin,90px)}
+.mrow{display:flex;gap:4px;align-items:flex-end;justify-content:center}
+.mrow.cubes{display:grid;grid-template-columns:repeat(5,auto);gap:3px;justify-content:center;align-items:center}
+.mrod{display:block;width:clamp(8px,2vmin,14px);height:clamp(40px,11vmin,74px);border-radius:4px;background:repeating-linear-gradient(#3aa0ff 0 9%,#1f6fc9 9% 10%)}
+.mrod.p{background:repeating-linear-gradient(#ff5fa2 0 9%,#c92f74 9% 10%)}
+.mcube{display:block;width:clamp(10px,2.6vmin,18px);height:clamp(10px,2.6vmin,18px);border-radius:3px;background:#3aa0ff}
+.mcube.p{background:#ff5fa2}
+.mrod.g,.mcube.g{background:#ffb300;box-shadow:0 0 0 3px #ffe39a}
+.mrod.x,.mcube.x{opacity:.28;outline:2px dashed #e0457b}
+.mrod.new,.mcube.new{animation:pop .6s cubic-bezier(.2,1.5,.4,1)}
+.mptab td{background:#f8f6ff;border-radius:10px;min-width:clamp(34px,7vmin,48px);height:clamp(36px,7.5vmin,50px);text-align:center;font-size:clamp(20px,4.4vmin,34px)}
+.mptab td.hi{background:#ffd3e6;box-shadow:inset 0 0 0 3px #ff5fa2}
+.mptab td.ask,.mvert td.ask{color:#ff5fa2}
+.mptab.stack td{height:clamp(28px,6vmin,40px);font-size:clamp(18px,3.6vmin,28px)}
+.mvert td{min-width:clamp(30px,6.5vmin,44px);height:clamp(32px,7vmin,46px);text-align:center;font-size:clamp(22px,4.6vmin,36px)}
+.mvert td.mk{height:20px;font-size:15px;color:#ff5fa2}
+.mvert tr.bot td{border-bottom:4px solid #3b2a55}
+.mvert td.res{color:#2fae4f}
+.mvert s{text-decoration-color:#ff5fa2;opacity:.55}
+.mblocks{display:flex;gap:16px;align-items:flex-end;justify-content:center;flex-wrap:wrap}
+.mgrp{display:flex;gap:4px;align-items:flex-end;flex-wrap:wrap;max-width:270px;justify-content:center}
+.mth{display:flex;align-items:center;justify-content:center;width:clamp(36px,8vmin,50px);height:clamp(36px,8vmin,50px);border-radius:8px;background:#8e5cff;color:#fff;font-size:11px;font-style:normal;font-weight:700;box-shadow:4px -4px 0 #6337cf;margin-top:6px}
+.mhun{display:block;width:clamp(32px,7vmin,44px);height:clamp(32px,7vmin,44px);border-radius:5px;background-color:#34c759;background-image:linear-gradient(rgba(255,255,255,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.55) 1px,transparent 1px);background-size:10% 10%}
+.mshare{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;max-width:640px}
+.mring{display:flex;gap:3px;padding:4px 8px;border:3px solid #8e5cff;border-radius:999px;background:#f6f2ff;animation:pop .4s both}
+.mloose{display:flex;gap:4px;flex-wrap:wrap;max-width:320px;justify-content:center}
+.mdot{display:block;width:clamp(11px,2.3vmin,17px);height:clamp(11px,2.3vmin,17px);border-radius:50%;background:#3aa0ff}
+.mdot.p{background:#ff5fa2}
+.mexpr{font-weight:700;font-size:clamp(24px,6vmin,52px);white-space:nowrap}
+.mexpr b{background:#ffe39a;border-radius:12px;padding:0 8px;box-shadow:0 0 0 3px #ffb300}
+@media (max-height:520px){.msvg{max-height:36vh}.say{padding:3px 10px}.orow .btn{min-height:44px}.ohead .icon,.orow .icon{width:40px;height:40px}}
+
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}.cloud,.mote,.fly{display:none}}
 </style>
 </head>
@@ -466,12 +526,13 @@ var TrollLogic = (function () {
     ] },
     { id: 'mul', name: 'כֶּפֶל', world: 'אֲחֻזַּת הַכֶּפֶל', icon: '🍄', levels: [
       { g: 2, name: 'כֶּפֶל בְּ-2, בְּ-5 וּבְ-10', f: function (r) { return table(r, [2, 5, 10]); } },
-      { g: 2, name: 'כֶּפֶל בְּ-3 וּבְ-4', f: function (r) { return table(r, [3, 4]); } },
-      { g: 2, name: 'לוּחַ הַכֶּפֶל הַמָּלֵא', f: function (r) { return table(r, [6, 7, 8, 9]); } },
+      { g: 2, name: 'כֶּפֶל בְּ-2, בְּ-4, בְּ-5 וּבְ-10', f: function (r) { return table(r, [4, 4, 2, 5, 10]); } },
       { g: 2, name: 'גּוֹרֵם חָסֵר', f: function (r) {
-        var a = ri(r, 2, 9), b = ri(r, 2, 10), c = a * b;
+        var a = pick(r, [2, 4, 5, 10]), b = ri(r, 2, 10), c = a * b;
         return Q(r, r() < 0.5 ? '□ × ' + a + ' = ' + c : a + ' × □ = ' + c, b, { extra: [b + 1, b - 1, a], tip: 'אֵיזֶה מִסְפָּר בְּלוּחַ הַכֶּפֶל שֶׁל ' + a + ' נוֹתֵן ' + c + '?' });
       } },
+      { g: 3, name: 'כֶּפֶל בְּ-3 וּבְ-6', f: function (r) { return table(r, [3, 6]); } },
+      { g: 3, name: 'כֶּפֶל בְּ-7, בְּ-8 וּבְ-9', f: function (r) { return table(r, [7, 8, 9]); } },
       { g: 3, name: 'כֶּפֶל בַּעֲשָׂרוֹת וּבְמֵאוֹת', f: function (r) {
         var v = ri(r, 0, 3), a, b;
         if (v === 0) { a = ri(r, 11, 99); b = 10; } else if (v === 1) { a = ri(r, 2, 60); b = 100; }
@@ -494,14 +555,15 @@ var TrollLogic = (function () {
     ] },
     { id: 'div', name: 'חִלּוּק', world: 'אֲחֻזַּת הַחִלּוּק', icon: '🌊', levels: [
       { g: 2, name: 'חִלּוּק בְּ-2, בְּ-5 וּבְ-10', f: function (r) { return tableDiv(r, [2, 5, 10]); } },
-      { g: 2, name: 'חִלּוּק בְּ-3, בְּ-4 וּבְ-6', f: function (r) { return tableDiv(r, [3, 4, 6]); } },
-      { g: 2, name: 'חִלּוּק בְּכָל לוּחַ הַכֶּפֶל', f: function (r) { return tableDiv(r, [6, 7, 8, 9]); } },
+      { g: 2, name: 'חִלּוּק בְּ-2, בְּ-4, בְּ-5 וּבְ-10', f: function (r) { return tableDiv(r, [4, 4, 2, 5, 10]); } },
       { g: 2, name: 'מִסְפָּר חָסֵר בְּחִלּוּק', f: function (r) {
-        var b = ri(r, 2, 9), q = ri(r, 2, 10), c = b * q;
+        var b = pick(r, [2, 4, 5, 10]), q = ri(r, 2, 10), c = b * q;
         return r() < 0.5
           ? Q(r, '□ : ' + b + ' = ' + q, c, { extra: [c + b, c - b], tip: 'הַפְּעֻלָּה הַהֲפוּכָה לְחִלּוּק הִיא כֶּפֶל' })
           : Q(r, c + ' : □ = ' + q, b, { extra: [b + 1, b - 1, q], tip: 'אֵיזֶה מִסְפָּר כָּפוּל ' + q + ' נוֹתֵן ' + c + '?' });
       } },
+      { g: 3, name: 'חִלּוּק בְּ-3, בְּ-6 וּבְ-9', f: function (r) { return tableDiv(r, [3, 6, 9]); } },
+      { g: 3, name: 'חִלּוּק בְּכָל לוּחַ הַכֶּפֶל', f: function (r) { return tableDiv(r, [6, 7, 8, 9]); } },
       { g: 3, name: 'חִלּוּק עִם שְׁאֵרִית', f: function (r) {
         var b = ri(r, 2, 9), q = ri(r, 2, 9), rem = ri(r, 1, b - 1), c = b * q + rem;
         var tip = 'מָה הַמִּסְפָּר הַגָּדוֹל בְּיוֹתֵר בְּלוּחַ הַכֶּפֶל שֶׁל ' + b + ' שֶׁלֹּא עוֹבֵר אֶת ' + c + '?';
@@ -572,30 +634,30 @@ var TrollLogic = (function () {
         n = ri(r, 6, 25);
         return Q(r, 'כַּמָּה זֶה פַּעֲמַיִם ' + n + '?', 2 * n, { rtl: true, extra: [n + 2, 2 * n - 2], tip: 'פַּעֲמַיִם = הַמִּסְפָּר וְעוֹד עַצְמוֹ' });
       } },
-      { g: 2, name: 'חֲצִי וָרֶבַע', f: function (r) {
+      { g: 3, enr: true, name: 'חֲצִי וָרֶבַע', f: function (r) {
         var n;
         if (r() < 0.5) { n = 2 * ri(r, 15, 50); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n / 2 + 10, n / 2 - 10, n / 2 + 5], tip: 'מְחַלְּקִים לִשְׁנַיִם אֶת הָעֲשָׂרוֹת וְאֶת הַיְּחִידוֹת בְּנִפְרָד' }); }
         n = 4 * ri(r, 2, 25);
         return Q(r, 'כַּמָּה זֶה רֶבַע שֶׁל ' + n + '?', n / 4, { rtl: true, extra: [n / 2, n / 4 + 1], tip: 'רֶבַע = חֲצִי שֶׁל חֲצִי' });
       } },
-      { g: 3, name: 'שְׁלִישׁ, רֶבַע, חֲמִישִׁית...', f: function (r) {
+      { g: 3, enr: true, name: 'שְׁלִישׁ, רֶבַע, חֲמִישִׁית...', f: function (r) {
         var d = pick(r, [3, 4, 5, 6, 8, 10]), k = ri(r, 2, 12);
         return Q(r, 'כַּמָּה זֶה ' + UNIT_FRAC[d] + ' שֶׁל ' + d * k + '?', k, { rtl: true, extra: [k + 1, k - 1, d], tip: UNIT_FRAC[d] + ' = מְחַלְּקִים לְ-' + d + ' חֲלָקִים שָׁוִים' });
       } },
-      { g: 3, name: 'חֵלֶק מִכַּמּוּת', f: function (r) {
+      { g: 3, enr: true, name: 'חֵלֶק מִכַּמּוּת', f: function (r) {
         var f = pick(r, FRACS), k = ri(r, 2, 10);
         return Q(r, 'כַּמָּה זֶה ' + f[0] + ' שֶׁל ' + f[2] * k + '?', f[1] * k, { rtl: true, extra: [k, (f[2] - f[1]) * k, f[1] * k + k], tip: 'מוֹצְאִים קֹדֶם חֵלֶק אֶחָד (מְחַלְּקִים לְ-' + f[2] + '), וְאָז כּוֹפְלִים בְּ-' + f[1] });
       } }
     ] },
     { id: 'ord', name: 'סוֹגְרַיִם וְסֵדֶר פְּעֻלּוֹת', world: 'מִגְדַּל הַסּוֹגְרַיִם', icon: '🎪', levels: [
-      { g: 2, name: 'סוֹגְרַיִם בְּחִבּוּר וּבְחִסּוּר', f: function (r) {
+      { g: 3, name: 'סוֹגְרַיִם בְּחִבּוּר וּבְחִסּוּר', f: function (r) {
         var v = ri(r, 0, 2), a, b, c, d, tip = 'קֹדֶם פּוֹתְרִים אֶת מָה שֶׁבְּתוֹךְ הַסּוֹגְרַיִם';
         if (v === 0) { b = ri(r, 2, 9); c = ri(r, 2, 9); a = ri(r, b + c + 2, 45); return expr(r, a + ' − (' + b + ' + ' + c + ')', a - b - c, { extra: [a - b + c], tip: tip }); }
         if (v === 1) { b = ri(r, 5, 15); c = ri(r, 2, b - 2); a = ri(r, b + 3, 45); return expr(r, a + ' − (' + b + ' − ' + c + ')', a - b + c, { extra: [a - b - c], tip: tip }); }
         a = ri(r, 7, 20); b = ri(r, 7, 20); c = ri(r, 2, 6); d = ri(r, 2, 6);
         return expr(r, '(' + a + ' + ' + b + ') − (' + c + ' + ' + d + ')', a + b - c - d, { extra: [a + b - c + d], tip: tip });
       } },
-      { g: 2, name: 'סוֹגְרַיִם עִם כֶּפֶל', f: function (r) {
+      { g: 3, name: 'סוֹגְרַיִם עִם כֶּפֶל', f: function (r) {
         var v = ri(r, 0, 2), a, b, c, tip = 'קֹדֶם פּוֹתְרִים אֶת מָה שֶׁבְּתוֹךְ הַסּוֹגְרַיִם, וְאָז כּוֹפְלִים';
         if (v === 0) { a = ri(r, 2, 6); b = ri(r, 1, 5); c = ri(r, 1, 5); return expr(r, a + ' × (' + b + ' + ' + c + ')', a * (b + c), { extra: [a * b + c], tip: tip }); }
         if (v === 1) { a = ri(r, 1, 5); b = ri(r, 1, 5); c = ri(r, 2, 6); return expr(r, '(' + a + ' + ' + b + ') × ' + c, (a + b) * c, { extra: [a + b * c], tip: tip }); }
@@ -624,7 +686,7 @@ var TrollLogic = (function () {
       { g: 2, name: 'מִסְפָּר חָסֵר עַד 20', f: function (r) { var c = ri(r, 11, 20), a = ri(r, 3, c - 3); return missAdd(r, a, c - a, true); } },
       { g: 2, name: 'מִסְפָּר חָסֵר עַד 100', f: function (r) { var c = ri(r, 30, 100), a = ri(r, 11, c - 11); return missAdd(r, a, c - a, false); } },
       { g: 2, name: 'מִסְפָּר חָסֵר בְּכֶפֶל וּבְחִלּוּק', f: function (r) {
-        var a = ri(r, 2, 9), b = ri(r, 2, 10), c = a * b, v = ri(r, 0, 2), tip = 'כֶּפֶל וְחִלּוּק הֵן פְּעֻלּוֹת הֲפוּכוֹת';
+        var a = pick(r, [2, 4, 5, 10]), b = ri(r, 2, 10), c = a * b, v = ri(r, 0, 2), tip = 'כֶּפֶל וְחִלּוּק הֵן פְּעֻלּוֹת הֲפוּכוֹת';
         if (v === 0) return Q(r, '□ × ' + a + ' = ' + c, b, { extra: [b + 1, b - 1], tip: tip });
         if (v === 1) return Q(r, c + ' : □ = ' + a, b, { extra: [b + 1, b - 1, a], tip: tip });
         return Q(r, '□ : ' + a + ' = ' + b, c, { extra: [c + a, c - a], tip: tip });
@@ -642,12 +704,363 @@ var TrollLogic = (function () {
   function maxLevel(topicId) { return BY_ID[topicId] ? BY_ID[topicId].levels.length : 1; }
   function clampLevel(topicId, level) { return Math.max(1, Math.min(maxLevel(topicId), Math.floor(Number(level)) || 1)); }
 
+
+  // ================= explanations, shown the way they are taught in class =================
+  // An explanation is a list of steps {say, m}: a short sentence and a picture model
+  // (number line, hundred board, tens/units table, written column form, array, ...).
+  // The last step always leaves the final answer for the child.
+  // Exercises inside a Hebrew sentence stay left-to-right, as they are written in class.
+  function S(say, m) { return { say: say.replace(/[\d,□]+(?: [+−×:=] [\d,□?]+)+/g, ltr), m: m || null }; }
+  function plain(t) { return String(t).replace(/[⁦⁩֑-ׇ,]/g, ''); }
+  var PLACE_SAY = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים'], PLACE_THE = ['הַיְּחִידוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים'];
+
+  // Points visited on the number line when adding (dir 1) or subtracting (dir -1) d:
+  // whole thousands/hundreds/tens first, then the units, stopping at a round ten on the way.
+  function hop(from, d, dir) {
+    var pts = [from], cur = from;
+    for (var place = 1000; place >= 10; place /= 10) {
+      var part = Math.floor(d / place) % 10 * place;
+      if (part) { cur += dir * part; pts.push(cur); }
+    }
+    var u = d % 10;
+    if (u) {
+      var toTen = dir > 0 ? (10 - cur % 10) % 10 : cur % 10;
+      if (toTen && toTen < u) { cur += dir * toTen; pts.push(cur); u -= toTen; }
+      cur += dir * u; pts.push(cur);
+    }
+    return pts;
+  }
+  function lineSteps(pts, first) {
+    var st = [S(first, { t: 'line', pts: pts, n: 1, hide: true })];
+    for (var i = 1; i < pts.length; i++) {
+      var d = pts[i] - pts[i - 1], lastOne = i === pts.length - 1;
+      st.push(S((d > 0 ? 'קוֹפְצִים קָדִימָה ' : 'קוֹפְצִים אֲחוֹרָה ') + fmt(Math.abs(d)) + (lastOne ? '. לְאָן הִגַּעְנוּ?' : ' וּמַגִּיעִים לְ-' + fmt(pts[i])),
+        { t: 'line', pts: pts, n: i + 1, hide: true }));
+    }
+    return st;
+  }
+  function exLine(a, d, dir) { return { kind: 'line', steps: lineSteps(hop(a, d, dir), 'מַתְחִילִים בְּ-' + fmt(a) + ' עַל יְשַׁר הַמִּסְפָּרִים') }; }
+
+  function exBoard(a, b, dir) {
+    var cells = [a], cur = a, i, tens = Math.floor(b / 10), u = b % 10, st;
+    for (i = 0; i < tens; i++) { cur += dir * 10; cells.push(cur); }
+    for (i = 0; i < u; i++) { cur += dir; cells.push(cur); }
+    st = [S('מוֹצְאִים אֶת ' + a + ' בְּלוּחַ הַמֵּאָה', { t: 'board', cells: cells, n: 1, hide: true })];
+    if (tens) st.push(S((dir > 0 ? 'יוֹרְדִים ' : 'עוֹלִים ') + tens + ' שׁוּרוֹת, כִּי כָּל שׁוּרָה הִיא 10' + (u ? '' : '. לְאָן הִגַּעְנוּ?'), { t: 'board', cells: cells, n: 1 + tens, hide: true }));
+    if (u) st.push(S((dir > 0 ? 'זָזִים יָמִינָה ' : 'זָזִים שְׂמֹאלָה ') + u + ' צְעָדִים. לְאָן הִגַּעְנוּ?', { t: 'board', cells: cells, n: cells.length, hide: true }));
+    return { kind: 'board', steps: st };
+  }
+  // Tens / units table with ten-rods and unit cubes, including regrouping.
+  function exPv(a, b, op) {
+    var ua = a % 10, ub = b % 10, tb = Math.floor(b / 10), st = [], M = function (k) { return { t: 'pv', a: a, b: b, op: op, st: k }; };
+    if (op === '+') {
+      st.push(S('בּוֹנִים אֶת שְׁנֵי הַמִּסְפָּרִים מִמּוֹטוֹת שֶׁל עֶשֶׂר וּמִיְּחִידוֹת', M(0)));
+      st.push(S('מְחַבְּרִים אֶת הַיְּחִידוֹת: ' + ua + ' + ' + ub + ' = ' + (ua + ub), M(1)));
+      if (ua + ub >= 10) st.push(S('יֵשׁ 10 יְחִידוֹת אוֹ יוֹתֵר. מְמִירִים 10 יְחִידוֹת בְּמוֹט אֶחָד שֶׁל עֶשֶׂר', M(2)));
+      st.push(S('עַכְשָׁו סוֹפְרִים אֶת כָּל מוֹטוֹת הָעֶשֶׂר וְאֶת הַיְּחִידוֹת. כַּמָּה יָצָא?', M(3)));
+    } else {
+      st.push(S('בּוֹנִים אֶת ' + a + ' מִמּוֹטוֹת שֶׁל עֶשֶׂר וּמִיְּחִידוֹת', M(0)));
+      if (ua < ub) st.push(S('צָרִיךְ לְהוֹרִיד ' + ub + ' יְחִידוֹת, אֲבָל יֵשׁ רַק ' + ua + '. פּוֹרְטִים מוֹט אֶחָד לְ-10 יְחִידוֹת', M(1)));
+      st.push(S('מוֹרִידִים ' + ub + ' יְחִידוֹת' + (tb ? ' וְ-' + tb + ' מוֹטוֹת שֶׁל עֶשֶׂר' : '') + '. מָה נִשְׁאַר?', M(2)));
+    }
+    return { kind: 'pv', steps: st };
+  }
+  // Written column form (grade 3). Digits are listed from the units leftwards.
+  function exVert(a, b, op) {
+    var A = String(a).split('').reverse().map(Number), B = String(b).split('').reverse().map(Number), n = A.length, i, st = [];
+    while (B.length < n) B.push(0);
+    var res = String(op === '+' ? a + b : a - b).split('').reverse().map(Number);
+    var base = { t: 'vert', op: op, a: a, b: b, res: res };
+    var M = function (k, extra) { var o = { n: k }, key; for (key in base) o[key] = base[key]; for (key in extra) o[key] = extra[key]; return o; };
+    st.push(S('כּוֹתְבִים בִּמְאֻנָּךְ: יְחִידוֹת מִתַּחַת לַיְּחִידוֹת, עֲשָׂרוֹת מִתַּחַת לָעֲשָׂרוֹת', M(0, {})));
+    if (op === '+') {
+      var carry = [0];
+      for (i = 0; i < n; i++) carry.push(A[i] + B[i] + carry[i] >= 10 ? 1 : 0);
+      base.carry = carry;
+      for (i = 0; i < n - 1; i++) {
+        var s = A[i] + B[i] + carry[i];
+        st.push(S(PLACE_SAY[i] + ': ' + A[i] + ' + ' + B[i] + (carry[i] ? ' + 1' : '') + ' = ' + s + (s >= 10 ? '. כּוֹתְבִים ' + s % 10 + ' וְזוֹכְרִים 1' : ''), M(i + 1, {})));
+      }
+    } else {
+      var adj = A.slice(), changed = [];
+      for (i = 0; i < n; i++) {
+        if (adj[i] < B[i]) {
+          var j = i + 1;
+          while (adj[j] === 0) j++;
+          adj[j]--; changed[j] = true;
+          for (var k = j - 1; k > i; k--) { adj[k] = 9; changed[k] = true; }
+          adj[i] += 10; changed[i] = true;
+        }
+      }
+      base.adj = adj; base.changed = A.map(function (x, q) { return !!changed[q]; });
+      if (changed.length) st.push(S('כְּשֶׁאֵין מַסְפִּיק, פּוֹרְטִים מֵהַמָּקוֹם שֶׁמִּשְּׂמֹאל', M(0, { borrow: true })));
+      for (i = 0; i < n - 1; i++) st.push(S(PLACE_SAY[i] + ': ' + adj[i] + ' − ' + B[i] + ' = ' + (adj[i] - B[i]), M(i + 1, { borrow: true })));
+    }
+    st.push(S('וְעַכְשָׁו ' + PLACE_THE[n - 1] + '. מָה הַתּוֹצָאָה?', M(n - 1, { borrow: true })));
+    return { kind: 'vert', steps: st };
+  }
+  // Base-ten blocks: thousands, hundreds, tens, units.
+  function exPlace(n) {
+    var d = String(n).split('').map(Number), parts = [], L = d.length;
+    d.forEach(function (x, i) { if (x) parts.push(x + ' ' + PLACE_SAY[L - 1 - i]); });
+    return { kind: 'blocks', steps: [
+      S('בּוֹנִים אֶת הַמִּסְפָּר: ' + parts.join(', '), { t: 'blocks', n: n }),
+      S('כָּל סִפְרָה בַּמָּקוֹם שֶׁלָּהּ. אֵיזֶה מִסְפָּר יָצָא?', { t: 'ptab', n: n, hi: -1, hide: true })
+    ] };
+  }
+  function exAdd(a, b) {
+    if (a % 10 === 0 && b < 10 && a < 100) return exPlace(a + b);
+    if (a >= 100 || b >= 100) return (a + b) % 2 && a >= 100 && b >= 10 && b !== 10 && b !== 100 && b !== 1000 ? exVert(Math.max(a, b), Math.min(a, b), '+') : exLine(a, b, 1);
+    if (a >= 10 && b >= 10) {
+      var carry = a % 10 + b % 10 >= 10;
+      if (carry && a % 2) return exPv(a, b, '+');
+      if (!carry && a % 2 && a + b <= 100) return exBoard(a, b, 1);
+    }
+    return exLine(a, b, 1);
+  }
+  function exSub(a, b) {
+    if (a >= 100) return a % 2 && b >= 10 && b !== 10 && b !== 100 && b !== 1000 ? exVert(a, b, '−') : exLine(a, b, -1);
+    if (a >= 20 && b >= 10) {
+      var borrow = a % 10 < b % 10;
+      if (borrow && a % 2) return exPv(a, b, '−');
+      if (!borrow && a % 2) return exBoard(a, b, -1);
+    }
+    return exLine(a, b, -1);
+  }
+  function skipLine(step, total, hide) { var pts = []; for (var x = 0; x <= total; x += step) pts.push(x); return { t: 'line', pts: pts, n: pts.length, hide: !!hide, skip: true }; }
+  var EASY_TABLE = { 2: 1, 4: 1, 5: 1, 10: 1 };
+  function exMul(a, b) {
+    var st = [], rows = a, cols = b, z;
+    if (b === 10 || b === 100 || b === 1000) {
+      z = String(b).length - 1;
+      return { kind: 'shift', steps: [
+        S('כּוֹתְבִים אֶת ' + fmt(a) + ' בְּטַבְלַת עֵרֶךְ הַמָּקוֹם', { t: 'shift', n: a, k: z, st: 0 }),
+        S('כְּשֶׁכּוֹפְלִים בְּ-' + fmt(b) + ', כָּל סִפְרָה זָזָה ' + (z === 1 ? 'מָקוֹם אֶחָד' : z + ' מְקוֹמוֹת') + ' שְׂמֹאלָה', { t: 'shift', n: a, k: z, st: 1 }),
+        S((z === 1 ? 'בַּמָּקוֹם שֶׁהִתְפַּנָּה כּוֹתְבִים 0' : 'בַּמְּקוֹמוֹת שֶׁהִתְפַּנּוּ כּוֹתְבִים 0') + '. מָה הַמִּסְפָּר הֶחָדָשׁ?', { t: 'shift', n: a, k: z, st: 2 })
+      ] };
+    }
+    if (a >= 11 && b <= 10) {
+      if (a % 10 === 0) { // 30 x 7, 400 x 6
+        z = /0+$/.exec(String(a))[0].length; var core = a / Math.pow(10, z);
+        return { kind: 'zeros', steps: [
+          S(fmt(a) + ' הֵם ' + core + ' ' + PLACE_SAY[z], { t: 'blocks', n: a }),
+          S(core + ' × ' + b + ' = ' + core * b + ', אָז יֵשׁ ' + core * b + ' ' + PLACE_SAY[z], { t: 'expr', s: core + ' × ' + b + ' = ' + core * b }),
+          S(core * b + ' ' + PLACE_SAY[z] + '. מָה כּוֹתְבִים בַּמְּקוֹמוֹת הָרֵיקִים, וְאֵיזֶה מִסְפָּר יָצָא?', { t: 'shift', n: core * b, k: z, st: 1 })
+        ] };
+      }
+      var parts = [], ds = String(a).split('').map(Number), L = ds.length;
+      ds.forEach(function (x, i) { if (x) parts.push(x * Math.pow(10, L - 1 - i)); });
+      return { kind: 'area', steps: [
+        S('מְפָרְקִים אֶת ' + fmt(a) + ': ' + parts.join(' + '), { t: 'area', parts: parts, b: b, n: 0 }),
+        S('כּוֹפְלִים כָּל חֵלֶק בְּ-' + b, { t: 'area', parts: parts, b: b, n: parts.length }),
+        S('מְחַבְּרִים אֶת הַתּוֹצָאוֹת. כַּמָּה יָצָא?', { t: 'area', parts: parts, b: b, n: parts.length })
+      ] };
+    }
+    if (!EASY_TABLE[a] && !EASY_TABLE[b] && Math.max(a, b) > 5) { // split the array: the distributive law
+      rows = Math.max(a, b); cols = Math.min(a, b);
+      return { kind: 'split', steps: [
+        S(rows + ' שׁוּרוֹת, בְּכָל שׁוּרָה ' + cols, { t: 'arr', r: rows, c: cols, split: 0, count: 0 }),
+        S('מְפַצְּלִים אֶת הַמַּעֲרָךְ: 5 שׁוּרוֹת וְעוֹד ' + (rows - 5) + ' שׁוּרוֹת', { t: 'arr', r: rows, c: cols, split: 5, count: 0 }),
+        S('5 × ' + cols + ' = ' + 5 * cols + ' וְגַם ' + (rows - 5) + ' × ' + cols + ' = ' + (rows - 5) * cols, { t: 'arr', r: rows, c: cols, split: 5, count: 0 }),
+        S(5 * cols + ' + ' + (rows - 5) * cols + '. כַּמָּה יָצָא?', { t: 'arr', r: rows, c: cols, split: 5, count: 0 })
+      ] };
+    }
+    if (rows === 4 && !EASY_TABLE[cols] || cols === 4 && !EASY_TABLE[rows]) { // x4 as double the double
+      var o = rows === 4 ? cols : rows;
+      return { kind: 'double', steps: [
+        S('4 שׁוּרוֹת, בְּכָל שׁוּרָה ' + o, { t: 'arr', r: 4, c: o, split: 0, count: 0 }),
+        S('4 שׁוּרוֹת הֵן פַּעֲמַיִם 2 שׁוּרוֹת: 2 × ' + o + ' = ' + 2 * o, { t: 'arr', r: 4, c: o, split: 2, count: 0 }),
+        S(2 * o + ' + ' + 2 * o + '. כַּמָּה יָצָא?', { t: 'arr', r: 4, c: o, split: 2, count: 0 })
+      ] };
+    }
+    st.push(S(rows + ' שׁוּרוֹת, בְּכָל שׁוּרָה ' + cols, { t: 'arr', r: rows, c: cols, split: 0, count: 0 }));
+    if (rows > 1) st.push(S('סוֹפְרִים בְּדִלּוּגִים שֶׁל ' + cols + ', שׁוּרָה אַחֲרֵי שׁוּרָה', { t: 'arr', r: rows, c: cols, split: 0, count: rows - 1 }));
+    st.push(S('כַּמָּה יֵשׁ בְּסַךְ הַכֹּל?', { t: 'arr', r: rows, c: cols, split: 0, count: rows - 1 }));
+    return { kind: 'arr', steps: st };
+  }
+  function exDiv(c, b) {
+    var q = c / b;
+    if (q <= 10 && b <= 10) {
+      if (c <= 40) return { kind: 'share', steps: [
+        S('יֵשׁ ' + c + ' עִגּוּלִים. מְחַלְּקִים אוֹתָם לִקְבוּצוֹת שֶׁל ' + b, { t: 'share', total: c, size: b, n: 0 }),
+        S('מַקִּיפִים קְבוּצָה אַחֲרֵי קְבוּצָה', { t: 'share', total: c, size: b, n: q }),
+        S('כַּמָּה קְבוּצוֹת יָצְאוּ?', { t: 'share', total: c, size: b, n: q })
+      ] };
+      return { kind: 'skip', steps: [
+        S('קוֹפְצִים בְּדִלּוּגִים שֶׁל ' + b + ' עַד שֶׁמַּגִּיעִים לְ-' + c, skipLine(b, c)),
+        S('כַּמָּה קְפִיצוֹת עָשִׂינוּ?', skipLine(b, c))
+      ] };
+    }
+    if (c % 10 === 0 && q % 10 === 0) {
+      var z = /0+$/.exec(String(q))[0].length, m = Math.pow(10, z);
+      return { kind: 'zeros', steps: [
+        S(fmt(c) + ' הֵם ' + c / m + ' ' + PLACE_SAY[z], { t: 'expr', s: fmt(c) + ' : ' + b }),
+        S('מְחַלְּקִים: ' + c / m + ' : ' + b + ' = ' + q / m + ', אָז יֵשׁ ' + q / m + ' ' + PLACE_SAY[z], { t: 'expr', s: c / m + ' : ' + b + ' = ' + q / m }),
+        S(q / m + ' ' + PLACE_SAY[z] + '. מָה כּוֹתְבִים בַּמְּקוֹמוֹת הָרֵיקִים, וְאֵיזֶה מִסְפָּר יָצָא?', { t: 'shift', n: q / m, k: z, st: 1 })
+      ] };
+    }
+    var first = b * 10, rest = c - first;
+    return { kind: 'splitdiv', steps: [
+      S('מְפָרְקִים אֶת ' + c + ' לִשְׁנֵי חֲלָקִים שֶׁקַּל לְחַלֵּק: ' + first + ' + ' + rest, { t: 'area', parts: [first, rest], b: b, n: 0, div: true }),
+      S(first + ' : ' + b + ' = 10 וְגַם ' + rest + ' : ' + b + ' = ' + rest / b, { t: 'area', parts: [first, rest], b: b, n: 2, div: true }),
+      S('10 + ' + rest / b + '. כַּמָּה יָצָא?', { t: 'area', parts: [first, rest], b: b, n: 2, div: true })
+    ] };
+  }
+  function exRem(c, b, wantRem) {
+    var q = Math.floor(c / b);
+    return { kind: 'rem', steps: [
+      S('יֵשׁ ' + c + ' עִגּוּלִים. מְחַלְּקִים אוֹתָם לִקְבוּצוֹת שֶׁל ' + b, { t: 'share', total: c, size: b, n: 0 }),
+      S('מַקִּיפִים רַק קְבוּצוֹת שְׁלֵמוֹת', { t: 'share', total: c, size: b, n: q }),
+      S(wantRem ? 'כַּמָּה עִגּוּלִים נִשְׁאֲרוּ בַּחוּץ? זוֹ הַשְּׁאֵרִית' : 'כַּמָּה קְבוּצוֹת שְׁלֵמוֹת יָצְאוּ?', { t: 'share', total: c, size: b, n: q })
+    ] };
+  }
+  function exMissAdd(known, total) {
+    var pts = hop(known, total - known, 1), st = [S('מַתְחִילִים בְּ-' + fmt(known) + ' וְרוֹצִים לְהַגִּיעַ לְ-' + fmt(total), { t: 'line', pts: pts, n: 1 })];
+    for (var i = 1; i < pts.length; i++) st.push(S('קוֹפְצִים קָדִימָה ' + fmt(pts[i] - pts[i - 1]) + ' וּמַגִּיעִים לְ-' + fmt(pts[i]), { t: 'line', pts: pts, n: i + 1 }));
+    st.push(S('כַּמָּה קָפַצְנוּ בְּסַךְ הַכֹּל? זֶה הַמִּסְפָּר הֶחָסֵר', { t: 'line', pts: pts, n: pts.length }));
+    return { kind: 'missline', steps: st };
+  }
+  function exMissMul(step, total) {
+    return { kind: 'skip', steps: [
+      S('קוֹפְצִים בְּדִלּוּגִים שֶׁל ' + step + ' עַד שֶׁמַּגִּיעִים לְ-' + total, skipLine(step, total)),
+      S('כַּמָּה קְפִיצוֹת עָשִׂינוּ? זֶה הַמִּסְפָּר הֶחָסֵר', skipLine(step, total))
+    ] };
+  }
+  function prefixed(say, ex) { return { kind: ex.kind, steps: [S(say, null)].concat(ex.steps) }; }
+  // Order of operations: reduce one operation at a time, marking the one that goes first with [ ].
+  function exExpr(text) {
+    var tok = text.match(/\d+|[+−×:()]/g), st = [];
+    var show = function (mark) {
+      var out = '';
+      tok.forEach(function (t, i) {
+        if (mark && i === mark[0]) out += '[';
+        out += t;
+        if (mark && i === mark[1]) out += ']';
+        if (t !== '(' && tok[i + 1] !== undefined && tok[i + 1] !== ')') out += ' ';
+      });
+      return out.replace(/\[ /g, '[').replace(/ \]/g, ']');
+    };
+    var ops = function () { return tok.filter(function (t) { return /[+−×:]/.test(t); }).length; };
+    var guard = 0;
+    while (ops() > 1 && guard++ < 20) {
+      var lo = 0, hi = tok.length - 1, close = tok.indexOf(')'), inPar = close >= 0, i, at = -1;
+      if (inPar) { hi = close - 1; lo = tok.lastIndexOf('(', close) + 1; }
+      for (i = lo; i <= hi; i++) if (tok[i] === '×' || tok[i] === ':') { at = i; break; }
+      var mulFirst = at >= 0;
+      if (at < 0) for (i = lo; i <= hi; i++) if (tok[i] === '+' || tok[i] === '−') { at = i; break; }
+      var x = +tok[at - 1], y = +tok[at + 1], v = tok[at] === '+' ? x + y : tok[at] === '−' ? x - y : tok[at] === '×' ? x * y : x / y;
+      st.push(S(inPar ? 'קֹדֶם פּוֹתְרִים אֶת מָה שֶׁבְּתוֹךְ הַסּוֹגְרַיִם' : mulFirst ? 'כֶּפֶל וְחִלּוּק קוֹדְמִים לְחִבּוּר וּלְחִסּוּר' : 'פּוֹתְרִים מִשְּׂמֹאל לְיָמִין',
+        { t: 'expr', s: show([at - 1, at + 1]) }));
+      tok.splice(at - 1, 3, String(v));
+      if (tok[at - 2] === '(' && tok[at] === ')') tok.splice(at - 2, 3, String(v));
+    }
+    st.push(S('נִשְׁאַר תַּרְגִּיל אֶחָד. כַּמָּה יָצָא?', { t: 'expr', s: show(null) }));
+    return { kind: 'expr', steps: st };
+  }
+  function exFrac(total, den, num, name) {
+    var st = [S('מְחַלְּקִים אֶת ' + total + ' לְ-' + den + ' חֲלָקִים שָׁוִים', { t: 'bar', total: total, den: den, num: 0 })];
+    if (num === 1) st.push(S('כַּמָּה יֵשׁ בְּכָל חֵלֶק?', { t: 'bar', total: total, den: den, num: 1 }));
+    else {
+      st.push(S('בְּכָל חֵלֶק יֵשׁ ' + total / den, { t: 'bar', total: total, den: den, num: 0, each: total / den }));
+      st.push(S('לוֹקְחִים ' + num + ' חֲלָקִים. כַּמָּה זֶה יַחַד?', { t: 'bar', total: total, den: den, num: num, each: total / den }));
+    }
+    return { kind: 'bar', steps: st };
+  }
+
+  function explain(q) {
+    var t = plain(q.text), m, i, N = function (k) { return +m[k]; };
+    if (!q.rtl) {
+      if (t.indexOf('→') >= 0) {
+        var vals = t.split(' → ').map(function (x) { return x === '?' ? q.answer : +x; }), at = t.split(' → ').indexOf('?');
+        return { kind: 'seq', steps: [
+          S('בּוֹדְקִים בְּכַמָּה קוֹפְצִים בֵּין שְׁנֵי מִסְפָּרִים סְמוּכִים', { t: 'line', pts: vals, n: vals.length, q: at }),
+          S('הַקְּפִיצָה תָּמִיד שָׁוָה: ' + fmt(Math.abs(vals[1] - vals[0])) + '. אֵיזֶה מִסְפָּר חָסֵר?', { t: 'line', pts: vals, n: vals.length, q: at })
+        ] };
+      }
+      if ((m = /^(\d+) \+ (\d+) = \?$/.exec(t))) return exAdd(N(1), N(2));
+      if ((m = /^(\d+) − (\d+) = \?$/.exec(t))) return exSub(N(1), N(2));
+      if ((m = /^(\d+) × (\d+) = \?$/.exec(t))) return exMul(N(1), N(2));
+      if ((m = /^(\d+) : (\d+) = \?$/.exec(t))) return exDiv(N(1), N(2));
+      if ((m = /^(\d+(?: \+ \d+){2,3}) = \?$/.exec(t))) {
+        var terms = m[1].split(' + ').map(Number), round = terms.every(function (x, k) { return /^[1-9]0*$/.test(String(x)) && (k === 0 || String(x).length < String(terms[k - 1]).length); });
+        if (round) return exPlace(q.answer);
+        var pts = [terms[0]]; for (i = 1; i < terms.length; i++) pts.push(pts[i - 1] + terms[i]);
+        return { kind: 'chain', steps: lineSteps(pts, 'מַתְחִילִים בְּ-' + terms[0] + ' וּמוֹסִיפִים מִסְפָּר אַחֲרֵי מִסְפָּר') };
+      }
+      if ((m = /^(\d+) − (\d+) − (\d+) = \?$/.exec(t))) return { kind: 'chain', steps: lineSteps([N(1), N(1) - N(2), N(1) - N(2) - N(3)], 'מַתְחִילִים בְּ-' + N(1) + ' וּמוֹרִידִים מִסְפָּר אַחֲרֵי מִסְפָּר') };
+      if ((m = /^□ \+ (\d+) = (\d+)$/.exec(t)) || (m = /^(\d+) \+ □ = (\d+)$/.exec(t))) return exMissAdd(N(1), N(2));
+      if ((m = /^(\d+) − □ = (\d+)$/.exec(t))) return prefixed('הַמִּסְפָּר הֶחָסֵר הוּא הַמֶּרְחָק בֵּין ' + fmt(N(2)) + ' לְ-' + fmt(N(1)), exMissAdd(N(2), N(1)));
+      if ((m = /^□ − (\d+) = (\d+)$/.exec(t))) return prefixed('חוֹשְׁבִים הָפוּךְ: הוֹרַדְנוּ ' + fmt(N(1)) + ' וְנִשְׁאַר ' + fmt(N(2)) + ', אָז מְחַבְּרִים אוֹתָם בַּחֲזָרָה', exAdd(N(2), N(1)));
+      if ((m = /^□ × (\d+) = (\d+)$/.exec(t)) || (m = /^(\d+) × □ = (\d+)$/.exec(t))) return exMissMul(N(1), N(2));
+      if ((m = /^□ : (\d+) = (\d+)$/.exec(t))) return prefixed('חוֹשְׁבִים הָפוּךְ: הַמִּסְפָּר הֶחָסֵר הוּא ' + N(2) + ' × ' + N(1), exMul(N(2), N(1)));
+      if ((m = /^(\d+) : □ = (\d+)$/.exec(t))) return prefixed('חוֹשְׁבִים הָפוּךְ: ' + N(2) + ' כָּפוּל כַּמָּה נוֹתֵן ' + N(1) + '?', exMissMul(N(2), N(1)));
+      if ((m = /^(\d+) × □ ([+−]) (\d+) = (\d+)$/.exec(t))) {
+        var inner = m[2] === '+' ? N(4) - N(3) : N(4) + N(3);
+        return { kind: 'twostep', steps: [
+          S('הוֹלְכִים אֲחוֹרָה. קֹדֶם מְבַטְּלִים אֶת ' + m[2] + ' ' + N(3) + ': ' + N(4) + (m[2] === '+' ? ' − ' : ' + ') + N(3) + ' = ' + inner, { t: 'expr', s: N(1) + ' × □ = ' + inner }),
+          S('עַכְשָׁו ' + N(1) + ' כָּפוּל כַּמָּה נוֹתֵן ' + inner + '?', skipLine(N(1), inner))
+        ] };
+      }
+      if (/= \?$/.test(t)) return exExpr(t.replace(' = ?', ''));
+    } else {
+      if ((m = /שארית בתרגיל (\d+) : (\d+)/.exec(t))) return exRem(N(1), N(2), true);
+      if ((m = /פעמים שלמות נכנס (\d+) בתוך (\d+)/.exec(t))) return exRem(N(2), N(1), false);
+      if (/הכי (גדול|קטן)/.test(t)) {
+        var big = /הכי גדול/.test(t), nums = q.options.slice().sort(function (a, b) { return a - b; });
+        return { kind: 'stack', steps: [
+          S('כּוֹתְבִים אֶת הַמִּסְפָּרִים זֶה מִתַּחַת לָזֶה, סִפְרָה מִתַּחַת לַסִּפְרָה', { t: 'stack', nums: nums, hi: -1 }),
+          S('מַשְׁוִים קֹדֶם אֶת הַסִּפְרָה הַשְּׂמָאלִית בְּיוֹתֵר', { t: 'stack', nums: nums, hi: 0 }),
+          S('אִם הִיא שָׁוָה, עוֹבְרִים לַסִּפְרָה הַבָּאָה. ' + (big ? 'מִי הֲכִי גָּדוֹל?' : 'מִי הֲכִי קָטָן?'), { t: 'stack', nums: nums, hi: 1 })
+        ] };
+      }
+      if (/זוגי/.test(t)) {
+        var ns = q.options.slice().sort(function (a, b) { return a - b; });
+        return { kind: 'parity', steps: [
+          S('מִסְתַּכְּלִים רַק עַל סִפְרַת הַיְּחִידוֹת', { t: 'stack', nums: ns, hi: 'last' }),
+          S('מִסְפָּר זוּגִי מִסְתַּיֵּם בְּ-0, 2, 4, 6 אוֹ 8. מִסְפָּר אִי-זוּגִי מִסְתַּיֵּם בְּ-1, 3, 5, 7 אוֹ 9. אֵיזֶה מִסְפָּר מַתְאִים?', { t: 'stack', nums: ns, hi: 'last' })
+        ] };
+      }
+      if ((m = /ספרת (\S+) במספר (\d+)/.exec(t))) {
+        var p = PLACE_THE.map(plain).indexOf(m[1]);
+        return { kind: 'ptab', steps: [
+          S('כּוֹתְבִים אֶת הַמִּסְפָּר בְּטַבְלַת עֵרֶךְ הַמָּקוֹם', { t: 'ptab', n: N(2), hi: -1 }),
+          S('אֵיזוֹ סִפְרָה נִמְצֵאת בָּעַמּוּדָה שֶׁל ' + PLACE_THE[p] + '?', { t: 'ptab', n: N(2), hi: p })
+        ] };
+      }
+      if ((m = /עגלי את (\d+) ל(עשרת|מאה)/.exec(t))) {
+        var unit = m[2] === plain('עֲשֶׂרֶת') ? 10 : 100, lo = Math.floor(N(1) / unit) * unit;
+        return { kind: 'round', steps: [
+          S(fmt(N(1)) + ' נִמְצָא בֵּין ' + fmt(lo) + ' לְ-' + fmt(lo + unit), { t: 'rline', lo: lo, hi: lo + unit, n: N(1), mid: false }),
+          S('הָאֶמְצַע הוּא ' + fmt(lo + unit / 2), { t: 'rline', lo: lo, hi: lo + unit, n: N(1), mid: true }),
+          S('לְאֵיזֶה מִסְפָּר עָגֹל ' + fmt(N(1)) + ' קָרוֹב יוֹתֵר?', { t: 'rline', lo: lo, hi: lo + unit, n: N(1), mid: true })
+        ] };
+      }
+      if ((m = /עשרות שלמות יש במספר (\d+)/.exec(t))) return { kind: 'blocks', steps: [
+        S('בּוֹנִים אֶת ' + N(1) + ' מִמּוֹטוֹת שֶׁל עֶשֶׂר וּמִיְּחִידוֹת', { t: 'blocks', n: N(1) }),
+        S('כַּמָּה מוֹטוֹת שֶׁל עֶשֶׂר יֵשׁ?', { t: 'blocks', n: N(1) })
+      ] };
+      if ((m = /פעמים (\d+)\?$/.exec(t))) return { kind: 'bar', steps: [
+        S('פַּעֲמַיִם ' + N(1) + ' זֶה ' + N(1) + ' וְעוֹד ' + N(1), { t: 'bar', total: 0, den: 2, num: 2, each: N(1) }),
+        S('כַּמָּה זֶה יַחַד?', { t: 'bar', total: 0, den: 2, num: 2, each: N(1) })
+      ] };
+      if ((m = /(\S+ \S+|\S+) של (\d+)\?$/.exec(t))) {
+        var name = m[1], total = N(2), k;
+        if (/חצי$/.test(name)) return exFrac(total, 2, 1);
+        for (i = 0; i < FRACS.length; i++) if (plain(FRACS[i][0]) === name) return exFrac(total, FRACS[i][2], FRACS[i][1]);
+        var last = name.split(' ').pop();
+        for (k in UNIT_FRAC) if (plain(UNIT_FRAC[k]) === last) return exFrac(total, +k, 1);
+      }
+    }
+    return { kind: 'tip', steps: [S(q.hint.tip, null)] };
+  }
+
   function makeQuestion(topicId, level, rng) {
     rng = rng || Math.random;
     var t = BY_ID[topicId] || TOPICS[0];
     level = clampLevel(t.id, level);
     var lv = t.levels[level - 1], q = lv.f(rng);
-    q.topic = t.id; q.level = level; q.g = lv.g;
+    q.topic = t.id; q.level = level; q.g = lv.g; q.enr = !!lv.enr;
+    q.ex = explain(q);
     // identity of the exercise; wording without numbers (e.g. 'which is biggest?') is told apart by its options
     q.key = /\d/.test(q.text) ? q.text : q.text + '|' + q.options.slice().sort().join(',');
     return q;
@@ -820,10 +1233,15 @@ var TrollLogic = (function () {
     return left.length ? pick(rng, cheap.length ? cheap : left).id : null;
   }
 
-  var START_LEVEL = 3; // level every topic starts at for a new player
+  var START_LEVEL = 3; // a new player starts each topic here, but never above the last grade 2 level
+  function startLevel(t) {
+    var c2 = 0;
+    while (c2 < t.levels.length && t.levels[c2].g === 2 && !t.levels[c2].enr) c2++;
+    return c2 ? Math.min(START_LEVEL, c2) : 1;
+  }
   function newState() {
     var s = { v: 2, levels: {}, hists: {}, recent: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', mute: false, music: true, buddy: null };
-    TOPICS.forEach(function (t) { s.levels[t.id] = Math.min(START_LEVEL, t.levels.length); s.hists[t.id] = []; s.recent[t.id] = []; });
+    TOPICS.forEach(function (t) { s.levels[t.id] = startLevel(t); s.hists[t.id] = []; s.recent[t.id] = []; });
     return s;
   }
   function loadState(raw) {
@@ -835,7 +1253,7 @@ var TrollLogic = (function () {
     var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; };
     var lv = obj(o.levels), hs = obj(o.hists), rc = obj(o.recent);
     TOPICS.forEach(function (t) {
-      s.levels[t.id] = int(lv[t.id], 1, t.levels.length, Math.min(START_LEVEL, t.levels.length));
+      s.levels[t.id] = int(lv[t.id], 1, t.levels.length, startLevel(t));
       if (Array.isArray(hs[t.id])) s.hists[t.id] = hs[t.id].slice(-5).map(function (x) { return !!x; });
       if (Array.isArray(rc[t.id])) s.recent[t.id] = rc[t.id].filter(function (x) { return typeof x === 'string'; }).slice(-10);
     });
@@ -873,6 +1291,7 @@ var TrollLogic = (function () {
   return {
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
+    explain: explain, hop: hop, startLevel: startLevel,
     TOPICS: TOPICS, maxLevel: maxLevel, clampLevel: clampLevel, fmt: fmt,
     makeQuestion: makeQuestion, nextLevel: nextLevel, createRound: createRound,
     updateStreak: updateStreak, todayStr: todayStr, rollItem: rollItem, rollTroll: rollTroll, trollFromId: trollFromId,
@@ -956,10 +1375,177 @@ var TrollArt = (function () {
   return { trollSVG: trollSVG, shade: shade };
 })();
 </script>
+<script id="models">
+// Picture models for explanations: pure string generation (HTML / SVG), no DOM access.
+var TrollModels = (function () {
+  'use strict';
+  var BLUE = '#3aa0ff', PINK = '#ff5fa2', INK = '#3b2a55', GOLD = '#ffb300', SOFT = '#e9e3f5';
+  var PLACE_HEAD = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים'];
+  function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function svg(w, h, body) { return '<svg class="msvg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" direction="ltr">' + body + '</svg>'; }
+  function txt(x, y, s, size, fill, extra) { return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" text-anchor="middle" font-weight="700" fill="' + (fill || INK) + '"' + (extra || '') + '>' + s + '</text>'; }
+  function rep(n, s) { var o = ''; for (var i = 0; i < n; i++) o += s; return o; }
+
+  // ---- number line with jumps ----
+  function line(m) {
+    var W = 640, vals = m.pts.slice().sort(function (a, b) { return a - b; }).filter(function (v, i, a) { return i === 0 || v !== a[i - 1]; });
+    var min = vals[0], max = vals[vals.length - 1], k = vals.length, X = {};
+    vals.forEach(function (v, i) { X[v] = 46 + (W - 92) * (k === 1 ? 0.5 : 0.5 * i / (k - 1) + 0.5 * (v - min) / (max - min || 1)); });
+    var o = '<line x1="14" y1="112" x2="' + (W - 14) + '" y2="112" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/>';
+    var small = k > 8 ? 15 : 19, i;
+    for (i = 1; i < m.n; i++) {
+      var a = X[m.pts[i - 1]], b = X[m.pts[i]], d = m.pts[i] - m.pts[i - 1], col = d > 0 ? BLUE : PINK, hgt = Math.min(70, 26 + Math.abs(b - a) * 0.28);
+      o += '<path' + (i === m.n - 1 && !m.skip && m.q === undefined ? ' class="new"' : '') + ' d="M' + a + ',108 Q' + (a + b) / 2 + ',' + (108 - hgt * 2) + ' ' + b + ',108" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round"/>';
+      o += txt((a + b) / 2, 104 - hgt - 6, (d > 0 ? '+' : '−') + fmt(Math.abs(d)), small, col);
+    }
+    for (i = 0; i < m.n; i++) {
+      var x = X[m.pts[i]], unknown = (m.hide && i === m.pts.length - 1) || i === m.q;
+      o += '<line x1="' + x + '" y1="102" x2="' + x + '" y2="122" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/>';
+      o += unknown ? '<rect x="' + (x - 17) + '" y="126" width="34" height="28" rx="8" fill="#fff" stroke="' + PINK + '" stroke-width="3" stroke-dasharray="5 4"/>' + txt(x, 147, '?', 20, PINK)
+        : txt(x, 147, fmt(m.pts[i]), small);
+    }
+    return svg(W, 160, o);
+  }
+  // ---- hundred board ----
+  function board(m) {
+    var C = 34, o = '', shown = m.cells.slice(0, m.n), end = shown[shown.length - 1];
+    for (var v = 1; v <= 100; v++) {
+      var r = Math.floor((v - 1) / 10), c = (v - 1) % 10, x = c * C + 2, y = r * C + 2, on = shown.indexOf(v) >= 0;
+      var fill = v === m.cells[0] ? BLUE : v === end ? PINK : on ? '#ffd3e6' : '#fff';
+      var hid = m.hide && v === m.cells[m.cells.length - 1] && m.n === m.cells.length;
+      o += '<rect x="' + x + '" y="' + y + '" width="' + (C - 3) + '" height="' + (C - 3) + '" rx="6" fill="' + fill + '" stroke="' + SOFT + '" stroke-width="1.5"/>';
+      o += txt(x + C / 2 - 1.5, y + C / 2 + 4, hid ? '?' : v, 13, v === m.cells[0] || v === end ? '#fff' : on ? INK : '#8d82a6');
+    }
+    return svg(C * 10 + 2, C * 10 + 2, o);
+  }
+  // ---- tens / units table with rods and cubes ----
+  function rods(n, cls) { return rep(n, '<i class="mrod ' + cls + '"></i>'); }
+  function cubes(n, cls) { return rep(n, '<i class="mcube ' + cls + '"></i>'); }
+  function pvTable(rows) {
+    return '<table class="mpv" dir="ltr"><tr><th>' + PLACE_HEAD[1] + '</th><th>' + PLACE_HEAD[0] + '</th></tr>' +
+      rows.map(function (r) { return '<tr><td><span class="mrow">' + r[0] + '</span></td><td><span class="mrow cubes">' + r[1] + '</span></td></tr>'; }).join('') + '</table>';
+  }
+  function pv(m) {
+    var ta = Math.floor(m.a / 10), ua = m.a % 10, tb = Math.floor(m.b / 10), ub = m.b % 10;
+    if (m.op === '+') {
+      if (m.st === 0) return pvTable([[rods(ta, ''), cubes(ua, '')], [rods(tb, 'p'), cubes(ub, 'p')]]);
+      var carry = ua + ub >= 10 && m.st >= 2;
+      if (!carry) return pvTable([[rods(ta, '') + rods(tb, 'p'), cubes(ua, '') + cubes(ub, 'p')]]);
+      return pvTable([[rods(ta, '') + rods(tb, 'p') + rods(1, 'g new'), cubes(ua + ub - 10, '')]]);
+    }
+    var borrow = ua < ub;
+    if (m.st === 0) return pvTable([[rods(ta, ''), cubes(ua, '')]]);
+    if (m.st === 1) return pvTable([[rods(ta - 1, ''), cubes(ua, '') + cubes(10, 'g new')]]);
+    var T = borrow ? ta - 1 : ta, U = borrow ? ua + 10 : ua;
+    return pvTable([[rods(T - tb, '') + rods(tb, 'x'), cubes(U - ub, '') + cubes(ub, 'x')]]);
+  }
+  // ---- written column form ----
+  function vert(m) {
+    var A = String(m.a).split('').reverse(), B = String(m.b).split('').reverse(), cols = Math.max(A.length, m.res.length), i, rows = ['', '', '', ''];
+    for (i = cols - 1; i >= 0; i--) {
+      var top = A[i] === undefined ? '' : A[i], mark = '', done = i < m.n;
+      if (m.op === '+') { if (m.carry && m.carry[i] && i <= m.n && i > 0) mark = '1'; }
+      else if (m.borrow && m.changed && m.changed[i]) { mark = m.adj[i]; top = '<s>' + top + '</s>'; }
+      rows[0] += '<td class="mk">' + mark + '</td>';
+      rows[1] += '<td>' + top + '</td>';
+      rows[2] += '<td>' + (B[i] === undefined ? '' : B[i]) + '</td>';
+      rows[3] += '<td class="' + (done ? 'res' : 'ask') + '">' + (done ? m.res[i] : i < Math.max(A.length, m.res.length) ? '?' : '') + '</td>';
+    }
+    return '<table class="mvert" dir="ltr"><tr><td></td>' + rows[0] + '</tr><tr><td></td>' + rows[1] + '</tr><tr class="bot"><td class="op">' + m.op + '</td>' + rows[2] + '</tr><tr><td></td>' + rows[3] + '</tr></table>';
+  }
+  // ---- rectangular array (equal rows), optionally split in two ----
+  function arr(m) {
+    var S = m.r > 8 || m.c > 8 ? 24 : 30, gap = m.split ? 12 : 0, o = '', W = m.c * S + 64, H = m.r * S + gap + 6;
+    for (var r = 0; r < m.r; r++) {
+      var y = r * S + S / 2 + 3 + (m.split && r >= m.split ? gap : 0), second = m.split && r >= m.split;
+      for (var c = 0; c < m.c; c++) o += '<circle cx="' + (c * S + S / 2 + 3) + '" cy="' + y + '" r="' + (S / 2 - 3) + '" fill="' + (second ? PINK : BLUE) + '"/>';
+      if (r < m.count) o += txt(m.c * S + 34, y + 6, (r + 1) * m.c, 17, r === m.count - 1 ? PINK : '#8d82a6');
+    }
+    if (m.split) o += '<line x1="2" y1="' + (m.split * S + 3 + gap / 2) + '" x2="' + (m.c * S + 4) + '" y2="' + (m.split * S + 3 + gap / 2) + '" stroke="' + GOLD + '" stroke-width="3" stroke-dasharray="7 5"/>';
+    return svg(W, H, o);
+  }
+  // ---- area model: a number broken into parts, each multiplied (or divided) ----
+  function area(m) {
+    var widths = m.parts.map(function (p, i) { return i === 0 ? 220 : m.parts.length === 2 ? 150 : i === 1 ? 150 : 110; }), x = 70, o = '', cols = [BLUE, PINK, GOLD];
+    o += txt(34, 86, (m.div ? ': ' : '× ') + m.b, 24);
+    m.parts.forEach(function (p, i) {
+      o += '<rect x="' + x + '" y="34" width="' + widths[i] + '" height="96" rx="12" fill="' + cols[i] + '" opacity=".88"/>';
+      o += txt(x + widths[i] / 2, 26, fmt(p), 22);
+      o += txt(x + widths[i] / 2, 92, i < m.n ? fmt(m.div ? p / m.b : p * m.b) : '?', 28, '#fff');
+      x += widths[i] + 6;
+    });
+    return svg(x + 4, 140, o);
+  }
+  // ---- place-value tables ----
+  function heads(n) { var o = ''; for (var i = n - 1; i >= 0; i--) o += '<th>' + PLACE_HEAD[i] + '</th>'; return o; }
+  function ptab(m) {
+    var d = String(m.n).split(''), L = d.length;
+    return '<table class="mptab" dir="ltr"><tr>' + heads(L).replace(/<th>/g, function () { return '<th>'; }) + '</tr><tr>' +
+      d.map(function (x, i) { return '<td class="' + (L - 1 - i === m.hi ? 'hi' : '') + '">' + (m.hide ? '?' : x) + '</td>'; }).join('') + '</tr></table>';
+  }
+  // st 0: the number as written; 1: every digit moved k places left, the freed places empty; 2: zeros written in them
+  function shift(m) {
+    var d = String(m.n).split(''), L = d.length + m.k, row = '', i;
+    for (i = 0; i < L; i++) {
+      if (!m.st) row += '<td>' + (i >= m.k ? d[i - m.k] : '') + '</td>';
+      else row += i < d.length ? '<td class="hi">' + d[i] + '</td>' : '<td class="' + (m.st === 2 ? 'zero' : 'gap') + '">' + (m.st === 2 ? '0' : '') + '</td>';
+    }
+    return '<table class="mptab" dir="ltr"><tr>' + heads(L) + '</tr><tr>' + row + '</tr></table>';
+  }
+  function stack(m) {
+    var L = Math.max.apply(null, m.nums.map(function (x) { return String(x).length; }));
+    return '<table class="mptab stack" dir="ltr">' + m.nums.map(function (v) {
+      var d = String(v).split(''); while (d.length < L) d.unshift('');
+      return '<tr>' + d.map(function (x, i) { return '<td class="' + (m.hi === 'last' ? (i === L - 1 ? 'hi' : '') : i <= m.hi ? 'hi' : '') + '">' + x + '</td>'; }).join('') + '</tr>';
+    }).join('') + '</table>';
+  }
+  // ---- base-ten blocks ----
+  function blocks(m) {
+    var d = String(m.n).split('').map(Number), L = d.length, o = '';
+    d.forEach(function (x, i) {
+      var p = L - 1 - i; if (!x) return;
+      o += '<span class="mgrp">' + (p === 3 ? rep(x, '<i class="mth">1000</i>') : p === 2 ? rep(x, '<i class="mhun"></i>') : p === 1 ? rods(x, '') : '<span class="mrow cubes">' + cubes(x, 'p') + '</span>') + '</span>';
+    });
+    return '<div class="mblocks" dir="ltr">' + o + '</div>';
+  }
+  // ---- sharing into equal groups, with leftovers ----
+  function share(m) {
+    var o = '', rest = m.total - m.n * m.size, full = m.n === Math.floor(m.total / m.size);
+    for (var g = 0; g < m.n; g++) o += '<span class="mring">' + rep(m.size, '<i class="mdot"></i>') + '</span>';
+    if (rest) o += '<span class="mloose">' + rep(rest, '<i class="mdot' + (full ? ' p' : '') + '"></i>') + '</span>';
+    return '<div class="mshare" dir="ltr">' + o + '</div>';
+  }
+  // ---- rounding: where is the number between two round numbers ----
+  function rline(m) {
+    var W = 600, x = function (v) { return 50 + (W - 100) * (v - m.lo) / (m.hi - m.lo); }, o = '';
+    o += '<line x1="20" y1="70" x2="' + (W - 20) + '" y2="70" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/>';
+    [m.lo, m.hi].forEach(function (v) { o += '<line x1="' + x(v) + '" y1="56" x2="' + x(v) + '" y2="84" stroke="' + INK + '" stroke-width="4"/>' + txt(x(v), 110, fmt(v), 22); });
+    if (m.mid) { var md = (m.lo + m.hi) / 2; o += '<line x1="' + x(md) + '" y1="60" x2="' + x(md) + '" y2="80" stroke="' + GOLD + '" stroke-width="4"/>' + txt(x(md), 108, fmt(md), 17, '#b07a00'); }
+    o += '<circle cx="' + x(m.n) + '" cy="70" r="9" fill="' + PINK + '"/>' + txt(x(m.n), 44, fmt(m.n), 22, PINK);
+    return svg(W, 120, o);
+  }
+  // ---- a whole cut into equal parts ----
+  function bar(m) {
+    var W = 560, w = (W - 20) / m.den, o = '';
+    if (m.total) o += txt(W / 2, 24, fmt(m.total), 24);
+    for (var i = 0; i < m.den; i++) {
+      o += '<rect x="' + (10 + i * w + 2) + '" y="36" width="' + (w - 4) + '" height="64" rx="10" fill="' + (i < m.num ? PINK : '#d9ecff') + '" stroke="' + BLUE + '" stroke-width="2"/>';
+      o += txt(10 + i * w + w / 2, 77, m.each ? fmt(m.each) : '?', m.den > 6 ? 18 : 24, i < m.num ? '#fff' : INK);
+    }
+    return svg(W, 108, o);
+  }
+  function expr(m) {
+    return '<div class="mexpr" dir="ltr">' + m.s.replace(/\[/g, '<b>').replace(/\]/g, '</b>').replace(/□/g, '<span class="box">?</span>') + '</div>';
+  }
+  var R = { line: line, board: board, pv: pv, vert: vert, arr: arr, area: area, ptab: ptab, shift: shift, stack: stack, blocks: blocks, share: share, rline: rline, bar: bar, expr: expr };
+  function render(m) { return m && R[m.t] ? R[m.t](m) : ''; }
+  return { render: render, kinds: Object.keys(R) };
+})();
+</script>
 <script id="ui">
 (function () {
   'use strict';
-  var L = TrollLogic, A = TrollArt, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.p.';
+  var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.p.';
   var VILLAGE = 'שֶׁל הִילָה'; // second line of the village name on the home screen
   var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1167,7 +1753,7 @@ var TrollArt = (function () {
 
   // ---------- screens ----------
   function show(build) {
-    timers.forEach(clearTimeout); timers = [];
+    timers.forEach(clearTimeout); timers = []; closeExplain();
     var old = cur, el = h('div', { class: 'screen' });
     cur = el; app.appendChild(el); build(el);
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
@@ -1253,7 +1839,7 @@ var TrollArt = (function () {
           var lv = state.levels[t.id], d = t.levels[lv - 1], bar = h('div', { class: 'wbar' });
           t.levels.forEach(function (x, k) { bar.appendChild(h('i', { class: (x.g === 3 ? 'g3' : '') + (k < lv ? ' on' : '') })); });
           info.innerHTML = '';
-          info.appendChild(h('span', { class: 'grade g' + d.g, text: d.g === 3 ? "🎓 כִּתָּה ג'" : "כִּתָּה ב'" }));
+          info.appendChild(h('span', { class: 'grade g' + d.g, text: d.enr ? '✨ הַעֲשָׁרָה' : d.g === 3 ? "🎓 כִּתָּה ג'" : "כִּתָּה ב'" }));
           info.appendChild(h('span', { text: 'רָמָה ' + lv + '/' + t.levels.length }));
           info.appendChild(bar);
           sub.textContent = d.name; sub.title = d.name;
@@ -1302,6 +1888,35 @@ var TrollArt = (function () {
     });
   }
 
+  // ---------- explanation window: step-by-step, the way it is shown in class ----------
+  var ovl = null;
+  function closeExplain() { if (ovl) { ovl.remove(); ovl = null; } }
+  function openExplain(q) {
+    closeExplain(); tv.hint = true;
+    var steps = q.ex.steps, i = /step=last/.test(hash) ? steps.length - 1 : 0;
+    var say = h('div', { class: 'say' }), mdl = h('div', { class: 'mdl' }), pips = h('div', { class: 'pips' }), stepNo = h('b', { class: 'stepno' });
+    var next = h('button', { class: 'btn next' }), back = h('button', { class: 'icon', text: '↪', 'aria-label': 'הַצַּעַד הַקּוֹדֵם' });
+    function draw() {
+      var m = null, k;
+      for (k = i; k >= 0 && !m; k--) m = steps[k].m; // a step without its own picture keeps the previous one
+      say.textContent = steps[i].say; restart(say, 'pop');
+      mdl.innerHTML = M.render(m);
+      stepNo.textContent = 'צַעַד ' + (i + 1) + ' מִתּוֹךְ ' + steps.length;
+      pips.innerHTML = ''; steps.forEach(function (s, n) { pips.appendChild(h('i', { class: n <= i ? 'on' : '' })); });
+      next.textContent = i < steps.length - 1 ? 'הַבָּא ◀' : 'אֲנַסֶּה לִפְתֹּר!';
+      back.style.visibility = i ? 'visible' : 'hidden';
+    }
+    next.addEventListener('click', function () { sfx.tap(); if (i < steps.length - 1) { i++; draw(); } else closeExplain(); });
+    back.addEventListener('click', function () { sfx.tap(); if (i) { i--; draw(); } });
+    ovl = h('div', { class: 'ovl' }, h('div', { class: 'card' },
+      h('div', { class: 'ohead' }, h('b', { text: 'בּוֹאִי נִרְאֶה אֵיךְ פּוֹתְרִים' }),
+        h('span', { class: 'oq', dir: q.rtl ? 'rtl' : 'ltr', html: q.text.replace('□', '<span class="box">?</span>') }),
+        h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); closeExplain(); } } })),
+      say, mdl, h('div', { class: 'orow' }, back, h('div', { class: 'stepbox' }, stepNo, pips), next)));
+    document.body.appendChild(ovl);
+    draw();
+  }
+
   // ---------- hints ----------
   function numVis(n, cls) {
     var g = h('div', { class: 'g' }), t = n > 20 ? Math.floor(n / 10) : 0, u = n > 20 ? n % 10 : n, i;
@@ -1345,7 +1960,8 @@ var TrollArt = (function () {
       for (i = 0; i < round.qs.length; i++) { nodes.push(h('div', { class: 'node' })); path.appendChild(nodes[i]); }
       var label = h('div', { class: 'chip lv' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div');
       var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
-      el.appendChild(path); el.appendChild(label);
+      var helpB = h('button', { class: 'helpb', text: '💡 אֵיךְ פּוֹתְרִים?', on: { click: function () { sfx.tap(); openExplain(round.current()); } } });
+      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, helpB));
       el.appendChild(h('div', { class: 'qrow' }, bud, h('div', { class: 'qside' }, bubble, qslot)));
       el.appendChild(answers); el.appendChild(hintSlot);
 
@@ -1388,8 +2004,7 @@ var TrollArt = (function () {
         } else {
           combo = 0;
           b.classList.add('wrong'); sfx.wrong(); mood('sad', rnd(RETRY));
-          hintSlot.innerHTML = ''; hintSlot.appendChild(buildHint(q));
-          if (hintSlot.scrollIntoView) hintSlot.scrollIntoView({ block: 'nearest' });
+          later(function () { openExplain(q); }, 650);
         }
       }
       renderQ();
@@ -1585,14 +2200,16 @@ var TrollArt = (function () {
     startRound(ht);
     var firstWrong = true;
     setInterval(function () {
-      if (tv.done) { document.title = 'DONE ' + JSON.stringify({ t: ht, stars: state.stars, coins: state.coins, tier: tv.tier, owned: state.owned.length, items: state.items.length, rounds: state.rounds, level: state.levels[ht], hint: tv.hint, ups: tv.ups }); return; }
+      if (tv.done) { document.title = 'DONE ' + JSON.stringify({ t: ht, stars: state.stars, coins: state.coins, tier: tv.tier, owned: state.owned.length, items: state.items.length, rounds: state.rounds, level: state.levels[ht], hint: !!tv.hint, steps: tv.steps, ups: tv.ups }); return; }
+      var nx = document.querySelector('.ovl .next');
+      if (nx) { tv.steps = (tv.steps || 0) + 1; nx.click(); return; }
       var egg = cur.querySelector('.egg');
       if (egg) { egg.dispatchEvent(new Event('click')); egg.dispatchEvent(new Event('click')); return; }
       var r = tv.round; if (!r || r.done() || r.solved) return;
       var q = r.current(), bs = cur.querySelectorAll('.ans'), i;
       for (i = 0; i < bs.length; i++) {
         var ok = +bs[i].getAttribute('data-v') === q.answer;
-        if (firstWrong && !ok) { firstWrong = false; bs[i].click(); bs[i].click(); tv.hint = !!cur.querySelector('.hint .cap'); return; }
+        if (firstWrong && !ok) { firstWrong = false; bs[i].click(); bs[i].click(); return; }
         if (!firstWrong && ok) { bs[i].click(); bs[i].click(); return; }
       }
     }, 120);
@@ -1611,7 +2228,9 @@ var TrollArt = (function () {
   else home();
   if (/fit/.test(hash)) setTimeout(function () { // layout self-check: reports overflow to the test harness
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
-    parent.postMessage({ id: hash, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
+    var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl'), ovf = 0;
+    if (card) ovf = Math.max(card.scrollHeight - card.clientHeight, card.scrollWidth - card.clientWidth, md.scrollHeight - md.clientHeight, md.scrollWidth - md.clientWidth, card.getBoundingClientRect().bottom - window.innerHeight);
+    parent.postMessage({ id: hash, ovf: ovf, card: !!card, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
   }, 3000);
 })();
 </script>

@@ -19,7 +19,7 @@ function literals(src) { // returns [{start, end}] of string literal contents
 module.exports = { literals };
 if (require.main === module) {
   const words = new Map();
-  for (const id of ['logic', 'ui']) {
+  for (const id of ['logic', 'models', 'ui']) {
     const a = html.indexOf('<script id="' + id + '">'), b = html.indexOf('</script>', a), src = html.slice(a, b);
     for (const l of literals(src)) {
       const s = src.slice(l.start, l.end);

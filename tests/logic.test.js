@@ -53,11 +53,10 @@ t('every topic and level: 4 distinct non-negative options, one correct, maths is
   }
   assert(checked > 55000, 'most questions verified arithmetically: ' + checked);
 });
-t('grade 3 levels come after grade 2 levels, and every topic has both', () => {
+t('grade 3 levels come after grade 2 levels', () => {
   for (const tp of L.TOPICS) {
     const gs = tp.levels.map(l => l.g);
     assert.deepStrictEqual(gs, gs.slice().sort(), tp.id);
-    assert(gs.includes(2) && gs.includes(3), tp.id);
   }
 });
 t('level is clamped per topic', () => {
@@ -194,3 +193,71 @@ t('question wording is vocalised (niqqud) for young readers', () => {
   assert(seen > 500);
 });
 console.log('all ' + n + ' passed (niqqud)');
+t('curriculum: grade 2 multiplies and divides only by 2, 4, 5, 10; no parentheses in grade 2', () => {
+  for (const id of ['mul', 'div', 'miss']) for (const [lv, d] of L.TOPICS.find(x => x.id === id).levels.entries()) {
+    if (d.g !== 2) continue;
+    for (let i = 0; i < 400; i++) {
+      const q = L.makeQuestion(id, lv + 1, Math.random), s = strip(q.text);
+      if (!/[×:]/.test(s)) continue;
+      const nums = s.replace('□', q.answer).match(/\d+/g).map(Number);
+      assert(nums.some(x => [2, 4, 5, 10].includes(x)), 'grade 2 fact outside 2,4,5,10: ' + s);
+    }
+  }
+  assert(L.TOPICS.find(x => x.id === 'ord').levels.every(d => d.g === 3));
+  assert(L.TOPICS.find(x => x.id === 'frac').levels.slice(1).every(d => d.enr));
+  for (const tp of L.TOPICS) { const st = L.newState().levels[tp.id]; assert(st >= 1 && st <= 3 && (tp.levels[st - 1].g === 2 || tp.levels[0].g === 3), tp.id + ' starts at ' + st); }
+});
+t('every exercise has a class-style explanation whose numbers are right', () => {
+  const kinds = {};
+  for (const tp of L.TOPICS) for (let lv = 1; lv <= tp.levels.length; lv++) for (let i = 0; i < 400; i++) {
+    const q = L.makeQuestion(tp.id, lv, Math.random), s = JSON.stringify(q.text) + ' ' + JSON.stringify(q.ex);
+    assert(q.ex && q.ex.steps.length >= 2, 'no explanation: ' + s);
+    assert.notStrictEqual(q.ex.kind, 'tip', 'fell back to a plain tip: ' + s);
+    kinds[q.ex.kind] = (kinds[q.ex.kind] || 0) + 1;
+    for (const st of q.ex.steps) {
+      assert(typeof st.say === 'string' && st.say.length > 3 && !/undefined|NaN/.test(st.say), s);
+      const m = st.m; if (!m) continue;
+      assert(!/undefined|NaN|null,null/.test(JSON.stringify(m)), s);
+      if (m.t === 'line') { assert(m.pts.length >= 2 && m.pts.every(x => Number.isInteger(x) && x >= 0) && m.n >= 1 && m.n <= m.pts.length, s); }
+      if (m.t === 'board') assert(m.cells.every(x => x >= 1 && x <= 100), s);
+      if (m.t === 'arr') assert(m.r * m.c === q.answer || q.ex.steps[0].m === null, s);
+      if (m.t === 'share') assert(m.n * m.size <= m.total && m.size >= 1, s);
+      if (m.t === 'area') assert(m.parts.reduce((a, b) => a + b, 0) > 0 && m.b >= 1, s);
+      if (m.t === 'bar') assert(m.den >= 2, s);
+      if (m.t === 'rline') assert(m.lo < m.n && m.n < m.hi, s);
+      if (m.t === 'vert') assert.strictEqual(+m.res.slice().reverse().join(''), m.op === '+' ? m.a + m.b : m.a - m.b, s);
+    }
+    const first = q.ex.steps.find(x => x.m), last = q.ex.steps[q.ex.steps.length - 1].m, text = strip(q.text);
+    if (q.ex.kind === 'line' || q.ex.kind === 'chain') assert.strictEqual(last.pts[last.pts.length - 1], q.answer, s);
+    if (q.ex.kind === 'board') assert.strictEqual(last.cells[last.cells.length - 1], q.answer, s);
+    if (q.ex.kind === 'missline') assert.strictEqual(last.pts[last.pts.length - 1] - last.pts[0], text.includes('□ −') ? last.pts[last.pts.length - 1] - last.pts[0] : q.answer, s);
+    if (q.ex.kind === 'seq') assert.strictEqual(last.pts[last.q], q.answer, s);
+    if (q.ex.kind === 'pv') assert.strictEqual(last.op === '+' ? last.a + last.b : last.a - last.b, q.answer, s);
+    if (q.ex.kind === 'vert' && /= \?$/.test(text)) assert.strictEqual(+last.res.slice().reverse().join(''), q.answer, s);
+    if (q.ex.kind === 'expr') { // the last displayed expression still evaluates to the answer
+      assert.strictEqual(ev(last.s.replace(/[\[\]]/g, '')), q.answer, s);
+      for (const st of q.ex.steps) assert.strictEqual(ev(st.m.s.replace(/[\[\]]/g, '')), q.answer, s);
+    }
+    if (q.ex.kind === 'rem') assert.strictEqual(last.total - last.n * last.size < last.size, true, s);
+    if (q.ex.kind === 'round') assert(q.answer === last.lo || q.answer === last.hi, s);
+    assert(first === undefined || first !== null, s);
+    // the final answer is never written out in the closing sentence
+    const lastSay = q.ex.steps[q.ex.steps.length - 1].say;
+    assert(/[?]/.test(lastSay) || /זו השארית|המספר החסר/.test(strip(lastSay)), 'last step should ask: ' + s);
+  }
+  for (const k of ['line', 'board', 'pv', 'vert', 'blocks', 'arr', 'split', 'double', 'area', 'shift', 'zeros', 'share', 'skip', 'splitdiv', 'rem', 'missline', 'expr', 'bar', 'stack', 'parity', 'ptab', 'round', 'seq', 'chain', 'twostep'])
+    assert(kinds[k] > 0, 'explanation kind never used: ' + k);
+});
+t('number-line hops: tens first, then units through the round ten', () => {
+  assert.deepStrictEqual(Array.from(L.hop(8, 7, 1)), [8, 10, 15]);
+  assert.deepStrictEqual(Array.from(L.hop(57, 25, 1)), [57, 77, 80, 82]);
+  assert.deepStrictEqual(Array.from(L.hop(83, 57, -1)), [83, 33, 30, 26]);   // the textbook example: -50, -3, -4
+  assert.deepStrictEqual(Array.from(L.hop(40, 7, -1)), [40, 33]);
+  assert.deepStrictEqual(Array.from(L.hop(358, 493, 1)), [358, 758, 848, 850, 851]);
+  for (let i = 0; i < 3000; i++) {
+    const a = 1 + Math.floor(Math.random() * 5000), d = 1 + Math.floor(Math.random() * 4000), up = L.hop(a, d, 1);
+    assert.strictEqual(up[up.length - 1], a + d);
+    if (d < a) { const dn = L.hop(a, d, -1); assert.strictEqual(dn[dn.length - 1], a - d); }
+  }
+});
+console.log('all ' + n + ' passed (explanations)');
