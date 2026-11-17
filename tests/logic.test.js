@@ -36,7 +36,7 @@ t('every topic and level: 4 distinct non-negative options, one correct, maths is
         const v = +mm[1].replace(/,/g, ''), u = mm[2] === 'עשרת' ? 10 : 100;
         assert.strictEqual(Math.round(v / u) * u, q.answer, s); checked++;
       } else if ((mm = /ספרת (\S+) במספר ([\d,]+)/.exec(text))) {
-        const d = mm[2].replace(/,/g, ''), p = ['האחדות', 'העשרות', 'המאות', 'האלפים'].indexOf(mm[1]);
+        const d = mm[2].replace(/,/g, ''), p = ['היחידות', 'העשרות', 'המאות', 'האלפים'].indexOf(mm[1]);
         assert.strictEqual(+d[d.length - 1 - p], q.answer, s); checked++;
       }
     } else if (text.includes('→')) {
