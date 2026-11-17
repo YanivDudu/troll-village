@@ -374,15 +374,15 @@ var TrollLogic = (function () {
   }
   function extreme(r, nums) {
     var big = r() < 0.5, ans = big ? Math.max.apply(null, nums) : Math.min.apply(null, nums);
-    return Q(r, big ? 'איזה מספר הכי גדול?' : 'איזה מספר הכי קטן?', ans, {
+    return Q(r, big ? 'אֵיזֶה מִסְפָּר הֲכִי גָּדוֹל?' : 'אֵיזֶה מִסְפָּר הֲכִי קָטָן?', ans, {
       rtl: true, options: nums, tip: 'משווים קודם את הספרה השמאלית ביותר, ורק אחר כך את הבאות'
     });
   }
-  var PLACES = ['האחדות', 'העשרות', 'המאות', 'האלפים'];
+  var PLACES = ['הָאֲחָדוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים'];
   function digitQ(r, len) {
     var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), used = ds.slice(0, len), n = Number(used.join('')), p = ri(r, 0, len - 1);
     var opts = len === 4 ? used : used.concat([ds[len]]);
-    return Q(r, 'מהי ספרת ' + PLACES[p] + ' במספר ' + fmt(n) + '?', used[len - 1 - p], {
+    return Q(r, 'מַהִי סִפְרַת ' + PLACES[p] + ' בַּמִּסְפָּר ' + fmt(n) + '?', used[len - 1 - p], {
       rtl: true, options: opts, tip: 'מימין לשמאל: אחדות, עשרות, מאות, אלפים'
     });
   }
@@ -391,13 +391,13 @@ var TrollLogic = (function () {
     do { n = unit === 10 ? ri(r, 11, 989) : ri(r, 101, 9899); } while (n % unit === 0 || n % unit === unit / 2);
     lo = Math.floor(n / unit) * unit;
     var ans = n - lo < unit / 2 ? lo : lo + unit;
-    return Q(r, 'עגלי את ' + fmt(n) + (unit === 10 ? ' לעשרת הקרובה' : ' למאה הקרובה'), ans, {
+    return Q(r, 'עַגְּלִי אֶת ' + fmt(n) + (unit === 10 ? ' לָעֲשֶׂרֶת הַקְּרוֹבָה' : ' לַמֵּאָה הַקְּרוֹבָה'), ans, {
       rtl: true, options: [lo, lo + unit, lo - unit >= 0 ? lo - unit : lo + 3 * unit, lo + 2 * unit],
       tip: unit === 10 ? 'ספרת האחדות קובעת: 1 עד 4 יורדים, 6 עד 9 עולים' : 'מסתכלים על שתי הספרות האחרונות: פחות מ-50 יורדים, יותר מ-50 עולים'
     });
   }
-  var UNIT_FRAC = { 3: 'שליש', 4: 'רבע', 5: 'חמישית', 6: 'שישית', 8: 'שמינית', 10: 'עשירית' };
-  var FRACS = [['שני שלישים', 2, 3], ['שלושה רבעים', 3, 4], ['שתי חמישיות', 2, 5], ['שלוש חמישיות', 3, 5], ['ארבע חמישיות', 4, 5]];
+  var UNIT_FRAC = { 3: 'שְׁלִישׁ', 4: 'רֶבַע', 5: 'חֲמִישִׁית', 6: 'שִׁשִּׁית', 8: 'שְׁמִינִית', 10: 'עֲשִׂירִית' };
+  var FRACS = [['שְׁנֵי שְׁלִישִׁים', 2, 3], ['שְׁלוֹשָׁה רְבָעִים', 3, 4], ['שְׁתֵּי חֲמִישִׁיּוֹת', 2, 5], ['שָׁלוֹשׁ חֲמִישִׁיּוֹת', 3, 5], ['אַרְבַּע חֲמִישִׁיּוֹת', 4, 5]];
 
   // ---------- topics. g = school grade (2 or 3); grade 3 levels come last ----------
   var TOPICS = [
@@ -506,8 +506,8 @@ var TrollLogic = (function () {
         var b = ri(r, 2, 9), q = ri(r, 2, 9), rem = ri(r, 1, b - 1), c = b * q + rem;
         var tip = 'מה המספר הגדול ביותר בלוח הכפל של ' + b + ' שלא עובר את ' + c + '?';
         return r() < 0.5
-          ? Q(r, 'מה השארית בתרגיל ' + ltr(c + ' : ' + b) + '?', rem, { rtl: true, tip: tip })
-          : Q(r, 'כמה פעמים שלמות נכנס ' + b + ' בתוך ' + c + '?', q, { rtl: true, extra: [q + 1, q - 1, rem], tip: tip });
+          ? Q(r, 'מָה הַשְּׁאֵרִית בַּתַּרְגִּיל ' + ltr(c + ' : ' + b) + '?', rem, { rtl: true, tip: tip })
+          : Q(r, 'כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס ' + b + ' בְּתוֹךְ ' + c + '?', q, { rtl: true, extra: [q + 1, q - 1, rem], tip: tip });
       } },
       { g: 3, name: 'חילוק עשרות ומאות', f: function (r) {
         var b = ri(r, 2, 9), q = ri(r, 2, 9), m = r() < 0.6 ? 10 : 100, c = b * q * m;
@@ -522,7 +522,7 @@ var TrollLogic = (function () {
       { g: 2, name: 'עשרות ואחדות', f: function (r) {
         var v = ri(r, 0, 3), n;
         if (v === 0) { var t = ri(r, 1, 9) * 10, u = ri(r, 1, 9); return expr(r, t + ' + ' + u, t + u, { extra: [t / 10 + u, u * 10 + t / 10], tip: 'עשרות שלמות ועוד אחדות' }); }
-        if (v === 1) { n = ri(r, 11, 99); return Q(r, 'כמה עשרות שלמות יש במספר ' + n + '?', Math.floor(n / 10), { rtl: true, extra: [n % 10], tip: 'הספרה השמאלית מראה כמה עשרות יש' }); }
+        if (v === 1) { n = ri(r, 11, 99); return Q(r, 'כַּמָּה עֲשָׂרוֹת שְׁלֵמוֹת יֵשׁ בַּמִּסְפָּר ' + n + '?', Math.floor(n / 10), { rtl: true, extra: [n % 10], tip: 'הספרה השמאלית מראה כמה עשרות יש' }); }
         if (v === 2) {
           var d = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), base = [d[0] * 10 + d[1], d[1] * 10 + d[0]], seen = {};
           seen[base[0]] = seen[base[1]] = true;
@@ -531,7 +531,7 @@ var TrollLogic = (function () {
         }
         var even = r() < 0.5, want = even ? 0 : 1;
         var one = distinct(1, function () { return ri(r, 6, 49) * 2 + want; }), rest = distinct(3, function () { return ri(r, 6, 49) * 2 + 1 - want; });
-        return Q(r, even ? 'איזה מספר זוגי?' : 'איזה מספר אי-זוגי?', one[0], { rtl: true, options: one.concat(rest), tip: 'מספר זוגי מסתיים ב-0, 2, 4, 6 או 8' });
+        return Q(r, even ? 'אֵיזֶה מִסְפָּר זוּגִי?' : 'אֵיזֶה מִסְפָּר אִי-זוּגִי?', one[0], { rtl: true, options: one.concat(rest), tip: 'מספר זוגי מסתיים ב-0, 2, 4, 6 או 8' });
       } },
       { g: 2, name: 'סדרות וקפיצות', f: function (r) { return seq(r, [2, 3, 4, 5, 10], 8); } },
       { g: 2, name: 'מספרים עד 1,000', f: function (r) {
@@ -568,23 +568,23 @@ var TrollLogic = (function () {
     { id: 'frac', name: 'חצי, רבע ושברים', world: 'טירת השברים', icon: '🍕', levels: [
       { g: 2, name: 'חצי וכפול', f: function (r) {
         var n;
-        if (r() < 0.6) { n = 2 * ri(r, 4, 20); return Q(r, 'כמה זה חצי של ' + n + '?', n / 2, { rtl: true, extra: [n * 2, n / 2 + 1], tip: 'חצי = מחלקים לשני חלקים שווים' }); }
+        if (r() < 0.6) { n = 2 * ri(r, 4, 20); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n * 2, n / 2 + 1], tip: 'חצי = מחלקים לשני חלקים שווים' }); }
         n = ri(r, 6, 25);
-        return Q(r, 'כמה זה פעמיים ' + n + '?', 2 * n, { rtl: true, extra: [n + 2, 2 * n - 2], tip: 'פעמיים = המספר ועוד עצמו' });
+        return Q(r, 'כַּמָּה זֶה פַּעֲמַיִם ' + n + '?', 2 * n, { rtl: true, extra: [n + 2, 2 * n - 2], tip: 'פעמיים = המספר ועוד עצמו' });
       } },
       { g: 2, name: 'חצי ורבע', f: function (r) {
         var n;
-        if (r() < 0.5) { n = 2 * ri(r, 15, 50); return Q(r, 'כמה זה חצי של ' + n + '?', n / 2, { rtl: true, extra: [n / 2 + 10, n / 2 - 10, n / 2 + 5], tip: 'מחלקים לשניים את העשרות ואת האחדות בנפרד' }); }
+        if (r() < 0.5) { n = 2 * ri(r, 15, 50); return Q(r, 'כַּמָּה זֶה חֲצִי שֶׁל ' + n + '?', n / 2, { rtl: true, extra: [n / 2 + 10, n / 2 - 10, n / 2 + 5], tip: 'מחלקים לשניים את העשרות ואת האחדות בנפרד' }); }
         n = 4 * ri(r, 2, 25);
-        return Q(r, 'כמה זה רבע של ' + n + '?', n / 4, { rtl: true, extra: [n / 2, n / 4 + 1], tip: 'רבע = חצי של חצי' });
+        return Q(r, 'כַּמָּה זֶה רֶבַע שֶׁל ' + n + '?', n / 4, { rtl: true, extra: [n / 2, n / 4 + 1], tip: 'רבע = חצי של חצי' });
       } },
       { g: 3, name: 'שליש, רבע, חמישית...', f: function (r) {
         var d = pick(r, [3, 4, 5, 6, 8, 10]), k = ri(r, 2, 12);
-        return Q(r, 'כמה זה ' + UNIT_FRAC[d] + ' של ' + d * k + '?', k, { rtl: true, extra: [k + 1, k - 1, d], tip: UNIT_FRAC[d] + ' = מחלקים ל-' + d + ' חלקים שווים' });
+        return Q(r, 'כַּמָּה זֶה ' + UNIT_FRAC[d] + ' שֶׁל ' + d * k + '?', k, { rtl: true, extra: [k + 1, k - 1, d], tip: UNIT_FRAC[d] + ' = מחלקים ל-' + d + ' חלקים שווים' });
       } },
       { g: 3, name: 'חלק מכמות', f: function (r) {
         var f = pick(r, FRACS), k = ri(r, 2, 10);
-        return Q(r, 'כמה זה ' + f[0] + ' של ' + f[2] * k + '?', f[1] * k, { rtl: true, extra: [k, (f[2] - f[1]) * k, f[1] * k + k], tip: 'מוצאים קודם חלק אחד (מחלקים ל-' + f[2] + '), ואז כופלים ב-' + f[1] });
+        return Q(r, 'כַּמָּה זֶה ' + f[0] + ' שֶׁל ' + f[2] * k + '?', f[1] * k, { rtl: true, extra: [k, (f[2] - f[1]) * k, f[1] * k + k], tip: 'מוצאים קודם חלק אחד (מחלקים ל-' + f[2] + '), ואז כופלים ב-' + f[1] });
       } }
     ] },
     { id: 'ord', name: 'סוגריים וסדר פעולות', world: 'מגדל הסוגריים', icon: '🎪', levels: [

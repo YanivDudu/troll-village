@@ -4,7 +4,7 @@ const m = /<script id="logic">([\s\S]*?)<\/script>/.exec(html);
 const ctx = {}; vm.createContext(ctx); vm.runInContext(m[1] + ';this.L=TrollLogic;', ctx);
 const L = ctx.L;
 let n = 0; const t = (name, f) => { f(); n++; console.log('ok', name); };
-const strip = s => s.replace(/[⁦⁩]/g, '');
+const strip = s => s.replace(/[\u2066\u2069\u0591-\u05C7]/g, ''); // drop direction marks and niqqud
 const ev = s => Function('return (' + s.replace(/,/g, '').replace(/×/g, '*').replace(/:/g, '/').replace(/−/g, '-') + ')')();
 
 t('every topic and level: 4 distinct non-negative options, one correct, maths is right', () => {
@@ -180,3 +180,17 @@ t('profiles: tolerant loading, add, remove', () => {
   assert.strictEqual(L.loadProfiles(JSON.stringify(many)).list.length, 8);
 });
 console.log('all ' + n + ' passed (shop+profiles)');
+t('question wording is vocalised (niqqud) for young readers', () => {
+  let seen = 0;
+  for (const tp of L.TOPICS) for (let lv = 1; lv <= tp.levels.length; lv++) for (let i = 0; i < 300; i++) {
+    const q = L.makeQuestion(tp.id, lv, Math.random);
+    if (!q.rtl) continue;
+    seen++;
+    for (const w of q.text.split(/[\s?.,:]+/)) {
+      if (!/[\u05D0-\u05EA]/.test(w) || w.replace(/[^\u05D0-\u05EA]/g, '').length < 2) continue;
+      assert(/[\u05B0-\u05BC\u05C1\u05C2]/.test(w), 'word without niqqud: ' + w + ' in ' + q.text);
+    }
+  }
+  assert(seen > 500);
+});
+console.log('all ' + n + ' passed (niqqud)');
