@@ -151,16 +151,24 @@ t('shop: catalogue, buying, chest rewards', () => {
   assert.strictEqual(new Set(L.ITEMS.map(i => i.id)).size, L.ITEMS.length);
   for (const it of L.ITEMS) assert(['acc', 'hat', 'face', 'hand', 'pet'].includes(it.slot) && it.price >= 0 && it.name && (it.slot === 'acc') === (it.e === ''), it.id);
   for (const a of L.ACCESSORIES) assert(L.ITEM[a] && L.ITEM[a].slot === 'acc', a);
-  let s = L.newState(); s.coins = 12;
+  let s = L.newState(); s.coins = 25;
   assert.strictEqual(L.buy(s, 'unicorn').ok, false);           // too expensive
   assert.strictEqual(L.buy(s, 'bow').ok, false);               // already owned
   assert.strictEqual(L.buy(s, 'nope').ok, false);
-  const r = L.buy(s, 'ball'); assert(r.ok && r.state.coins === 2 && r.state.items.includes('ball') && s.coins === 12 && !s.items.includes('ball'));
+  const r = L.buy(s, 'ball'); assert(r.ok && r.state.coins === 5 && r.state.items.includes('ball') && s.coins === 25 && !s.items.includes('ball'));
   assert.strictEqual(L.buy(r.state, 'ball').ok, false);        // cannot buy twice
   let prev = 0;
   for (let st = 0; st <= 10; st++) { const w = L.roundReward(st); assert(w.coins >= prev && w.coins >= 10); prev = w.coins; }
   assert.strictEqual(L.roundReward(10).tier, 'gold'); assert.strictEqual(L.roundReward(6).tier, 'silver'); assert.strictEqual(L.roundReward(0).tier, 'bronze');
-  assert(L.roundReward(0).coins >= Math.min(...L.ITEMS.filter(i => i.price > 0).map(i => i.price)), 'even the weakest round can buy something');
+  assert(L.roundReward(0).coins >= Math.min(...L.ITEMS.filter(i => i.price > 0).map(i => L.priceOf(L.newState(), i.id))), 'the very first item is within reach of the weakest round');
+  // progressive prices: every purchase makes the rest dearer, and prices are whole fives
+  let p = L.newState(), before = L.priceOf(p, 'dragon'); p.coins = 100000;
+  assert.strictEqual(L.priceOf(p, 'bow'), 0); assert.strictEqual(L.priceOf(p, 'nope'), 0); assert.strictEqual(before, 100);
+  let spent = 0, lastCheap = L.priceOf(p, 'apple');
+  for (const it of L.ITEMS.filter(i => i.price > 0 && i.id !== 'dragon' && i.id !== 'apple')) { const c = L.priceOf(p, it.id); assert(c % 5 === 0 && c >= it.price, it.id); const b = L.buy(p, it.id); assert(b.ok && b.state.coins === p.coins - c); p = b.state; spent += c;
+    const now = L.priceOf(p, 'apple'); assert(now >= lastCheap); lastCheap = now; }
+  assert(L.priceOf(p, 'dragon') > before * 5, 'the last items cost much more: ' + L.priceOf(p, 'dragon'));
+  assert(spent > 15000, 'collecting everything takes a long time: ' + spent);
   const ld = L.loadState('{"coins":"x","items":["dragon","zzz"],"owned":[4],"buddy":4,"dress":{"4":{"pet":"dragon","hat":"dragon","hand":"lolly","face":7}}}');
   assert.strictEqual(ld.coins, 0); assert(ld.items.includes('dragon') && !ld.items.includes('zzz')); assert.strictEqual(ld.buddy, 4);
   assert.deepStrictEqual(JSON.parse(JSON.stringify(ld.dress[4])), { pet: 'dragon', hand: 'lolly' });

@@ -432,6 +432,56 @@ button.cbld:active{transform:scale(.94)}
 .icon .ico{height:1.35em;width:1.35em}
 .sbtn .ico,.gift .ico,.emo .ico{vertical-align:middle}
 
+/* ---------- dressing room and shop ---------- */
+.shop{display:flex;gap:clamp(6px,1.8vmin,18px);width:100%;max-width:1200px;flex:1 1 auto;min-height:0;align-items:stretch}
+.sstage{flex:0 0 clamp(200px,36vmin,340px);display:flex;flex-direction:column;align-items:center;gap:clamp(3px,1vmin,8px);background:linear-gradient(#6f43e6,#a57bff 50%,#ffc7ea);border-radius:28px;padding:clamp(6px,1.4vmin,12px);box-shadow:0 8px 0 rgba(59,42,85,.2);position:relative;overflow:hidden;min-height:0;min-width:0}
+.sstage:before{content:"";position:absolute;inset:-40% -20% 30% -20%;background:repeating-conic-gradient(from 0deg at 50% 100%,rgba(255,255,255,.14) 0 9deg,transparent 9deg 24deg);animation:spin 60s linear infinite;transform-origin:50% 100%;pointer-events:none}
+.snav{display:flex;align-items:center;gap:6px;justify-content:center;position:relative;flex:0 0 auto}
+.snav .banner{font-size:clamp(14px,2.6vmin,22px);padding:3px 14px;animation:none}
+.snav .icon{width:44px;height:44px;font-size:17px}
+.spot{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;width:100%}
+.spot:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 96%,rgba(255,255,255,.75),rgba(255,255,255,0) 62%);pointer-events:none}
+.spot:after{content:"";position:absolute;bottom:0;left:50%;width:74%;height:13%;transform:translateX(-50%);background:radial-gradient(ellipse,#fff 0,#ffe39a 55%,#ffb300 100%);border-radius:50%;box-shadow:0 5px 0 #cf8a00}
+.shop .prev{position:absolute;z-index:1;left:4%;right:4%;top:0;bottom:4%;width:auto}
+.shop .prev .troll{width:100%;height:100%}
+.srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;position:relative;flex:0 0 auto}
+.sthumbs{display:flex;gap:4px;overflow-x:auto;max-width:100%;flex:0 0 auto;padding:3px;position:relative}
+.sthumb{flex:0 0 auto;width:clamp(34px,6vmin,50px);background:rgba(255,255,255,.45);border-radius:12px;padding:2px 2px 0}
+.sthumb.on{background:#fff;box-shadow:0 0 0 3px #ff4f9a}
+.spanel{flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(4px,1vmin,8px);background:rgba(255,255,255,.95);border-radius:28px;padding:clamp(6px,1.4vmin,12px);box-shadow:0 8px 0 rgba(59,42,85,.12)}
+.stabs{display:flex;gap:4px;flex:0 0 auto}
+.stab{flex:1 1 0;min-width:0;border-radius:16px;background:#efe8ff;padding:3px 1px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:clamp(10px,1.6vmin,13px);min-height:clamp(44px,8.6vmin,68px);transition:transform .12s;line-height:1.15}
+.stab .ti{font-size:clamp(20px,3.8vmin,32px);line-height:1.15}
+.stab .tl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.stab.on{background:#8e5cff;color:#fff;transform:translateY(-3px);box-shadow:0 4px 0 #6337cf}
+.shead{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.shead b{font-size:clamp(14px,2.5vmin,21px);white-space:nowrap}
+.shead .cnt{font-size:clamp(12px,2vmin,16px);color:#8e5cff;font-weight:700;white-space:nowrap}
+.shead .pbar{flex:1 1 auto;height:9px;margin:0}
+.shop .opts{grid-template-columns:repeat(auto-fill,minmax(clamp(74px,13vmin,112px),1fr));grid-auto-rows:max-content;align-content:start;gap:clamp(5px,1.2vmin,10px);padding:3px}
+.shop .opt{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;padding:5px 3px 4px;border-radius:18px;box-shadow:0 3px 0 rgba(59,42,85,.1)}
+.shop .opt .troll{width:74%;margin:auto}
+.shop .opt .emo{font-size:clamp(34px,7vmin,54px);line-height:1.15}
+.shop .opt .sw{width:clamp(44px,8vmin,62px);height:clamp(44px,8vmin,62px)}
+.oname{font-size:clamp(10px,1.7vmin,13px);font-weight:700;line-height:1.15;text-align:center}
+.otag{font-size:clamp(11px,1.8vmin,14px);font-weight:700;border-radius:99px;padding:0 8px;background:#fff1b8;direction:ltr;white-space:nowrap}
+.otag.cant{background:#f1edf7;color:#9a8fb3}
+.otag.own{background:#d9f7e2;color:#1f8f3c}
+.shop .opt.cant>:first-child{opacity:.5}
+.shop .opt.locked>:first-child{opacity:.3;filter:grayscale(1)}
+.shop .opt.sel{border-color:#ff4f9a;background:#fff0f7;box-shadow:0 0 0 3px #ffd3e6}
+.shop .opt.shop:not(.cant){background:#fffbe9}
+.sfoot{flex:0 0 auto;min-height:clamp(40px,7.5vmin,58px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(13px,2.3vmin,18px);color:#c92f74;text-align:center}
+.sfoot .btn{min-height:clamp(40px,7vmin,54px)}
+@media (orientation:portrait){
+  .shop{flex-direction:column}
+  .sstage{flex:0 0 auto;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"spot nav" "spot row";align-items:center;justify-items:center;column-gap:8px}
+  .spot{grid-area:spot;width:clamp(96px,26vmin,210px);height:clamp(126px,34vmin,275px);flex:none}
+  .snav{grid-area:nav}.srow{grid-area:row}.sthumbs{display:none}
+}
+@media (max-width:640px),(max-height:520px){.stab .tl{display:none}.stab{min-height:40px}.oname{display:none}.btn.pick{min-height:40px;font-size:13px;padding:4px 12px}}
+@media (max-height:520px){.sthumbs{display:none}.sstage{flex-basis:170px}.shead{display:none}}
+
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}.cloud,.mote,.fly{display:none}}
 </style>
 </head>
@@ -1425,17 +1475,26 @@ var TrollLogic = (function () {
     ['pet', 'ladybug', '🐞', 'חִפּוּשִׁית', 10], ['pet', 'bee', '🐝', 'דְּבוֹרָה', 10], ['pet', 'chick', '🐥', 'אֶפְרוֹחַ', 15], ['pet', 'frog', '🐸', 'צְפַרְדֵּעַ', 15], ['pet', 'turtle', '🐢', 'צָב', 18],
     ['pet', 'hamster', '🐹', 'אוֹגֵר', 20], ['pet', 'bunny', '🐰', 'אַרְנָב', 22], ['pet', 'puppy', '🐶', 'כְּלַבְלַב', 25], ['pet', 'kitty', '🐱', 'חֲתַלְתּוּל', 25], ['pet', 'penguin', '🐧', 'פִּינְגְּוִין', 28],
     ['pet', 'fox', '🦊', 'שׁוּעָל', 30], ['pet', 'owl', '🦉', 'יַנְשׁוּף', 30], ['pet', 'octopus', '🐙', 'תְּמָנוּן', 32], ['pet', 'panda', '🐼', 'פַּנְדָּה', 35], ['pet', 'dino', '🦕', 'דִּינוֹזָאוּר', 40],
-    ['pet', 'unicorn', '🦄', 'חַד-קֶרֶן', 45], ['pet', 'dragon', '🐉', 'דְּרָקוֹן', 50]
-  ].map(function (x) { return { slot: x[0], id: x[1], e: x[2], name: x[3], price: x[4] }; });
+    ['pet', 'unicorn', '🦄', 'חַד-קֶרֶן', 45], ['pet', 'dragon', '🐉', 'דְּרָקוֹן', 50],
+    ['hat', 'cherry', '🍒', 'דֻּבְדְּבָנִים', 10], ['hat', 'clover', '🍀', 'תִּלְתַּן מַזָּל', 12], ['hat', 'sunflower', '🌻', 'חַמָּנִיָּה', 14], ['hat', 'pumpkin', '🎃', 'דְּלַעַת', 18], ['hat', 'glowstar', '🌟', 'כּוֹכָב זוֹהֵר', 24], ['hat', 'cake', '🎂', 'עוּגַת יוֹם הֻלֶּדֶת', 28], ['hat', 'ufo', '🛸', 'חֲלָלִית', 35], ['face', 'diving', '🤿', 'מַסֵּכַת צְלִילָה', 16], ['hand', 'banana', '🍌', 'בָּנָנָה', 5], ['hand', 'carrot', '🥕', 'גֶּזֶר', 5], ['hand', 'grapes', '🍇', 'עֲנָבִים', 6], ['hand', 'juice', '🧃', 'מִיץ', 6], ['hand', 'popcorn', '🍿', 'פּוֹפְּקוֹרְן', 7], ['hand', 'choc', '🍫', 'שׁוֹקוֹלָד', 8], ['hand', 'dice', '🎲', 'קֻבִּיָּה', 8], ['hand', 'slice', '🍰', 'עוּגָה', 9], ['hand', 'tennis', '🎾', 'טֶנִיס', 9], ['hand', 'yoyo', '🪀', 'יוֹיוֹ', 9], ['hand', 'puzzle', '🧩', 'פָּאזֶל', 10], ['hand', 'target', '🎯', 'מַטָּרָה', 12], ['hand', 'kite', '🪁', 'עֲפִיפוֹן', 14], ['hand', 'mic', '🎤', 'מִיקְרוֹפוֹן', 16], ['hand', 'drum', '🥁', 'תֹּף', 18], ['hand', 'skate', '🛹', 'סְקֵייטְבּוֹרְד', 18], ['hand', 'violin', '🎻', 'כִּנּוֹר', 20], ['hand', 'gamepad', '🎮', 'שַׁלַּט מִשְׂחָק', 22], ['hand', 'keys', '🎹', 'אוֹרְגָּנִית', 22], ['hand', 'cup', '🏆', 'גָּבִיעַ', 30], ['pet', 'snail', '🐌', 'חִלָּזוֹן', 10], ['pet', 'fish', '🐠', 'דָּג', 14], ['pet', 'hen', '🐔', 'תַּרְנְגֹלֶת', 16], ['pet', 'duck', '🦆', 'בַּרְוָז', 16], ['pet', 'piggy', '🐷', 'חֲזַרְזִיר', 20], ['pet', 'cow', '🐮', 'פָּרָה', 22], ['pet', 'squirrel', '🐿️', 'סְנָאִי', 22], ['pet', 'hedgehog', '🦔', 'קִפּוֹד', 24], ['pet', 'monkey', '🐵', 'קוֹף', 26], ['pet', 'koala', '🐨', 'קוֹאָלָה', 28], ['pet', 'parrot', '🦜', 'תֻּכִּי', 30], ['pet', 'tiger', '🐯', 'נָמֵר', 34], ['pet', 'dolphin', '🐬', 'דּוֹלְפִין', 36], ['pet', 'zebra', '🦓', 'זֶבְּרָה', 36], ['pet', 'lion', '🦁', 'אַרְיֵה', 38], ['pet', 'giraffe', '🦒', 'גִ׳ירָפָה', 40], ['pet', 'elephant', '🐘', 'פִּיל', 42], ['pet', 'whale', '🐳', 'לִוְיָתָן', 44]
+  ].map(function (x) { return { slot: x[0], id: x[1], e: x[2], name: x[3], price: x[4] * 2 }; }).sort(function (a, b) { return a.price - b.price; });
   var ITEM = {};
   ITEMS.forEach(function (it) { ITEM[it.id] = it; });
   var EMOJI_SLOTS = ['hat', 'face', 'hand', 'pet'];
   // Buying is the child's choice: enough coins and not owned yet. Returns a new state, never mutates.
-  function buy(state, id) {
+  // What an item costs this player right now: its base price, plus 5% for every item already bought
+  // (rounded up to a multiple of 5), so the collection takes a long time to complete.
+  function priceOf(state, id) {
     var it = ITEM[id];
-    if (!it || state.items.indexOf(id) >= 0 || state.coins < it.price) return { ok: false, state: state };
+    if (!it || !it.price) return 0;
+    var bought = Math.max(0, (state.items || []).length - FREE_ITEMS.length);
+    return Math.ceil(it.price * (1 + 0.05 * bought) / 5) * 5;
+  }
+  function buy(state, id) {
+    var it = ITEM[id], cost = priceOf(state, id);
+    if (!it || state.items.indexOf(id) >= 0 || state.coins < cost) return { ok: false, state: state };
     var s = Object.assign({}, state);
-    s.coins = state.coins - it.price; s.items = state.items.concat([id]);
+    s.coins = state.coins - cost; s.items = state.items.concat([id]);
     return { ok: true, state: s };
   }
   // End-of-round chest. Every round pays, a better round pays more; nothing is ever taken away.
@@ -1493,7 +1552,7 @@ var TrollLogic = (function () {
   function rollItem(items, rng) {
     rng = rng || Math.random;
     var left = ITEMS.filter(function (it) { return (items || []).indexOf(it.id) < 0; });
-    var cheap = left.filter(function (it) { return it.price <= 20; });
+    var cheap = left.filter(function (it) { return it.price <= 40; });
     return left.length ? pick(rng, cheap.length ? cheap : left).id : null;
   }
 
@@ -1559,7 +1618,7 @@ var TrollLogic = (function () {
   }
 
   return {
-    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, roundReward: roundReward,
+    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     explain: explain, hop: hop, startLevel: startLevel, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
@@ -1635,7 +1694,7 @@ var TrollArt = (function () {
     if (mood === 'sad') mouth = '<path d="M84,208 Q100,193 116,208" fill="none" stroke="#6b2140" stroke-width="5" stroke-linecap="round"/>' +
       '<path d="M58,146 L90,134 M142,146 L110,134" stroke="' + ink + '" stroke-width="5" stroke-linecap="round"/>' +
       '<path class="tear" d="M138,180 q-6,10 0,15 q6,-5 0,-15 Z" fill="#7fd4ff"/>';
-    return '<svg class="troll ' + mood + '" viewBox="0 0 200 262" style="--d:' + (-((s.id || 0) % 17) / 5) + 's">' +
+    return '<svg class="troll ' + mood + '" viewBox="0 0 200 262" preserveAspectRatio="xMidYMax meet" style="--d:' + (-((s.id || 0) % 17) / 5) + 's">' +
       '<ellipse cx="100" cy="253" rx="56" ry="7" fill="rgba(0,0,0,.14)"/>' +
       '<g class="tb"><g class="hair">' + (HAIR[s.hair] || HAIR[0])(s.hairColor, shade(s.hairColor, 0.5)) + '</g>' + (BACK[s.acc] || '') +
       '<g stroke="' + dk + '">' + arms + '</g>' +
@@ -1885,7 +1944,7 @@ var TrollModels = (function () {
   // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
   // the same on every device; if a picture is missing the emoji itself stays as the fallback ----------
   var ICO = {};
-  '1f302 1f308 1f309 1f30a 1f333 1f338 1f344 1f349 1f34e 1f353 1f355 1f366 1f369 1f36a 1f36d 1f380 1f381 1f388 1f392 1f393 1f3a8 1f3a9 1f3aa 1f3ad 1f3b5 1f3b8 1f3ba 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f419 1f41d 1f41e 1f422 1f425 1f427 1f430 1f431 1f436 1f438 1f439 1f43c 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58d 1f5d1 1f6ab 1f6cd 1f90d 1f947 1f948 1f949 1f95a 1f97d 1f984 1f989 1f98a 1f98b 1f995 1f9c1 1f9cc 1f9e2 1f9f8 1fa99 1fab5 26bd 26d1 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
+  '1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
   var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
   function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
   function swapEmoji(node) {
@@ -2021,10 +2080,10 @@ var TrollModels = (function () {
     },
     wrong: function () { playFile('error_008', 0.45, 0.85) || synth.wrong(); },
     star: function (i) { playFile('pluck_002', 0.6, 0.8 + i * 0.09) || synth.star(i); },
-    hatch: function () { playFile('pizzi03', 0.6) || synth.hatch(); },
-    win: function () { playFile('steel03', 0.6) || synth.win(); },
+    hatch: function () { playFile('pizzi04', 0.65) || synth.hatch(); },
+    win: function () { playFile('pizzi10', 0.65) || synth.win(); },
     levelup: function () { playFile('pizzi12', 0.6) || synth.levelup(); },
-    item: function () { playFile('pizzi07', 0.55) || synth.item(); }
+    item: function () { playFile('pizzi02', 0.6) || synth.item(); }
   };
   // Background music: one track per place, each keeps its position while another one plays.
   var TRACKS = { home: 'carefree', play: 'wholesome', shop: 'easylemon' }, bgm = {}, bgmWant = 'home', bgmBad = false, unlocked = false;
@@ -2709,7 +2768,9 @@ var TrollModels = (function () {
   }
 
   // ---------- dress-up and shop ----------
-  var TABS = [['hair', 'תִּסְרֹקֶת'], ['hairColor', 'צֶבַע שֵׂעָר'], ['body', 'צֶבַע גּוּף'], ['acc', 'אֲבִיזָרִים'], ['hat', 'כּוֹבָעִים'], ['face', 'מִשְׁקָפַיִם'], ['hand', 'בַּיָּד'], ['pet', 'חַיּוֹת מַחְמָד']];
+  // A stage with a spotlight for the troll, icon tabs, item cards with a name and a price tag,
+  // try-before-you-buy, a surprise outfit, and a strip of all the trolls.
+  var TABS = [['hair', 'תִּסְרֹקֶת', '✂️'], ['hairColor', 'צֶבַע שֵׂעָר', '🎨'], ['body', 'צֶבַע גּוּף', '🖌️'], ['acc', 'אֲבִיזָרִים', '👑'], ['hat', 'כּוֹבָעִים', '🎩'], ['face', 'מִשְׁקָפַיִם', '🕶️'], ['hand', 'בַּיָּד', '🎈'], ['pet', 'חַיּוֹת מַחְמָד', '🐶']];
   function dress(idx, tab) {
     var ids = state.owned;
     if (!ids.length) { home(); return; }
@@ -2718,64 +2779,85 @@ var TrollModels = (function () {
     var id = ids[idx], base = L.trollFromId(id), trying = null; // trying: an unbought item being previewed
     show(function (el) {
       el.appendChild(topBar(true, home));
-      var prev = h('div', { class: 'prev' }), nameEl = h('div', { class: 'banner' }), opts = h('div', { class: 'opts' }), msg = h('div', { class: 'dmsg' });
-      var tabs = h('div', { class: 'tabs' }), count = h('div', { class: 'note' });
-      function arrow(t, d) { return h('button', { class: 'icon', text: t, 'aria-label': 'טְרוֹל אַחַר', on: { click: function () { sfx.tap(); dress(idx + d, tab); } } }); }
+      var prev = h('div', { class: 'prev' }), nameEl = h('div', { class: 'banner' }), opts = h('div', { class: 'opts' }), foot = h('div', { class: 'sfoot' });
+      var tabs = h('div', { class: 'stabs' }), title = h('b'), cnt = h('span', { class: 'cnt' }), bar = h('i');
+      function arrow(t, d) { return h('button', { class: 'icon', text: t, 'aria-label': 'טְרוֹל אַחַר', on: { click: function () { sfx.tap(); go(idx + d); } } }); }
+      function owns(it) { return state.items.indexOf(it.id) >= 0 || (it.slot === 'acc' && base.acc === it.id); }
       function cur1() { var s = specOf(id); if (trying) { s[trying.key] = trying.val; resolve(s); } return s; }
       function mini(over) { var s = cur1(), k; for (k in over) s[k] = over[k]; return A.trollSVG(resolve(s)); }
-      function drawCount() { count.textContent = '🎒 הָאֹסֶף שֶׁלִּי: ' + state.items.length + ' מִתּוֹךְ ' + L.ITEMS.length + ' פְּרִיטִים'; }
+      function say(text) { foot.innerHTML = ''; foot.textContent = text || ''; }
+      function drawHead() {
+        var key = TABS[tab][0], list = L.ITEMS.filter(function (it) { return it.slot === key; }), have = list.filter(owns).length;
+        title.textContent = TABS[tab][2] + ' ' + TABS[tab][1];
+        cnt.textContent = list.length ? have + '/' + list.length : '';
+        bar.style.width = (list.length ? Math.round(100 * have / list.length) : 100) + '%';
+      }
       function drawPrev(celebrate) {
         var s = cur1(); nameEl.textContent = s.name;
         prev.innerHTML = A.trollSVG(s, { mood: celebrate ? 'cheer' : 'happy' });
-        if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 10); later(function () { prev.innerHTML = A.trollSVG(cur1()); }, 1000); }
+        if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 12); later(function () { prev.innerHTML = A.trollSVG(cur1()); }, 1000); }
       }
-      function wear(key, val, title) {
+      function wear(key, val, text) {
         var d = state.dress[id] || {}; d[key] = val; state.dress[id] = d; trying = null; save();
-        sfx.pop(); msg.innerHTML = ''; msg.textContent = title || ''; drawPrev(true); drawOpts();
+        sfx.pop(); say(text); drawPrev(true); drawOpts(); drawThumbs();
       }
       function offer(it) { // preview first, then the child decides whether to buy
-        msg.innerHTML = '';
-        var need = it.price - state.coins;
-        if (need > 0) { msg.textContent = it.name + ': חֲסֵרִים עוֹד ' + need + ' 🪙. עוֹד סִבּוּב וְתוּכְלִי לִקְנוֹת!'; return; }
-        msg.appendChild(h('button', { class: 'btn b3 buy', text: 'לִקְנוֹת: ' + it.name + ' בְּ-🪙 ' + it.price, on: { click: function () {
+        var cost = L.priceOf(state, it.id), need = cost - state.coins;
+        if (need > 0) { say(it.name + ': חֲסֵרִים עוֹד ' + need + ' 🪙. עוֹד שָׁלָב אֶחָד וְתוּכְלִי לִקְנוֹת!'); return; }
+        foot.innerHTML = '';
+        foot.appendChild(h('button', { class: 'btn b3 buy', text: 'לִקְנוֹת: ' + it.name + ' בְּ-🪙 ' + cost, on: { click: function () {
           var r = L.buy(state, it.id); if (!r.ok) return;
-          state = r.state; sfx.item(); confetti(40); bumpStars(el); wear(it.slot, it.id, 'קָנִית: ' + it.name + '!'); drawCount();
+          state = r.state; sfx.item(); confetti(50); bumpStars(el); wear(it.slot, it.id, 'קָנִית: ' + it.name + '!'); drawHead();
         } } }));
       }
-      // o: {lock: {label, why}, item (unbought shop item), title}
-      function option(content, key, val, o) {
-        var s = cur1();
-        var b = h('button', { class: 'opt' + ((s[key] || '') === val ? ' sel' : '') + (o.lock ? ' locked' : '') + (o.item ? ' shop' : ''), html: content, 'aria-label': o.title || '' });
-        if (o.lock) b.appendChild(h('span', { class: 'lock', text: o.lock.label }));
-        if (o.item) b.appendChild(h('span', { class: 'price', text: '🪙 ' + o.item.price }));
+      // o: {lock: {label, why}, item (a shop item), name, tag}
+      function option(pic, key, val, o) {
+        var s = cur1(), it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, cant = it && !own && cost > state.coins;
+        var b = h('button', { class: 'opt' + ((s[key] == null ? '' : s[key]) === val ? ' sel' : '') + (o.lock ? ' locked' : '') + (it && !own ? ' shop' : '') + (cant ? ' cant' : ''), html: pic, 'aria-label': o.name || '' });
+        if (o.name) b.appendChild(h('small', { class: 'oname', text: o.name }));
+        if (o.lock) b.appendChild(h('span', { class: 'otag cant', text: o.lock.label }));
+        else if (it && !own) b.appendChild(h('span', { class: 'otag' + (cant ? ' cant' : ''), text: '🪙 ' + cost }));
+        else if (it && it.price) b.appendChild(h('span', { class: 'otag own', text: '✔' }));
         b.addEventListener('click', function () {
-          if (o.lock) { restart(b, 'shake'); sfx.wrong(); msg.textContent = o.lock.why; return; }
-          if (o.item) { trying = { key: key, val: val }; sfx.tap(); drawPrev(false); drawOpts(); offer(o.item); return; }
-          wear(key, val, o.title);
+          if (o.lock) { restart(b, 'shake'); sfx.wrong(); say(o.lock.why); return; }
+          if (it && !own) { trying = { key: key, val: val }; sfx.tap(); drawPrev(false); drawOpts(); offer(it); return; }
+          wear(key, val, o.name);
         });
         opts.appendChild(b);
       }
       function drawOpts() {
         opts.innerHTML = ''; var key = TABS[tab][0], k;
         var sw = function (c) { return '<span class="sw" style="background:' + c + '"></span>'; };
+        opts.className = 'opts k-' + key;
         if (key === 'hair') for (k = 0; k < L.HAIR_STYLES; k++) option(mini({ hair: k }), 'hair', k,
-          { lock: state.stars < HAIR_REQ[k] && base.hair !== k ? { label: '🔒 ⭐' + HAIR_REQ[k], why: 'צָרִיךְ עוֹד ' + (HAIR_REQ[k] - state.stars) + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ' } : null });
+          { lock: state.stars < HAIR_REQ[k] && base.hair !== k ? { label: '🔒 ⭐ ' + HAIR_REQ[k], why: 'צָרִיךְ עוֹד ' + (HAIR_REQ[k] - state.stars) + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ' } : null });
         else if (key === 'hairColor') L.HAIR_COLORS.forEach(function (c) { option(sw(c), 'hairColor', c, {}); });
         else if (key === 'body') L.BODIES.forEach(function (c) { option(sw(c), 'body', c, {}); });
         else {
-          if (key !== 'acc') option('<span class="emo">🚫</span>', key, '', { title: 'בְּלִי' });
+          if (key !== 'acc') option('<span class="emo">🚫</span>', key, '', { name: 'בְּלִי' });
           L.ITEMS.filter(function (it) { return it.slot === key; }).forEach(function (it) {
-            var own = state.items.indexOf(it.id) >= 0 || (key === 'acc' && base.acc === it.id);
-            option(key === 'acc' ? mini({ acc: it.id }) : '<span class="emo">' + it.e + '</span>', key, it.id, { title: it.name, item: own ? null : it });
+            option(key === 'acc' ? mini({ acc: it.id }) : '<span class="emo">' + it.e + '</span>', key, it.id, { name: it.name, item: it });
           });
         }
       }
+      function surprise() { // a random outfit from what the player already owns
+        var d = state.dress[id] || {}, hairs = [], k;
+        ['acc', 'hat', 'face', 'hand', 'pet'].forEach(function (slot) {
+          var own = L.ITEMS.filter(function (it) { return it.slot === slot && owns(it); }).map(function (it) { return it.id; });
+          if (slot !== 'acc') own.push('');
+          d[slot] = rnd(own);
+        });
+        for (k = 0; k < L.HAIR_STYLES; k++) if (state.stars >= HAIR_REQ[k] || base.hair === k) hairs.push(k);
+        d.hair = rnd(hairs); d.hairColor = rnd(L.HAIR_COLORS); d.body = rnd(L.BODIES);
+        state.dress[id] = d; trying = null; save();
+        sfx.item(); confetti(30); say('תִּלְבֹּשֶׁת הַפְתָּעָה!'); drawPrev(true); drawOpts();
+      }
       TABS.forEach(function (t, n) {
-        var b = h('button', { class: 'tab' + (n === tab ? ' on' : ''), text: t[1] });
+        var b = h('button', { class: 'stab' + (n === tab ? ' on' : ''), 'aria-label': t[1] }, h('span', { class: 'ti', text: t[2] }), h('span', { class: 'tl', text: t[1] }));
         b.addEventListener('click', function () {
-          sfx.tap(); tab = n; trying = null; msg.innerHTML = '';
-          [].forEach.call(tabs.children, function (x, m) { x.className = 'tab' + (m === n ? ' on' : ''); });
-          drawPrev(false); drawOpts();
+          sfx.tap(); tab = n; trying = null; say('');
+          [].forEach.call(tabs.children, function (x, m) { x.classList.toggle('on', m === n); });
+          drawPrev(false); drawOpts(); drawHead();
         });
         tabs.appendChild(b);
       });
@@ -2783,11 +2865,29 @@ var TrollModels = (function () {
       function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הַטְּרוֹל הַמְּלַוֶּה שֶׁלִּי' : '🤍 שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'; pickB.classList.toggle('is', is); }
       pickB.addEventListener('click', function () { state.buddy = id; save(); sfx.giggle(); drawPick(); drawPrev(true); });
       drawPick();
-      var nav = ids.length > 1 ? h('div', { class: 'nav' }, arrow('▶', -1), prev, arrow('◀', 1)) : h('div', { class: 'nav' }, prev);
-      el.appendChild(h('div', { class: 'dwrap' },
-        h('div', { class: 'dprev' }, nav, nameEl, pickB),
-        h('div', { class: 'dpanel' }, tabs, opts, msg, count)));
-      drawPrev(false); drawOpts(); drawCount();
+      var thumbs = h('div', { class: 'sthumbs' });
+      function drawThumbs() {
+        thumbs.innerHTML = '';
+        ids.slice(-30).forEach(function (tid) {
+          var i = ids.indexOf(tid);
+          thumbs.appendChild(h('button', { class: 'sthumb' + (i === idx ? ' on' : ''), html: A.trollSVG(specOf(tid)), 'aria-label': specOf(tid).name, on: { click: function () { if (i !== idx) { sfx.tap(); go(i); } } } }));
+        });
+        var on = thumbs.querySelector('.on');
+        if (on && thumbs.scrollWidth > thumbs.clientWidth) thumbs.scrollLeft = on.offsetLeft - thumbs.clientWidth / 2;
+      }
+      // another troll steps onto the stage; the screen itself stays put
+      function go(i) {
+        idx = (i + ids.length) % ids.length; id = ids[idx]; base = L.trollFromId(id); trying = null;
+        say(''); drawPrev(true); drawOpts(); drawHead(); drawPick(); drawThumbs();
+      }
+      var nav = ids.length > 1 ? h('div', { class: 'snav' }, arrow('▶', -1), nameEl, arrow('◀', 1)) : h('div', { class: 'snav' }, nameEl);
+      el.appendChild(h('div', { class: 'shop' },
+        h('div', { class: 'sstage' }, nav, h('div', { class: 'spot' }, prev),
+          h('div', { class: 'srow' }, pickB, h('button', { class: 'btn b2 pick', text: '🎲 הַפְתָּעָה!', on: { click: surprise } })), thumbs),
+        h('div', { class: 'spanel' }, tabs, h('div', { class: 'shead' }, title, cnt, h('div', { class: 'pbar' }, bar),
+          h('span', { class: 'cnt', text: '🎒 ' + state.items.length + '/' + L.ITEMS.length })), opts, foot)));
+      drawPrev(false); drawOpts(); drawHead();
+      drawThumbs();
     });
   }
 
