@@ -270,6 +270,13 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .sure .btn{min-height:44px;font-size:16px;padding:4px 14px;box-shadow:none}
 .pnew{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
 .pnew .btn{min-height:50px;font-size:18px;padding:4px 22px}
+.cloudb{min-height:44px;font-size:clamp(13px,2.2vmin,17px);padding:4px 16px;flex:0 0 auto;box-shadow:none}
+.cpanel{background:rgba(255,255,255,.94);border-radius:24px;padding:clamp(8px,2.2vmin,22px);display:flex;flex-direction:column;gap:clamp(4px,1.4vmin,12px);align-items:center;width:min(92vw,540px);text-align:center;box-shadow:0 6px 0 rgba(59,42,85,.14);flex:0 1 auto;font-size:clamp(13px,2.3vmin,18px)}
+.ccode{direction:ltr;font-size:clamp(24px,6.5vmin,46px);letter-spacing:.14em;font-weight:700;background:#f3eefb;border-radius:16px;padding:2px 16px;user-select:text;-webkit-user-select:text}
+.crow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.cpanel .btn{min-height:44px;font-size:clamp(14px,2.3vmin,18px);padding:4px 16px}
+.cpanel .pname{direction:ltr;text-transform:uppercase;letter-spacing:.1em;width:200px;min-height:44px}
+.cmsg{min-height:1.4em;font-weight:700;color:#6a3fd0}
 .pname{font:inherit;font-weight:700;font-size:18px;text-align:center;border:3px solid #b99bff;border-radius:16px;padding:6px;width:100%;min-height:50px;user-select:text;-webkit-user-select:text}
 
 /* ---------- explanation window and picture models ---------- */
@@ -1516,13 +1523,36 @@ var TrollLogic = (function () {
     if (seen[o.cur]) out.cur = o.cur;
     return out;
   }
-  function addProfile(p, name) {
+  function addProfile(p, name, id) {
     var n = 0; p.list.forEach(function (x) { n = Math.max(n, +x.id.slice(1)); });
-    var id = 'p' + (n + 1);
+    if (!/^p\d+$/.test(id || '') || p.list.some(function (x) { return x.id === id; })) id = 'p' + (n + 1);
     return { cur: id, list: p.list.concat([{ id: id, name: cleanName(name, p.list.length + 1) }]) };
   }
   function removeProfile(p, id) {
     return { cur: p.cur === id ? null : p.cur, list: p.list.filter(function (x) { return x.id !== id; }) };
+  }
+  // ---- the same village on several devices ----
+  // A village code links devices. Each side is { list, gone, t }: players, deleted player ids, and the time each
+  // player's progress last changed. The newer progress of each player wins; a deleted player stays deleted.
+  var CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', CODE_RE = /^[A-HJ-NP-Z2-9]{8}$/;
+  function newCode(rnd) { var s = ''; while (s.length < 8) s += CODE_CHARS[Math.floor(rnd() * CODE_CHARS.length)]; return s; }
+  function mergeCloud(a, b) {
+    var first = !b; b = b || { list: [], gone: [], t: {} };
+    var out = { list: [], gone: [], t: {}, pull: [], push: [], meta: first }, gone = {}, seen = {};
+    (b.gone || []).concat(a.gone || []).forEach(function (id) { if (!gone[id]) { gone[id] = true; out.gone.push(id); } });
+    out.gone = out.gone.slice(-60);
+    (b.list || []).concat(a.list || []).forEach(function (p) {
+      if (seen[p.id] || gone[p.id] || out.list.length >= 8) return;
+      seen[p.id] = true; out.list.push({ id: p.id, name: p.name });
+    });
+    out.list.forEach(function (p) {
+      var ta = +(a.t || {})[p.id] || 0, tb = +(b.t || {})[p.id] || 0;
+      if (tb > ta) out.pull.push(p.id); else if (ta > tb) out.push.push(p.id);
+      out.t[p.id] = Math.max(ta, tb);
+    });
+    if (JSON.stringify(out.list) !== JSON.stringify((b.list || []).map(function (p) { return { id: p.id, name: p.name }; })) ||
+        out.gone.slice().sort().join() !== (b.gone || []).slice().sort().join()) out.meta = true;
+    return out;
   }
   function trollFromId(id) {
     id = Math.abs(id | 0);
@@ -1620,6 +1650,7 @@ var TrollLogic = (function () {
   return {
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
+    newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
@@ -1910,9 +1941,90 @@ var TrollModels = (function () {
   }
   function load() {
     state = L.loadState(profiles.cur ? lsGet(DKEY + profiles.cur) : null);
-    if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(); }
+    if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(true); }
   }
-  function save() { if (profiles.cur) lsSet(DKEY + profiles.cur, JSON.stringify(state)); }
+  // quiet: housekeeping (streak, starter troll) that must not count as newer progress than another device's
+  function save(quiet) { if (!profiles.cur) return; lsSet(DKEY + profiles.cur, JSON.stringify(state)); if (!quiet) touch(profiles.cur); }
+  function refresh() { load(); state = L.updateStreak(state, L.todayStr()); save(true); }
+
+  // ---- the same village on several devices (Firestore document per village code, see TrollLogic.mergeCloud) ----
+  var CLOUD = { pid: 'troll-math', key: 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0' }, SKEY = 'trollVillage.sync';
+  var sync = { code: '', t: {}, gone: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
+  function cloudOn() { return !!(CLOUD.pid && !sandbox && window.fetch); }
+  function saveSync() { if (sync.code) lsSet(SKEY, JSON.stringify(sync)); else lsDel(SKEY); }
+  function loadSync() {
+    try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code)) sync = { code: o.code, t: o.t || {}, gone: Array.isArray(o.gone) ? o.gone : [] }; } catch (e) {}
+  }
+  function touch(id) {
+    if (!sync.code) return;
+    sync.t[id] = Math.max(Date.now(), (+sync.t[id] || 0) + 1); saveSync();
+    clearTimeout(pushTimer); pushTimer = setTimeout(syncNow, 4000);
+  }
+  function rndId() { return 'p' + (100000000 + Math.floor(Math.random() * 900000000)); }
+  function rndCode() {
+    return L.newCode(function () { try { return crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296; } catch (e) { return Math.random(); } });
+  }
+  function cloudUrl(code) { return 'https://firestore.googleapis.com/v1/projects/' + CLOUD.pid + '/databases/(default)/documents/villages/' + code + '?key=' + CLOUD.key; }
+  function cloudGet(code) { // resolves to null when the village does not exist yet
+    return fetch(cloudUrl(code)).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (doc) {
+      if (!doc) return null;
+      var f = doc.fields || {}, out = { list: [], gone: [], t: {}, s: {} }, k;
+      function str(k) { return f[k] && typeof f[k].stringValue === 'string' ? f[k].stringValue : ''; }
+      try { out.list = L.loadProfiles({ list: JSON.parse(str('list') || '[]') }).list; } catch (e) {}
+      try { out.gone = JSON.parse(str('gone') || '[]').filter(function (x) { return /^p\d+$/.test(x); }); } catch (e) {}
+      for (k in f) if (/^s_p\d+$/.test(k) && str(k) && +str('t_' + k.slice(2)) > 0) { out.s[k.slice(2)] = str(k); out.t[k.slice(2)] = +str('t_' + k.slice(2)); }
+      return out;
+    });
+  }
+  function cloudPut(code, fields, keep) {
+    var url = cloudUrl(code), body = { fields: {} }, k;
+    for (k in fields) { url += '&updateMask.fieldPaths=' + k; body.fields[k] = { stringValue: fields[k] }; }
+    return fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: !!keep }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); });
+  }
+  // Pulls what is newer in the cloud, pushes what is newer here. done(ok, changed)
+  function syncNow(done, keep) {
+    if (typeof done !== 'function') done = function () {};
+    if (!sync.code || !cloudOn()) { done(false); return; }
+    if (syncBusy) { syncAgain = true; done(false); return; }
+    syncBusy = true; clearTimeout(pushTimer);
+    var changed = false;
+    cloudGet(sync.code).then(function (rem) {
+      var before = JSON.stringify(profiles.list), m = L.mergeCloud({ list: profiles.list, gone: sync.gone, t: sync.t }, rem), f = {};
+      m.pull.forEach(function (id) { lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
+      m.gone.forEach(function (id) { lsDel(DKEY + id); delete sync.t[id]; });
+      var alive = m.list.some(function (p) { return p.id === profiles.cur; });
+      profiles = { cur: alive ? profiles.cur : null, list: m.list };
+      if (JSON.stringify(m.list) !== before) changed = true;
+      sync.gone = m.gone; saveProfiles(); saveSync();
+      if (changed && profiles.cur) refresh();
+      m.push.forEach(function (id) { var raw = lsGet(DKEY + id); if (raw) { f['s_' + id] = raw; f['t_' + id] = String(sync.t[id]); } });
+      if (m.meta) { f.list = JSON.stringify(m.list); f.gone = JSON.stringify(m.gone); }
+      return Object.keys(f).length ? cloudPut(sync.code, f, keep) : null;
+    }).then(function () { fin(true); }, function () { fin(false); });
+    function fin(ok) {
+      syncBusy = false;
+      if (changed) { if (here === 'who' || (here === 'home' && !profiles.cur)) who(); else if (here === 'home') home(); }
+      done(ok, changed);
+      if (syncAgain) { syncAgain = false; syncNow(); }
+    }
+  }
+  // Players made before linking get ids that cannot clash with another device's players.
+  function linkTo(code) {
+    profiles.list.forEach(function (p) {
+      if (p.id.length < 9) {
+        var id = rndId(), raw = lsGet(DKEY + p.id);
+        if (raw) lsSet(DKEY + id, raw);
+        lsDel(DKEY + p.id);
+        if (profiles.cur === p.id) profiles.cur = id;
+        p.id = id;
+      }
+    });
+    sync = { code: code, t: {}, gone: [] };
+    profiles.list.forEach(function (p) { if (lsGet(DKEY + p.id)) sync.t[p.id] = Date.now(); });
+    saveProfiles(); saveSync();
+  }
+  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, gone: [] }; saveSync(); }
+  function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
   function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
   function buddyOf(st) { return st.owned.indexOf(st.buddy) >= 0 ? st.buddy : st.owned.length ? st.owned[0] : null; }
@@ -2176,7 +2288,7 @@ var TrollModels = (function () {
 
   // ---------- screens ----------
   function show(build) {
-    timers.forEach(clearTimeout); timers = []; closeExplain();
+    timers.forEach(clearTimeout); timers = []; closeExplain(); here = null;
     var old = cur, el = h('div', { class: 'screen' });
     cur = el; app.appendChild(el); build(el);
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
@@ -2205,6 +2317,7 @@ var TrollModels = (function () {
   function home() {
     tv.round = null; setMusic('home');
     show(function (el) {
+      here = 'home';
       var tb = topBar(false);
       tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
       el.appendChild(tb);
@@ -2737,8 +2850,8 @@ var TrollModels = (function () {
   }
 
   // ---------- who is playing ----------
-  function enter(id) { profiles.cur = id; saveProfiles(); load(); state = L.updateStreak(state, L.todayStr()); save(); sfx.pop(); home(); }
-  function who() {
+  function enter(id) { profiles.cur = id; saveProfiles(); refresh(); sfx.pop(); home(); }
+  function who(first) {
     setMusic('home');
     show(function (el) {
       el.appendChild(topBar(!!profiles.cur, profiles.cur ? home : null));
@@ -2754,20 +2867,74 @@ var TrollModels = (function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
           card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); saveProfiles(); load(); who(); } } }),
+            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
       });
       if (profiles.list.length < 8) {
         var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'הַשֵּׁם שֶׁלִּי', 'aria-label': 'שֵׁם הַשַּׂחְקָן הֶחָדָשׁ' });
-        var add = function () { profiles = L.addProfile(profiles, inp.value); enter(profiles.cur); };
+        var add = function () { profiles = L.addProfile(profiles, inp.value, rndId()); enter(profiles.cur); save(); if (sync.code) syncNow(); };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
         grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
       el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
+      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', text: sync.code ? '☁️ הַכְּפָר מְחֻבָּר · ' + sync.code : '☁️ לְשַׂחֵק גַּם בְּמַכְשִׁיר אַחֵר', on: { click: function () { sfx.tap(); cloud(); } } }));
+      else el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
     });
+    here = 'who';
+    if (first !== false) syncNow();
+  }
+
+  // ---------- one village on every device ----------
+  function cloud(msg) {
+    show(function (el) {
+      el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
+      el.appendChild(h('h2', { class: 'h2', text: '☁️ הַכְּפָר בְּכָל מַכְשִׁיר' }));
+      var p = h('div', { class: 'cpanel' }), status = h('div', { class: 'cmsg', text: msg || '' });
+      function say(t) { status.textContent = t; }
+      function fail() { say('אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.'); }
+      if (sync.code) {
+        p.appendChild(h('b', { text: 'קוֹד הַכְּפָר שֶׁלָּנוּ' }));
+        p.appendChild(h('div', { class: 'ccode', text: sync.code }));
+        p.appendChild(h('div', { class: 'ctext', text: 'מַקְלִידִים אֶת הַקּוֹד בְּמַכְשִׁיר אַחֵר, וְכָל הַשַּׂחְקָנִים וְהַהִתְקַדְּמוּת מוֹפִיעִים גַּם שָׁם.' }));
+        p.appendChild(h('div', { class: 'crow' },
+          btn('🔗 שְׁלִיחַת קִשּׁוּר', '', function () {
+            var u = joinUrl();
+            if (navigator.share) navigator.share({ url: u }).catch(function () {});
+            else if (navigator.clipboard) navigator.clipboard.writeText(u).then(function () { say('הַקִּשּׁוּר הֻעְתַּק ✓'); }, function () { say(u); });
+            else say(u);
+          }),
+          btn('🔄 סִנְכְּרוּן', 'b2', function () { say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say('הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); }),
+          btn('נִתּוּק', 'b2', function () { unlink(); cloud('הַמַּכְשִׁיר נֻתַּק. הַשַּׂחְקָנִים נִשְׁאֲרוּ כָּאן.'); })));
+      } else {
+        var inp = h('input', { class: 'pname', type: 'text', maxlength: '8', placeholder: 'ABCD2345', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', 'aria-label': 'קוֹד הַכְּפָר' });
+        var join = function () {
+          var code = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (!L.CODE_RE.test(code)) { say('בַּקּוֹד יֵשׁ 8 אוֹתִיּוֹת וּסְפָרוֹת.'); return; }
+          joinCode(code, say, fail);
+        };
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') join(); });
+        p.appendChild(h('b', { text: 'יֵשׁ לָנוּ כְּבָר קוֹד כְּפָר' }));
+        p.appendChild(h('div', { class: 'crow' }, inp, btn('חִבּוּר', '', join)));
+        p.appendChild(h('div', { class: 'ctext', text: 'אוֹ' }));
+        p.appendChild(btn('✨ קוֹד חָדָשׁ לַכְּפָר שֶׁלָּנוּ', 'b2', function () {
+          say('רֶגַע...'); linkTo(rndCode());
+          syncNow(function (ok) { if (ok) cloud('הַכְּפָר נִשְׁמָר בֶּעָנָן ✓'); else { unlink(); fail(); } });
+        }));
+        p.appendChild(h('div', { class: 'ctext', text: 'עִם קוֹד הַכְּפָר מְשַׂחֲקִים בַּטֶּלֶפוֹן, בַּטַּאבְּלֶט וּבַמַּחְשֵׁב עִם אוֹתָם שַׂחְקָנִים.' }));
+      }
+      p.appendChild(status);
+      el.appendChild(p);
+    });
+  }
+  function joinCode(code, say, fail) {
+    say('מִתְחַבְּרִים...');
+    cloudGet(code).then(function (rem) {
+      if (!rem) { say('לֹא מָצָאנוּ כְּפָר עִם הַקּוֹד הַזֶּה.'); return; }
+      linkTo(code);
+      syncNow(function (ok) { if (ok) { if (!profiles.cur) who(false); else cloud('הַכְּפָר מְחֻבָּר ✓'); } else fail(); });
+    }, fail);
   }
 
   // ---------- dress-up and shop ----------
@@ -2895,12 +3062,14 @@ var TrollModels = (function () {
   }
 
   // ---------- start ----------
-  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else loadProfiles();
+  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadSync(); }
   load(); buildBg();
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.mul = 5; state.levels.add = 3; state.prog.add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1], [1, 0, 0]]; }
-  state = L.updateStreak(state, L.todayStr()); save();
+  state = L.updateStreak(state, L.todayStr()); save(true);
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
+  document.addEventListener('visibilitychange', function () { if (sync.code) syncNow(null, document.hidden); });
+  if (/linked/.test(hash)) sync.code = 'ABCD2345'; // layout check of the linked screens
   setInterval(musicTick, 150);
   var scr = (/s=(\w+)/.exec(hash) || [])[1], ht = (/t=(\w+)/.exec(hash) || [])[1] || 'add', hl = (/l=(\d+)/.exec(hash) || [])[1];
   if (hl && state.levels[ht]) state.levels[ht] = L.clampLevel(ht, +hl);
@@ -2934,6 +3103,7 @@ var TrollModels = (function () {
   } else if (scr === 'topics') topics();
   else if (scr === 'dress') dress(null, +((/tab=(\d)/.exec(hash) || [])[1] || 3));
   else if (scr === 'gift') gift();
+  else if (scr === 'cloud') cloud();
   else if (scr === 'region') region(ht);
   else if (scr === 'bossend') endBoss(L.createBoss(ht, 2, Math.random), ht, 2);
   else if (scr === 'end') {
@@ -2943,7 +3113,13 @@ var TrollModels = (function () {
     endStage(r0, ht, { level: lv0, stage: 2 });
     if (/hatch/.test(hash)) cur.querySelector('.egg').dispatchEvent(new Event('click'));
   } else if (scr === 'who' || !profiles.cur) who();
-  else home();
+  else { home(); syncNow(); }
+  var jc = (/join=([A-Za-z0-9]{8})/.exec(hash) || [])[1]; // a link from another device
+  if (jc && cloudOn()) {
+    jc = jc.toUpperCase();
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    if (L.CODE_RE.test(jc) && jc !== sync.code) { unlink(); cloud(); joinCode(jc, function (t) { var m = cur.querySelector('.cmsg'); if (m) m.textContent = t; }, function () {}); }
+  }
   if (/fit/.test(hash)) setTimeout(function () { // layout self-check: reports overflow to the test harness
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl'), ovf = 0;

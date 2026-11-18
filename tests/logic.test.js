@@ -362,3 +362,22 @@ t('activity formats: every variant is consistent with its exercise', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(r.answer(r.current().answer))), { correct: true, firstTry: false });
 });
 console.log('all ' + n + ' passed (formats)');
+t('cloud: newer progress wins per player, deleted players stay deleted, ids never clash', () => {
+  const j = x => JSON.parse(JSON.stringify(x));
+  assert(L.CODE_RE.test(L.newCode(Math.random)));
+  const A = { list: [{ id: 'p111111111', name: 'a' }, { id: 'p222222222', name: 'b' }], gone: [], t: { p111111111: 5, p222222222: 9 } };
+  let m = j(L.mergeCloud(A, null)); // first upload
+  assert(m.meta); assert.deepStrictEqual(m.push, ['p111111111', 'p222222222']); assert.deepStrictEqual(m.pull, []);
+  const R = { list: A.list.concat([{ id: 'p333333333', name: 'c' }]), gone: [], t: { p111111111: 7, p222222222: 9, p333333333: 2 } };
+  m = j(L.mergeCloud(A, R));
+  assert.deepStrictEqual(m.pull, ['p111111111', 'p333333333']); assert.deepStrictEqual(m.push, []); assert(!m.meta);
+  assert.strictEqual(m.list.length, 3);
+  m = j(L.mergeCloud({ list: A.list, gone: ['p222222222'], t: { p111111111: 8 } }, R)); // deleted here
+  assert(m.meta); assert(!m.list.some(p => p.id === 'p222222222')); assert.deepStrictEqual(m.push, ['p111111111']);
+  m = j(L.mergeCloud(A, { list: [A.list[0]], gone: ['p222222222'], t: { p111111111: 5 } })); // deleted elsewhere
+  assert(!m.meta); assert.deepStrictEqual(m.list.map(p => p.id), ['p111111111']); assert.deepStrictEqual(m.gone, ['p222222222']);
+  const P = L.addProfile({ cur: null, list: [{ id: 'p1', name: 'x' }] }, 'y', 'p987654321');
+  assert.strictEqual(P.cur, 'p987654321');
+  assert.strictEqual(L.addProfile(P, 'z', 'p987654321').cur, 'p987654322');
+});
+console.log('all ' + n + ' passed (cloud)');

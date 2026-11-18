@@ -1,3 +1,5 @@
 docs/
 shots/
 preview.*
+firebase-debug.log
+.firebaserc

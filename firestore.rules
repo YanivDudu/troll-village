@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // One document per village. The 8-character village code is the key: whoever knows it can read and update it.
+    // Nobody can list villages or delete one.
+    match /villages/{code} {
+      allow get: if true;
+      allow create, update: if code.matches('^[A-HJ-NP-Z2-9]{8}$')
+        && request.resource.data.size() <= 40;
+    }
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- End-to-end check of the village code against the real cloud. Needs http (python -m http.server 8765 in the project root),
+     then open http://localhost:8765/tests/sync.html . Plays two devices by swapping localStorage. Expects title "SYNC OK". -->
+<iframe id="f" width="420" height="760"></iframe><pre id="log"></pre>
+<script>
+var f = document.getElementById('f'), log = document.getElementById('log');
+function say(t) { log.textContent += t + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 150) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
+function open(hash) { return new Promise(function (r) { f.onload = function () { r(); }; f.src = 'about:blank'; setTimeout(function () { f.src = '../index.html?' + Date.now() + (hash || ''); }, 50); }); }
+function doc() { return f.contentDocument; }
+function q(sel) { return doc().querySelector('.screen:not(.out) ' + sel); }
+function snap() { var o = {}; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^trollVillage/.test(k)) o[k] = localStorage.getItem(k); } return o; }
+function restore(o) { Object.keys(snap()).forEach(function (k) { localStorage.removeItem(k); }); for (var k in o) localStorage.setItem(k, o[k]); }
+function sync() { return JSON.parse(localStorage.getItem('trollVillage.sync') || '{}'); }
+function profs() { return JSON.parse(localStorage.getItem('trollVillage.profiles') || '{"list":[]}'); }
+function st(id) { return JSON.parse(localStorage.getItem('trollVillage.p.' + id)); }
+function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
+(async function () {
+  var keep = snap(); // the developer's own players on localhost are put back at the end
+  try {
+    restore({});
+    await open(); // device A: a new player, then a new village code
+    var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
+    inp.value = 'A1'; q('.pnew .btn').click();
+    await until(function () { return q('.chip.who'); }, 'home A');
+    q('.chip.who').click();
+    (await until(function () { return q('.cloudb'); }, 'cloud button')).click();
+    (await until(function () { return q('.cpanel .btn.b2'); }, 'cloud screen')).click();
+    await until(function () { return q('.ccode'); }, 'code shown');
+    var code = sync().code, idA = profs().list[0].id, A = snap();
+    check(/^[A-HJ-NP-Z2-9]{8}$/.test(code) && q('.ccode').textContent === code, 'device A got a village code');
+    check(idA.length >= 9, 'player id is device-independent');
+
+    restore({}); // device B: its own player first, then joins with the link
+    await open();
+    inp = await until(function () { return q('.pnew .pname'); }, 'who screen B');
+    inp.value = 'B1'; q('.pnew .btn').click();
+    await until(function () { return q('.chip.who'); }, 'home B');
+    await open('#join=' + code);
+    await until(function () { return profs().list.length === 2 && sync().code === code; }, 'B joined');
+    check(profs().list.some(function (p) { return p.id === idA && p.name === 'A1'; }), 'device B sees the player of device A');
+    check(st(idA).owned.join() === JSON.parse(A['trollVillage.p.' + idA]).owned.join(), 'with the same trolls');
+    await open(); // B plays as A1: any saved change counts as progress
+    var chip = await until(function () { return q('.chip.who'); }, 'home on B');
+    chip.click();
+    var cards = await until(function () { var c = doc().querySelectorAll('.screen:not(.out) .pcard .go'); return c.length === 2 && c; }, 'two players on B');
+    cards[profs().list.findIndex(function (p) { return p.id === idA; })].click();
+    var mute = await until(function () { return profs().cur === idA && q('.top .chips:last-child .icon:last-child'); }, 'home as A1 on B');
+    var was = !!st(idA).mute; mute.click();
+    await wait(6500); // the push waits 4 seconds after the last change
+    var B = snap();
+
+    restore(A); // back on device A
+    await open();
+    await until(function () { return profs().list.length === 2 && !!st(idA).mute === !was; }, 'A received the change and the second player');
+    check(true, 'device A got the progress made on device B, and the player added there');
+    var idB = profs().list.filter(function (p) { return p.id !== idA; })[0].id;
+    q('.chip.who') && q('.chip.who').click(); // delete B1 on device A
+    var del = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pdel')[profs().list.findIndex(function (p) { return p.id === idB; })]; }, 'who A');
+    del.click(); (await until(function () { return q('.sure .btn.b2'); }, 'confirm')).click();
+    await wait(3000);
+    restore(B);
+    await open();
+    await until(function () { return profs().list.length === 1 && profs().list[0].id === idA; }, 'B dropped the deleted player');
+    check(true, 'a player deleted on one device disappears on the other');
+    document.title = 'SYNC OK ' + code;
+  } catch (e) { say(String(e)); document.title = 'SYNC FAIL ' + e.message; }
+  restore(keep);
+})();
+</script>
