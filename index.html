@@ -1284,12 +1284,12 @@ var TrollLogic = (function () {
   TOPICS.forEach(function (t) { BY_ID[t.id] = t; });
   function maxLevel(topicId) { return BY_ID[topicId] ? BY_ID[topicId].levels.length : 1; }
   // The houses a player of a school grade sees in a topic: the levels of that grade and of the next one as a challenge
-  // (grade 4: grade 3 for review, then grade 4). Returns { lo, hi } (1-based, inclusive) or null when the topic has nothing for the grade.
+  // (for grade 4 that is grade 5). Returns { lo, hi } (1-based, inclusive) or null when the topic has nothing for the grade.
   function span(t, grade) {
     t = typeof t === 'string' ? BY_ID[t] : t;
     if (!t) return null;
     grade = grade || 2;
-    var a = grade >= 4 ? 3 : grade, b = grade >= 4 ? 4 : grade + 1, lo = 0, hi = 0;
+    var a = grade, b = grade + 1, lo = 0, hi = 0;
     t.levels.forEach(function (d, i) { if (d.g >= a && d.g <= b) { if (!lo) lo = i + 1; hi = i + 1; } });
     return lo ? { lo: lo, hi: hi } : null;
   }

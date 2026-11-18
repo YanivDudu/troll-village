@@ -96,7 +96,7 @@ t('grades: what each grade sees, where it starts, and old saves keep their progr
   const g = lv => add.levels[lv - 1].g;
   for (const grade of [1, 2, 3, 4]) {
     const sp = L.span(add, grade), st = L.startLevel(add, grade), s = L.newState(grade);
-    assert(g(sp.lo) === (grade === 4 ? 3 : grade) && g(sp.hi) === Math.min(4, grade + 1), 'span ' + grade);
+    assert(g(sp.lo) === grade && g(sp.hi) === Math.min(Math.max(...add.levels.map(l => l.g)), grade + 1), 'span ' + grade);
     assert.strictEqual(g(st), grade); assert.strictEqual(s.levels.add, st); assert.strictEqual(s.grade, grade);
     assert(st >= sp.lo && st <= sp.hi);
     for (let i = 0; i < 20; i++) L.createRound('mix', s.levels, Math.random, 10, [], s.levels, 2, grade).qs.forEach(q => {
