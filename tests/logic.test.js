@@ -27,10 +27,10 @@ t('every topic and level: distinct options, one correct, maths is right', () => 
       continue;
     }
     assert.strictEqual(q.options.length, 4, s);
-    if (frac) assert(q.g === 4 && q.options.every(o => /^\d+\/\d+$/.test(o) && +o.split('/')[1] > 0), s);
+    if (frac) assert(q.g >= 4 && q.options.every(o => /^\d+(\/[1-9]\d*|\.\d+)?$/.test(o)), s);
     else {
       assert(q.options.every(o => Number.isInteger(o) && o >= 0), s);
-      assert(q.answer >= 0 && q.answer <= (q.g === 4 ? 1000000 : 10000), s);
+      assert(q.answer >= 0 && q.answer <= (q.g >= 4 ? 1000000 : 10000), s);
       if (q.g === 2) assert(q.answer <= 1000, s);
       if (q.g === 1) assert(q.answer <= 100, s);
     }
@@ -51,6 +51,9 @@ t('every topic and level: distinct options, one correct, maths is right', () => 
       else if ((mm = /עגלי את ([\d,]+) ל(עשרת|מאה)/.exec(text))) {
         const v = +mm[1].replace(/,/g, ''), u = mm[2] === 'עשרת' ? 10 : 100;
         assert.strictEqual(Math.round(v / u) * u, q.answer, s); checked++;
+      } else if ((mm = /ספרת (.+) במספר (\d)\.(\d)(\d)/.exec(text))) {
+        const p = ['היחידות', 'העשיריות', 'המאיות'].indexOf(mm[1]); assert(p >= 0, s); assert.strictEqual(+mm[2 + p], q.answer, s); checked++;
+      } else if ((mm = /כמה מאיות יש ב-(0\.\d\d)/.exec(text))) { assert.strictEqual(Math.round(mm[1] * 100), q.answer, s); checked++;
       } else if ((mm = /ספרת (.+) במספר ([\d,]+)/.exec(text))) {
         const d = mm[2].replace(/,/g, ''), p = ['היחידות', 'העשרות', 'המאות', 'האלפים', 'עשרות האלפים', 'מאות האלפים'].indexOf(mm[1]);
         assert(p >= 0, s); assert.strictEqual(+d[d.length - 1 - p], q.answer, s); checked++;
@@ -66,7 +69,7 @@ t('every topic and level: distinct options, one correct, maths is right', () => 
       else if (/שוה ל-1/.test(text)) { assert(near(val(q.answer), 1) && q.options.filter(o => near(val(o), 1)).length === 1, s); checked++; }
       else if (/גדול מ-1/.test(text)) { assert(val(q.answer) > 1 && q.options.filter(o => val(o) > 1).length === 1, s); checked++; }
       else if (/קטן מ-1/.test(text)) { assert(val(q.answer) < 1 && q.options.filter(o => val(o) < 1).length === 1, s); checked++; }
-      else if (q.g === 1 || q.g === 4) assert.fail('unverified new exercise: ' + s);
+      else if (q.g === 1 || q.g >= 4) assert.fail('unverified new exercise: ' + s);
     } else if (text.includes('→')) {
       const seq = text.split(' → ').map(x => x === '?' ? q.answer : +x.replace(/,/g, ''));
       const d = seq[1] - seq[0];
@@ -104,6 +107,14 @@ t('grades: what each grade sees, where it starts, and old saves keep their progr
     });
   }
   assert.strictEqual(L.span(ord, 1), null, 'grade 1 does not see order of operations');
+  // a grade never gets a topic its curriculum does not teach: no halves, multiplication or division in grade 1
+  assert.deepStrictEqual(Array.from(L.topicsFor(L.newState(1))), ['add', 'sub', 'num', 'miss']);
+  assert.deepStrictEqual(Array.from(L.topicsFor(L.newState(2))), ['add', 'sub', 'mul', 'div', 'num', 'frac', 'miss']);
+  assert.strictEqual(L.topicsFor(L.newState(4)).length, 8);
+  for (const grade of [1, 2, 3, 4]) { const s0 = L.newState(grade), mine = L.topicsFor(s0);
+    for (let i = 0; i < 40; i++) for (const tid of ['mix', mine[0]]) L.createRound(tid, s0.levels, Math.random, 10, [], s0.levels, 2, grade, mine).qs.forEach(q => {
+      assert(mine.includes(q.topic), 'grade ' + grade + ' got topic ' + q.topic); if (q.review || tid === 'mix') assert(q.g <= grade, 'grade ' + grade + ' got a grade ' + q.g + ' exercise in ' + q.topic); }); }
+  const played = L.newState(2); played.prog.ord = [[1, 0, 0]]; assert(L.topicsFor(played).includes('ord'), 'a topic with earned stars stays visible');
   // a save from before grades: houses 1..3 of addition done, house 3 the newest
   const old = { v: 2, levels: { add: 3, mul: 5 }, prog: { add: [[3, 3, 3], [2, 2, 1], [1, 0, 0]] }, boss: { add: { 2: true } }, stars: 16 };
   const s = L.loadState(JSON.stringify(old));
@@ -309,7 +320,7 @@ t('every exercise has a class-style explanation whose numbers are right', () => 
     if (q.ex.kind === 'missline') assert.strictEqual(last.pts[last.pts.length - 1] - last.pts[0], text.includes('□ −') ? last.pts[last.pts.length - 1] - last.pts[0] : q.answer, s);
     if (q.ex.kind === 'seq') assert.strictEqual(last.pts[last.q], q.answer, s);
     if (q.ex.kind === 'pv') assert.strictEqual(last.op === '+' ? last.a + last.b : last.a - last.b, q.answer, s);
-    if (q.ex.kind === 'vert' && /= \?$/.test(text)) assert.strictEqual(+last.res.slice().reverse().join(''), q.answer, s);
+    if (q.ex.kind === 'vert' && /= \?$/.test(text)) assert(near(+last.res.slice().reverse().join('') / (last.dp ? 100 : 1), evx(String(q.answer))), s);
     if (q.ex.kind === 'expr') { // the last displayed expression still evaluates to the answer
       assert.strictEqual(ev(last.s.replace(/[\[\]]/g, '')), q.answer, s);
       for (const st of q.ex.steps) assert.strictEqual(ev(st.m.s.replace(/[\[\]]/g, '')), q.answer, s);
@@ -321,7 +332,7 @@ t('every exercise has a class-style explanation whose numbers are right', () => 
     const lastSay = q.ex.steps[q.ex.steps.length - 1].say;
     assert(/[?]/.test(lastSay) || /זו השארית|המספר החסר/.test(strip(lastSay)), 'last step should ask: ' + s);
   }
-  for (const k of ['line', 'board', 'pv', 'vert', 'blocks', 'arr', 'split', 'double', 'area', 'shift', 'zeros', 'share', 'skip', 'splitdiv', 'rem', 'missline', 'expr', 'bar', 'stack', 'parity', 'ptab', 'round', 'seq', 'chain', 'twostep', 'frame', 'coins', 'near', 'fb', 'grid', 'remsplit', 'chunks', 'tens', 'digits', 'prime', 'factor', 'power', 'compare', 'balance', 'bysteps'])
+  for (const k of ['line', 'board', 'pv', 'vert', 'blocks', 'arr', 'split', 'double', 'area', 'shift', 'zeros', 'share', 'skip', 'splitdiv', 'rem', 'missline', 'expr', 'bar', 'stack', 'parity', 'ptab', 'round', 'seq', 'chain', 'twostep', 'frame', 'coins', 'near', 'fb', 'grid', 'remsplit', 'chunks', 'tens', 'digits', 'prime', 'factor', 'power', 'compare', 'balance', 'bysteps', 'dstack', 'todec', 'reduce', 'common', 'usefact'])
     assert(kinds[k] > 0, 'explanation kind never used: ' + k);
 });
 t('number-line hops: tens first, then units through the round ten', () => {
@@ -406,7 +417,7 @@ t('activity formats: every variant is consistent with its exercise', () => {
     if (q.fmt === 'tf') { const [l, r] = text.split(' = '); assert.strictEqual(evx(l) === evx(r), q.answer === 'yes', s); }
     else if (q.fmt === 'cmp') { const [l, r] = text.split(' ◯ '), a = evx(l), b = evx(r); assert.strictEqual(a < b ? '<' : a > b ? '>' : '=', q.answer, s); }
     else if (q.fmt === 'line') { assert(q.lo <= q.answer && q.answer <= q.hi && q.hi - q.lo === 10 && q.lo >= 0, s); assert(q.start === q.lo || q.start === q.hi || q.start < 10, 'the line starts at the first number: ' + s); assert(q.lo <= q.start && q.start <= q.hi, s); assert.strictEqual(evx(text.replace(' = ?', '')), q.answer, s); }
-    else if (q.fmt === 'use') { const [l, r] = q.pre.split(' = '); assert.strictEqual(evx(l), +r, s); assert.strictEqual(evx(text.replace(' = ?', '')), q.answer, s); assert.strictEqual(Math.abs(+r - q.answer), 1, s); }
+    else if (q.fmt === 'use') { const [l, r] = q.pre.split(' = '); assert.strictEqual(evx(l), +r.replace(/,/g, ''), s); assert.strictEqual(evx(text.replace(' = ?', '')), q.answer, s); if (q.ex.kind !== 'usefact') assert.strictEqual(Math.abs(+r - q.answer), 1, s); }
     else if (q.fmt === 'lefteq') { const [l, r] = text.replace('□', q.answer).split('='); assert.strictEqual(evx(l), evx(r), s); assert.strictEqual(q.options.length, 4, s); }
     else if (q.fmt === 'word') { assert(q.rtl && q.pic && Number.isInteger(q.answer) && q.options.length === 4, s); const nums = text.match(/\d+/g).map(Number); assert.strictEqual(nums.length, 2, s);
       assert([nums[0] + nums[1], nums[0] - nums[1], nums[0] * nums[1], nums[0] / nums[1]].includes(q.answer), s); }
@@ -421,7 +432,7 @@ t('activity formats: every variant is consistent with its exercise', () => {
     assert.strictEqual(r.qs.length, L.STAGE_SIZE[stage]);
     assert(r.qs.filter(q => q.fmt === 'pairs').length <= 1, 'at most one matching game per stage');
     for (const q of r.qs) check(q, tp.id + ' L' + lv + ' S' + stage + ' ' + JSON.stringify([q.fmt, q.text, q.answer, q.pre, q.lo]));
-    if (stage === 0) assert(r.qs.every(q => ['choice', 'array', 'build', 'line'].includes(q.fmt) || (q.fmt === 'cmp' && q.ex.kind === 'compare')), 'discovery is hands-on');
+    if (stage === 0) assert(r.qs.every(q => ['choice', 'array', 'build', 'line'].includes(q.fmt) || (q.fmt === 'cmp' && q.ex.kind === 'compare') || (q.fmt === 'use' && q.ex.kind === 'usefact')), 'discovery is hands-on');
   }
   for (const tp of L.TOPICS) for (const g of [1, 2, 3, 4]) if (L.bossLevels(tp.id, g).length) for (let i = 0; i < 20; i++) L.createBoss(tp.id, g, Math.random).qs.forEach(q => check(q, 'boss ' + tp.id));
   for (const k of ['choice', 'tf', 'cmp', 'line', 'use', 'lefteq', 'word', 'build', 'array', 'pairs']) assert(seen[k] > 20, 'format never produced: ' + k + ' ' + JSON.stringify(seen));

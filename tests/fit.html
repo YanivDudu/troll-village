@@ -15,7 +15,9 @@ var SCREENS = ['home', 'topics', 'round', 'round&t=ord&l=4', 'round&t=num&l=7', 
   'topics&g=1', 'region&g=1&t=add', 'region&g=1&t=num', 'round&g=1&t=add&l=1', 'round&g=1&t=num&l=2', 'hint&step=last&g=1&t=add&l=1', 'hint&step=last&g=1&t=add&l=3', 'hint&step=last&g=1&t=add&l=4', 'hint&step=last&g=1&t=sub&l=3', 'hint&step=last&g=1&t=num&l=1', 'hint&step=last&g=1&t=miss&l=1',
   // grade 4
   'topics&g=4', 'region&g=4&t=mul', 'region&g=4&t=frac', 'region&g=3&t=div', 'round&g=4&t=frac&l=6', 'round&g=4&t=frac&l=7', 'round&g=4&t=sub&l=13', 'round&g=4&t=add&l=13', 'hint&step=last&g=4&t=add&l=13', 'hint&step=last&g=4&t=sub&l=13', 'hint&step=last&g=4&t=mul&l=11', 'hint&step=last&g=4&t=mul&l=9',
-  'hint&step=last&g=4&t=div&l=10', 'hint&step=last&g=4&t=num&l=9', 'hint&step=last&g=4&t=num&l=10', 'hint&step=last&g=4&t=num&l=12', 'hint&step=last&g=4&t=frac&l=5', 'hint&step=last&g=4&t=frac&l=6', 'hint&step=last&g=4&t=frac&l=7', 'hint&step=last&g=4&t=frac&l=8', 'hint&step=last&g=4&t=miss&l=10'];
+  'hint&step=last&g=4&t=div&l=10', 'hint&step=last&g=4&t=num&l=9', 'hint&step=last&g=4&t=num&l=10', 'hint&step=last&g=4&t=num&l=12', 'hint&step=last&g=4&t=frac&l=5', 'hint&step=last&g=4&t=frac&l=6', 'hint&step=last&g=4&t=frac&l=7', 'hint&step=last&g=4&t=frac&l=8', 'hint&step=last&g=4&t=miss&l=10',
+  // grade 5 challenge
+  'region&g=4&t=num', 'region&g=4&t=add', 'round&g=4&t=add&l=16', 'round&g=4&t=frac&l=10', 'round&g=4&t=mul&l=12', 'round&g=4&t=num&l=14', 'hint&step=last&g=4&t=add&l=16', 'hint&step=last&g=4&t=sub&l=14', 'hint&step=last&g=4&t=mul&l=12', 'hint&step=last&g=4&t=div&l=12', 'hint&step=last&g=4&t=num&l=13', 'hint&step=last&g=4&t=num&l=14', 'hint&step=last&g=4&t=num&l=15', 'hint&step=last&g=4&t=frac&l=9', 'hint&step=last&g=4&t=frac&l=10', 'hint&step=last&g=4&t=frac&l=11', 'hint&step=last&g=4&t=miss&l=11'];
 var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var want = SIZES.length * SCREENS.length, got = 0, fails = [];
