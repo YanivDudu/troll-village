@@ -277,6 +277,16 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .cpanel .btn{min-height:44px;font-size:clamp(14px,2.3vmin,18px);padding:4px 16px}
 .cpanel .pname{direction:ltr;text-transform:uppercase;letter-spacing:.1em;width:200px;min-height:44px}
 .cmsg{min-height:1.4em;font-weight:700;color:#6a3fd0}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.08;font-size:.8em;margin:0 .14em;direction:ltr}
+.fr i{font-style:normal;padding:0 .2em}.fr i:first-child{border-bottom:.1em solid currentColor}
+.mexpr.small{font-size:clamp(15px,3.2vmin,26px);line-height:1.5}
+.pgrade{position:absolute;top:4px;right:4px;min-height:34px;border-radius:99px;background:#e9f8ee;color:#1d7a39;font:inherit;font-weight:700;font-size:13px;padding:2px 10px}
+.grow{display:flex;gap:4px;justify-content:center;width:100%}
+.gbtn{flex:1 1 0;min-width:0;max-width:46px;height:38px;padding:0;border-radius:14px;background:#f3eefb;font:inherit;font-weight:700;font-size:17px;color:inherit;border:3px solid transparent}
+.gbtn.on{background:#8e5cff;color:#fff;border-color:#5a2fd0}
+.gask{font-size:13px;font-weight:700}.gask.need{color:#d0284e}
+.pnew{gap:5px}
+.grade.g1{background:#f08a24}.grade.g4{background:#d0284e}
 .pname{font:inherit;font-weight:700;font-size:18px;text-align:center;border:3px solid #b99bff;border-radius:16px;padding:6px;width:100%;min-height:50px;user-select:text;-webkit-user-select:text}
 
 /* ---------- explanation window and picture models ---------- */
@@ -547,11 +557,14 @@ var TrollLogic = (function () {
   // o: {rtl, extra, options, tip, vis}
   function Q(rng, text, answer, o) {
     o = o || {};
-    return {
+    var q = {
       text: text, answer: answer, rtl: !!o.rtl,
       options: o.options ? shuffle(o.options, rng) : options(answer, rng, o.extra),
       hint: { tip: o.tip || '', vis: o.vis || null }
     };
+    if (o.ex) q.exPre = o.ex;   // an explanation written for this exercise
+    if (o.fmt) q.fmtPre = o.fmt; // an exercise that is born in another activity format
+    return q;
   }
   function expr(rng, e, answer, o) { return Q(rng, e + ' = ?', answer, o); }
 
@@ -595,7 +608,7 @@ var TrollLogic = (function () {
       rtl: true, options: nums, tip: 'מַשְׁוִים קֹדֶם אֶת הַסִּפְרָה הַשְּׂמָאלִית בְּיוֹתֵר, וְרַק אַחַר כָּךְ אֶת הַבָּאוֹת'
     });
   }
-  var PLACES = ['הַיְּחִידוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים'];
+  var PLACES = ['הַיְּחִידוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים', 'עַשְׂרוֹת הָאֲלָפִים', 'מְאוֹת הָאֲלָפִים', 'הַמִּילְיוֹנִים'];
   function digitQ(r, len) {
     var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), used = ds.slice(0, len), n = Number(used.join('')), p = ri(r, 0, len - 1);
     var opts = len === 4 ? used : used.concat([ds[len]]);
@@ -856,9 +869,430 @@ var TrollLogic = (function () {
       } }
     ] }
   ];
+
+  // ================= grade 1 and grade 4 (added in version 3) =================
+  // Grade 1 follows the new curriculum: numbers to 100, adding and subtracting within 10 and 20, whole tens;
+  // no multiplication, no fractions, no < > signs. Its pictures are counters on the ten board, the number line
+  // and 10-shekel coins. Grade 4 follows the 2006 curriculum: numbers to a million, written multiplication through
+  // partial products, division by repeated subtraction, primes, divisibility by 3, 6, 9, powers, simple fractions.
+  function exOf(kind, steps) { return { kind: kind, steps: steps }; }
+  function discs(n) { return n === 1 ? 'דִּסְקִית אַחַת' : n + ' דִּסְקִיּוֹת'; }
+  function coinsOf(n) { return n === 1 ? 'מַטְבֵּעַ אֶחָד' : n + ' מַטְבְּעוֹת'; }
+  function zerosOf(n) { return n === 1 ? 'אֶפֶס אֶחָד' : n + ' אֲפָסִים'; }
+  function withEx(q, ex) { q.exPre = ex; return q; }
+  function exFrameAdd(a, b) {
+    var F = function (st) { return { t: 'frame', a: a, b: b, op: '+', st: st }; }, st = [];
+    st.push(S(a > 10 ? a + ' הֵם עֶשֶׂר וְעוֹד ' + (a - 10) + '. שָׂמִים ' + a + ' דִּסְקִיּוֹת' : 'שָׂמִים ' + discs(a) + ' בְּלוּחַ הָ-10', F(0)));
+    if (b === 0) st.push(S('מוֹסִיפִים 0, כְּלוֹמַר לֹא מוֹסִיפִים כְּלוּם. כַּמָּה דִּסְקִיּוֹת יֵשׁ?', F(1)));
+    else if (a < 10 && a + b > 10) {
+      st.push(S('מוֹסִיפִים ' + discs(b) + '. קֹדֶם מְמַלְּאִים אֶת הַלּוּחַ הָרִאשׁוֹן עַד 10', F(1)));
+      st.push(S('לוּחַ אֶחָד מָלֵא, וְזֶה 10. כַּמָּה דִּסְקִיּוֹת יֵשׁ בַּלּוּחַ הַשֵּׁנִי? כַּמָּה יֵשׁ יַחַד?', F(1)));
+    } else {
+      st.push(S('מוֹסִיפִים עוֹד ' + discs(b), F(1)));
+      st.push(S('סוֹפְרִים הָלְאָה מִ-' + a + '. כַּמָּה דִּסְקִיּוֹת יֵשׁ יַחַד?', F(1)));
+    }
+    return exOf('frame', st);
+  }
+  function exFrameSub(a, b) {
+    var F = function (st) { return { t: 'frame', a: a, b: b, op: '−', st: st }; }, st = [];
+    st.push(S(a > 10 ? a + ' הֵם עֶשֶׂר וְעוֹד ' + (a - 10) + '. שָׂמִים ' + a + ' דִּסְקִיּוֹת' : 'שָׂמִים ' + discs(a) + ' בְּלוּחַ הָ-10', F(0)));
+    if (b === 0) st.push(S('מוֹרִידִים 0, כְּלוֹמַר לֹא מוֹרִידִים כְּלוּם. כַּמָּה דִּסְקִיּוֹת נִשְׁאֲרוּ?', F(1)));
+    else {
+      if (a > 10 && b > a - 10 && b < a) st.push(S('מוֹרִידִים ' + b + ': קֹדֶם ' + (a - 10) + ' מֵהַלּוּחַ הַשֵּׁנִי, וְאָז עוֹד ' + (b - (a - 10)) + ' מֵהַלּוּחַ הַמָּלֵא', F(1)));
+      else st.push(S('מוֹרִידִים ' + discs(b), F(1)));
+      st.push(S('כַּמָּה דִּסְקִיּוֹת נִשְׁאֲרוּ?', F(1)));
+    }
+    return exOf('frame', st);
+  }
+  // Whole tens with 10-shekel coins: 2 + 6 = 8, so 20 + 60 = 80.
+  function exCoins(a, b, op) {
+    var C = function (st) { return { t: 'coins', a: a, b: b, op: op, st: st }; }, x = a / 10, y = b / 10;
+    return exOf('coins', [
+      S(a + ' הֵם ' + coinsOf(x) + ' שֶׁל 10', C(0)),
+      S((op === '+' ? 'מוֹסִיפִים ' : 'מוֹרִידִים ') + b + ', שֶׁהֵם ' + coinsOf(y) + ' שֶׁל 10', C(1)),
+      S(x + (op === '+' ? ' + ' : ' − ') + y + ' = ' + (op === '+' ? x + y : x - y) + ', אָז יֵשׁ ' + (op === '+' ? x + y : x - y) + ' עֲשָׂרוֹת. אֵיזֶה מִסְפָּר זֶה?', C(1))
+    ]);
+  }
+  function exNear(pts, at, ask) {
+    var M = { t: 'line', pts: pts, n: pts.length, q: at, plain: true };
+    return exOf('near', [S('מִסְתַּכְּלִים עַל יְשַׁר הַמִּסְפָּרִים. הַמִּסְפָּרִים גְּדֵלִים מִשְּׂמֹאל לְיָמִין', M), S(ask, M)]);
+  }
+  function neighbor(r, lo, hi) {
+    var n = ri(r, lo, hi), v = ri(r, 0, 2), pts = [n - 2, n - 1, n, n + 1, n + 2].filter(function (x) { return x >= 0; });
+    if (v === 0) return Q(r, 'אֵיזֶה מִסְפָּר בָּא אַחֲרֵי ' + n + '?', n + 1, { rtl: true, extra: [n - 1, n + 2, n + 10], tip: 'סוֹפְרִים קָדִימָה צַעַד אֶחָד',
+      ex: exNear(pts, pts.indexOf(n + 1), 'אֵיזֶה מִסְפָּר בָּא מִיָּד אַחֲרֵי ' + n + '?') });
+    if (v === 1) return Q(r, 'אֵיזֶה מִסְפָּר בָּא לִפְנֵי ' + n + '?', n - 1, { rtl: true, extra: [n + 1, n - 2], tip: 'סוֹפְרִים אֲחוֹרָה צַעַד אֶחָד',
+      ex: exNear(pts, pts.indexOf(n - 1), 'אֵיזֶה מִסְפָּר בָּא מִיָּד לִפְנֵי ' + n + '?') });
+    return Q(r, 'אֵיזֶה מִסְפָּר נִמְצָא בֵּין ' + (n - 1) + ' לְ-' + (n + 1) + '?', n, { rtl: true, extra: [n - 1, n + 1, n + 2], tip: 'הַמִּסְפָּר שֶׁבָּא אַחֲרֵי ' + (n - 1),
+      ex: exNear(pts, pts.indexOf(n), 'אֵיזֶה מִסְפָּר נִמְצָא בֵּין ' + (n - 1) + ' לְ-' + (n + 1) + '?') });
+  }
+  function extremeLine(r, nums) {
+    var q = extreme(r, nums), sorted = nums.slice().sort(function (a, b) { return a - b; }), big = q.answer === sorted[sorted.length - 1];
+    var M = { t: 'line', pts: sorted, n: sorted.length, plain: true };
+    q.hint.tip = 'עַל יְשַׁר הַמִּסְפָּרִים, מִסְפָּר שֶׁנִּמְצָא יוֹתֵר יָמִינָה גָּדוֹל יוֹתֵר';
+    return withEx(q, exOf('near', [S('מְסַדְּרִים אֶת הַמִּסְפָּרִים עַל יְשַׁר הַמִּסְפָּרִים', M),
+      S('מִסְפָּר שֶׁנִּמְצָא יוֹתֵר יָמִינָה גָּדוֹל יוֹתֵר. ' + (big ? 'מִי הֲכִי גָּדוֹל?' : 'מִי הֲכִי קָטָן?'), M)]));
+  }
+  function skipSeq(r) {
+    var step = pick(r, [2, 5, 10]), down = r() < 0.3, start = step * ri(r, step === 10 ? 1 : 2, step === 2 ? 20 : step === 5 ? 14 : 5), terms = [], i, hide = ri(r, 2, 4);
+    for (i = 0; i < 5; i++) terms.push(start + i * step);
+    if (down) terms.reverse();
+    var ans = terms[hide];
+    return Q(r, terms.map(function (x, k) { return k === hide ? '?' : x; }).join(' → '), ans, { extra: [ans + step, ans - step, ans + 1, ans - 1], tip: 'בְּכַמָּה קוֹפְצִים בְּכָל פַּעַם? הַקְּפִיצָה תָּמִיד שָׁוָה' });
+  }
+  var EQ_SAY = 'סִימַן הַשִּׁוְיוֹן אוֹמֵר שֶׁבִּשְׁנֵי הַצְּדָדִים יֵשׁ אוֹתָהּ כַּמּוּת';
+  var G1 = {
+    add: [
+      { g: 1, name: 'חִבּוּר עַד 10', f: function (r) {
+        var a = ri(r, 1, 8), b = r() < 0.12 ? 0 : ri(r, 1, 10 - a);
+        return expr(r, a + ' + ' + b, a + b, { tip: 'סוֹפְרִים הָלְאָה מֵהַמִּסְפָּר הָרִאשׁוֹן', ex: exFrameAdd(a, b) });
+      } },
+      { g: 1, name: 'חִבּוּר עַד 20 בְּלִי מַעֲבַר עֲשֶׂרֶת', f: function (r) {
+        var u = ri(r, 0, 7), a = 10 + u, b = ri(r, 1, 9 - u);
+        return expr(r, a + ' + ' + b, a + b, { tip: 'הָעֶשֶׂר נִשְׁאָר, מְחַבְּרִים רַק אֶת הַיְּחִידוֹת', ex: exFrameAdd(a, b) });
+      } },
+      { g: 1, name: 'חִבּוּר עַד 20 עִם מַעֲבַר עֲשֶׂרֶת', f: function (r) {
+        var a = ri(r, 4, 9), b = ri(r, 11 - a, 9);
+        return expr(r, a + ' + ' + b, a + b, { tip: 'מַשְׁלִימִים קֹדֶם לְ-10 וְאָז מוֹסִיפִים אֶת הַשְּׁאָר', ex: exFrameAdd(a, b) });
+      } },
+      { g: 1, name: 'חִבּוּר עֲשָׂרוֹת שְׁלֵמוֹת', f: function (r) {
+        var x = ri(r, 1, 8), y = ri(r, 1, 9 - x), s = (x + y) * 10;
+        return expr(r, x * 10 + ' + ' + y * 10, s, { options: [s, s + 10, s - 10, x + y], tip: x + ' עֲשָׂרוֹת וְעוֹד ' + y + ' עֲשָׂרוֹת', ex: exCoins(x * 10, y * 10, '+') });
+      } }
+    ],
+    sub: [
+      { g: 1, name: 'חִסּוּר עַד 10', f: function (r) {
+        var a = ri(r, 2, 10), v = r(), b = v < 0.1 ? 0 : v < 0.2 ? a : ri(r, 1, a - 1);
+        return expr(r, a + ' − ' + b, a - b, { tip: 'מוֹרִידִים וְסוֹפְרִים כַּמָּה נִשְׁאֲרוּ', ex: exFrameSub(a, b) });
+      } },
+      { g: 1, name: 'חִסּוּר עַד 20 בְּלִי מַעֲבַר עֲשֶׂרֶת', f: function (r) {
+        var u = ri(r, 1, 9), a = 10 + u, b = ri(r, 1, u);
+        return expr(r, a + ' − ' + b, a - b, { tip: 'הָעֶשֶׂר נִשְׁאָר, מוֹרִידִים רַק מֵהַיְּחִידוֹת', ex: exFrameSub(a, b) });
+      } },
+      { g: 1, name: 'חִסּוּר עַד 20 עִם מַעֲבַר עֲשֶׂרֶת', f: function (r) {
+        var a = ri(r, 11, 17), b = ri(r, a - 9, 9);
+        return expr(r, a + ' − ' + b, a - b, { tip: 'יוֹרְדִים קֹדֶם לְ-10 וְאָז מַמְשִׁיכִים לָרֶדֶת', ex: exFrameSub(a, b) });
+      } },
+      { g: 1, name: 'חִסּוּר עֲשָׂרוֹת שְׁלֵמוֹת', f: function (r) {
+        var x = ri(r, 2, 10), y = ri(r, 1, x - 1), d = (x - y) * 10;
+        return expr(r, x * 10 + ' − ' + y * 10, d, { options: [d, d + 10, d - 10, x - y], tip: x + ' עֲשָׂרוֹת פָּחוֹת ' + y + ' עֲשָׂרוֹת', ex: exCoins(x * 10, y * 10, '−') });
+      } }
+    ],
+    num: [
+      { g: 1, name: 'מִסְפָּרִים עַד 20', f: function (r) {
+        return r() < 0.65 ? neighbor(r, 2, 18) : extremeLine(r, distinct(4, function () { return ri(r, 1, 20); }));
+      } },
+      { g: 1, name: 'מִסְפָּרִים עַד 100', f: function (r) {
+        if (r() < 0.6) return neighbor(r, 21, 98);
+        var d = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r), base = [d[0] * 10 + d[1], d[1] * 10 + d[0]], seen = {}, n;
+        seen[base[0]] = seen[base[1]] = true;
+        while (base.length < 4) { n = ri(r, 11, 99); if (!seen[n]) { seen[n] = true; base.push(n); } }
+        return extremeLine(r, base);
+      } },
+      { g: 1, name: 'קְפִיצוֹת שֶׁל 2, 5 וְ-10', f: skipSeq }
+    ],
+    miss: [
+      { g: 1, name: 'מַשְׁלִימִים לְ-10', f: function (r) {
+        var a = ri(r, 1, 9), F = function (st) { return { t: 'frame', a: a, b: 10, op: '?', st: st }; };
+        if (r() < 0.33) return Q(r, '10 − □ = ' + a, 10 - a, { tip: 'כַּמָּה צָרִיךְ לְהוֹרִיד מִ-10 כְּדֵי שֶׁיִּשָּׁאֲרוּ ' + a + '?', ex: exOf('frame', [
+          S('לוּחַ הָ-10 הָיָה מָלֵא. רוֹצִים שֶׁיִּשָּׁאֲרוּ בּוֹ ' + discs(a), F(0)),
+          S('כַּמָּה דִּסְקִיּוֹת הוֹרִידוּ? סוֹפְרִים אֶת הַמְּקוֹמוֹת הָרֵיקִים', F(1))]) });
+        return Q(r, r() < 0.5 ? a + ' + □ = 10' : '□ + ' + a + ' = 10', 10 - a, { tip: 'כַּמָּה חָסֵר כְּדֵי לְמַלֵּא אֶת לוּחַ הָ-10?', ex: exOf('frame', [
+          S('שָׂמִים ' + discs(a) + ' בְּלוּחַ הָ-10', F(0)),
+          S('כַּמָּה מְקוֹמוֹת רֵיקִים נִשְׁאֲרוּ בַּלּוּחַ? זֶה הַמִּסְפָּר הֶחָסֵר', F(1))]) });
+      } },
+      { g: 1, name: 'מִסְפָּר חָסֵר עַד 10', f: function (r) { var c = ri(r, 4, 10), a = ri(r, 1, c - 1); return missAdd(r, a, c - a, true); } },
+      { g: 1, name: 'סִימַן הַשִּׁוְיוֹן מִשְּׂמֹאל', f: function (r) {
+        var c = ri(r, 5, 12), a = ri(r, 1, c - 1), b = c - a, v = ri(r, 0, 2), tip = 'בִּשְׁנֵי הַצְּדָדִים שֶׁל סִימַן הַשִּׁוְיוֹן צְרִיכָה לִהְיוֹת אוֹתָהּ כַּמּוּת';
+        if (v === 0) return Q(r, c + ' = ' + a + ' + □', b, { tip: tip, ex: prefixed(EQ_SAY, exMissAdd(a, c)) });
+        if (v === 1) return Q(r, c + ' = □ + ' + b, a, { tip: tip, ex: prefixed(EQ_SAY, exMissAdd(b, c)) });
+        return Q(r, a + ' = ' + c + ' − □', b, { tip: tip, ex: prefixed(EQ_SAY, exMissAdd(a, c)) });
+      } }
+    ]
+  };
+
+  // ---------- grade 4 ----------
+  var PRIMES = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+  var ODD_COMPOSITES = [21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93, 99];
+  var SUP = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
+  var FR_PL = { 2: 'חֲצָאִים', 3: 'שְׁלִישִׁים', 4: 'רְבָעִים', 5: 'חֲמִישִׁיּוֹת', 6: 'שִׁשִּׁיּוֹת', 8: 'שְׁמִינִיּוֹת' };
+  function fr(n, d) { return n + '/' + d; }
+  function parts(n) { return n === 1 ? 'חֵלֶק אֶחָד' : n + ' חֲלָקִים'; }
+  // four distinct answer strings: the right one and the first three other candidates
+  function strOpts(ans, cand) {
+    var out = [ans], seen = {}; seen[ans] = true;
+    cand.forEach(function (c) { if (out.length < 4 && !seen[c]) { seen[c] = true; out.push(c); } });
+    return out;
+  }
+  function stripZeros(n) { var z = 0; while (n % 10 === 0) { n /= 10; z++; } return [n, z]; }
+  function bigDigit(r) {
+    var len = ri(r, 5, 6), ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r).slice(0, len), n = Number(ds.join('')), p = ri(r, 0, len - 1), ans = ds[len - 1 - p];
+    var others = shuffle(ds.filter(function (x) { return x !== ans; }), r).slice(0, 3);
+    return Q(r, 'מַהִי סִפְרַת ' + PLACES[p] + ' בַּמִּסְפָּר ' + fmt(n) + '?', ans, { rtl: true, options: [ans].concat(others), tip: 'מִיָּמִין לִשְׂמֹאל: יְחִידוֹת, עֲשָׂרוֹת, מֵאוֹת, אֲלָפִים, עַשְׂרוֹת אֲלָפִים, מְאוֹת אֲלָפִים',
+      ex: exOf('ptab', [S('כּוֹתְבִים אֶת הַמִּסְפָּר בְּטַבְלַת עֵרֶךְ הַמָּקוֹם', { t: 'ptab', n: n, hi: -1 }),
+        S('אֵיזוֹ סִפְרָה נִמְצֵאת בָּעַמּוּדָה שֶׁל ' + PLACES[p] + '?', { t: 'ptab', n: n, hi: p })]) });
+  }
+  function divisible(r) {
+    var d = pick(r, [3, 6, 9]), good = d * ri(r, 34, 1100), opts = [good].concat(distinct(3, function () {
+      var x = ri(r, 102, 9800); if (d === 6 && r() < 0.5) x = 3 * Math.floor(x / 3) + (Math.floor(x / 3) % 2 ? 0 : 3); // an odd multiple of 3: tempting for 6
+      return x % d ? x : x + 1;
+    }));
+    var lines = opts.slice().sort(function (a, b) { return a - b; }).map(function (n) {
+      var ds = String(n).split(''), sum = 0; ds.forEach(function (x) { sum += +x; });
+      return fmt(n) + ':  ' + ds.join(' + ') + ' = ' + sum;
+    }).join('<br>');
+    var rule = d === 6 ? 'מִסְפָּר מִתְחַלֵּק בְּ-6 אִם הוּא זוּגִי וְגַם סְכוּם הַסְּפָרוֹת שֶׁלּוֹ מִתְחַלֵּק בְּ-3' : 'מִסְפָּר מִתְחַלֵּק בְּ-' + d + ' אִם סְכוּם הַסְּפָרוֹת שֶׁלּוֹ מִתְחַלֵּק בְּ-' + d;
+    return Q(r, 'אֵיזֶה מִסְפָּר מִתְחַלֵּק בְּ-' + d + '?', good, { rtl: true, options: opts, tip: rule,
+      ex: exOf('digits', [S('מְחַבְּרִים אֶת הַסְּפָרוֹת שֶׁל כָּל מִסְפָּר', { t: 'expr', s: lines, small: true }), S(rule + '. אֵיזֶה מִסְפָּר מַתְאִים?', { t: 'expr', s: lines, small: true })]) });
+  }
+  function primeQ(r) {
+    var v = ri(r, 0, 2);
+    if (v === 2) {
+      var ps, n;
+      do { ps = [pick(r, [2, 2, 3]), pick(r, [2, 3, 5]), pick(r, [2, 3, 5, 7])].sort(function (a, b) { return a - b; }); n = ps[0] * ps[1] * ps[2]; } while (n > 100);
+      return Q(r, n + ' = ' + ps[0] + ' × ' + ps[1] + ' × □', ps[2], { options: [2, 3, 5, 7], tip: 'מְפָרְקִים לְגוֹרְמִים רִאשׁוֹנִיִּים, צַעַד אַחֲרֵי צַעַד',
+        ex: exOf('factor', [S('מְפָרְקִים צַעַד אַחֲרֵי צַעַד: ' + n + ' = ' + ps[0] + ' × ' + n / ps[0], { t: 'expr', s: n + ' = ' + ps[0] + ' × ' + n / ps[0] }),
+          S('עַכְשָׁו מְפָרְקִים גַּם אֶת ' + n / ps[0] + ': ' + ps[1] + ' כָּפוּל כַּמָּה נוֹתֵן ' + n / ps[0] + '?', { t: 'expr', s: n / ps[0] + ' = ' + ps[1] + ' × □' })]) });
+    }
+    var prime = v === 0, good = prime ? pick(r, PRIMES) : pick(r, ODD_COMPOSITES), opts = [good].concat(shuffle(prime ? ODD_COMPOSITES : PRIMES, r).slice(0, 3));
+    var M = { t: 'expr', s: opts.slice().sort(function (a, b) { return a - b; }).join('     ') };
+    return Q(r, prime ? 'אֵיזֶה מִסְפָּר רִאשׁוֹנִי?' : 'אֵיזֶה מִסְפָּר פָּרִיק?', good, { rtl: true, options: opts, tip: 'מִסְפָּר רִאשׁוֹנִי מִתְחַלֵּק רַק בְּ-1 וּבְעַצְמוֹ',
+      ex: exOf('prime', [S('מִסְפָּר רִאשׁוֹנִי מִתְחַלֵּק רַק בְּ-1 וּבְעַצְמוֹ. מִסְפָּר פָּרִיק מִתְחַלֵּק גַּם בְּמִסְפָּרִים אֲחֵרִים', M),
+        S('בּוֹדְקִים כָּל מִסְפָּר: הַאִם הוּא מִתְחַלֵּק בְּ-3, בְּ-7 אוֹ בְּ-11? סְכוּם הַסְּפָרוֹת עוֹזֵר לִבְדֹּק הִתְחַלְּקוּת בְּ-3. ' + (prime ? 'אֵיזֶה מִסְפָּר רִאשׁוֹנִי?' : 'אֵיזֶה מִסְפָּר פָּרִיק?'), M)]) });
+  }
+  function powerQ(r) {
+    var a = pick(r, [2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10]), b = ri(r, 2, a === 2 ? 9 : a === 3 ? 6 : a <= 5 ? 4 : a <= 7 || a === 10 ? 3 : 2), ans = Math.pow(a, b), i, chain = [], cur = a, mult = [];
+    for (i = 0; i < b; i++) mult.push(a);
+    for (i = 1; i < b - 1; i++) { chain.push(cur + ' × ' + a + ' = ' + cur * a); cur *= a; }
+    chain.push(cur + ' × ' + a + ' = ?');
+    return expr(r, a + SUP[b], ans, { extra: [a * b, Math.pow(b, a) <= 1000 ? Math.pow(b, a) : a * b + a, ans / a], tip: 'חֶזְקָה הִיא כְּתִיב מְקֻצָּר לְכֶפֶל חוֹזֵר',
+      ex: exOf('power', [S('חֶזְקָה הִיא כְּתִיב מְקֻצָּר לְכֶפֶל חוֹזֵר. הַמַּעֲרִיךְ ' + b + ' אוֹמֵר שֶׁ-' + a + ' מוֹפִיעַ כְּגוֹרֵם ' + b + ' פְּעָמִים', { t: 'expr', s: a + SUP[b] + ' = ' + mult.join(' × ') }),
+        S('כּוֹפְלִים צַעַד אַחֲרֵי צַעַד. כַּמָּה יָצָא?', { t: 'expr', s: chain.join('<br>'), small: chain.length > 2 })]) });
+  }
+  function compareQ(r) {
+    var v = ri(r, 0, 3), a = ri(r, 1200, 9800), b = ri(r, 105, 990), c, d = pick(r, [1, 10, 100]), text, ans, st, q;
+    do { c = ri(r, 105, 990); } while (c === b);
+    if (v === 0) { text = fmt(a) + ' − ' + b + ' ◯ ' + fmt(a) + ' − ' + c; ans = b < c ? '>' : '<'; st = ['בִּשְׁנֵי הַצְּדָדִים מַתְחִילִים מֵאוֹתוֹ מִסְפָּר, ' + fmt(a), 'מֵאֵיזֶה צַד מְחַסְּרִים יוֹתֵר? מִי שֶׁמְּחַסֵּר יוֹתֵר נִשְׁאָר עִם פָּחוֹת. אֵיזֶה סִימָן מַתְאִים?']; }
+    else if (v === 1) { text = fmt(a) + ' + ' + b + ' ◯ ' + fmt(a) + ' + ' + c; ans = b < c ? '<' : '>'; st = ['בִּשְׁנֵי הַצְּדָדִים מַתְחִילִים מֵאוֹתוֹ מִסְפָּר, ' + fmt(a), 'לְאֵיזֶה צַד מוֹסִיפִים יוֹתֵר? מִי שֶׁמּוֹסִיף יוֹתֵר מַגִּיעַ לְמִסְפָּר גָּדוֹל יוֹתֵר. אֵיזֶה סִימָן מַתְאִים?']; }
+    else if (v === 2) { text = fmt(a) + ' + ' + b + ' ◯ ' + fmt(a + d) + ' + ' + (b - d); ans = '='; st = ['מַשְׁוִים בֵּין הַצְּדָדִים: הַמְּחֻבָּר הָרִאשׁוֹן גָּדַל בְּ-' + d, 'וְהַמְּחֻבָּר הַשֵּׁנִי קָטֵן בְּ-' + d + '. מָה קוֹרֶה לַסְּכוּם? אֵיזֶה סִימָן מַתְאִים?']; }
+    else { text = fmt(a) + ' − ' + b + ' ◯ ' + fmt(a + d) + ' − ' + (b + d); ans = '='; st = ['מַשְׁוִים בֵּין הַצְּדָדִים: הַמְּחֻסָּר גָּדַל בְּ-' + d, 'וְגַם הַמְּחַסֵּר גָּדַל בְּ-' + d + '. מָה קוֹרֶה לַהֶפְרֵשׁ? אֵיזֶה סִימָן מַתְאִים?']; }
+    var M = { t: 'expr', s: text.replace('◯', '□'), small: true };
+    q = Q(r, text, ans, { options: ['<', '=', '>'], fmt: 'cmp', tip: 'מַשְׁוִים בְּלִי לְחַשֵּׁב: מָה שׁוֹנֶה בֵּין שְׁנֵי הַצְּדָדִים?', ex: exOf('compare', [S(st[0], M), S(st[1], M)]) });
+    q.options = ['<', '=', '>'];
+    return q;
+  }
+  function fracBars(d, w, shaded) { var out = []; for (var i = 0; i < w; i++) out.push({ den: d, num: shaded ? d : 0 }); return { t: 'fb', bars: out }; }
+  var G4 = {
+    add: [
+      { g: 4, name: 'חִבּוּר בְּעַל-פֶּה בָּאֲלָפִים', f: function (r) {
+        var a = ri(r, 11, 89) * 100, b = ri(r, 1, 8) * 100 + ri(r, 11, 99), h = Math.floor(b / 100) * 100;
+        return expr(r, fmt(a) + ' + ' + b, a + b, { extra: [a + b + 100, a + b - 100, a + b + 1000], tip: 'מוֹסִיפִים קֹדֶם אֶת הַמֵּאוֹת וְאָז אֶת הַשְּׁאָר',
+          ex: exOf('bysteps', [S('מְפָרְקִים אֶת ' + b + ': ' + h + ' + ' + (b - h), { t: 'expr', s: fmt(a) + ' + ' + h + ' + ' + (b - h) }),
+            S('מוֹסִיפִים קֹדֶם אֶת הַמֵּאוֹת: ' + fmt(a) + ' + ' + h + ' = ' + fmt(a + h), { t: 'expr', s: '[' + fmt(a) + ' + ' + h + '] + ' + (b - h) }),
+            S('וְעַכְשָׁו ' + fmt(a + h) + ' + ' + (b - h) + '. כַּמָּה יָצָא?', { t: 'expr', s: fmt(a + h) + ' + ' + (b - h) + ' = ?' })]) });
+      } },
+      { g: 4, name: 'חִבּוּר מִסְפָּרִים גְּדוֹלִים', f: function (r) {
+        var a = ri(r, 12000, 68000), b = ri(r, 1050, Math.min(a - 1, 29900));
+        return expr(r, fmt(a) + ' + ' + fmt(b), a + b, { extra: [a + b + 1000, a + b - 1000, a + b + 10000], tip: 'כּוֹתְבִים בִּמְאֻנָּךְ וּמְחַבְּרִים מֵהַיְּחִידוֹת שְׂמֹאלָה', ex: exVert(a, b, '+') });
+      } },
+      { g: 4, name: 'שְׁלוֹשָׁה מְחֻבָּרִים גְּדוֹלִים', f: function (r) {
+        var a = ri(r, 205, 890), b = ri(r, 105, 690), c = ri(r, 105, 490);
+        return expr(r, a + ' + ' + b + ' + ' + c, a + b + c, { extra: [a + b + c + 100, a + b + c - 100, a + b + c + 10], tip: 'מְחַבְּרִים קֹדֶם שְׁנֵי מִסְפָּרִים, וְאָז מוֹסִיפִים אֶת הַשְּׁלִישִׁי' });
+      } }
+    ],
+    sub: [
+      { g: 4, name: 'חִסּוּר מִסְפָּרִים גְּדוֹלִים', f: function (r) {
+        var a = ri(r, 21000, 98000), b = ri(r, 1050, a - 10500);
+        return expr(r, fmt(a) + ' − ' + fmt(b), a - b, { extra: [a - b + 1000, a - b - 1000, a - b + 10000], tip: 'כּוֹתְבִים בִּמְאֻנָּךְ. כְּשֶׁאֵין מַסְפִּיק, פּוֹרְטִים מֵהַמָּקוֹם שֶׁמִּשְּׂמֹאל', ex: exVert(a, b, '−') });
+      } },
+      { g: 4, name: 'הַשְׁוָאָה בְּלִי לְחַשֵּׁב', f: compareQ }
+    ],
+    mul: [
+      { g: 4, name: 'כֶּפֶל עֲשָׂרוֹת וּמֵאוֹת שְׁלֵמוֹת', f: function (r) {
+        var v = ri(r, 0, 2), x = v === 2 ? ri(r, 11, 35) : ri(r, 2, 9) * 10, y = ri(r, 2, 9) * (v === 1 ? 100 : 10);
+        if (v === 2 && x % 10 === 0) x += 2;
+        var cx = stripZeros(x), cy = stripZeros(y), core = cx[0] * cy[0], z = cx[1] + cy[1];
+        return expr(r, x + ' × ' + y, x * y, { extra: [x * y / 10, x * y * 10, (cx[0] + cy[0]) * Math.pow(10, z)], tip: 'כּוֹפְלִים בְּלִי הָאֲפָסִים, וְאָז מַחְזִירִים אֶת כָּל הָאֲפָסִים',
+          ex: exOf('zeros', [S('כּוֹפְלִים קֹדֶם בְּלִי הָאֲפָסִים: ' + cx[0] + ' × ' + cy[0] + ' = ' + core, { t: 'expr', s: cx[0] + ' × ' + cy[0] + ' = ' + core }),
+            S('סוֹפְרִים אֶת הָאֲפָסִים בִּשְׁנֵי הַגּוֹרְמִים: ' + zerosOf(z), { t: 'expr', s: x + ' × ' + y }),
+            S('כּוֹתְבִים ' + core + ' וְאַחֲרָיו ' + zerosOf(z) + '. אֵיזֶה מִסְפָּר יָצָא?', { t: 'shift', n: core, k: z, st: 1 })]) });
+      } },
+      { g: 4, name: 'תְּלַת-סִפְרָתִי כָּפוּל חַד-סִפְרָתִי', f: function (r) {
+        var a = ri(r, 112, 989), b = ri(r, 3, 9);
+        if (a % 10 === 0) a += 3;
+        return expr(r, a + ' × ' + b, a * b, { extra: [a * b + b, a * b - b, a * b + 10 * b, a * b + 100], tip: 'מְפָרְקִים לְמֵאוֹת, לַעֲשָׂרוֹת וְלִיחִידוֹת, וְכוֹפְלִים כָּל חֵלֶק' });
+      } },
+      { g: 4, name: 'דּוּ-סִפְרָתִי כָּפוּל דּוּ-סִפְרָתִי', f: function (r) {
+        var a = ri(r, 12, 49), b = ri(r, 12, 39);
+        if (a % 10 === 0) a += 4;
+        if (b % 10 === 0) b += 3;
+        var A = [Math.floor(a / 10) * 10, a % 10], B = [Math.floor(b / 10) * 10, b % 10], G = function (n) { return { t: 'grid', a: A, b: B, n: n }; };
+        var ps = [A[0] * B[0], A[0] * B[1], A[1] * B[0], A[1] * B[1]];
+        return expr(r, a + ' × ' + b, a * b, { extra: [ps[0] + ps[3], a * b + 10, a * b - 10, a * b + 100], tip: 'אַרְבַּע מַכְפֵּלוֹת חֶלְקִיּוֹת: עֲשָׂרוֹת בַּעֲשָׂרוֹת, עֲשָׂרוֹת בִּיחִידוֹת, יְחִידוֹת בַּעֲשָׂרוֹת וִיחִידוֹת בִּיחִידוֹת',
+          ex: exOf('grid', [S('מְפָרְקִים כָּל גּוֹרֵם לַעֲשָׂרוֹת וְלִיחִידוֹת: ' + a + ' = ' + A[0] + ' + ' + A[1] + ' וְגַם ' + b + ' = ' + B[0] + ' + ' + B[1], G(0)),
+            S('כּוֹפְלִים כָּל חֵלֶק בְּכָל חֵלֶק. מִתְקַבְּלוֹת אַרְבַּע מַכְפֵּלוֹת חֶלְקִיּוֹת', G(4)),
+            S('מְחַבְּרִים אֶת אַרְבַּע הַמַּכְפֵּלוֹת: ' + ps.join(' + ') + '. כַּמָּה יָצָא?', G(4))]) });
+      } }
+    ],
+    div: [
+      { g: 4, name: 'חִלּוּק עִם שְׁאֵרִית עַד 100', f: function (r) {
+        var b, q, rem, c;
+        do { b = ri(r, 3, 8); q = ri(r, 10, Math.floor(98 / b)); rem = ri(r, 1, b - 1); c = b * q + rem; } while (c > 99);
+        var rest = c - 10 * b, first = S('מְפָרְקִים אֶת ' + c + ': ' + b + ' × 10 = ' + 10 * b + ', וְנִשְׁאַר ' + rest, { t: 'expr', s: c + ' − ' + 10 * b + ' = ' + rest });
+        var tip = 'מְחַפְּשִׂים אֶת הַמִּסְפָּר הַגָּדוֹל בְּיוֹתֵר בְּלוּחַ הַכֶּפֶל שֶׁל ' + b + ' שֶׁלֹּא עוֹבֵר אֶת ' + c;
+        if (r() < 0.5) return Q(r, 'מָה הַשְּׁאֵרִית בַּתַּרְגִּיל ' + ltr(c + ' : ' + b) + '?', rem, { rtl: true, tip: tip, ex: exOf('remsplit', q > 10
+          ? [first, S(b + ' × ' + (q - 10) + ' = ' + b * (q - 10) + ', וְזֶה הֲכִי קָרוֹב לְ-' + rest + ' בְּלִי לַעֲבֹר אוֹתוֹ', { t: 'expr', s: b + ' × ' + (q - 10) + ' = ' + b * (q - 10) }),
+            S('כַּמָּה נִשְׁאַר? זוֹ הַשְּׁאֵרִית', { t: 'expr', s: rest + ' − ' + b * (q - 10) + ' = ?' })]
+          : [first, S(rest + ' קָטָן מִ-' + b + ', אָז אִי אֶפְשָׁר לְחַלֵּק עוֹד. כַּמָּה נִשְׁאַר? זוֹ הַשְּׁאֵרִית', { t: 'expr', s: c + ' − ' + 10 * b + ' = ?' })]) });
+        return Q(r, 'כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס ' + b + ' בְּתוֹךְ ' + c + '?', q, { rtl: true, extra: [q + 1, q - 1, rem], tip: tip, ex: exOf('remsplit', [first,
+          S('כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס ' + b + ' בְּתוֹךְ ' + rest + '? מוֹסִיפִים אֶת זֶה לְ-10', { t: 'expr', s: '10 + □' })]) });
+      } },
+      { g: 4, name: 'תְּלַת-סִפְרָתִי לְחַלֵּק לְחַד-סִפְרָתִי', f: function (r) {
+        var b = ri(r, 2, 9), q = ri(r, 101, Math.floor(999 / b)), c = b * q, h = Math.floor(q / 100) * 100, t = Math.floor(q % 100 / 10) * 10, u = q % 10, st = [], left = c - b * h;
+        st.push(S('מְחַסְּרִים בְּכָל פַּעַם כְּפוּלָה נוֹחָה שֶׁל ' + b + '. ' + b + ' × ' + h + ' = ' + b * h + ', וְנִשְׁאַר ' + left, { t: 'expr', s: c + ' − ' + b * h + ' = ' + left }));
+        if (t) { st.push(S(b + ' × ' + t + ' = ' + b * t + ', וְנִשְׁאַר ' + (left - b * t), { t: 'expr', s: left + ' − ' + b * t + ' = ' + (left - b * t) })); left -= b * t; }
+        if (u) st.push(S(b + ' × ' + u + ' = ' + b * u + ', וְלֹא נִשְׁאַר כְּלוּם', { t: 'expr', s: left + ' − ' + b * u + ' = 0' }));
+        var ps = [h, t, u].filter(function (x) { return x; });
+        st.push(S('מְחַבְּרִים אֶת הַמָּנוֹת הַחֶלְקִיּוֹת: ' + ps.join(' + ') + '. כַּמָּה יָצָא?', { t: 'expr', s: ps.join(' + ') + ' = ?' }));
+        return expr(r, c + ' : ' + b, q, { extra: [q + 10, q - 10, q + 1, q - 1], tip: 'מְחַלְּקִים בְּחֶלְקִים: קֹדֶם מֵאוֹת, אַחַר כָּךְ עֲשָׂרוֹת וִיחִידוֹת', ex: exOf('chunks', st) });
+      } },
+      { g: 4, name: 'חִלּוּק בַּעֲשָׂרוֹת שְׁלֵמוֹת', f: function (r) {
+        var k = ri(r, 2, 9), b = k * 10, q = ri(r, 3, Math.floor(99 / k)), c = b * q;
+        return expr(r, fmt(c) + ' : ' + b, q, { extra: [q * 10, q + 10, q - 1, q + 1], tip: 'מְחַלְּקִים אֶת שְׁנֵי הַמִּסְפָּרִים בְּ-10, וְהַמָּנָה לֹא מִשְׁתַּנָּה',
+          ex: exOf('tens', [S('כַּמָּה פְּעָמִים נִכְנָס ' + b + ' בְּ-' + fmt(c) + '? בִּשְׁנֵיהֶם סוֹפְרִים בַּעֲשָׂרוֹת: ' + c / 10 + ' עֲשָׂרוֹת וְ-' + k + ' עֲשָׂרוֹת', { t: 'expr', s: fmt(c) + ' : ' + b + ' = ' + c / 10 + ' : ' + k }),
+            S('וְעַכְשָׁו ' + c / 10 + ' : ' + k + '. כַּמָּה יָצָא?', { t: 'expr', s: c / 10 + ' : ' + k + ' = ?' })]) });
+      } }
+    ],
+    num: [
+      { g: 4, name: 'מִסְפָּרִים עַד מִילְיוֹן', f: function (r) {
+        var v = ri(r, 0, 3), n, st;
+        if (v === 0) return bigDigit(r);
+        if (v === 1) {
+          n = pick(r, [9999, 19999, 99999, 109999, 199999, 999999, ri(r, 12, 98) * 1000 + 999]);
+          return r() < 0.5 ? expr(r, fmt(n) + ' + 1', n + 1, { extra: [n + 10, n + 2], tip: 'הַמִּסְפָּר הָעוֹקֵב גָּדוֹל בְּ-1' })
+            : expr(r, fmt(n + 1) + ' − 1', n, { extra: [n - 1, n + 1 - 10], tip: 'הַמִּסְפָּר הַקּוֹדֵם קָטָן בְּ-1' });
+        }
+        if (v === 2) {
+          st = pick(r, [1000, 10000, 100000]); n = ri(r, 2, 8) * 100000 + ri(r, 1, 8) * 10000 + ri(r, 1, 8) * 1000 + ri(r, 1, 999);
+          var up = r() < 0.5;
+          return expr(r, fmt(n) + (up ? ' + ' : ' − ') + fmt(st), up ? n + st : n - st, { tip: 'מִשְׁתַּנָּה רַק סִפְרָה אַחַת. אֵיזוֹ?' });
+        }
+        var ds = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], r).slice(0, 6);
+        return extreme(r, distinct(4, function () { return Number(ds.slice(0, 2).concat(shuffle(ds.slice(2), r)).join('')); }));
+      } },
+      { g: 4, name: 'סִימָנֵי הִתְחַלְּקוּת בְּ-3, בְּ-6 וּבְ-9', f: divisible },
+      { g: 4, name: 'מִסְפָּרִים רִאשׁוֹנִיִּים וּפְרִיקִים', f: primeQ },
+      { g: 4, name: 'חֲזָקוֹת', f: powerQ }
+    ],
+    frac: [
+      { g: 4, name: 'שְׁלֵמִים וַחֲלָקִים', f: function (r) {
+        var d = pick(r, [2, 3, 4, 5, 6, 8]), v = ri(r, 0, 2), w, k;
+        if (v === 0) {
+          w = ri(r, 2, 4);
+          return Q(r, 'כַּמָּה ' + FR_PL[d] + ' יֵשׁ בְּ-' + w + ' שְׁלֵמִים?', w * d, { rtl: true, extra: [w + d, d, w * d + d], tip: 'בְּכָל שָׁלֵם יֵשׁ ' + d + ' ' + FR_PL[d],
+            ex: exOf('fb', [S('כָּל שָׁלֵם מְחֻלָּק לְ-' + d + ' חֲלָקִים שָׁוִים', fracBars(d, w, false)), S('סוֹפְרִים אֶת כָּל הַחֲלָקִים בְּ-' + w + ' הַשְּׁלֵמִים. כַּמָּה ' + FR_PL[d] + ' יֵשׁ?', fracBars(d, w, true))]) });
+        }
+        if (v === 1) {
+          if (d === 2) d = 3;
+          k = ri(r, 1, d - 1);
+          var M = { t: 'fb', bars: [{ den: d, num: d }, { den: d, num: k }] };
+          return Q(r, 'בַּשֶּׁבֶר ' + ltr(fr(d + k, d)) + ' יֵשׁ שָׁלֵם אֶחָד וְעוֹד כַּמָּה ' + FR_PL[d] + '?', k, { rtl: true, extra: [d, d + k, k + 1], tip: d + ' ' + FR_PL[d] + ' הֵם שָׁלֵם אֶחָד',
+            ex: exOf('fb', [S('צוֹבְעִים ' + (d + k) + ' חֲלָקִים. כָּל ' + d + ' חֲלָקִים הֵם שָׁלֵם אֶחָד', M), S('שָׁלֵם אֶחָד מָלֵא. כַּמָּה חֲלָקִים צְבוּעִים בַּשָּׁלֵם הַשֵּׁנִי?', M)]) });
+        }
+        if (d === 2) d = 4;
+        var kind = ri(r, 0, 2), one = fr(d, d), more = fr(d + ri(r, 1, d - 1), d), less = fr(d - 1, d), ans = kind === 0 ? one : kind === 1 ? more : less;
+        var opts = kind === 0 ? [one, less, more, fr(1, d)] : kind === 1 ? [more, one, less, fr(1, d)] : [less, one, more, fr(2 * d, d)];
+        return Q(r, kind === 0 ? 'אֵיזֶה שֶׁבֶר שָׁוֶה לְ-1?' : kind === 1 ? 'אֵיזֶה שֶׁבֶר גָּדוֹל מִ-1?' : 'אֵיזֶה שֶׁבֶר קָטָן מִ-1?', ans, { rtl: true, options: opts, tip: 'מַשְׁוִים אֶת הַמּוֹנֶה לַמְּכַנֶּה',
+          ex: exOf('fb', [S('בְּשָׁלֵם אֶחָד יֵשׁ ' + d + ' ' + FR_PL[d], fracBars(d, 1, true)),
+            S('כְּשֶׁהַמּוֹנֶה שָׁוֶה לַמְּכַנֶּה, הַשֶּׁבֶר שָׁוֶה לְ-1. כְּשֶׁהַמּוֹנֶה גָּדוֹל מֵהַמְּכַנֶּה, הַשֶּׁבֶר גָּדוֹל מִ-1. אֵיזֶה שֶׁבֶר מַתְאִים?', fracBars(d, 1, true))]) });
+      } },
+      { g: 4, name: 'הַשְׁוָאַת שְׁבָרִים', f: function (r) {
+        var same = r() < 0.5, big = r() < 0.6, list, d, n;
+        if (same) { d = ri(r, 6, 10); list = distinct(4, function () { return ri(r, 1, d - 1); }).map(function (x) { return [x, d]; }); }
+        else { n = pick(r, [1, 1, 2, 3]); list = distinct(4, function () { return ri(r, n + 1, 12); }).map(function (x) { return [n, x]; }); }
+        var val = function (p) { return p[0] / p[1]; }, best = list.slice().sort(function (a, b) { return big ? val(b) - val(a) : val(a) - val(b); })[0];
+        var M = { t: 'fb', bars: list.map(function (p) { return { den: p[1], num: p[0], label: fr(p[0], p[1]) }; }) }, ask = big ? 'אֵיזֶה שֶׁבֶר הֲכִי גָּדוֹל?' : 'אֵיזֶה שֶׁבֶר הֲכִי קָטָן?';
+        var rule = same ? 'הַמְּכַנִּים שָׁוִים, אָז כָּל הַחֲלָקִים בְּאוֹתוֹ גֹּדֶל. מִי שֶׁיֵּשׁ לוֹ יוֹתֵר חֲלָקִים, גָּדוֹל יוֹתֵר' : 'הַמּוֹנִים שָׁוִים. כְּכָל שֶׁהַמְּכַנֶּה גָּדוֹל יוֹתֵר, כָּל חֵלֶק קָטָן יוֹתֵר';
+        return Q(r, ask, fr(best[0], best[1]), { rtl: true, options: list.map(function (p) { return fr(p[0], p[1]); }), tip: rule,
+          ex: exOf('fb', [S('מְצַיְּרִים מַלְבֵּן זֵהֶה לְכָל שֶׁבֶר, וְצוֹבְעִים', M), S(rule + '. ' + ask, M)]) });
+      } },
+      { g: 4, name: 'חִבּוּר וְחִסּוּר שְׁבָרִים', f: function (r) {
+        var d = pick(r, [3, 4, 5, 6, 8, 10]), v = ri(r, 0, 2), a, b, B = function (x, y) { return { t: 'fb', bars: [{ den: d, num: x, num2: y }] }; };
+        if (d === 3 && v !== 2) d = 5;
+        if (v === 0) {
+          a = ri(r, 1, d - 2); b = ri(r, 1, d - 1 - a);
+          return expr(r, fr(a, d) + ' + ' + fr(b, d), fr(a + b, d), { options: strOpts(fr(a + b, d), [fr(a + b, 2 * d), fr(a + b + 1, d), fr(a, d), fr(b, d), fr(1, d), fr(d, d)]), tip: 'מְחַבְּרִים רַק אֶת הַמּוֹנִים. הַמְּכַנֶּה נִשְׁאָר',
+            ex: exOf('fb', [S('הַשָּׁלֵם מְחֻלָּק לְ-' + d + ' חֲלָקִים שָׁוִים. צוֹבְעִים ' + parts(a), B(a, 0)), S('מוֹסִיפִים עוֹד ' + parts(b), B(a, b)),
+              S('גֹּדֶל הַחֲלָקִים לֹא הִשְׁתַּנָּה, אָז הַמְּכַנֶּה נִשְׁאָר ' + d + '. כַּמָּה חֲלָקִים צְבוּעִים עַכְשָׁו?', B(a, b))]) });
+        }
+        a = v === 1 ? ri(r, 2, d - 1) : d; b = ri(r, 1, a - 1);
+        return expr(r, (v === 1 ? fr(a, d) : '1') + ' − ' + fr(b, d), fr(a - b, d), { options: strOpts(fr(a - b, d), [fr(a + b > d ? a - b + 1 : a + b, d), fr(b, d), fr(a - b + 1, d), fr(1, d), fr(d - 1, d), fr(2, d), fr(d, d), fr(a - b, d + 1)]),
+          tip: v === 1 ? 'מְחַסְּרִים רַק אֶת הַמּוֹנִים. הַמְּכַנֶּה נִשְׁאָר' : 'שָׁלֵם אֶחָד הוּא ' + fr(d, d),
+          ex: exOf('fb', [S(v === 1 ? 'הַשָּׁלֵם מְחֻלָּק לְ-' + d + ' חֲלָקִים שָׁוִים. צוֹבְעִים ' + parts(a) : 'שָׁלֵם אֶחָד הוּא ' + d + ' חֲלָקִים מִתּוֹךְ ' + d + '. צוֹבְעִים אֶת כֻּלָּם', B(a, 0)),
+            S('מוֹרִידִים ' + parts(b) + ' (בְּוָרֹד)', B(a - b, b)), S('הַמְּכַנֶּה נִשְׁאָר ' + d + '. כַּמָּה חֲלָקִים כְּחֻלִּים נִשְׁאֲרוּ?', B(a - b, b))]) });
+      } },
+      { g: 4, name: 'שֵׁמוֹת שׁוֹנִים לְשֶׁבֶר', f: function (r) {
+        var p = pick(r, [[1, 2, 4], [1, 2, 6], [1, 2, 8], [1, 2, 10], [1, 3, 6], [1, 3, 9], [2, 3, 6], [1, 4, 8], [3, 4, 8], [1, 5, 10], [2, 5, 10], [3, 5, 10], [4, 5, 10], [1, 2, 12], [1, 3, 12], [2, 3, 9], [2, 3, 12], [1, 4, 12], [3, 4, 12], [1, 6, 12], [5, 6, 12], [1, 2, 14], [1, 2, 16], [1, 4, 16], [3, 4, 16], [1, 8, 16], [3, 8, 16], [1, 3, 15], [2, 3, 15], [1, 5, 15], [2, 5, 15]]), n = p[0], d = p[1], D = p[2], ans = n * D / d;
+        var M = { t: 'fb', bars: [{ den: d, num: n, label: fr(n, d) }, { den: D, num: 0, label: '?/' + D, mark: n / d }] };
+        return Q(r, fr(n, d) + ' = □/' + D, ans, { extra: [n, D - d, n + D - d, ans + 1], tip: 'אוֹתוֹ חֵלֶק מֵהַשָּׁלֵם, רַק מְחֻלָּק לַחֲלָקִים קְטַנִּים יוֹתֵר',
+          ex: exOf('fb', [S('מְצַיְּרִים שְׁנֵי מַלְבְּנִים זֵהִים. בָּעֶלְיוֹן צוֹבְעִים ' + ltr(fr(n, d)), M),
+            S('אֶת הַתַּחְתּוֹן מְחַלְּקִים לְ-' + D + ' חֲלָקִים. כַּמָּה חֲלָקִים צָרִיךְ לִצְבֹּעַ כְּדֵי לְכַסּוֹת בְּדִיּוּק אוֹתוֹ שֶׁטַח?', M)]) });
+      } }
+    ],
+    ord: [
+      { g: 4, name: 'סֵדֶר פְּעֻלּוֹת בְּמִסְפָּרִים גְּדוֹלִים', f: function (r) {
+        var v = ri(r, 0, 3), a, b, c, d, q, tip = 'כֶּפֶל וְחִלּוּק קוֹדְמִים לְחִבּוּר וּלְחִסּוּר. כֶּפֶל וְחִלּוּק יַחַד פּוֹתְרִים מִשְּׂמֹאל לְיָמִין';
+        if (v === 0) { a = ri(r, 12, 60); b = ri(r, 3, 9); d = ri(r, 2, 9); q = ri(r, 2, 12); c = d * q; return expr(r, a + ' × ' + b + ' − ' + c + ' : ' + d, a * b - q, { extra: [a * b - q + 10, a * b + q, a * b - c], tip: tip }); }
+        if (v === 1) { a = ri(r, 11, 40); b = ri(r, 2, 9); c = ri(r, 11, 30); d = ri(r, 2, 9); return expr(r, a + ' × ' + b + ' + ' + c + ' × ' + d, a * b + c * d, { extra: [(a * b + c) * d, a * b + c * d + 10, a * b + c * d - 10], tip: tip }); }
+        if (v === 2) { d = ri(r, 2, 9); q = ri(r, 3, 12); c = d * q; a = ri(r, 12, 45); b = ri(r, 3, 9); return expr(r, c + ' : ' + d + ' + ' + a + ' × ' + b, q + a * b, { extra: [(q + a) * b, q + a * b + 10, q + a * b - 1], tip: tip }); }
+        a = ri(r, 12, 99); return expr(r, a + ' × 100 : 10', a * 10, { extra: [a * 100, a, a * 1000], tip: tip });
+      } },
+      { g: 4, name: 'אוֹתָם מִסְפָּרִים, סוֹגְרַיִם שׁוֹנִים', f: function (r) {
+        var a = ri(r, 2, 12), b = ri(r, 2, 9), d = pick(r, [2, 5]), c = d * ri(r, 2, 6), v = ri(r, 0, 2);
+        var vals = [(a + b) * c / d, a + b * (c / d), a + b * c / d], texts = ['(' + a + ' + ' + b + ') × ' + c + ' : ' + d, a + ' + ' + b + ' × (' + c + ' : ' + d + ')', a + ' + ' + b + ' × ' + c + ' : ' + d];
+        return expr(r, texts[v], vals[v], { extra: [vals[0], (a + b * c) + d, vals[v] + 1, vals[v] - 1], tip: 'קֹדֶם סוֹגְרַיִם, אַחַר כָּךְ כֶּפֶל וְחִלּוּק מִשְּׂמֹאל לְיָמִין, וּבַסּוֹף חִבּוּר וְחִסּוּר' });
+      } }
+    ],
+    miss: [
+      { g: 4, name: 'אִזּוּן בְּלִי לְחַשֵּׁב', f: function (r) {
+        var a = ri(r, 12, 5400), b = ri(r, 15, 900), d = pick(r, [1, 1, 2, 10, -1, -2]), n = Math.abs(d), plus = r() < 0.6, text, ans, M;
+        if (plus) {
+          text = fmt(a) + ' + ' + b + ' = ' + fmt(a + d) + ' + □'; ans = b - d; M = { t: 'expr', s: text, small: true };
+          return Q(r, text, ans, { extra: [b + d, b], tip: 'אִם מְחֻבָּר אֶחָד גָּדֵל, הַשֵּׁנִי צָרִיךְ לִקְטֹן בְּאוֹתָהּ מִדָּה',
+            ex: exOf('balance', [S('מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
+              S('כְּדֵי שֶׁהַסְּכוּם יִשָּׁאֵר שָׁוֶה, הַמְּחֻבָּר הַשֵּׁנִי צָרִיךְ ' + (d > 0 ? 'לִקְטֹן' : 'לִגְדֹּל') + ' בְּ-' + n + '. מָה הַמִּסְפָּר הֶחָסֵר?', M)]) });
+        }
+        a += 1000; text = fmt(a) + ' − ' + b + ' = ' + fmt(a + d) + ' − □'; ans = b + d; M = { t: 'expr', s: text, small: true };
+        return Q(r, text, ans, { extra: [b - d, b], tip: 'אִם הַמְּחֻסָּר גָּדֵל, גַּם הַמְּחַסֵּר צָרִיךְ לִגְדֹּל בְּאוֹתָהּ מִדָּה',
+          ex: exOf('balance', [S('מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
+            S('כְּדֵי שֶׁהַהֶפְרֵשׁ יִשָּׁאֵר שָׁוֶה, גַּם הַמְּחַסֵּר צָרִיךְ ' + (d > 0 ? 'לִגְדֹּל' : 'לִקְטֹן') + ' בְּ-' + n + '. מָה הַמִּסְפָּר הֶחָסֵר?', M)]) });
+      } },
+      { g: 4, name: 'שֶׁבֶר חָסֵר', f: function (r) {
+        var d = pick(r, [2, 3, 4, 5, 6, 8]), a = ri(r, 1, d - 1), ans = fr(d - a, d), M = function (ask) { return { t: 'fb', bars: [{ den: d, num: a, ask: ask }] }; };
+        return Q(r, r() < 0.5 ? fr(a, d) + ' + □ = 1' : '□ + ' + fr(a, d) + ' = 1', ans, { options: strOpts(ans, [fr(a, d), fr(d - a + 1, d), fr(1, d), fr(d - a, d + 1), fr(d, d), fr(1, d + 1), fr(2, d + 1)]), tip: 'שָׁלֵם אֶחָד הוּא ' + fr(d, d),
+          ex: exOf('fb', [S('הַשָּׁלֵם מְחֻלָּק לְ-' + d + ' חֲלָקִים שָׁוִים, וְצוֹבְעִים ' + parts(a), M(false)),
+            S('כַּמָּה חֲלָקִים חֲסֵרִים כְּדֵי לְהַשְׁלִים אֶת הַשָּׁלֵם? זֶה הַשֶּׁבֶר הֶחָסֵר', M(true))]) });
+      } }
+    ]
+  };
+  TOPICS.forEach(function (t) {
+    var front = G1[t.id] || [], back = G4[t.id] || [];
+    t.shift = front.length; // houses added in front in version 3; older saves are shifted by this
+    t.levels = front.concat(t.levels, back);
+  });
   var BY_ID = {};
   TOPICS.forEach(function (t) { BY_ID[t.id] = t; });
   function maxLevel(topicId) { return BY_ID[topicId] ? BY_ID[topicId].levels.length : 1; }
+  // The houses a player of a school grade sees in a topic: the levels of that grade and of the next one as a challenge
+  // (grade 4: grade 3 for review, then grade 4). Returns { lo, hi } (1-based, inclusive) or null when the topic has nothing for the grade.
+  function span(t, grade) {
+    t = typeof t === 'string' ? BY_ID[t] : t;
+    if (!t) return null;
+    grade = grade || 2;
+    var a = grade >= 4 ? 3 : grade, b = grade >= 4 ? 4 : grade + 1, lo = 0, hi = 0;
+    t.levels.forEach(function (d, i) { if (d.g >= a && d.g <= b) { if (!lo) lo = i + 1; hi = i + 1; } });
+    return lo ? { lo: lo, hi: hi } : null;
+  }
   function clampLevel(topicId, level) { return Math.max(1, Math.min(maxLevel(topicId), Math.floor(Number(level)) || 1)); }
 
 
@@ -869,13 +1303,13 @@ var TrollLogic = (function () {
   // Exercises inside a Hebrew sentence stay left-to-right, as they are written in class.
   function S(say, m) { return { say: say.replace(/[\d,□]+(?: [+−×:=] [\d,□?]+)+/g, ltr), m: m || null }; }
   function plain(t) { return String(t).replace(/[⁦⁩֑-ׇ,]/g, ''); }
-  var PLACE_SAY = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים'], PLACE_THE = ['הַיְּחִידוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים'];
+  var PLACE_SAY = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים', 'עַשְׂרוֹת אֲלָפִים', 'מְאוֹת אֲלָפִים', 'מִילְיוֹנִים'], PLACE_THE = ['הַיְּחִידוֹת', 'הָעֲשָׂרוֹת', 'הַמֵּאוֹת', 'הָאֲלָפִים', 'עַשְׂרוֹת הָאֲלָפִים', 'מְאוֹת הָאֲלָפִים', 'הַמִּילְיוֹנִים'];
 
   // Points visited on the number line when adding (dir 1) or subtracting (dir -1) d:
   // whole thousands/hundreds/tens first, then the units, stopping at a round ten on the way.
   function hop(from, d, dir) {
     var pts = [from], cur = from;
-    for (var place = 1000; place >= 10; place /= 10) {
+    for (var place = 100000; place >= 10; place /= 10) {
       var part = Math.floor(d / place) % 10 * place;
       if (part) { cur += dir * part; pts.push(cur); }
     }
@@ -1222,10 +1656,10 @@ var TrollLogic = (function () {
     return m ? { op: m[2], a: +m[1], b: +m[3] } : null;
   }
   var STORY_THINGS = [['עוּגִיּוֹת', '🍪'], ['בָּלוֹנִים', '🎈'], ['תַּפּוּחִים', '🍎'], ['מַדְבֵּקוֹת', '⭐'], ['פְּרָחִים', '🌸'], ['גֻּלּוֹת', '🔵']];
-  function storyOf(s, rng) {
+  function storyOf(s, rng, simple) {
     var th = pick(rng, STORY_THINGS), w = th[0];
     if (s.op === '+') return ['בַּכְּפָר הַטְּרוֹלִים הָיוּ ' + s.a + ' ' + w + '. הוֹסִיפוּ עוֹד ' + s.b + ' ' + w + '. כַּמָּה ' + w + ' יֵשׁ עַכְשָׁו?', th[1]];
-    if (s.op === '−') return rng() < 0.5
+    if (s.op === '−') return simple || rng() < 0.5
       ? ['בַּכְּפָר הַטְּרוֹלִים הָיוּ ' + s.a + ' ' + w + '. לָקְחוּ ' + s.b + ' ' + w + '. כַּמָּה ' + w + ' נִשְׁאֲרוּ?', th[1]]
       : ['לְבּוֹבִּי יֵשׁ ' + s.a + ' ' + w + ' וּלְגוֹגוֹ יֵשׁ ' + s.b + ' ' + w + '. בְּכַמָּה ' + w + ' יֵשׁ לְבּוֹבִּי יוֹתֵר?', th[1]];
     if (s.op === '×') return ['יֵשׁ ' + s.a + ' סַלִּים. בְּכָל סַל יֵשׁ ' + s.b + ' ' + w + '. כַּמָּה ' + w + ' יֵשׁ בְּכָל הַסַּלִּים יַחַד?', th[1]];
@@ -1261,7 +1695,7 @@ var TrollLogic = (function () {
     if (kind === 'lefteq') {
       return clone(q, { fmt: 'lefteq', text: fmt(q.answer) + ' = □ + ' + fmt(s.b), answer: s.a, options: options(s.a, rng), ex: exMissAdd(s.b, q.answer) });
     }
-    if (kind === 'word') { var st = storyOf(s, rng); return clone(q, { fmt: 'word', text: st[0], pic: st[1], rtl: true }); }
+    if (kind === 'word') { var st = storyOf(s, rng, q.g === 1); return clone(q, { fmt: 'word', text: st[0], pic: st[1], rtl: true }); }
     if (kind === 'build') return clone(q, { fmt: 'build' });
     if (kind === 'array') return clone(q, { fmt: 'array', a: s.a, b: s.b, answer: 'ok', options: ['ok'] });
     if (kind === 'pairs') {
@@ -1287,7 +1721,7 @@ var TrollLogic = (function () {
       if (addsub && small && s.b <= 10) out.push('line');
       return out;
     }
-    if (!q.rtl && /= \?$/.test(plain(q.text)) && q.answer >= 1) out.push('tf', 'cmp');
+    if (!q.rtl && /= \?$/.test(plain(q.text)) && q.answer >= 1) { out.push('tf'); if (q.g !== 1) out.push('cmp'); }
     if (addsub && small) out.push('word');
     if (addsub && small && s.b <= 10) out.push('line');
     if (s && s.op === '+' && small) out.push('lefteq');
@@ -1299,6 +1733,7 @@ var TrollLogic = (function () {
     return out;
   }
   function vary(q, stage, rng, more, used) {
+    if (q.fmt !== 'choice') return q;
     var cand = formatsFor(q, stage, !!more && !used.pairs);
     if (!cand.length || rng() < (stage === 0 ? 0.35 : 0.45)) return q;
     var out = toFmt(q, pick(rng, cand), rng, more) || q;
@@ -1312,9 +1747,9 @@ var TrollLogic = (function () {
     level = clampLevel(t.id, level);
     var lv = t.levels[level - 1], q = lv.f(rng);
     q.topic = t.id; q.level = level; q.g = lv.g; q.enr = !!lv.enr;
-    q.ex = explain(q); q.fmt = 'choice';
+    q.ex = q.exPre || explain(q); q.fmt = q.fmtPre || 'choice';
     // identity of the exercise; wording without numbers (e.g. 'which is biggest?') is told apart by its options
-    q.key = /\d/.test(q.text) ? q.text : q.text + '|' + q.options.slice().sort().join(',');
+    q.key = /\d/.test(q.text) && !(q.rtl && /מתחלק ב|שבר (שוה|גדול|קטן)/.test(plain(q.text))) ? q.text :q.text + '|' + q.options.slice().sort().join(',');
     return q;
   }
 
@@ -1336,16 +1771,17 @@ var TrollLogic = (function () {
   // avoid: keys of recently asked exercises; they are skipped when the level has enough variety.
   // review: a map of open levels; when given, up to two questions come from other topics (spaced, mixed practice).
   // stage: 0 discovery, 1 practice, 2 challenge; when given, exercises are varied into other activity formats.
-  function createRound(topicId, levels, rng, size, avoid, review, stage) {
+  function createRound(topicId, levels, rng, size, avoid, review, stage, grade) {
     rng = rng || Math.random; size = size || 10; levels = levels || {};
+    var pool = grade ? TOPICS.filter(function (t) { return span(t, grade); }) : TOPICS; // grade: only topics that grade sees
     var qs = [], seen = {}, extra = 0, used = {};
     (avoid || []).forEach(function (k) { seen[k] = true; });
     for (var i = 0; i < size; i++) {
       var q, tries = 0;
-      var other = review && i > 0 && extra < 2 && rng() < 0.3 ? pick(rng, TOPICS) : null, olv = 1;
-      if (other) { olv = ri(rng, 1, review[other.id] || 1); while (olv > 1 && other.levels[olv - 1].enr) olv--; extra++; }
+      var other = review && i > 0 && extra < 2 && rng() < 0.3 ? pick(rng, pool) : null, olv = 1;
+      if (other) { var osp = grade ? span(other, grade) : null, olo = osp ? osp.lo : 1; olv = ri(rng, olo, Math.max(olo, review[other.id] || 1)); while (olv > olo && other.levels[olv - 1].enr) olv--; if (other.levels[olv - 1].enr) other = null; else extra++; }
       do {
-        var id = other ? other.id : topicId === 'mix' ? pick(rng, TOPICS).id : topicId;
+        var id = other ? other.id : topicId === 'mix' ? pick(rng, pool).id : topicId;
         q = makeQuestion(id, other ? olv : levels[id] || 1, rng);
       } while (seen[q.key] && ++tries < 60);
       q.review = !!other && (q.topic !== topicId || q.level !== (levels[topicId] || 1));
@@ -1408,7 +1844,8 @@ var TrollLogic = (function () {
     s.prog[topicId] = rows;
     var gained = rows[level - 1][stage] - before[stage], opened = 0;
     s.stars = (state.stars || 0) + gained;
-    if (stage === 2 && level === (state.levels[topicId] || 1) && level < t.levels.length) {
+    var sp = span(t, state.grade);
+    if (stage === 2 && level === (state.levels[topicId] || 1) && level < (sp ? sp.hi : t.levels.length)) {
       s.levels = Object.assign({}, state.levels); s.levels[topicId] = level + 1; opened = level + 1;
     }
     return { state: s, stars: got, gained: gained, opened: opened, clearingDone: !wasDone && rows[level - 1].every(function (x) { return x >= 1; }) };
@@ -1432,10 +1869,11 @@ var TrollLogic = (function () {
     }
     return roundOf(topicId, qs);
   }
-  // The troll rescued by each milestone mission: two per topic (grade 2, grade 3), in topic order.
-  var HEROES = ['פְּלוּסִי', 'פְּלוּסִינָה', 'מִינוּסִי', 'מִינוּסָה', 'כְּפוּלִי', 'כְּפוּלִינָה', 'חֶלְקִי', 'חֶלְקִינָה', 'סִפְרוֹן', 'סִפְרוֹנִית', 'חֲצִי-חֲצִי', 'רִבְעוֹן', 'סוֹגְרִי', 'סַדְרָן', 'בַּלָּשִׁי', 'בַּלָּשִׁית'];
+  // The troll rescued by each milestone mission: per topic one for grade 2 and one for grade 3 (first 16), then grade 1 and grade 4.
+  var HEROES = ['פְּלוּסִי', 'פְּלוּסִינָה', 'מִינוּסִי', 'מִינוּסָה', 'כְּפוּלִי', 'כְּפוּלִינָה', 'חֶלְקִי', 'חֶלְקִינָה', 'סִפְרוֹן', 'סִפְרוֹנִית', 'חֲצִי-חֲצִי', 'רִבְעוֹן', 'סוֹגְרִי', 'סַדְרָן', 'בַּלָּשִׁי', 'בַּלָּשִׁית',
+    'פְּלוּסוֹן', 'פְּלוּסַאי', 'מִינוּסוֹן', 'מִינוּסַאי', 'כְּפוּלוֹן', 'כְּפוּלַאי', 'חֶלְקוֹן', 'חֶלְקַאי', 'סִפְרִי', 'סִפְרַאי', 'חֶצְיוֹן', 'שִׁבְרוֹן', 'סוֹגְרוֹן', 'סוֹגְרַאי', 'בַּלָּשׁוֹן', 'בַּלָּשַׁאי'];
   var HERO_BASE = 20000;
-  function heroId(topicId, grade) { return HERO_BASE + TOPICS.indexOf(BY_ID[topicId]) * 2 + (grade === 3 ? 1 : 0); }
+  function heroId(topicId, grade) { return HERO_BASE + (grade === 1 || grade === 4 ? 16 : 0) + TOPICS.indexOf(BY_ID[topicId]) * 2 + (grade >= 3 ? 1 : 0); }
 
   function dayNum(s) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
@@ -1586,15 +2024,33 @@ var TrollLogic = (function () {
     return left.length ? pick(rng, cheap.length ? cheap : left).id : null;
   }
 
-  var START_LEVEL = 3; // a new player starts each topic here, but never above the last grade 2 level
-  function startLevel(t) {
-    var c2 = 0;
-    while (c2 < t.levels.length && t.levels[c2].g === 2 && !t.levels[c2].enr) c2++;
-    return c2 ? Math.min(START_LEVEL, c2) : 1;
+  var START_LEVEL = 3; // a new player starts each topic at the third house of their own grade
+  function startLevel(t, grade) {
+    grade = grade || 2;
+    var own = [], sp = span(t, grade);
+    t.levels.forEach(function (d, i) { if (d.g === grade && !d.enr) own.push(i + 1); });
+    return own.length ? own[Math.min(START_LEVEL, own.length) - 1] : sp ? sp.lo : 1;
   }
-  function newState() {
-    var s = { v: 2, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', mute: false, music: true, buddy: null };
-    TOPICS.forEach(function (t) { s.levels[t.id] = startLevel(t); s.hists[t.id] = []; s.recent[t.id] = []; s.prog[t.id] = []; s.boss[t.id] = {}; });
+  // The newest open house of every topic is kept inside what the grade sees.
+  function fitGrade(s) {
+    TOPICS.forEach(function (t) {
+      var sp = span(t, s.grade);
+      if (sp) s.levels[t.id] = Math.max(sp.lo, Math.min(sp.hi, s.levels[t.id]));
+    });
+    return s;
+  }
+  function setGrade(state, grade) {
+    var s = Object.assign({}, state); s.levels = Object.assign({}, state.levels);
+    s.grade = Math.max(1, Math.min(4, grade | 0 || 2));
+    TOPICS.forEach(function (t) { s.levels[t.id] = Math.max(s.levels[t.id] || 1, startLevel(t, s.grade)); });
+    return fitGrade(s);
+  }
+  // Levels of grade 1 were added in front of each topic in version 3; older saves are shifted by this many houses.
+  function shiftOf(t) { return t.shift || 0; }
+  function newState(grade) {
+    grade = Math.max(1, Math.min(4, grade | 0 || 2));
+    var s = { v: 3, grade: grade, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', mute: false, music: true, buddy: null };
+    TOPICS.forEach(function (t) { s.levels[t.id] = startLevel(t, grade); s.hists[t.id] = []; s.recent[t.id] = []; s.prog[t.id] = []; s.boss[t.id] = {}; });
     return s;
   }
   function loadState(raw) {
@@ -1604,18 +2060,21 @@ var TrollLogic = (function () {
     var int = function (x, lo, hi, d) { x = Number(x); return isFinite(x) ? Math.max(lo, Math.min(hi, Math.floor(x))) : d; };
     var day = function (x) { return isNaN(dayNum(x)) ? '' : String(x); };
     var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; };
-    var lv = obj(o.levels), hs = obj(o.hists), rc = obj(o.recent);
+    var lv = obj(o.levels), hs = obj(o.hists), rc = obj(o.recent), old = o.v !== 3;
+    s.grade = int(o.grade, 1, 4, 2);
     TOPICS.forEach(function (t) {
-      s.levels[t.id] = int(lv[t.id], 1, t.levels.length, startLevel(t));
+      s.levels[t.id] = int(isFinite(Number(lv[t.id])) ? Number(lv[t.id]) + (old ? shiftOf(t) : 0) : NaN, 1, t.levels.length, startLevel(t, s.grade));
       if (Array.isArray(hs[t.id])) s.hists[t.id] = hs[t.id].slice(-5).map(function (x) { return !!x; });
       if (Array.isArray(rc[t.id])) s.recent[t.id] = rc[t.id].filter(function (x) { return typeof x === 'string'; }).slice(-10);
     });
     var pg = obj(o.prog), bs = obj(o.boss), it = obj(o.intro);
     TOPICS.forEach(function (t) {
-      if (Array.isArray(pg[t.id])) s.prog[t.id] = t.levels.map(function (d, i) { var r = pg[t.id][i]; return [0, 1, 2].map(function (k) { return Array.isArray(r) ? int(r[k], 0, 3, 0) : 0; }); });
-      var b = obj(bs[t.id]); if (b[2] === true) s.boss[t.id][2] = true; if (b[3] === true) s.boss[t.id][3] = true;
+      var sh = old ? shiftOf(t) : 0;
+      if (Array.isArray(pg[t.id])) s.prog[t.id] = t.levels.map(function (d, i) { var r = pg[t.id][i - sh]; return [0, 1, 2].map(function (k) { return Array.isArray(r) ? int(r[k], 0, 3, 0) : 0; }); });
+      var b = obj(bs[t.id]); [1, 2, 3, 4].forEach(function (g) { if (b[g] === true) s.boss[t.id][g] = true; });
       if (it[t.id] === true) s.intro[t.id] = true;
     });
+    fitGrade(s);
     s.streak = int(o.streak, 0, 100000, 0);
     s.stars = int(o.stars, 0, 1e9, 0);
     s.rounds = int(o.rounds, 0, 1e9, 0);
@@ -1651,7 +2110,7 @@ var TrollLogic = (function () {
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
-    explain: explain, hop: hop, startLevel: startLevel, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
+    explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
     TOPICS: TOPICS, maxLevel: maxLevel, clampLevel: clampLevel, fmt: fmt,
@@ -1746,7 +2205,7 @@ var TrollArt = (function () {
 var TrollModels = (function () {
   'use strict';
   var BLUE = '#3aa0ff', PINK = '#ff5fa2', INK = '#3b2a55', GOLD = '#ffb300', SOFT = '#e9e3f5';
-  var PLACE_HEAD = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים'];
+  var PLACE_HEAD = ['יְחִידוֹת', 'עֲשָׂרוֹת', 'מֵאוֹת', 'אֲלָפִים', 'עַשְׂרוֹת אֲלָפִים', 'מְאוֹת אֲלָפִים', 'מִילְיוֹנִים'];
   function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   function svg(w, h, body) { return '<svg class="msvg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" direction="ltr">' + body + '</svg>'; }
   function txt(x, y, s, size, fill, extra) { return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" text-anchor="middle" font-weight="700" fill="' + (fill || INK) + '"' + (extra || '') + '>' + s + '</text>'; }
@@ -1759,7 +2218,7 @@ var TrollModels = (function () {
     vals.forEach(function (v, i) { X[v] = 46 + (W - 92) * (k === 1 ? 0.5 : 0.5 * i / (k - 1) + 0.5 * (v - min) / (max - min || 1)); });
     var o = '<line x1="14" y1="112" x2="' + (W - 14) + '" y2="112" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/>';
     var small = k > 8 ? 15 : 19, i;
-    for (i = 1; i < m.n; i++) {
+    for (i = 1; i < m.n && !m.plain; i++) {
       var a = X[m.pts[i - 1]], b = X[m.pts[i]], d = m.pts[i] - m.pts[i - 1], col = d > 0 ? BLUE : PINK, hgt = Math.min(70, 26 + Math.abs(b - a) * 0.28);
       o += '<path' + (i === m.n - 1 && !m.skip && m.q === undefined ? ' class="new"' : '') + ' d="M' + a + ',108 Q' + (a + b) / 2 + ',' + (108 - hgt * 2) + ' ' + b + ',108" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round"/>';
       o += txt((a + b) / 2, 104 - hgt - 6, (d > 0 ? '+' : '−') + fmt(Math.abs(d)), small, col);
@@ -1901,9 +2360,69 @@ var TrollModels = (function () {
     return svg(W, 108, o);
   }
   function expr(m) {
-    return '<div class="mexpr" dir="ltr">' + m.s.replace(/\[/g, '<b>').replace(/\]/g, '</b>').replace(/□/g, '<span class="box">?</span>') + '</div>';
+    return '<div class="mexpr' + (m.small ? ' small' : '') + '" dir="ltr">' + m.s.replace(/([\d□?]+)\/(\d+)/g, '<span class="fr"><i>$1</i><i>$2</i></span>').replace(/\[/g, '<b>').replace(/\]/g, '</b>').replace(/□/g, '<span class="box">?</span>') + '</div>';
   }
-  var R = { line: line, board: board, pv: pv, vert: vert, arr: arr, area: area, ptab: ptab, shift: shift, stack: stack, blocks: blocks, share: share, rline: rline, bar: bar, expr: expr };
+  // ---- ten boards with counters (grade 1). op '+': a blue and b pink; '−': a counters, the last b crossed out;
+  //      '?': a counters and the empty places up to b marked ----
+  function frame(m) {
+    var cap = m.op === '+' ? m.a + m.b : m.op === '?' ? m.b : m.a, nf = Math.max(1, Math.ceil(cap / 10)), C = 44, FW = 5 * C + 8, o = '', f, i;
+    for (f = 0; f < nf; f++) {
+      var fx = 6 + f * (FW + 26);
+      o += '<rect x="' + fx + '" y="6" width="' + FW + '" height="' + (2 * C + 8) + '" rx="12" fill="#fff" stroke="' + INK + '" stroke-width="3"/>';
+      for (i = 1; i < 5; i++) o += '<line x1="' + (fx + 4 + i * C) + '" y1="10" x2="' + (fx + 4 + i * C) + '" y2="' + (2 * C + 10) + '" stroke="' + SOFT + '" stroke-width="2"/>';
+      o += '<line x1="' + (fx + 4) + '" y1="' + (10 + C) + '" x2="' + (fx + FW - 4) + '" y2="' + (10 + C) + '" stroke="' + SOFT + '" stroke-width="2"/>';
+    }
+    for (i = 0; i < cap; i++) {
+      var pos = i % 10, cx = 6 + Math.floor(i / 10) * (FW + 26) + 4 + (pos % 5) * C + C / 2, cy = 10 + Math.floor(pos / 5) * C + C / 2, R0 = C / 2 - 6;
+      var disc = function (col, op) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + R0 + '" fill="' + col + '"' + (op ? ' opacity="' + op + '"' : '') + '/>'; };
+      if (m.op === '+') { if (i < m.a) o += disc(BLUE); else if (m.st) o += disc(PINK); }
+      else if (m.op === '?') { if (i < m.a) o += disc(BLUE); else if (m.st) o += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R0 + '" fill="none" stroke="' + GOLD + '" stroke-width="3" stroke-dasharray="6 5"/>'; }
+      else if (m.st && i >= m.a - m.b) o += disc(BLUE, 0.28) + '<path d="M' + (cx - 11) + ',' + (cy - 11) + ' L' + (cx + 11) + ',' + (cy + 11) + ' M' + (cx + 11) + ',' + (cy - 11) + ' L' + (cx - 11) + ',' + (cy + 11) + '" stroke="' + PINK + '" stroke-width="4" stroke-linecap="round"/>';
+      else o += disc(BLUE);
+    }
+    return svg(nf * (FW + 26) - 14, 2 * C + 20, o);
+  }
+  // ---- 10-shekel coins for whole tens (grade 1) ----
+  function coins(m) {
+    var na = m.a / 10, nb = m.b / 10, n = m.op === '+' ? na + nb : na, o = '', i;
+    for (i = 0; i < n; i++) {
+      var added = m.op === '+' && i >= na, gone = m.op === '−' && m.st && i >= na - nb, cx = 34 + i * 58;
+      if (added && !m.st) continue;
+      o += '<circle cx="' + cx + '" cy="40" r="25" fill="' + GOLD + '" stroke="' + (added ? PINK : '#b07a00') + '" stroke-width="4"' + (gone ? ' opacity=".3"' : '') + '/>' + txt(cx, 47, '10', 20, '#5a3d00', gone ? ' opacity=".4"' : '');
+      if (gone) o += '<path d="M' + (cx - 15) + ',25 L' + (cx + 15) + ',55 M' + (cx + 15) + ',25 L' + (cx - 15) + ',55" stroke="' + PINK + '" stroke-width="4" stroke-linecap="round"/>';
+    }
+    return svg(68 + (n - 1) * 58, 80, o);
+  }
+  // ---- fraction rectangles: identical wholes cut into equal parts (grade 4). bar: {den, num, num2, label, ask, mark} ----
+  function fb(m) {
+    var W = 560, lab = m.bars.some(function (b) { return b.label; }), X0 = lab ? 70 : 10, H = m.bars.length > 2 ? 40 : 52, o = '';
+    m.bars.forEach(function (b, r) {
+      var y = 6 + r * (H + 12), w = (W - X0 - 10) / b.den, i;
+      if (b.label) { var p = String(b.label).split('/'); o += txt(34, y + H / 2 - 5, p[0], 18) + '<line x1="20" y1="' + (y + H / 2) + '" x2="48" y2="' + (y + H / 2) + '" stroke="' + INK + '" stroke-width="3"/>' + txt(34, y + H / 2 + 19, p[1], 18); }
+      for (i = 0; i < b.den; i++) {
+        var first = i < b.num, second = !first && i < b.num + (b.num2 || 0), ask = b.ask && !first && !second;
+        o += '<rect x="' + (X0 + i * w + 1.5) + '" y="' + y + '" width="' + (w - 3) + '" height="' + H + '" rx="8" fill="' + (first ? BLUE : second ? PINK : '#fff') + '" stroke="' + (ask ? GOLD : '#8d82a6') + '" stroke-width="' + (ask ? 3 : 2) + '"' + (ask ? ' stroke-dasharray="7 5"' : '') + '/>';
+        if (ask) o += txt(X0 + i * w + w / 2, y + H / 2 + 7, '?', 20, '#b07a00');
+      }
+      if (b.mark) { var mx = X0 + b.mark * (W - X0 - 10); o += '<line x1="' + mx + '" y1="' + (y - 14) + '" x2="' + mx + '" y2="' + (y + H + 4) + '" stroke="' + GOLD + '" stroke-width="4" stroke-dasharray="7 5"/>'; }
+    });
+    return svg(W, 6 + m.bars.length * (H + 12), o);
+  }
+  // ---- two-digit times two-digit: four partial products (grade 4) ----
+  function grid(m) {
+    var cw = [210, 140], rh = [80, 58], x0 = 92, y0 = 40, o = txt(46, 30, '×', 24), cols = [BLUE, PINK, GOLD, '#58b368'], x, y = y0, k = 0;
+    m.b.forEach(function (v, j) { o += txt(x0 + (j ? cw[0] + 6 : 0) + cw[j] / 2, 30, fmt(v), 22); });
+    m.a.forEach(function (v, i) {
+      o += txt(46, y + rh[i] / 2 + 8, fmt(v), 22); x = x0;
+      m.b.forEach(function (u, j) {
+        o += '<rect x="' + x + '" y="' + y + '" width="' + cw[j] + '" height="' + rh[i] + '" rx="12" fill="' + cols[k] + '" opacity=".9"/>' + txt(x + cw[j] / 2, y + rh[i] / 2 + 9, k < m.n ? fmt(v * u) : '?', 26, '#fff');
+        x += cw[j] + 6; k++;
+      });
+      y += rh[i] + 6;
+    });
+    return svg(x0 + cw[0] + cw[1] + 12, y + 2, o);
+  }
+  var R = { frame: frame, coins: coins, fb: fb, grid: grid, line: line, board: board, pv: pv, vert: vert, arr: arr, area: area, ptab: ptab, shift: shift, stack: stack, blocks: blocks, share: share, rline: rline, bar: bar, expr: expr };
   function render(m) { return m && R[m.t] ? R[m.t](m) : ''; }
   return { render: render, kinds: Object.keys(R) };
 })();
@@ -1911,13 +2430,14 @@ var TrollModels = (function () {
 <script id="ui">
 (function () {
   'use strict';
-  var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.p.';
+  var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.q.', DKEY_OLD = 'trollVillage.p.';
   var VILLAGE = 'שֶׁל הִילָה'; // second line of the village name on the home screen
   var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
   var state, app = document.getElementById('app'), fx, cur = null, timers = [];
   var tv = window.__tv = { round: null, done: false };
+  var GRADE_HE = ['', "א'", "ב'", "ג'", "ד'"];
   var GUIDE = { id: 3, name: 'טְרוֹלִי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
   var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈' };
   // building picture for each topic (assets/, see assets/CREDITS.txt)
@@ -1933,14 +2453,15 @@ var TrollModels = (function () {
   function lsGet(k) { if (sandbox) return null; try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { if (sandbox) return; try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { if (sandbox) return; try { localStorage.removeItem(k); } catch (e) {} }
+  function rawOf(id) { return lsGet(DKEY + id) || lsGet(DKEY_OLD + id); }
   function saveProfiles() { lsSet(PKEY, JSON.stringify(profiles)); }
   function loadProfiles() {
     profiles = L.loadProfiles(lsGet(PKEY));
     var old = lsGet(KEY); // progress saved before profiles existed becomes the first player
-    if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY + profiles.cur, old); saveProfiles(); lsDel(KEY); }
+    if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY_OLD + profiles.cur, old); saveProfiles(); lsDel(KEY); }
   }
   function load() {
-    state = L.loadState(profiles.cur ? lsGet(DKEY + profiles.cur) : null);
+    state = L.loadState(profiles.cur ? rawOf(profiles.cur) : null);
     if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(true); }
   }
   // quiet: housekeeping (streak, starter troll) that must not count as newer progress than another device's
@@ -1973,6 +2494,7 @@ var TrollModels = (function () {
       try { out.list = L.loadProfiles({ list: JSON.parse(str('list') || '[]') }).list; } catch (e) {}
       try { out.gone = JSON.parse(str('gone') || '[]').filter(function (x) { return /^p\d+$/.test(x); }); } catch (e) {}
       for (k in f) if (/^s_p\d+$/.test(k) && str(k) && +str('t_' + k.slice(2)) > 0) { out.s[k.slice(2)] = str(k); out.t[k.slice(2)] = +str('t_' + k.slice(2)); }
+      for (k in f) if (/^s2_p\d+$/.test(k) && str(k) && +str('t2_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t2_' + k.slice(3)); } // version 3 wins over the old fields
       return out;
     });
   }
@@ -1991,13 +2513,13 @@ var TrollModels = (function () {
     cloudGet(sync.code).then(function (rem) {
       var before = JSON.stringify(profiles.list), m = L.mergeCloud({ list: profiles.list, gone: sync.gone, t: sync.t }, rem), f = {};
       m.pull.forEach(function (id) { lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
-      m.gone.forEach(function (id) { lsDel(DKEY + id); delete sync.t[id]; });
+      m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); delete sync.t[id]; });
       var alive = m.list.some(function (p) { return p.id === profiles.cur; });
       profiles = { cur: alive ? profiles.cur : null, list: m.list };
       if (JSON.stringify(m.list) !== before) changed = true;
       sync.gone = m.gone; saveProfiles(); saveSync();
       if (changed && profiles.cur) refresh();
-      m.push.forEach(function (id) { var raw = lsGet(DKEY + id); if (raw) { f['s_' + id] = raw; f['t_' + id] = String(sync.t[id]); } });
+      m.push.forEach(function (id) { var raw = rawOf(id); if (raw) { f['s2_' + id] = JSON.stringify(L.loadState(raw)); f['t2_' + id] = String(sync.t[id]); } });
       if (m.meta) { f.list = JSON.stringify(m.list); f.gone = JSON.stringify(m.gone); }
       return Object.keys(f).length ? cloudPut(sync.code, f, keep) : null;
     }).then(function () { fin(true); }, function () { fin(false); });
@@ -2012,15 +2534,15 @@ var TrollModels = (function () {
   function linkTo(code) {
     profiles.list.forEach(function (p) {
       if (p.id.length < 9) {
-        var id = rndId(), raw = lsGet(DKEY + p.id);
+        var id = rndId(), raw = rawOf(p.id);
         if (raw) lsSet(DKEY + id, raw);
-        lsDel(DKEY + p.id);
+        lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id);
         if (profiles.cur === p.id) profiles.cur = id;
         p.id = id;
       }
     });
     sync = { code: code, t: {}, gone: [] };
-    profiles.list.forEach(function (p) { if (lsGet(DKEY + p.id)) sync.t[p.id] = Date.now(); });
+    profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = Date.now(); });
     saveProfiles(); saveSync();
   }
   function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, gone: [] }; saveSync(); }
@@ -2054,6 +2576,7 @@ var TrollModels = (function () {
   // The companion: the troll the player picked (or the newest one), or the guide before any troll is won.
   function buddyId() { return buddyOf(state); }
   function buddySpec() { var id = buddyId(); return id == null ? GUIDE : specOf(id); }
+  function frx(t) { return String(t).replace(/([\d□?]+)\/(\d+)/g, '<span class="fr"><i>$1</i><i>$2</i></span>'); } // 3/5 with a fraction bar
   function topicOf(id) { for (var i = 0; i < L.TOPICS.length; i++) if (L.TOPICS[i].id === id) return L.TOPICS[i]; return MIX; }
 
   // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
@@ -2359,6 +2882,8 @@ var TrollModels = (function () {
   // houses of a topic world, from a small hut to a castle: the further along, the harder
   var REG_BLD = ['houseSmall1', 'houseSmallAlt1', 'houseSmall2', 'houseAlt1', 'house1', 'houseAlt2', 'house2', 'castleSmall'];
   function starStr(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n); }
+  function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
+  function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
   function topics() {
     setMusic('home');
     show(function (el) {
@@ -2374,16 +2899,17 @@ var TrollModels = (function () {
             h('img', { src: 'assets/' + BLD[t.id] + '.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.37) + 's' })),
           sign));
       }
-      L.TOPICS.forEach(function (t, i) {
-        var open = state.levels[t.id], got = 0, k;
-        for (k = 1; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
-        var ready = L.bossReady(state, t.id, 2) || L.bossReady(state, t.id, 3);
+      var shown = L.TOPICS.filter(function (t) { return L.span(t, state.grade); });
+      shown.forEach(function (t, i) {
+        var sp = L.span(t, state.grade), open = state.levels[t.id], got = 0, k;
+        for (k = sp.lo; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
+        var ready = readyBoss(t.id) > 0;
         plot(t, i, [h('b', { text: t.world }), h('small', { text: t.name }),
           h('span', { class: 'pstars', text: '⭐ ' + got + (ready ? ' · 🌉' : '') }),
-          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / (open * 9)) + '%' }))],
+          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / ((open - sp.lo + 1) * 9)) + '%' }))],
         function () { sfx.pop(); region(t.id); });
       });
-      plot(MIX, L.TOPICS.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
+      plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
       el.appendChild(grid);
       el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים, צְלִילִים). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
       if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
@@ -2409,7 +2935,7 @@ var TrollModels = (function () {
         var pic = done ? h('span', { class: 'bi', html: A.trollSVG(hero) }) : h('span', { class: 'bi', text: '🌉' });
         var c = h('button', { class: 'clr bossc' + (done ? ' done' : ready ? ' ready' : ' locked'), 'data-boss': g },
           h('b', { text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }),
-          h('small', { text: done ? 'נִצַּל וְעָבַר לָגוּר בַּכְּפָר!' : ready ? 'הַמְּשִׂימָה מוּכָנָה! בּוֹאִי נַצִּיל טְרוֹל' : 'נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁל ' + (g === 3 ? "כִּתָּה ג'" : "כִּתָּה ב'") }));
+          h('small', { text: done ? 'נִצַּל וְעָבַר לָגוּר בַּכְּפָר!' : ready ? 'הַמְּשִׂימָה מוּכָנָה! בּוֹאִי נַצִּיל טְרוֹל' : 'נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁל כִּתָּה ' + GRADE_HE[g] }));
         c.addEventListener('click', function () {
           if (done) { sfx.giggle(); return; }
           if (!ready) { restart(c, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
@@ -2417,12 +2943,13 @@ var TrollModels = (function () {
         });
         grid.appendChild(h('div', { class: 'cplot' }, h('div', { class: 'cbld bossb' }, pic), c));
       }
-      t.levels.forEach(function (d, i) {
-        var lv = i + 1, pr = L.progOf(state, t.id, lv), far = lv > state.levels[t.id];
-        var n = t.levels.length, dif = h('span', { class: 'dif', title: 'קֹשִׁי ' + lv + ' מִתּוֹךְ ' + n });
-        t.levels.forEach(function (x, k) { dif.appendChild(h('i', { class: k <= i ? 'on' : '', style: 'height:' + (5 + k * 2) + 'px' })); });
+      var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, win = t.levels.slice(sp.lo - 1, sp.hi);
+      win.forEach(function (d, i) {
+        var lv = sp.lo + i, pr = L.progOf(state, t.id, lv), far = lv > state.levels[t.id];
+        var n = win.length, dif = h('span', { class: 'dif', title: 'קֹשִׁי ' + (i + 1) + ' מִתּוֹךְ ' + n });
+        win.forEach(function (x, k) { dif.appendChild(h('i', { class: k <= i ? 'on' : '', style: 'height:' + (5 + k * 2) + 'px' })); });
         var card = h('div', { class: 'clr' }, h('div', { class: 'cname' },
-          h('span', { class: 'grade g' + d.g, text: d.enr ? '✨' : d.g === 3 ? "ג'" : "ב'" }), h('b', { text: d.name, title: d.name }), dif));
+          h('span', { class: 'grade g' + d.g, text: d.enr ? '✨' : GRADE_HE[d.g] }), h('b', { text: d.name, title: d.name }), dif));
         var row = h('div', { class: 'stg' });
         STAGES.forEach(function (sg, k) {
           var open = L.stageOpen(state, t.id, lv, k);
@@ -2440,21 +2967,20 @@ var TrollModels = (function () {
           var k = 0; while (k < 2 && pr[k] >= 3) k++;            // the next stage worth playing
           while (k > 0 && !L.stageOpen(state, t.id, lv, k)) k--;
           row.children[k].click();
-        } } }, h('img', { src: 'assets/' + REG_BLD[bi] + '.png', alt: '', draggable: 'false' }), h('span', { class: 'cnum', text: String(lv) }));
+        } } }, h('img', { src: 'assets/' + REG_BLD[bi] + '.png', alt: '', draggable: 'false' }), h('span', { class: 'cnum', text: String(i + 1) }));
         grid.appendChild(h('div', { class: 'cplot' + (far ? ' far' : '') }, house, card));
-        var next = t.levels[i + 1];
-        if (d.g === 2 && !d.enr && (!next || next.g !== 2 || next.enr)) bossCard(2);
+        var next = win[i + 1];
+        if (!d.enr && (!next || next.g !== d.g || next.enr)) bossCard(d.g); // the bridge mission closes each grade
       });
-      bossCard(3);
       el.appendChild(msg); el.appendChild(grid);
       function step(sym, d, label) {
         return h('button', { class: 'step', text: sym, 'aria-label': label, on: { click: function () {
-          var nl = L.clampLevel(t.id, state.levels[t.id] + d);
+          var nl = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] + d));
           if (nl === state.levels[t.id]) return;
           state.levels[t.id] = nl; save(); sfx.tap(); region(t.id);
         } } });
       }
-      el.appendChild(h('div', { class: 'note pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), h('span', { text: 'לַהוֹרִים: בָּתִּים פְּתוּחִים ' + state.levels[t.id] + '/' + t.levels.length }), step('−', -1, 'לִסְגֹּר בַּיִת')));
+      el.appendChild(h('div', { class: 'note pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), h('span', { text: 'לַהוֹרִים: בָּתִּים פְּתוּחִים ' + (state.levels[t.id] - sp.lo + 1) + '/' + win.length }), step('−', -1, 'לִסְגֹּר בַּיִת')));
     });
   }
 
@@ -2496,7 +3022,7 @@ var TrollModels = (function () {
     function draw() {
       var m = null, k;
       for (k = i; k >= 0 && !m; k--) m = steps[k].m; // a step without its own picture keeps the previous one
-      say.textContent = steps[i].say; restart(say, 'pop');
+      say.innerHTML = frx(steps[i].say); restart(say, 'pop');
       mdl.innerHTML = M.render(m);
       stepNo.textContent = 'צַעַד ' + (i + 1) + ' מִתּוֹךְ ' + steps.length;
       pips.innerHTML = ''; steps.forEach(function (s, n) { pips.appendChild(h('i', { class: n <= i ? 'on' : '' })); });
@@ -2507,7 +3033,7 @@ var TrollModels = (function () {
     back.addEventListener('click', function () { sfx.tap(); if (i) { i--; draw(); } });
     ovl = h('div', { class: 'ovl' }, h('div', { class: 'card' },
       h('div', { class: 'ohead' }, h('b', { text: 'בּוֹאִי נִרְאֶה אֵיךְ פּוֹתְרִים' }),
-        h('span', { class: 'oq', dir: q.rtl ? 'rtl' : 'ltr', html: q.text.replace('□', '<span class="box">?</span>') }),
+        h('span', { class: 'oq', dir: q.rtl ? 'rtl' : 'ltr', html: frx(q.text).replace('□', '<span class="box">?</span>') }),
         h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); closeExplain(); } } })),
       say, mdl, h('div', { class: 'orow' }, back, h('div', { class: 'stepbox' }, stepNo, pips), next)));
     document.body.appendChild(ovl);
@@ -2551,8 +3077,8 @@ var TrollModels = (function () {
     lvmap[topicId] = cfg.level;
     L.TOPICS.forEach(function (t) { if (topicId === 'mix' || topicId === t.id) avoid = avoid.concat(state.recent[t.id]); });
     var round = cfg.boss ? L.createBoss(topicId, cfg.boss, Math.random)
-      : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage)
-      : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1);
+      : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage, state.grade)
+      : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1, state.grade);
     var force = (/fmt=(\w+)/.exec(hash) || [])[1]; // debug: start with a given activity format
     if (/s=hint/.test(hash) && !force) round.qs[0] = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random); // debug: a plain first question
     for (var fi = 0; force && fi < 80; fi++) {
@@ -2588,7 +3114,7 @@ var TrollModels = (function () {
         mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : rnd(ASK));
         helpB.classList.toggle('glow', cfg.stage === 0);
         var BOX = '<span class="box">?</span>';
-        var body = q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : q.text.replace('□', BOX).replace('◯', BOX);
+        var body = q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : frx(q.text).replace('□', BOX).replace('◯', BOX);
         var card = h('div', { class: 'qcard' + (q.rtl || q.fmt === 'pairs' ? ' txt' : q.text.length > 13 ? ' med' : ''), dir: q.rtl ? 'rtl' : 'ltr' });
         if (ASKS[q.fmt]) card.appendChild(h('small', { class: 'qhint', dir: 'rtl', text: ASKS[q.fmt] }));
         if (q.pre) card.appendChild(h('span', { class: 'qpre', text: q.pre + '  ✔' }));
@@ -2607,7 +3133,8 @@ var TrollModels = (function () {
         choice: function (q) {
           q.options.forEach(function (v, k) {
             var num = typeof v === 'number';
-            var b = h('button', { class: 'ans c' + k, text: LABEL[v] || (num ? L.fmt(v) : v), 'data-v': v, dir: num || !LABEL[v] ? 'ltr' : 'rtl' });
+            var b = h('button', { class: 'ans c' + k, 'data-v': v, dir: num || !LABEL[v] ? 'ltr' : 'rtl' });
+            if (!num && /\d\/\d/.test(v)) b.innerHTML = frx(v); else b.textContent = LABEL[v] || (num ? L.fmt(v) : v);
             b.addEventListener('click', function () { onAnswer(b, v, q); });
             answers.appendChild(b);
           });
@@ -2801,7 +3328,7 @@ var TrollModels = (function () {
     var troll = r.clearingDone || first ? L.rollTroll(state.owned, Math.random) : null; // an egg for every finished clearing, and for the very first stage
     if (troll) { state.owned.push(troll.id); if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; }
     save(); tv.round = null;
-    var bossG = L.bossReady(state, topicId, 2) ? 2 : L.bossReady(state, topicId, 3) ? 3 : 0;
+    var bossG = readyBoss(topicId);
     show(function (el) {
       var back = function () { region(topicId); };
       el.appendChild(topBar(true, back));
@@ -2851,6 +3378,16 @@ var TrollModels = (function () {
 
   // ---------- who is playing ----------
   function enter(id) { profiles.cur = id; saveProfiles(); refresh(); sfx.pop(); home(); }
+  function gradeRow(curG, pickG) { // four round buttons: the school grade
+    var row = h('div', { class: 'grow' });
+    [1, 2, 3, 4].forEach(function (g) {
+      var b = h('button', { class: 'gbtn' + (g === curG ? ' on' : ''), text: GRADE_HE[g], 'aria-label': 'כִּתָּה ' + GRADE_HE[g], 'data-g': g, on: { click: function () {
+        sfx.tap(); [].forEach.call(row.children, function (x) { x.classList.remove('on'); }); b.classList.add('on'); pickG(g);
+      } } });
+      row.appendChild(b);
+    });
+    return row;
+  }
   function who(first) {
     setMusic('home');
     show(function (el) {
@@ -2858,25 +3395,42 @@ var TrollModels = (function () {
       el.appendChild(h('h2', { class: 'h2', text: 'מִי מְשַׂחֵק הַיּוֹם?' }));
       var grid = h('div', { class: 'who-grid' });
       profiles.list.forEach(function (p, i) {
-        var st = p.id === profiles.cur ? state : L.loadState(lsGet(DKEY + p.id)), bid = buddyOf(st);
+        var st = p.id === profiles.cur ? state : L.loadState(rawOf(p.id)), bid = buddyOf(st);
         var card = h('div', { class: 'pcard', style: 'animation-delay:' + (i * 0.07) + 's' });
         card.appendChild(h('button', { class: 'go', 'aria-label': 'לְשַׂחֵק בְּתוֹר ' + p.name, on: { click: function () { enter(p.id); } } },
           h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
           h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' })));
+        card.appendChild(h('button', { class: 'pgrade', text: 'כִּתָּה ' + GRADE_HE[st.grade], 'aria-label': 'הַחְלָפַת כִּתָּה שֶׁל ' + p.name, on: { click: function () {
+          if (card.querySelector('.sure')) return;
+          sfx.tap();
+          var box = h('div', { class: 'sure' }, h('b', { text: 'בְּאֵיזוֹ כִּתָּה ' + p.name + '?' }), gradeRow(st.grade, function (g) {
+            var ns = L.setGrade(st, g);
+            if (p.id === profiles.cur) { state = ns; save(); } else { lsSet(DKEY + p.id, JSON.stringify(ns)); touch(p.id); }
+            who(false);
+          }));
+          card.appendChild(box);
+        } } }));
         card.appendChild(h('button', { class: 'pdel', text: '🗑', 'aria-label': 'מְחִיקַת ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
           card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
+            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
       });
       if (profiles.list.length < 8) {
         var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'הַשֵּׁם שֶׁלִּי', 'aria-label': 'שֵׁם הַשַּׂחְקָן הֶחָדָשׁ' });
-        var add = function () { profiles = L.addProfile(profiles, inp.value, rndId()); enter(profiles.cur); save(); if (sync.code) syncNow(); };
+        var newG = 0, gmsg = h('small', { class: 'gask', text: 'בְּאֵיזוֹ כִּתָּה?' });
+        var grow = gradeRow(0, function (g) { newG = g; gmsg.classList.remove('need'); });
+        var add = function () {
+          if (!newG) { gmsg.classList.add('need'); restart(grow, 'shake'); sfx.wrong(); return; }
+          profiles = L.addProfile(profiles, inp.value, rndId()); saveProfiles();
+          lsSet(DKEY + profiles.cur, JSON.stringify(L.newState(newG)));
+          enter(profiles.cur); save(); if (sync.code) syncNow();
+        };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
-        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
+        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, gmsg, grow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
       el.appendChild(grid);
       if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', text: sync.code ? '☁️ הַכְּפָר מְחֻבָּר · ' + sync.code : '☁️ לְשַׂחֵק גַּם בְּמַכְשִׁיר אַחֵר', on: { click: function () { sfx.tap(); cloud(); } } }));
@@ -3064,6 +3618,8 @@ var TrollModels = (function () {
   // ---------- start ----------
   if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadSync(); }
   load(); buildBg();
+  var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
+  if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.mul = 5; state.levels.add = 3; state.prog.add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1], [1, 0, 0]]; }
   state = L.updateStreak(state, L.todayStr()); save(true);
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
