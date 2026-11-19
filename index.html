@@ -298,6 +298,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .lvrow{display:flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;flex-wrap:wrap}
 .helpb{background:#fff7d6;border-radius:999px;padding:4px 14px;font-weight:700;font-size:clamp(13px,2.2vmin,18px);min-height:40px;box-shadow:0 3px 0 rgba(59,42,85,.14);transition:transform .12s}
 .helpb:active{transform:scale(.94)}
+body:not(.cansay) .sayb{display:none!important}
 @keyframes fadeIn{from{opacity:0}}
 @keyframes drawIn{to{stroke-dashoffset:0}}
 .ovl{position:fixed;inset:0;background:rgba(40,25,70,.5);display:flex;align-items:center;justify-content:center;z-index:40;padding:clamp(6px,2vmin,18px);animation:fadeIn .2s}
@@ -307,6 +308,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .oq{font-weight:700;font-size:clamp(16px,3vmin,26px);background:#f6f2ff;border-radius:12px;padding:2px 12px;white-space:nowrap}
 .oq[dir=rtl]{white-space:normal;font-size:clamp(12px,2.1vmin,18px)}
 .ohead .icon,.orow .icon{width:46px;height:46px;font-size:18px;flex:0 0 auto;background:#f3eefb;box-shadow:none}
+@media (max-width:420px){body.cansay .ohead b{display:none}body.cansay .ohead .oq{margin-inline-end:auto}}
 .say{font-weight:700;font-size:clamp(15px,3vmin,25px);text-align:center;background:#fff7d6;border-radius:16px;padding:6px 12px;flex:0 0 auto;line-height:1.35}
 .mdl{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px}
 .msvg{max-width:100%;max-height:min(46vh,340px);width:auto;height:auto;display:block}
@@ -925,11 +927,11 @@ var TrollLogic = (function () {
   }
   function neighbor(r, lo, hi) {
     var n = ri(r, lo, hi), v = ri(r, 0, 2), pts = [n - 2, n - 1, n, n + 1, n + 2].filter(function (x) { return x >= 0; });
-    if (v === 0) return Q(r, 'אֵיזֶה מִסְפָּר בָּא אַחֲרֵי ' + n + '?', n + 1, { rtl: true, extra: [n - 1, n + 2, n + 10], tip: 'סוֹפְרִים קָדִימָה צַעַד אֶחָד',
+    if (v === 0) return Q(r, (n - 1) + ' → ' + n + ' → ?', n + 1, { extra: [n - 1, n + 2, n + 10], tip: 'סוֹפְרִים קָדִימָה צַעַד אֶחָד',
       ex: exNear(pts, pts.indexOf(n + 1), 'אֵיזֶה מִסְפָּר בָּא מִיָּד אַחֲרֵי ' + n + '?') });
-    if (v === 1) return Q(r, 'אֵיזֶה מִסְפָּר בָּא לִפְנֵי ' + n + '?', n - 1, { rtl: true, extra: [n + 1, n - 2], tip: 'סוֹפְרִים אֲחוֹרָה צַעַד אֶחָד',
+    if (v === 1) return Q(r, '? → ' + n + ' → ' + (n + 1), n - 1, { extra: [n + 1, n - 2], tip: 'סוֹפְרִים אֲחוֹרָה צַעַד אֶחָד',
       ex: exNear(pts, pts.indexOf(n - 1), 'אֵיזֶה מִסְפָּר בָּא מִיָּד לִפְנֵי ' + n + '?') });
-    return Q(r, 'אֵיזֶה מִסְפָּר נִמְצָא בֵּין ' + (n - 1) + ' לְ-' + (n + 1) + '?', n, { rtl: true, extra: [n - 1, n + 1, n + 2], tip: 'הַמִּסְפָּר שֶׁבָּא אַחֲרֵי ' + (n - 1),
+    return Q(r, (n - 1) + ' → ? → ' + (n + 1), n, { extra: [n - 1, n + 1, n + 2], tip: 'הַמִּסְפָּר שֶׁבָּא אַחֲרֵי ' + (n - 1),
       ex: exNear(pts, pts.indexOf(n), 'אֵיזֶה מִסְפָּר נִמְצָא בֵּין ' + (n - 1) + ' לְ-' + (n + 1) + '?') });
   }
   function extremeLine(r, nums) {
@@ -3062,7 +3064,7 @@ var TrollModels = (function () {
 
   // ---------- screens ----------
   function show(build) {
-    timers.forEach(clearTimeout); timers = []; closeExplain(); here = null;
+    timers.forEach(clearTimeout); timers = []; closeExplain(); hush(); here = null;
     var old = cur, el = h('div', { class: 'screen' });
     cur = el; app.appendChild(el); build(el);
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
@@ -3272,8 +3274,44 @@ var TrollModels = (function () {
   }
 
   // ---------- explanation window: step-by-step, the way it is shown in class ----------
+  // Read aloud: first graders cannot read the questions yet, and in class the teacher reads them out. The device's own Hebrew
+  // voice is used (free, nothing to download); when the device has none, the speaker buttons stay hidden.
+  var tts = window.speechSynthesis || null, heVoice = null;
+  function findVoice() {
+    try {
+      var vs = tts.getVoices().filter(function (v) { return /^(he|iw)/i.test(v.lang || ''); });
+      heVoice = vs.filter(function (v) { return /natural|google|enhanced|premium/i.test(v.name); })[0] || vs[0] || null;
+    } catch (e) { heVoice = null; }
+    document.body.classList.toggle('cansay', !!heVoice);
+  }
+  if (tts) { findVoice(); try { tts.addEventListener('voiceschanged', findVoice); } catch (e) {} }
+  if (/say=1/.test(hash)) document.body.classList.add('cansay'); // layout check of the speaker buttons
+  // What the voice says for a line of the screen: the signs of an exercise become words, pictures are dropped.
+  function spoken(text) {
+    text = String(text).replace(/<[^>]*>/g, ' ');
+    if (/ = \?$/.test(text)) text = 'כַּמָּה זֶה ' + text.replace(/ = \?$/, '') + '?';
+    if (text.indexOf('→') >= 0) text = text.replace(/\?/g, ' כַּמָּה ');
+    return text.replace(/[□◯]/g, ' כַּמָּה ')
+      .replace(/ \+ /g, ' וְעוֹד ').replace(/ [−-] /g, ' פָּחוֹת ').replace(/ [×x] /g, ' כָּפוּל ').replace(/ [:÷] /g, ' לְחַלֵּק לְ ')
+      .replace(/ = /g, ' שָׁוֶה ').replace(/ < /g, ' קָטָן מִ ').replace(/ > /g, ' גָּדוֹל מִ ').replace(/→/g, ', ')
+      .replace(/(\d),(\d{3})/g, '$1$2').replace(/[^\u0590-\u05ff0-9.,?!:\/ -]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function duck(on) { for (var k in bgm) bgm[k].volume = on ? 0.05 : 0.2; }
+  function hush() { if (tts) try { tts.cancel(); } catch (e) {} duck(false); }
+  function speak(text) {
+    if (!tts || !heVoice) return;
+    try {
+      tts.cancel();
+      var u = new SpeechSynthesisUtterance(spoken(text));
+      u.voice = heVoice; u.lang = heVoice.lang; u.rate = 0.85;
+      u.onstart = function () { duck(true); }; u.onend = u.onerror = function () { if (!tts.pending) duck(false); };
+      tts.speak(u);
+    } catch (e) {}
+  }
+  function autoSay() { return state.grade === 1 && !state.mute; } // grade 1 hears every line at once; older players tap the speaker
+  function sayBtn(get, cls) { return h('button', { class: 'sayb ' + (cls || ''), text: '🔊', 'aria-label': 'הַקְרָאָה', on: { click: function () { speak(get()); } } }); }
   var ovl = null;
-  function closeExplain() { if (ovl) { ovl.remove(); ovl = null; } }
+  function closeExplain() { if (ovl) { ovl.remove(); ovl = null; hush(); } }
   function openExplain(q) {
     closeExplain(); tv.hint = true;
     var steps = q.ex.steps, i = /step=last/.test(hash) ? steps.length - 1 : 0;
@@ -3283,6 +3321,7 @@ var TrollModels = (function () {
       var m = null, k;
       for (k = i; k >= 0 && !m; k--) m = steps[k].m; // a step without its own picture keeps the previous one
       say.innerHTML = frx(steps[i].say); restart(say, 'pop');
+      if (autoSay()) speak(steps[i].say);
       mdl.innerHTML = M.render(m);
       stepNo.textContent = 'צַעַד ' + (i + 1) + ' מִתּוֹךְ ' + steps.length;
       pips.innerHTML = ''; steps.forEach(function (s, n) { pips.appendChild(h('i', { class: n <= i ? 'on' : '' })); });
@@ -3294,6 +3333,7 @@ var TrollModels = (function () {
     ovl = h('div', { class: 'ovl' }, h('div', { class: 'card' },
       h('div', { class: 'ohead' }, h('b', { text: 'בּוֹאִי נִרְאֶה אֵיךְ פּוֹתְרִים' }),
         h('span', { class: 'oq', dir: q.rtl ? 'rtl' : 'ltr', html: frx(q.text).replace('□', '<span class="box">?</span>') }),
+        sayBtn(function () { return steps[i].say; }, 'icon'),
         h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); closeExplain(); } } })),
       say, mdl, h('div', { class: 'orow' }, back, h('div', { class: 'stepbox' }, stepNo, pips), next)));
     document.body.appendChild(ovl);
@@ -3308,7 +3348,8 @@ var TrollModels = (function () {
     return h('div', { class: 'num' }, g, h('div', { class: 'lbl', text: String(n) }));
   }
   function buildHint(q) {
-    var v = q.hint.vis, box = h('div', { class: 'hint' }, h('div', { class: 'cap', text: '💡 ' + q.hint.tip }));
+    var v = q.hint.vis, box = h('div', { class: 'hint' }, h('div', { class: 'cap', text: '💡 ' + q.hint.tip, on: { click: function () { speak(q.hint.tip); } } }));
+    if (autoSay()) speak(q.hint.tip);
     if (!v) return box;
     var vis = h('div', { class: 'vis' }), i, j, d;
     if (v.t === 'add') { vis.appendChild(numVis(v.a, '')); vis.appendChild(h('span', { text: '+' })); vis.appendChild(numVis(v.b, 'p')); }
@@ -3359,7 +3400,8 @@ var TrollModels = (function () {
       var label = h('div', { class: 'chip lv' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div');
       var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
       var helpB = h('button', { class: 'helpb', text: '💡 אֵיךְ פּוֹתְרִים?', on: { click: function () { sfx.tap(); openExplain(round.current()); } } });
-      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, helpB));
+      function sayQ() { var q = round.current(); return q ? (ASKS[q.fmt] ? ASKS[q.fmt] + '. ' : '') + (q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : q.text) : ''; }
+      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, sayBtn(sayQ, 'helpb'), helpB));
       el.appendChild(h('div', { class: 'qrow' }, bud, h('div', { class: 'qside' }, bubble, qslot)));
       el.appendChild(answers); el.appendChild(hintSlot);
 
@@ -3385,6 +3427,7 @@ var TrollModels = (function () {
         hintSlot.innerHTML = ''; answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
         tv.solve = tv.flub = null;
         (WIDGET[q.fmt] || WIDGET.choice)(q);
+        if (autoSay()) speak(sayQ()); else hush();
       }
       // Each activity format draws its own controls and reports through onAnswer(button, value, question).
       var ASKS = { tf: 'הַאִם זֶה נָכוֹן?', cmp: 'אֵיזֶה סִימָן מַתְאִים?', line: 'הַקִּישִׁי עַל הַתְּשׁוּבָה בִּישַׁר הַמִּסְפָּרִים', build: 'בְּנִי אֶת הַמִּסְפָּר מִקֻּבִּיּוֹת', array: 'בְּנִי מַעֲרָךְ מַתְאִים', pairs: 'הַתְאִימִי כָּל תַּרְגִּיל לַתּוֹצָאָה שֶׁלּוֹ', use: 'הֵעָזְרִי בַּתַּרְגִּיל הַפָּתוּר' };
@@ -3481,6 +3524,7 @@ var TrollModels = (function () {
       function onAnswer(b, v, q) {
         var res = round.answer(v);
         if (!res) return; // repeated tap or already solved
+        hush();
         if (res.correct) {
           combo = res.firstTry ? combo + 1 : 0;
           b.classList.add('right'); tv.solve = tv.flub = null;
