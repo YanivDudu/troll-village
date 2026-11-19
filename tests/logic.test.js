@@ -147,6 +147,15 @@ t('tiles: every grade has its own tiles, every house sits in exactly one; the ch
     assert(q.fmt !== 'cmp', 'cmp in grade 1'); assert(!/יותר\?/.test(strip(q.text)), 'comparison story in grade 1: ' + q.text);
   });
 });
+t('grade 2 is locked: its tiles, houses, exercises and explanations do not change when other grades are edited', () => {
+  // Grade 2 is the grade that matters most to the family. If this fails, a change meant for another grade touched grade 2:
+  // undo it, or (only when grade 2 was changed on purpose) print the new fingerprint and update it here.
+  const crypto = require('crypto'), h = crypto.createHash('sha1');
+  for (const id of L.topicsFor(L.newState(2))) { const tl = L.TOPICS.find(x => x.id === id);
+    h.update(id + tl.name + tl.world);
+    tl.levels.forEach((d, i) => { h.update(d.name); for (let k = 1; k <= 60; k++) { const q = L.makeQuestion(id, i + 1, L.seeded(k)); h.update(JSON.stringify([q.text, q.answer, q.options, q.hint, q.ex, q.fmt])); } }); }
+  assert.strictEqual(h.digest('hex'), 'c62723b547e0327539024e0103bb50e2b2dad5a9');
+});
 t('level is clamped per topic', () => {
   assert.strictEqual(L.makeQuestion('frac', 99, Math.random).level, L.maxLevel('frac'));
   assert.strictEqual(L.makeQuestion('add', -3, Math.random).level, 1);
