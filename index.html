@@ -3165,7 +3165,7 @@ var TrollModels = (function () {
       if (!ch) {
         plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
         var gopen = L.challengeOpen(state);
-        plot(GATE, shown.length + 1, [h('b', { text: (gopen ? '🚀 ' : '🔒 ') + GATE.world }), h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }), h('span', { class: 'pstars', text: gopen ? 'פָּתוּחַ!' : 'נִפְתָּח אַחֲרֵי מְשִׂימַת גֶּשֶׁר 🌉' })], function () {
+        plot(GATE, shown.length + 1, [h('b', { text: (gopen ? '🚀 ' : '🔒 ') + GATE.world }), h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }), h('span', { class: 'pstars', text: gopen ? 'פָּתוּחַ!' : 'נִפְתָּח כְּשֶׁמְּסַיְּמִים בִּנְיָן אֶחָד' })], function () {
           if (gopen) { sfx.pop(); topics(true); return; }
           sfx.wrong(); var p = grid.lastChild; restart(p.lastChild, 'shake');
         });
