@@ -3308,7 +3308,7 @@ var TrollModels = (function () {
       tts.speak(u);
     } catch (e) {}
   }
-  function autoSay() { return state.grade === 1 && !state.mute; } // grade 1 hears every line at once; older players tap the speaker
+  function autoSay() { return false; } // nothing is read out by itself, in any grade: the child taps the speaker
   function sayBtn(get, cls) { return h('button', { class: 'sayb ' + (cls || ''), text: '🔊', 'aria-label': 'הַקְרָאָה', on: { click: function () { speak(get()); } } }); }
   var ovl = null;
   function closeExplain() { if (ovl) { ovl.remove(); ovl = null; hush(); } }
