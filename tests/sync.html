@@ -16,7 +16,7 @@ function snap() { var o = {}; for (var i = 0; i < localStorage.length; i++) { va
 function restore(o) { Object.keys(snap()).forEach(function (k) { localStorage.removeItem(k); }); for (var k in o) localStorage.setItem(k, o[k]); }
 function sync() { return JSON.parse(localStorage.getItem('trollVillage.sync') || '{}'); }
 function profs() { return JSON.parse(localStorage.getItem('trollVillage.profiles') || '{"list":[]}'); }
-function st(id) { return JSON.parse(localStorage.getItem('trollVillage.p.' + id)); }
+function st(id) { return JSON.parse(localStorage.getItem('trollVillage.r.' + id)); }
 function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
 (async function () {
   var keep = snap(); // the developer's own players on localhost are put back at the end
@@ -24,7 +24,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     restore({});
     await open(); // device A: a new player, then a new village code
     var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
-    inp.value = 'A1'; q('.pnew .btn').click();
+    inp.value = 'A1'; q('.pnew .gbtn[data-g="2"]').click(); q('.pnew .btn').click();
     await until(function () { return q('.chip.who'); }, 'home A');
     q('.chip.who').click();
     (await until(function () { return q('.cloudb'); }, 'cloud button')).click();
@@ -37,12 +37,12 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     restore({}); // device B: its own player first, then joins with the link
     await open();
     inp = await until(function () { return q('.pnew .pname'); }, 'who screen B');
-    inp.value = 'B1'; q('.pnew .btn').click();
+    inp.value = 'B1'; q('.pnew .gbtn[data-g="4"]').click(); q('.pnew .btn').click();
     await until(function () { return q('.chip.who'); }, 'home B');
     await open('#join=' + code);
     await until(function () { return profs().list.length === 2 && sync().code === code; }, 'B joined');
     check(profs().list.some(function (p) { return p.id === idA && p.name === 'A1'; }), 'device B sees the player of device A');
-    check(st(idA).owned.join() === JSON.parse(A['trollVillage.p.' + idA]).owned.join(), 'with the same trolls');
+    check(st(idA).owned.join() === JSON.parse(A['trollVillage.r.' + idA]).owned.join(), 'with the same trolls');
     await open(); // B plays as A1: any saved change counts as progress
     var chip = await until(function () { return q('.chip.who'); }, 'home on B');
     chip.click();

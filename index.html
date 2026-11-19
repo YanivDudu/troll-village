@@ -1429,8 +1429,59 @@ var TrollLogic = (function () {
     t.shift = front.length; // houses added in front in version 3; older saves are shifted by this
     t.levels = front.concat(t.levels, back);
   });
+  // The eight lists above are the source of the exercises. What a player sees is a set of tiles per school grade, each built
+  // from the houses that grade's curriculum teaches together: grade 1 works inside a number range (to 10, to 20, whole tens)
+  // and not by operation; grade 4 has number exploration and fractions of its own; grade 5 (a challenge) has decimals.
+  // [id, grade, hero, building, icon, world, name, houses as source+number]
+  var SRC = TOPICS, SRC_ID = {};
+  SRC.forEach(function (t) { SRC_ID[t.id] = t; });
+  var TILE_DEF = [
+    ['g1n', 1, 24, 'tower', '🏰', 'מִגְדַּל הַמִּסְפָּרִים', 'מִסְפָּרִים עַד 100', 'num1 num2 num3'],
+    ['g1a', 1, 16, 'house1', '🌳', 'בֵּית הָעֶשֶׂר', 'חִבּוּר וְחִסּוּר עַד 10', 'add1 sub1 miss1 miss2 miss3'],
+    ['g1b', 1, 18, 'houseAlt1', '🏔️', 'בֵּית הָעֶשְׂרִים', 'חִבּוּר וְחִסּוּר עַד 20', 'add2 sub2 add3 sub3'],
+    ['g1c', 1, 30, 'house2', '🍄', 'אֲחֻזַּת הָעֲשָׂרוֹת', 'עֲשָׂרוֹת שְׁלֵמוֹת', 'add4 sub4'],
+    ['g2add', 2, 0, 'house1', '🌳', 'בֵּית הַחִבּוּר', 'חִבּוּר עַד 100', 'add5 add6 add7 add8'],
+    ['g2sub', 2, 2, 'houseAlt1', '🏔️', 'בֵּית הַחִסּוּר', 'חִסּוּר עַד 100', 'sub5 sub6 sub7 sub8'],
+    ['g2mul', 2, 4, 'house2', '🍄', 'אֲחֻזַּת הַכֶּפֶל', 'כֶּפֶל, חֲצִי וְכָפוּל', 'mul1 mul2 mul3 frac1'],
+    ['g2div', 2, 6, 'houseAlt2', '🌊', 'אֲחֻזַּת הַחִלּוּק', 'חִלּוּק', 'div1 div2 div3'],
+    ['g2num', 2, 8, 'tower', '🏰', 'מִגְדַּל הַמִּסְפָּרִים', 'מִסְפָּרִים עַד 1,000', 'num4 num5 num6'],
+    ['g2miss', 2, 14, 'pyramid', '🔍', 'פִּירָמִידַת הַמִּסְפָּר הֶחָסֵר', 'מִסְפָּר חָסֵר', 'miss4 miss5 miss6'],
+    ['g3add', 3, 1, 'house1', '🌳', 'בֵּית הַחִבּוּר', 'חִבּוּר עַד 10,000', 'add9 add10 add11'],
+    ['g3sub', 3, 3, 'houseAlt1', '🏔️', 'בֵּית הַחִסּוּר', 'חִסּוּר עַד 10,000', 'sub9 sub10 sub11'],
+    ['g3mul', 3, 5, 'house2', '🍄', 'אֲחֻזַּת הַכֶּפֶל', 'לוּחַ הַכֶּפֶל וּמֵעֵבֶר לוֹ', 'mul4 mul5 mul6 mul7 mul8'],
+    ['g3div', 3, 7, 'houseAlt2', '🌊', 'אֲחֻזַּת הַחִלּוּק', 'חִלּוּק וּשְׁאֵרִית', 'div4 div5 div6 div7 div8'],
+    ['g3num', 3, 9, 'tower', '🏰', 'מִגְדַּל הַמִּסְפָּרִים', 'מִסְפָּרִים עַד 10,000', 'num7 num8'],
+    ['g3ord', 3, 13, 'towerAlt', '🎪', 'מִגְדַּל הַסּוֹגְרַיִם', 'סוֹגְרַיִם וְסֵדֶר פְּעֻלּוֹת', 'ord1 ord2 ord3 ord4'],
+    ['g3miss', 3, 15, 'pyramid', '🔍', 'פִּירָמִידַת הַמִּסְפָּר הֶחָסֵר', 'מִסְפָּר חָסֵר', 'miss7 miss8'],
+    ['g4big', 4, 17, 'tower', '🏰', 'מִגְדַּל הַמִּילְיוֹן', 'חִבּוּר וְחִסּוּר עַד מִילְיוֹן', 'num9 add12 add13 sub12 add14 sub13'],
+    ['g4mul', 4, 21, 'house2', '🍄', 'אֲחֻזַּת הַכֶּפֶל', 'כֶּפֶל בְּמִסְפָּרִים גְּדוֹלִים', 'mul9 mul10 mul11'],
+    ['g4div', 4, 23, 'houseAlt2', '🌊', 'אֲחֻזַּת הַחִלּוּק', 'חִלּוּק בְּמִסְפָּרִים גְּדוֹלִים', 'div9 div10 div11'],
+    ['g4exp', 4, 25, 'pyramid', '🔍', 'פִּירָמִידַת הָרִאשׁוֹנִיִּים', 'הִתְחַלְּקוּת, רִאשׁוֹנִיִּים וַחֲזָקוֹת', 'num10 num11 num12'],
+    ['g4frac', 4, 27, 'castleSmall', '🍕', 'טִירַת הַשְּׁבָרִים', 'שְׁבָרִים פְּשׁוּטִים', 'frac2 frac3 frac4 frac5 frac6 frac7 frac8 miss10'],
+    ['g4ord', 4, 29, 'towerAlt', '🎪', 'מִגְדַּל הַסּוֹגְרַיִם', 'סֵדֶר פְּעֻלּוֹת וְאִזּוּן', 'ord5 ord6 miss9'],
+    ['g5dec', 5, 10, 'house2', '🍄', 'אֲחֻזַּת הַנְּקֻדָּה', 'שְׁבָרִים עֶשְׂרוֹנִיִּים', 'num13 num14 num15 add15 add16 sub14 miss11'],
+    ['g5frac', 5, 11, 'castleSmall', '🍕', 'טִירַת הַשְּׁבָרִים', 'צִמְצוּם, הַרְחָבָה וּמְכַנֶּה מְשֻׁתָּף', 'frac9 frac10 frac11'],
+    ['g5ops', 5, 12, 'towerAlt', '🎪', 'מִגְדַּל הַפְּעֻלּוֹת', 'כֶּפֶל, חִלּוּק וְסֵדֶר פְּעֻלּוֹת', 'mul12 div12 ord7']
+  ];
+  TOPICS = TILE_DEF.map(function (d) {
+    var t = { id: d[0], g: d[1], hero: d[2], bld: d[3], icon: d[4], world: d[5], name: d[6], src: [], levels: [] };
+    d[7].split(' ').forEach(function (ref) {
+      var m = /^([a-z]+)(\d+)$/.exec(ref), lv = SRC_ID[m[1]].levels[m[2] - 1], c = {}, k;
+      for (k in lv) c[k] = lv[k];
+      c.g = t.g; c.enr = false; // inside a tile every house belongs to the tile's grade
+      t.src.push([m[1], +m[2]]); t.levels.push(c);
+    });
+    return t;
+  });
   var BY_ID = {};
+  SRC.forEach(function (t) { BY_ID[t.id] = t; }); // the source lists stay reachable by id (tests, debug links)
   TOPICS.forEach(function (t) { BY_ID[t.id] = t; });
+  // Where a house of a source list lives now: { id, level } of the tile.
+  function tileOf(srcId, level) {
+    for (var i = 0; i < TOPICS.length; i++) for (var k = 0; k < TOPICS[i].src.length; k++)
+      if (TOPICS[i].src[k][0] === srcId && TOPICS[i].src[k][1] === level) return { id: TOPICS[i].id, level: k + 1 };
+    return null;
+  }
   function maxLevel(topicId) { return BY_ID[topicId] ? BY_ID[topicId].levels.length : 1; }
   // The houses a player of a school grade sees in a topic: the levels of that grade and of the next one as a challenge
   // (for grade 4 that is grade 5). Returns { lo, hi } (1-based, inclusive) or null when the topic has nothing for the grade.
@@ -2029,7 +2080,8 @@ var TrollLogic = (function () {
   var HEROES = ['פְּלוּסִי', 'פְּלוּסִינָה', 'מִינוּסִי', 'מִינוּסָה', 'כְּפוּלִי', 'כְּפוּלִינָה', 'חֶלְקִי', 'חֶלְקִינָה', 'סִפְרוֹן', 'סִפְרוֹנִית', 'חֲצִי-חֲצִי', 'רִבְעוֹן', 'סוֹגְרִי', 'סַדְרָן', 'בַּלָּשִׁי', 'בַּלָּשִׁית',
     'פְּלוּסוֹן', 'פְּלוּסַאי', 'מִינוּסוֹן', 'מִינוּסַאי', 'כְּפוּלוֹן', 'כְּפוּלַאי', 'חֶלְקוֹן', 'חֶלְקַאי', 'סִפְרִי', 'סִפְרַאי', 'חֶצְיוֹן', 'שִׁבְרוֹן', 'סוֹגְרוֹן', 'סוֹגְרַאי', 'בַּלָּשׁוֹן', 'בַּלָּשַׁאי'];
   var HERO_BASE = 20000;
-  function heroId(topicId, grade) { return HERO_BASE + (grade === 1 || grade === 4 ? 16 : 0) + TOPICS.indexOf(BY_ID[topicId]) * 2 + (grade >= 3 ? 1 : 0); }
+  function oldHero(srcId, grade) { return (grade === 1 || grade === 4 ? 16 : 0) + SRC.indexOf(SRC_ID[srcId]) * 2 + (grade >= 3 ? 1 : 0); } // numbering before version 4
+  function heroId(topicId, grade) { var t = BY_ID[topicId]; return HERO_BASE + (t.hero != null ? t.hero : oldHero(topicId, grade)); }
 
   function dayNum(s) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
@@ -2185,8 +2237,31 @@ var TrollLogic = (function () {
   // inside such a topic, never a way into a topic the grade does not learn (no halves or multiplication in grade 1).
   function ownTopic(t, grade) { return t.levels.some(function (d) { return d.g === grade && !d.enr; }); }
   // The topics a player sees: those of the grade, plus any topic where the player already earned stars.
-  function topicsFor(state) {
-    return TOPICS.filter(function (t) { return span(t, state.grade) && (ownTopic(t, state.grade) || topicStars(state, t.id) > 0); }).map(function (t) { return t.id; });
+  function topicsFor(state) { return TOPICS.filter(function (t) { return t.g === state.grade; }).map(function (t) { return t.id; }); }
+  // The tiles of the next grade wait behind the challenge gate; it opens after the first bridge mission of the player's own grade
+  // (or when the player already has stars there, from before the gate existed).
+  function challengeFor(state) { return TOPICS.filter(function (t) { return t.g === state.grade + 1; }).map(function (t) { return t.id; }); }
+  function challengeOpen(state) {
+    return topicsFor(state).some(function (id) { return bossDone(state, id, state.grade); }) || challengeFor(state).some(function (id) { return topicStars(state, id) > 0; });
+  }
+  // A save from before version 4 is keyed by the source lists; this re-keys it by tiles without losing a star.
+  function toTiles(o) {
+    var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; };
+    var lv = obj(o.levels), pg = obj(o.prog), bs = obj(o.boss), pre = o.v !== 3, out = {}, k;
+    for (k in o) out[k] = o[k];
+    out.v = 4; out.levels = {}; out.prog = {}; out.boss = {}; out.hists = {}; out.recent = {}; out.intro = {};
+    TOPICS.forEach(function (t) {
+      var open = 0, stop = false;
+      out.prog[t.id] = t.src.map(function (r) {
+        var sh = pre ? shiftOf(SRC_ID[r[0]]) : 0, cur = Number(lv[r[0]]);
+        if (!stop && isFinite(cur) && r[1] <= cur + sh) open++; else stop = true;
+        return Array.isArray(pg[r[0]]) ? pg[r[0]][r[1] - 1 - sh] : null;
+      });
+      if (open) out.levels[t.id] = open;
+      out.boss[t.id] = {};
+      SRC.forEach(function (sT) { if (obj(bs[sT.id])[t.g] === true && oldHero(sT.id, t.g) === t.hero) out.boss[t.id][t.g] = true; });
+    });
+    return out;
   }
   function startLevel(t, grade) {
     grade = grade || 2;
@@ -2212,7 +2287,7 @@ var TrollLogic = (function () {
   function shiftOf(t) { return t.shift || 0; }
   function newState(grade) {
     grade = Math.max(1, Math.min(4, grade | 0 || 2));
-    var s = { v: 3, grade: grade, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', mute: false, music: true, buddy: null };
+    var s = { v: 4, grade: grade, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', mute: false, music: true, buddy: null };
     TOPICS.forEach(function (t) { s.levels[t.id] = startLevel(t, grade); s.hists[t.id] = []; s.recent[t.id] = []; s.prog[t.id] = []; s.boss[t.id] = {}; });
     return s;
   }
@@ -2223,17 +2298,17 @@ var TrollLogic = (function () {
     var int = function (x, lo, hi, d) { x = Number(x); return isFinite(x) ? Math.max(lo, Math.min(hi, Math.floor(x))) : d; };
     var day = function (x) { return isNaN(dayNum(x)) ? '' : String(x); };
     var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; };
-    var lv = obj(o.levels), hs = obj(o.hists), rc = obj(o.recent), old = o.v !== 3;
+    if (o.v !== 4) o = toTiles(o);
+    var lv = obj(o.levels), hs = obj(o.hists), rc = obj(o.recent);
     s.grade = int(o.grade, 1, 4, 2);
     TOPICS.forEach(function (t) {
-      s.levels[t.id] = int(isFinite(Number(lv[t.id])) ? Number(lv[t.id]) + (old ? shiftOf(t) : 0) : NaN, 1, t.levels.length, startLevel(t, s.grade));
+      s.levels[t.id] = int(lv[t.id] == null ? NaN : lv[t.id], 1, t.levels.length, startLevel(t, s.grade));
       if (Array.isArray(hs[t.id])) s.hists[t.id] = hs[t.id].slice(-5).map(function (x) { return !!x; });
       if (Array.isArray(rc[t.id])) s.recent[t.id] = rc[t.id].filter(function (x) { return typeof x === 'string'; }).slice(-10);
     });
     var pg = obj(o.prog), bs = obj(o.boss), it = obj(o.intro);
     TOPICS.forEach(function (t) {
-      var sh = old ? shiftOf(t) : 0;
-      if (Array.isArray(pg[t.id])) s.prog[t.id] = t.levels.map(function (d, i) { var r = pg[t.id][i - sh]; return [0, 1, 2].map(function (k) { return Array.isArray(r) ? int(r[k], 0, 3, 0) : 0; }); });
+      if (Array.isArray(pg[t.id])) s.prog[t.id] = t.levels.map(function (d, i) { var r = pg[t.id][i]; return [0, 1, 2].map(function (k) { return Array.isArray(r) ? int(r[k], 0, 3, 0) : 0; }); });
       var b = obj(bs[t.id]); [1, 2, 3, 4].forEach(function (g) { if (b[g] === true) s.boss[t.id][g] = true; });
       if (it[t.id] === true) s.intro[t.id] = true;
     });
@@ -2273,7 +2348,7 @@ var TrollLogic = (function () {
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
-    explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
+    explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
     TOPICS: TOPICS, maxLevel: maxLevel, clampLevel: clampLevel, fmt: fmt,
@@ -2605,7 +2680,7 @@ var TrollModels = (function () {
 <script id="ui">
 (function () {
   'use strict';
-  var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.q.', DKEY_OLD = 'trollVillage.p.';
+  var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.r.', DKEY_OLD = 'trollVillage.q.', DKEY_OLD2 = 'trollVillage.p.';
   var VILLAGE = 'שֶׁל הִילָה'; // second line of the village name on the home screen
   var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -2614,9 +2689,9 @@ var TrollModels = (function () {
   var tv = window.__tv = { round: null, done: false };
   var GRADE_HE = ['', "א'", "ב'", "ג'", "ד'", "ה'"];
   var GUIDE = { id: 3, name: 'טְרוֹלִי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
-  var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈' };
+  var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈', bld: 'pyramidMayan' };
   // building picture for each topic (assets/, see assets/CREDITS.txt)
-  var BLD = { add: 'house1', sub: 'houseAlt1', mul: 'house2', div: 'houseAlt2', num: 'tower', frac: 'castleSmall', ord: 'towerAlt', miss: 'pyramid', mix: 'pyramidMayan' };
+  var GATE = { id: 'gate', world: 'שַׁעַר הָאֶתְגָּר', bld: 'castleSmallAlt' };
   var HAIR_REQ = [0, 0, 0, 5, 12, 20]; // stars needed for each hairstyle
   var ACC_NAMES = { none: 'בְּלִי אֲבִיזָר', bow: 'סֶרֶט', glasses: 'מִשְׁקָפַיִם', crown: 'כֶּתֶר', flower: 'פֶּרַח', hat: 'כּוֹבַע מְסִבָּה', sunglasses: 'מִשְׁקְפֵי שֶׁמֶשׁ', bowtie: 'עֲנִיבַת פַּרְפַּר', scarf: 'צָעִיף', headphones: 'אָזְנִיּוֹת', star: 'סִכַּת כּוֹכָב', butterfly: 'פַּרְפַּר', balloon: 'בָּלוֹן', wand: 'שַׁרְבִיט קְסָמִים', wings: 'כְּנָפַיִם', necklace: 'שַׁרְשֶׁרֶת' };
   var ASK = ['כַּמָּה זֶה?', 'מָה הַתְּשׁוּבָה?', 'בּוֹאִי נַחְשֹׁב יַחַד', 'אַתְּ יְכוֹלָה!', 'מָה דַּעְתֵּךְ?'];
@@ -2628,12 +2703,12 @@ var TrollModels = (function () {
   function lsGet(k) { if (sandbox) return null; try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { if (sandbox) return; try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { if (sandbox) return; try { localStorage.removeItem(k); } catch (e) {} }
-  function rawOf(id) { return lsGet(DKEY + id) || lsGet(DKEY_OLD + id); }
+  function rawOf(id) { return lsGet(DKEY + id) || lsGet(DKEY_OLD + id) || lsGet(DKEY_OLD2 + id); }
   function saveProfiles() { lsSet(PKEY, JSON.stringify(profiles)); }
   function loadProfiles() {
     profiles = L.loadProfiles(lsGet(PKEY));
     var old = lsGet(KEY); // progress saved before profiles existed becomes the first player
-    if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY_OLD + profiles.cur, old); saveProfiles(); lsDel(KEY); }
+    if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY_OLD2 + profiles.cur, old); saveProfiles(); lsDel(KEY); }
   }
   function load() {
     state = L.loadState(profiles.cur ? rawOf(profiles.cur) : null);
@@ -2670,6 +2745,7 @@ var TrollModels = (function () {
       try { out.gone = JSON.parse(str('gone') || '[]').filter(function (x) { return /^p\d+$/.test(x); }); } catch (e) {}
       for (k in f) if (/^s_p\d+$/.test(k) && str(k) && +str('t_' + k.slice(2)) > 0) { out.s[k.slice(2)] = str(k); out.t[k.slice(2)] = +str('t_' + k.slice(2)); }
       for (k in f) if (/^s2_p\d+$/.test(k) && str(k) && +str('t2_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t2_' + k.slice(3)); } // version 3 wins over the old fields
+      for (k in f) if (/^s3_p\d+$/.test(k) && str(k) && +str('t3_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t3_' + k.slice(3)); } // and version 4 over both
       return out;
     });
   }
@@ -2688,13 +2764,13 @@ var TrollModels = (function () {
     cloudGet(sync.code).then(function (rem) {
       var before = JSON.stringify(profiles.list), m = L.mergeCloud({ list: profiles.list, gone: sync.gone, t: sync.t }, rem), f = {};
       m.pull.forEach(function (id) { lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
-      m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); delete sync.t[id]; });
+      m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); lsDel(DKEY_OLD2 + id); delete sync.t[id]; });
       var alive = m.list.some(function (p) { return p.id === profiles.cur; });
       profiles = { cur: alive ? profiles.cur : null, list: m.list };
       if (JSON.stringify(m.list) !== before) changed = true;
       sync.gone = m.gone; saveProfiles(); saveSync();
       if (changed && profiles.cur) refresh();
-      m.push.forEach(function (id) { var raw = rawOf(id); if (raw) { f['s2_' + id] = JSON.stringify(L.loadState(raw)); f['t2_' + id] = String(sync.t[id]); } });
+      m.push.forEach(function (id) { var raw = rawOf(id); if (raw) { f['s3_' + id] = JSON.stringify(L.loadState(raw)); f['t3_' + id] = String(sync.t[id]); } });
       if (m.meta) { f.list = JSON.stringify(m.list); f.gone = JSON.stringify(m.gone); }
       return Object.keys(f).length ? cloudPut(sync.code, f, keep) : null;
     }).then(function () { fin(true); }, function () { fin(false); });
@@ -2711,7 +2787,7 @@ var TrollModels = (function () {
       if (p.id.length < 9) {
         var id = rndId(), raw = rawOf(p.id);
         if (raw) lsSet(DKEY + id, raw);
-        lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id);
+        lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id);
         if (profiles.cur === p.id) profiles.cur = id;
         p.id = id;
       }
@@ -3059,32 +3135,41 @@ var TrollModels = (function () {
   function starStr(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n); }
   function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
   function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
-  function topics() {
+  // ch: the map behind the challenge gate, with the tiles of the next grade
+  function topics(ch) {
+    ch = ch === true;
     setMusic('home');
     show(function (el) {
       el.classList.add('map');
-      el.appendChild(topBar(true, home));
-      el.appendChild(h('h2', { class: 'h2', text: 'לְאָן נְטַיֵּל הַיּוֹם?' }));
+      el.appendChild(topBar(true, ch ? function () { topics(); } : home));
+      el.appendChild(h('h2', { class: 'h2', text: ch ? '🚀 אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
       var grid = h('div', { class: 'plots' });
       function plot(t, i, parts, go) {
         var sign = h('button', { class: 'sign', on: { click: go } });
         parts.forEach(function (p) { sign.appendChild(p); });
         grid.appendChild(h('div', { class: 'plot', style: 'animation-delay:' + (i * 0.06) + 's' },
           h('button', { class: 'bld', 'data-t': t.id, 'aria-label': t.world, on: { click: go } },
-            h('img', { src: 'assets/' + BLD[t.id] + '.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.37) + 's' })),
+            h('img', { src: 'assets/' + t.bld + '.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.37) + 's' })),
           sign));
       }
-      var mine = L.topicsFor(state), shown = L.TOPICS.filter(function (t) { return mine.indexOf(t.id) >= 0; });
+      var mine = ch ? L.challengeFor(state) : L.topicsFor(state), shown = L.TOPICS.filter(function (t) { return mine.indexOf(t.id) >= 0; });
       shown.forEach(function (t, i) {
-        var sp = L.span(t, state.grade), open = state.levels[t.id], got = 0, k;
-        for (k = sp.lo; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
+        var open = state.levels[t.id], got = 0, k;
+        for (k = 1; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
         var ready = readyBoss(t.id) > 0;
         plot(t, i, [h('b', { text: t.world }), h('small', { text: t.name }),
           h('span', { class: 'pstars', text: '⭐ ' + got + (ready ? ' · 🌉' : '') }),
-          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / ((open - sp.lo + 1) * 9)) + '%' }))],
+          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / (t.levels.length * 9)) + '%' }))],
         function () { sfx.pop(); region(t.id); });
       });
-      plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
+      if (!ch) {
+        plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
+        var gopen = L.challengeOpen(state);
+        plot(GATE, shown.length + 1, [h('b', { text: (gopen ? '🚀 ' : '🔒 ') + GATE.world }), h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }), h('span', { class: 'pstars', text: gopen ? 'פָּתוּחַ!' : 'נִפְתָּח אַחֲרֵי מְשִׂימַת גֶּשֶׁר 🌉' })], function () {
+          if (gopen) { sfx.pop(); topics(true); return; }
+          sfx.wrong(); var p = grid.lastChild; restart(p.lastChild, 'shake');
+        });
+      }
       el.appendChild(grid);
       el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים, צְלִילִים). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
       if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
@@ -3097,7 +3182,7 @@ var TrollModels = (function () {
     setMusic('home');
     show(function (el) {
       el.classList.add('map');
-      el.appendChild(topBar(true, topics));
+      el.appendChild(topBar(true, function () { topics(t.g !== state.grade); }));
       el.style.backgroundImage = 'url(assets/forest' + (2 + L.TOPICS.indexOf(t) % 3) + '.jpg)';
       el.appendChild(h('h2', { class: 'h2', text: t.icon + ' ' + t.world }));
       var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי שָׁלָב: גִּלּוּי, תִּרְגּוּל אוֹ אֶתְגָּר' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
@@ -3124,7 +3209,7 @@ var TrollModels = (function () {
         var n = win.length, dif = h('span', { class: 'dif', title: 'קֹשִׁי ' + (i + 1) + ' מִתּוֹךְ ' + n });
         win.forEach(function (x, k) { dif.appendChild(h('i', { class: k <= i ? 'on' : '', style: 'height:' + (5 + k * 2) + 'px' })); });
         var card = h('div', { class: 'clr' }, h('div', { class: 'cname' },
-          h('span', { class: 'grade g' + d.g, text: d.enr ? '✨' : GRADE_HE[d.g] }), h('b', { text: d.name, title: d.name }), dif));
+          h('b', { text: d.name, title: d.name }), dif));
         var row = h('div', { class: 'stg' });
         STAGES.forEach(function (sg, k) {
           var open = L.stageOpen(state, t.id, lv, k);
@@ -3262,7 +3347,7 @@ var TrollModels = (function () {
       var fq = L.toFmt(fb, force, Math.random, function () { return L.makeQuestion(fb.topic, fb.level, Math.random); });
       if (fq) { round.qs[0] = fq; break; }
     }
-    var backTo = topicId === 'mix' ? topics : function () { region(topicId); };
+    var backTo = topicId === 'mix' ? function () { topics(); } : function () { region(topicId); };
     round.qs.forEach(function (q) { state.recent[q.topic] = state.recent[q.topic].concat([q.key]).slice(-10); });
     save();
     var buddy = buddySpec(), combo = 0;
@@ -3469,7 +3554,7 @@ var TrollModels = (function () {
           });
           if (ups.length) later(function () { sfx.levelup(); }, 2300);
           btns.appendChild(btn('עוֹד סִבּוּב', '', function () { startRound(round.topic); }));
-          btns.appendChild(btn('נוֹשֵׂא אַחַר', 'b3', topics));
+          btns.appendChild(btn('נוֹשֵׂא אַחַר', 'b3', function () { topics(); }));
           btns.appendChild(btn('🛍️ לַחֲנוּת', 'b2', function () { dress(null, 4); }));
           tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
         }, 700);
@@ -3589,7 +3674,7 @@ var TrollModels = (function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
           card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
+            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
@@ -3795,7 +3880,7 @@ var TrollModels = (function () {
   load(); buildBg();
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
-  if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.mul = 5; state.levels.add = 3; state.prog.add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1], [1, 0, 0]]; }
+  if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
   state = L.updateStreak(state, L.todayStr()); save(true);
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
@@ -3803,6 +3888,12 @@ var TrollModels = (function () {
   if (/linked/.test(hash)) sync.code = 'ABCD2345'; // layout check of the linked screens
   setInterval(musicTick, 150);
   var scr = (/s=(\w+)/.exec(hash) || [])[1], ht = (/t=(\w+)/.exec(hash) || [])[1] || 'add', hl = (/l=(\d+)/.exec(hash) || [])[1];
+  var hsrc = L.SRC.filter(function (x) { return x.id === ht; })[0];
+  if (hsrc) {
+    var hfirst = 0; hsrc.levels.forEach(function (d, i) { if (!hfirst && d.g === state.grade) hfirst = i + 1; });
+    var htile = L.tileOf(ht, hl ? L.clampLevel(ht, +hl) : hfirst || 1);
+    ht = htile.id; if (hl) hl = htile.level;
+  }
   if (hl && state.levels[ht]) state.levels[ht] = L.clampLevel(ht, +hl);
   if (/auto/.test(hash)) { // self-test: plays one round through the real click handlers
     window.onerror = function (m) { document.title = 'ERR ' + m; };
@@ -3831,12 +3922,12 @@ var TrollModels = (function () {
     startRound(ht, ht === 'mix' ? null : { level: state.levels[ht], stage: 1 });
     if (scr === 'hint') { var q0 = tv.round.current(), all = cur.querySelectorAll('[data-v]'); for (var n = 0; n < all.length; n++) if (all[n].getAttribute('data-v') !== String(q0.answer)) { all[n].click(); break; }
       if (!all.length && tv.flub) tv.flub(); }
-  } else if (scr === 'topics') topics();
+  } else if (scr === 'topics') topics(/&ch/.test(hash));
   else if (scr === 'dress') dress(null, +((/tab=(\d)/.exec(hash) || [])[1] || 3));
   else if (scr === 'gift') gift();
   else if (scr === 'cloud') cloud();
   else if (scr === 'region') region(ht);
-  else if (scr === 'bossend') endBoss(L.createBoss(ht, 2, Math.random), ht, 2);
+  else if (scr === 'bossend') endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g);
   else if (scr === 'end') {
     var lv0 = state.levels[ht], r0 = L.createRound(ht, state.levels, Math.random, 7);
     while (!r0.done()) { r0.answer(r0.current().answer); r0.next(); }
@@ -3855,7 +3946,7 @@ var TrollModels = (function () {
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl'), ovf = 0;
     if (card) ovf = Math.max(card.scrollHeight - card.clientHeight, card.scrollWidth - card.clientWidth, md.scrollHeight - md.clientHeight, md.scrollWidth - md.clientWidth, card.getBoundingClientRect().bottom - window.innerHeight);
-    if (again !== true && (ovf > 1 || cur.scrollHeight - cur.clientHeight > 1)) { setTimeout(function () { fitCheck(true); }, 3000); return; } // measured mid-animation on a busy machine: look once more
+    if (again !== true && (ovf > 1 || cur.scrollHeight - cur.clientHeight > 1 || cur.scrollWidth - cur.clientWidth > 1)) { setTimeout(function () { fitCheck(true); }, 3000); return; } // measured mid-animation on a busy machine: look once more
     parent.postMessage({ id: hash, ovf: ovf, card: !!card, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
   }, 3000);
 })();
