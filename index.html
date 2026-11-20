@@ -513,6 +513,9 @@ button.cbld:active{transform:scale(.94)}
 @media (max-height:420px){:root{--trk:42px;--inv:52px}}
 body.racing #app,body.racing .ovl{bottom:var(--trk)}
 body.invited #app,body.invited .ovl{bottom:var(--inv)}
+/* a race is on: an orange frame around the whole page, fading towards the middle */
+body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:none;box-shadow:inset 0 0 0 4px rgba(255,138,0,.95),inset 0 0 36px 12px rgba(255,138,0,.7),inset 0 0 100px 30px rgba(255,170,40,.32);animation:raceGlow 1.6s ease-in-out infinite alternate}
+@keyframes raceGlow{from{opacity:.65}to{opacity:1}}
 #track{position:fixed;left:0;right:0;bottom:0;height:var(--trk);z-index:45;background:#fff;box-shadow:0 -4px 0 rgba(59,42,85,.14);display:flex;align-items:center;gap:6px;padding:0 8px;direction:rtl}
 #track .tx{width:30px;height:30px;border-radius:50%;background:#f3eefb;font-size:13px;flex:0 0 auto;color:#3b2a55}
 #track .tclock{font-weight:700;font-size:15px;min-width:36px;text-align:center;flex:0 0 auto;direction:ltr}
@@ -3076,15 +3079,16 @@ var TrollModels = (function () {
     item: function () { playFile('pizzi02', 0.6) || synth.item(); }
   };
   // Background music: one track per place, each keeps its position while another one plays.
-  var TRACKS = { home: 'carefree', play: 'wholesome', shop: 'easylemon' }, bgm = {}, bgmWant = 'home', bgmBad = false, unlocked = false;
+  var TRACKS = { home: 'carefree', play: 'wholesome', shop: 'easylemon', race: 'race' }, bgm = {}, bgmWant = 'home', bgmBad = false, unlocked = false;
   function applyMusic() {
     var on = !state.mute && state.music && unlocked && !document.hidden && !bgmBad, k;
-    for (k in bgm) if (!on || k !== bgmWant) bgm[k].pause();
+    var want = race && race.on && !race.over && race.t0 ? 'race' : bgmWant; // a faster tune for as long as a race runs, on every screen
+    for (k in bgm) if (!on || k !== want) bgm[k].pause();
     if (!on) return;
     try {
-      var a = bgm[bgmWant];
+      var a = bgm[want];
       if (!a) {
-        a = bgm[bgmWant] = new Audio('assets/snd/' + TRACKS[bgmWant] + '.mp3'); a.loop = true; a.volume = 0.2;
+        a = bgm[want] = new Audio('assets/snd/' + TRACKS[want] + '.mp3'); a.loop = true; a.volume = 0.2;
         a.addEventListener('error', function () { bgmBad = true; });
       }
       var p = a.play(); if (p && p.catch) p.catch(function () {});
@@ -4222,7 +4226,7 @@ var TrollModels = (function () {
     if (del && race.host) { rt.del('races/' + race.id); for (var id in race.p) if (id !== myRid()) rt.del('invites/' + id); }
     race = null; document.body.classList.remove('racing'); if (trackEl) { trackEl.remove(); trackEl = null; }
     var lo = document.getElementById('launch'); if (lo) lo.remove();
-    tv.hold = false; beat();
+    tv.hold = false; beat(); applyMusic();
     if (pool.resume) pool.resume();
   }
 
@@ -4319,7 +4323,7 @@ var TrollModels = (function () {
       lane.style.display = 'none'; trackEl.appendChild(ask);
     });
     trackEl.lane = lane; trackEl.clock = clock; trackEl.runs = {};
-    document.body.appendChild(trackEl); document.body.classList.add('racing');
+    document.body.appendChild(trackEl); document.body.classList.add('racing'); applyMusic();
     drawTrack();
     race.tick = setInterval(function () {
       if (!race || race.over) return;
@@ -4371,7 +4375,7 @@ var TrollModels = (function () {
       if (race !== r) return;
       if (r.stop) r.stop();
       if (r.host && !r.fake) setTimeout(function () { rt.del('races/' + r.id); }, 30000);
-      race = null; beat(); podium(r);
+      race = null; beat(); applyMusic(); podium(r);
     }, r.fake ? 0 : 1400);
   }
   function podium(r) {
