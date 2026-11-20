@@ -3,3 +3,4 @@ shots/
 preview.*
 firebase-debug.log
 .firebaserc
+.firebase/
