@@ -545,6 +545,18 @@ body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:no
 .run.me{z-index:2}.run.me b{background:#ffd84d}
 .run.gone{filter:grayscale(1);opacity:.55}
 .run .plus{position:absolute;top:0;font-weight:700;font-size:14px;color:#ff4f9a;animation:plusUp 1.1s both}
+/* every runner has a lane of their own, so two that are close together can still be told apart */
+#track{align-items:stretch;padding:3px 8px}
+#track .tx,#track .tclock{align-self:center}
+#track .lane{display:flex;flex-direction:column;justify-content:space-around;padding-left:26px}
+#track .lane:before{display:none}
+.ln{position:relative;flex:1 1 0;min-height:0}
+.ln:before{content:'';position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:repeating-linear-gradient(90deg,#e6dcf7 0 10px,#f3eefb 10px 20px)}
+.ln.me:before{background:repeating-linear-gradient(90deg,#ffd84d 0 10px,#fff3b8 10px 20px)}
+.ln .run{flex-direction:row-reverse;gap:3px;width:auto;white-space:nowrap}
+.ln .run svg{width:auto;height:100%}
+.ln .run b{font-size:10px;line-height:11px;max-width:64px}
+.ln .run .plus{top:-4px}
 @keyframes plusUp{from{opacity:1;transform:translateY(4px)}to{opacity:0;transform:translateY(-26px)}}
 #invite{position:fixed;left:0;right:0;bottom:0;height:var(--inv);z-index:70;background:#fff;box-shadow:0 -4px 0 rgba(59,42,85,.14);display:flex;align-items:center;justify-content:center;gap:10px;padding:0 10px;direction:rtl;animation:invUp .3s both}
 #invite svg{height:calc(var(--inv) - 12px);width:40px;flex:0 0 auto}
@@ -4498,16 +4510,21 @@ var TrollModels = (function () {
   }
   function drawTrack() {
     if (!trackEl || !race) return;
-    var rid = myRid(), now = rt.now(), seen = {};
-    racers().forEach(function (p) {
+    var rid = myRid(), now = rt.now(), seen = {}, list = racers().sort(function (a, b) { return (b.id === rid) - (a.id === rid) || (a.id < b.id ? -1 : 1); }); // my lane on top, the rest in a fixed order
+    var laneH = Math.min(24, Math.floor(((window.innerHeight < 420 ? 56 : 72) - 8) / Math.max(1, list.length))); // two runners get tall lanes, four share the same strip
+    document.documentElement.style.setProperty('--trk', (list.length * laneH + 8) + 'px');
+    list.forEach(function (p) {
       var r = trackEl.runs[p.id];
-      if (!r) { r = trackEl.runs[p.id] = h('div', { class: 'run' + (p.id === rid ? ' me' : ''), 'data-rid': p.id, html: trollOf(p) }); r.appendChild(h('b', { text: p.n })); trackEl.lane.appendChild(r); }
+      if (!r) {
+        r = trackEl.runs[p.id] = h('div', { class: 'run' + (p.id === rid ? ' me' : ''), 'data-rid': p.id, html: trollOf(p) }); r.appendChild(h('b', { text: p.n }));
+        r.ln = h('div', { class: 'ln' + (p.id === rid ? ' me' : '') }, r); trackEl.lane.appendChild(r.ln);
+      }
       seen[p.id] = 1;
       r.setAttribute('data-pts', p.pts);
-      r.style.right = 'calc((100% - 70px) * ' + (Math.min(p.pts, RC.GOAL) / RC.GOAL).toFixed(3) + ')';
+      r.style.right = 'calc((100% - 96px) * ' + (Math.min(p.pts, RC.GOAL) / RC.GOAL).toFixed(3) + ')';
       r.classList.toggle('gone', p.out || (!race.fake && p.id !== rid && now - Math.max(p.t, race.s0 || 0) > RC.STALE_MS));
     });
-    for (var id in trackEl.runs) if (!seen[id]) { trackEl.runs[id].remove(); delete trackEl.runs[id]; }
+    for (var id in trackEl.runs) if (!seen[id]) { trackEl.runs[id].ln.remove(); delete trackEl.runs[id]; }
   }
   // called for every correct answer of a round
   function raceScore(q, res, cfg) {
