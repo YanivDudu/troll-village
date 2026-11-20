@@ -602,6 +602,13 @@ body.racing #frame{display:block}
 .pgo{flex:0 0 auto;min-height:54px;font-size:clamp(17px,3vmin,26px)}
 .pgo[disabled]{filter:grayscale(1);opacity:.6}
 /* ---- scratch pad: the exercise written in columns, with small boxes for what is carried ---- */
+.vq{display:inline-grid;justify-items:end;font-variant-numeric:tabular-nums;letter-spacing:.14em;line-height:1.08;font-size:clamp(24px,7.2vh,58px);min-width:3.2em}
+.vq .vr{position:relative;padding-left:1.3em;width:100%;text-align:right}
+.vq .vr i{position:absolute;left:0;font-style:normal}
+.vq .vl{height:4px;width:100%;background:#3b2a55;border-radius:2px;margin:2px 0}
+.vq .vans{color:#ff4f9a}
+.qcard.vcard{padding-top:6px;padding-bottom:6px}
+@media (max-width:520px),(max-height:520px){.screen.vmode .buddy,.screen.vmode .bubble{display:none}.screen.vmode .qrow{min-height:0}.vq{font-size:clamp(20px,5.4vh,40px)}.screen.vmode .ans{min-height:clamp(48px,10vmin,96px)}}
 .padb{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(8px,3vmin,28px);flex:1 1 auto;min-height:0;direction:ltr}
 .padg{display:grid;gap:4px;justify-items:center;align-items:center;direction:ltr;font-weight:700}
 .pd,.ps{font-size:clamp(22px,5.5vmin,40px);min-width:clamp(28px,7.5vmin,50px);text-align:center;line-height:1.15}
@@ -671,13 +678,13 @@ body.racing #frame{display:block}
 .hills{transform:translate(calc(var(--px,0) * -6px),0);transition:transform .5s ease-out;width:104%;left:-2%}
 .bird{position:absolute;left:0;width:clamp(22px,4vmin,38px);height:auto;animation:fly linear infinite}
 @keyframes fly{0%{transform:translate(-8vw,0) scaleY(1)}10%{transform:translate(4vw,-10px) scaleY(.82)}20%{transform:translate(16vw,4px) scaleY(1)}30%{transform:translate(28vw,-12px) scaleY(.82)}40%{transform:translate(40vw,2px) scaleY(1)}50%{transform:translate(52vw,-10px) scaleY(.82)}60%{transform:translate(64vw,6px) scaleY(1)}70%{transform:translate(76vw,-8px) scaleY(.82)}80%{transform:translate(88vw,3px) scaleY(1)}90%{transform:translate(100vw,-10px) scaleY(.82)}100%{transform:translate(112vw,0) scaleY(1)}}
-.stars{position:absolute;inset:0;display:none}
-.stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:twinkle 2.6s ease-in-out infinite}
+#bg .nsky{position:absolute;inset:0;display:none;pointer-events:none}
+#bg .nsky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:twinkle 2.6s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
 body.dusk{background:linear-gradient(#ff9a62 0%,#ffc78a 38%,#f8e9b9 74%,#a8e58a 100%)}
 body.dusk .sun{top:22vh;filter:saturate(1.3) hue-rotate(-18deg)}
 body.night{background:linear-gradient(#1c2757 0%,#3a4c8c 42%,#8fb3c2 76%,#6dbb78 100%)}
-body.night .stars{display:block}
+body.night #bg .nsky{display:block}
 body.night .sun{animation:none;background:radial-gradient(circle at 38% 38%,#fff 0 30%,#e6ecff 32% 48%,transparent 50%)}
 body.night .sun:before{background:radial-gradient(transparent 50%,rgba(210,225,255,.35) 52%,transparent 70%)}
 body.night .cloud{opacity:.28!important}
@@ -3369,7 +3376,7 @@ var TrollModels = (function () {
     bg.appendChild(h('div', { class: 'fly', text: '🦋', style: 'top:58%;animation-duration:36s;animation-delay:-14s' }));
     bg.insertAdjacentHTML('beforeend', '<svg class="hills" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,14 Q20,0 42,12 T100,8 V30 H0Z" fill="#8fdc74"/><path d="M0,22 Q30,10 55,20 T100,16 V30 H0Z" fill="#6fc95a"/></svg>');
     for (i = 0; i < 3; i++) bg.appendChild(h('img', { class: 'bird', src: 'assets/ico/1f99c.png', alt: '', style: 'top:' + (12 + i * 11) + '%;animation-duration:' + (31 + i * 9) + 's;animation-delay:-' + (i * 13) + 's' }));
-    var stars = h('div', { class: 'stars' }); for (i = 0; i < 40; i++) stars.appendChild(h('i', { style: 'left:' + (i * 37 % 100) + '%;top:' + (i * 53 % 55) + '%;animation-delay:-' + (i % 7) * 0.6 + 's' })); bg.appendChild(stars);
+    var stars = h('div', { class: 'nsky' }); for (i = 0; i < 40; i++) stars.appendChild(h('i', { style: 'left:' + (i * 37 % 100) + '%;top:' + (i * 53 % 55) + '%;animation-delay:-' + (i % 7) * 0.6 + 's' })); bg.appendChild(stars);
     document.body.insertBefore(bg, app);
     // the sky follows the real clock: orange towards evening, dark blue with a moon, stars and an owl at night
     var hr = +((/[&#]hour=(\d+)/.exec(hash) || [])[1] || new Date().getHours());
@@ -3831,9 +3838,14 @@ var TrollModels = (function () {
           if (q.say.show || !canEn()) srow.appendChild(h('span', { class: 'qen', text: q.say.text }));
           card.appendChild(srow);
         }
-        if (body) card.appendChild(h('span', { class: 'qtext', html: body }));
+        var pv = padOf(q), tall = pv && (pv.op === '×' || pv.b >= 10); // a long addition or multiplication is written in columns, ones under ones
+        if (tall) {
+          card.classList.add('vcard');
+          card.appendChild(h('span', { class: 'vq', dir: 'ltr' }, h('span', { class: 'vr', text: L.fmt(pv.a) }), h('span', { class: 'vr' }, h('i', { text: pv.op }), L.fmt(pv.b)), h('span', { class: 'vl' }), h('span', { class: 'vr vans', text: '?' })));
+        } else if (body) card.appendChild(h('span', { class: 'qtext', html: body }));
         qslot.innerHTML = ''; qslot.appendChild(card); fit(card);
         el.classList.toggle('packq', !!q.pack);
+        el.classList.toggle('vmode', !!tall); // the exercise stands in columns and is tall: the troll and its bubble give way on small screens
         el.classList.toggle('handson', q.fmt === 'array' || q.fmt === 'pairs' || q.fmt === 'build' || q.fmt === 'order');
         hintSlot.innerHTML = ''; answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
         tv.solve = tv.flub = null;
@@ -4395,7 +4407,7 @@ var TrollModels = (function () {
   var padKeep = null;
   function padOf(q) {
     if (!q || /^(tf|cmp|pairs|array|line|build)$/.test(q.fmt || '')) return null;
-    var m = /^(\d{1,5}) ([+×]) (\d{1,5}) = \?$/.exec(String(q.text).replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim());
+    var m = /^(\d{1,7}) ([+×]) (\d{1,7}) = \?$/.exec(String(q.text).replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069,]/g, '').trim());
     if (!m) return null;
     var a = +m[1], b = +m[3], t;
     if (a < 10 && b < 10) return null;
@@ -5008,6 +5020,15 @@ var TrollModels = (function () {
   }
   if (/fit/.test(hash)) setTimeout(function fitCheck(again) { // layout self-check: reports overflow to the test harness
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
+    // a button that cannot be tapped because something lies over it is as bad as a button off the screen
+    if (!document.querySelector('.ovl,.rov')) [].forEach.call(cur.querySelectorAll('button'), function (b) {
+      var r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      if (!r.width || x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return;
+      var top = document.elementFromPoint(x, y);
+      if (!top || top === b || b.contains(top) || top.contains(b) || top.closest('button')) return;
+      var c = top.getBoundingClientRect(); // only a layer that covers most of the screen counts (a list that scrolls hides its own buttons on purpose)
+      if (c.width > window.innerWidth * 0.6 && c.height > window.innerHeight * 0.6) bad++;
+    });
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
       var r = x.getBoundingClientRect(); ovf = Math.max(ovf, x.scrollHeight - x.clientHeight, x.scrollWidth - x.clientWidth, r.bottom - window.innerHeight, -r.top);
