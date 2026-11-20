@@ -529,8 +529,13 @@ button.cbld:active{transform:scale(.94)}
 body.racing #app,body.racing .ovl{bottom:var(--trk)}
 body.invited #app,body.invited .ovl{bottom:var(--inv)}
 /* a race is on: an orange frame around the whole page, fading towards the middle */
-body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:none;box-shadow:inset 0 0 0 4px rgba(255,138,0,.95),inset 0 0 36px 12px rgba(255,138,0,.7),inset 0 0 100px 30px rgba(255,170,40,.32);animation:raceGlow 1.6s ease-in-out infinite alternate}
-@keyframes raceGlow{from{opacity:.65}to{opacity:1}}
+#frame{display:none}
+body.racing #frame{display:block}
+#frame i{position:fixed;z-index:46;pointer-events:none}
+#frame i:nth-child(1){left:0;right:0;top:0;height:16px;background:linear-gradient(rgba(255,138,0,.9),rgba(255,138,0,0))}
+#frame i:nth-child(2){left:0;right:0;bottom:var(--trk);height:16px;background:linear-gradient(rgba(255,138,0,0),rgba(255,138,0,.9))}
+#frame i:nth-child(3){top:0;bottom:var(--trk);left:0;width:16px;background:linear-gradient(90deg,rgba(255,138,0,.9),rgba(255,138,0,0))}
+#frame i:nth-child(4){top:0;bottom:var(--trk);right:0;width:16px;background:linear-gradient(270deg,rgba(255,138,0,.9),rgba(255,138,0,0))}
 #track{position:fixed;left:0;right:0;bottom:0;height:var(--trk);z-index:45;background:#fff;box-shadow:0 -4px 0 rgba(59,42,85,.14);display:flex;align-items:center;gap:6px;padding:0 8px;direction:rtl}
 #track .tx{width:30px;height:30px;border-radius:50%;background:#f3eefb;font-size:13px;flex:0 0 auto;color:#3b2a55}
 #track .tclock{font-weight:700;font-size:15px;min-width:36px;text-align:center;flex:0 0 auto;direction:ltr}
@@ -3377,6 +3382,7 @@ var TrollModels = (function () {
       addEventListener('deviceorientation', function (e) { if (e.gamma != null) par(e.gamma / 25, ((e.beta || 0) - 40) / 30); }, { passive: true });
     }
     fx = h('div', { id: 'fx' }); document.body.appendChild(fx);
+    document.body.appendChild(h('div', { id: 'frame', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i')));
   }
 
   // ---------- screens ----------
@@ -3947,11 +3953,19 @@ var TrollModels = (function () {
           tv.flub = function () { Ls[0].el.click(); partner(Ls[0], false).el.click(); };
         }
       };
+      function advance() { // on to the next exercise, or to the end of the round
+        if (!round.solved || cur !== el) return;
+        round.next(); tv.solvedAt = 0;
+        if (!round.done()) renderQ();
+        else if (cfg.boss) endBoss(round, topicId, cfg.boss);
+        else if (cfg.stage != null) endStage(round, topicId, cfg);
+        else endRound(round);
+      }
       function onAnswer(b, v, q) {
         if (tv.hold && Date.now() < tv.holdTill) return; // the countdown of a race is on the screen (never for more than a few seconds)
         tv.hold = false;
         var res = round.answer(v);
-        if (!res) return; // repeated tap or already solved
+        if (!res) { if (round.solved && !round.done() && Date.now() - (tv.solvedAt || 0) > 3000) { report('stuck after a solved exercise'); advance(); } return; } // repeated tap or already solved
         hush();
         if (res.correct) {
           combo = res.firstTry ? combo + 1 : 0;
@@ -3961,15 +3975,11 @@ var TrollModels = (function () {
           mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + rnd(PRAISE) : rnd(PRAISE));
           var hs = state.hists[q.topic]; hs.push(res.firstTry); state.hists[q.topic] = hs.slice(-5);
           state.coins += res.firstTry ? 2 : 1; state.xp += 1; // one experience point for every exercise that was solved
-          raceScore(q, res, cfg);
-          flyStar(b, el.querySelector('.coinchip'), function () { bumpStars(el); }, '🪙');
+          tv.solvedAt = Date.now();
+          try { raceScore(q, res, cfg); } catch (e) { report('raceScore: ' + (e && e.stack || e)); }
+          try { flyStar(b, el.querySelector('.coinchip'), function () { bumpStars(el); }, '🪙'); } catch (e) { report('flyStar: ' + (e && e.stack || e)); }
           save();
-          later(function () { round.next();
-            if (!round.done()) renderQ();
-            else if (cfg.boss) endBoss(round, topicId, cfg.boss);
-            else if (cfg.stage != null) endStage(round, topicId, cfg);
-            else endRound(round);
-          }, 1400);
+          later(advance, 1400);
         } else {
           combo = 0;
           if (b.hasAttribute('data-v')) b.classList.add('wrong'); else restart(b, 'shake');
@@ -4439,6 +4449,19 @@ var TrollModels = (function () {
     ovl = h('div', { class: 'ovl' }, card); document.body.appendChild(ovl);
     pick(padKeep.sel && cells[padKeep.sel] ? padKeep.sel : (parts ? 'p0_' : 'r') + (cols - 1));
   }
+
+  // ---------- error reports ----------
+  var reported = 0;
+  function report(msg) {
+    try {
+      if (sandbox || reported++ > 8 || !window.fetch) return;
+      fetch(CLOUD.rt + 'errs/e' + Date.now() + Math.floor(Math.random() * 1000) + '.json', { method: 'PUT', keepalive: true, body: JSON.stringify({
+        m: String(msg).slice(0, 600), ua: navigator.userAgent.slice(0, 160), wh: window.innerWidth + 'x' + window.innerHeight, t: { '.sv': 'timestamp' },
+        r: race ? (race.host ? 'host' : 'guest') + '/' + race.st + '/' + (race.on ? 'on' : 'off') + (race.over ? '/over' : '') + '/' + Object.keys(race.p || {}).length : '-', h: String(here) + '/' + (tv.hold ? 'hold' : '') }) }).catch(function () {});
+    } catch (e) {}
+  }
+  addEventListener('error', function (e) { report('error: ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + e.lineno + ' ' + (e.error && e.error.stack || '').slice(0, 300)); });
+  addEventListener('unhandledrejection', function (e) { report('promise: ' + (e.reason && (e.reason.stack || e.reason.message) || e.reason)); });
 
   // ---------- a boy is spoken to as a boy: every text that reaches the screen passes through TrollLogic.forBoy ----------
   function curProf() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i]; return null; }

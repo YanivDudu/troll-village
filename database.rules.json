@@ -150,6 +150,34 @@
      ".validate": false
     }
    }
+  },
+  "errs": {
+   ".read": true,
+   "$id": {
+    ".write": "$id.matches(/^e[0-9]{13,17}$/) && !data.exists()",
+    ".validate": "newData.hasChildren([\"m\",\"t\"])",
+    "m": {
+     ".validate": "newData.isString() && newData.val().length <= 600"
+    },
+    "ua": {
+     ".validate": "newData.isString() && newData.val().length <= 160"
+    },
+    "wh": {
+     ".validate": "newData.isString() && newData.val().length <= 12"
+    },
+    "r": {
+     ".validate": "newData.isString() && newData.val().length <= 40"
+    },
+    "h": {
+     ".validate": "newData.isString() && newData.val().length <= 30"
+    },
+    "t": {
+     ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+    },
+    "$other": {
+     ".validate": false
+    }
+   }
   }
  }
 }
