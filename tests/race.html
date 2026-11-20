@@ -33,7 +33,9 @@ async function invite(x, name) {
 }
 async function toRound(x) { // first building, first house, discovery stage
   if (!q(x, '.bld[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.btn.big'); }, 'home ' + x)).click(); }
-  (await until(function () { return q(x, '.bld[data-t]'); }, 'map ' + x)).click();
+  var first = await until(function () { return q(x, '.bld[data-t]') || q(x, '.bld[data-sub]'); }, 'map ' + x);
+  if (first.hasAttribute('data-sub')) { q(x, '.bld[data-sub="math"]').click(); first = await until(function () { return q(x, '.bld[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
+  first.click();
   (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'region ' + x)).click();
   await until(function () { return F[x].contentWindow.__tv.round; }, 'round ' + x);
 }

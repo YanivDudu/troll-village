@@ -608,10 +608,54 @@ body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:no
 .padc .btn{min-height:52px;font-size:clamp(16px,3vmin,24px);flex:0 0 auto;align-self:center}
 @media (max-width:520px){.padbtn .pt{display:none}}
 @media (max-height:480px){.padtip{display:none}.padc .btn{min-height:40px}}
+/* ---- subject packs: drawings in questions and answers, the English speaker, ordering by taps ---- */
+.qsvg{display:block;line-height:0}.qsvg svg{max-width:100%;height:auto;max-height:clamp(84px,22vh,210px)}
+.qcard .qtext+.qsvg,.qcard .qhint+.qsvg{margin-top:4px}
+.qsrow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.qen{font-weight:700;font-size:clamp(22px,6vmin,48px);overflow-wrap:anywhere}
+.qsay{width:clamp(56px,13vmin,92px);height:clamp(56px,13vmin,92px);border-radius:50%;background:#8e5cff;color:#fff;font-size:clamp(26px,6vmin,44px);box-shadow:0 5px 0 #5a2fd0;margin:2px 8px;vertical-align:middle}
+.ans.pic{padding:4px;display:flex;align-items:center;justify-content:center}
+.ans.pic svg{max-height:clamp(44px,11vh,96px);width:auto;max-width:100%}
+.ans.pic .em{font-size:clamp(30px,8vmin,60px);line-height:1.1}
+.ostrip{grid-column:1/-1;min-height:clamp(46px,9vh,64px);background:rgba(255,255,255,.92);border:3px dashed #b99bff;border-radius:18px;display:flex;flex-wrap:wrap;gap:6px;padding:6px;justify-content:center;align-items:center}
+.ostrip.right{border-style:solid;border-color:#3ec46d;background:#e9f8ee}
+.obank{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.otile{min-height:clamp(38px,8vh,52px);padding:2px 14px;border-radius:14px;background:#fff;font:inherit;font-weight:700;font-size:clamp(16px,3.4vmin,28px);box-shadow:0 4px 0 rgba(59,42,85,.18);color:#3b2a55}
+.ostrip .otile{background:#f3eefb;box-shadow:none}
+.mbig{font-size:clamp(26px,8vmin,64px);font-weight:700;text-align:center;color:#3b2a55}
+.mpack{display:flex;justify-content:center;align-items:center;line-height:0}.mpack svg{max-width:100%;height:auto;max-height:100%}
+.plots.subj .bld img{animation:none}
+/* an exercise of a subject pack carries a drawing or long answers: everything else gives way */
+.screen.packq .qcard{font-size:clamp(17px,4vmin,34px);padding:6px 10px;border-radius:22px;line-height:1.2}
+.screen.packq .bubble{font-size:clamp(13px,2.4vmin,20px);padding:6px 12px}
+.screen.packq .buddy{width:clamp(44px,10vmin,100px)}
+.screen.packq .ans{min-height:clamp(46px,8.5vh,96px);font-size:clamp(17px,4.2vmin,36px);border-radius:20px;padding:2px 8px;line-height:1.15}
+.screen.packq .qsvg svg{max-height:clamp(80px,23vh,210px)}
+.screen.packq .ans.pic svg{max-height:clamp(38px,8vh,90px)}
+.screen.packq .ans.pic .em{font-size:clamp(26px,6.5vh,56px)}
+@media (max-width:520px){.screen.packq .buddy,.screen.packq .bubble{display:none}.screen.packq .qrow{min-height:0}}
+@media (max-height:520px){.screen.packq .buddy,.screen.packq .bubble{display:none}.screen.packq .qsvg svg{max-height:26vh}.screen.packq .ans{min-height:38px}.screen.packq .qen{font-size:22px}.screen.packq .qsay{width:44px;height:44px;font-size:20px}}
+.mpack svg{max-height:clamp(90px,30vh,260px)}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<!-- subject packs: one file per subject and grade, see packs/README.md -->
+<script src="packs/geo1.js"></script>
+<script src="packs/geo2.js"></script>
+<script src="packs/geo3.js"></script>
+<script src="packs/geo4.js"></script>
+<script src="packs/geo5.js"></script>
+<script src="packs/heb1.js"></script>
+<script src="packs/heb2.js"></script>
+<script src="packs/heb3.js"></script>
+<script src="packs/heb4.js"></script>
+<script src="packs/heb5.js"></script>
+<script src="packs/eng1.js"></script>
+<script src="packs/eng2.js"></script>
+<script src="packs/eng3.js"></script>
+<script src="packs/eng4.js"></script>
+<script src="packs/eng5.js"></script>
 <script id="logic">
 var TrollLogic = (function () {
   'use strict';
@@ -1575,6 +1619,45 @@ var TrollLogic = (function () {
     });
     return t;
   });
+  // ---- subject packs: geometry, Hebrew, English. Every grade of every subject is a file of its own in packs/, loaded before
+  // this script; it adds tiles to window.TROLL_PACKS. Arithmetic ('math') stays here. See packs/README.md for the format.
+  var SUBS = ['math', 'geo', 'heb', 'eng'], PACK_HERO = {};
+  function packQ(rng, o) {
+    var q = { text: String(o.text == null ? '' : o.text), answer: o.answer, rtl: !o.ltr, pack: true, hint: { tip: o.tip || '', vis: null } };
+    q.options = o.fmt === 'order' ? [] : o.keep ? o.options.slice() : shuffle(o.options.slice(), rng);
+    if (o.svg) q.svg = o.svg;            // a drawing inside the question card
+    if (o.pic) q.pic = o.pic;            // an emoji picture next to the text
+    if (o.optHtml) q.optHtml = o.optHtml; // answers that are drawings: { option: html }
+    if (o.optLtr) q.optLtr = true;       // answers written in English
+    if (o.say) q.say = { text: String(o.say), show: !!o.sayShow }; // an English word or sentence that the device reads out
+    if (o.fmt === 'order') { q.parts = shuffle(o.parts.slice(), rng); q.sep = o.sep == null ? ' ' : o.sep; if (q.parts.join(q.sep) === q.answer && q.parts.length > 1) q.parts.reverse(); }
+    q.fmtPre = o.fmt || 'choice';
+    q.exPre = { kind: 'pack', steps: (o.ex && o.ex.length ? o.ex : [{ say: o.tip || '' }]).map(function (x) {
+      return { say: String(x.say || ''), m: x.svg ? { t: 'html', html: x.svg } : x.big != null ? { t: 'big', text: String(x.big), ltr: !!x.ltr } : null };
+    }) };
+    q.packKey = o.key != null ? String(o.key) : q.text + '|' + (q.say ? q.say.text : '') + '|' + q.answer + '|' + (o.svg ? o.svg.length + ':' + o.svg.slice(-60) : '');
+    return q;
+  }
+  var KIT = {
+    q: packQ, ri: ri, shuffle: function (r, a) { return shuffle(a.slice(), r); }, pick: function (r, a) { return a[Math.floor(r() * a.length)]; },
+    sample: function (r, a, n) { return shuffle(a.slice(), r).slice(0, n); },
+    // a wrong-answer set: the answer plus up to three others from the pool, no repeats
+    opts: function (r, answer, pool, n) { var out = [answer]; shuffle(pool.slice(), r).forEach(function (x) { if (out.length < (n || 4) && out.indexOf(x) < 0) out.push(x); }); return out; },
+    tf: function (r, o, truth) { o.fmt = 'tf'; o.options = ['yes', 'no']; o.answer = truth ? 'yes' : 'no'; o.keep = true; return packQ(r, o); }
+  };
+  (typeof TROLL_PACKS !== 'undefined' && Array.isArray(TROLL_PACKS) ? TROLL_PACKS : []).forEach(function (pk) {
+    if (!pk || SUBS.indexOf(pk.sub) < 1 || !(pk.grade >= 1 && pk.grade <= 5) || !Array.isArray(pk.tiles)) return;
+    pk.tiles.forEach(function (d) {
+      if (!d || !/^[a-z][a-z0-9]{2,11}$/.test(d.id) || TOPICS.some(function (t) { return t.id === d.id; }) || !Array.isArray(d.levels) || !d.levels.length) return;
+      var hero = 200, k;
+      for (k = 0; k < d.id.length; k++) hero = (hero * 31 + d.id.charCodeAt(k)) % 9000;
+      hero += 200; while (PACK_HERO[hero]) hero++;                 // the rescued troll of this tile: a stable id of its own
+      PACK_HERO[hero] = String(d.hero || d.world);
+      var t = { id: d.id, g: pk.grade, sub: pk.sub, hero: hero, bld: d.bld || 'house1', icon: d.icon || '⭐', world: String(d.world), name: String(d.name), src: [], levels: [] };
+      d.levels.forEach(function (lv) { t.levels.push({ g: pk.grade, enr: false, name: String(lv.name), f: function (r) { return lv.f(r, KIT); } }); });
+      TOPICS.push(t);
+    });
+  });
   var BY_ID = {};
   SRC.forEach(function (t) { BY_ID[t.id] = t; }); // the source lists stay reachable by id (tests, debug links)
   TOPICS.forEach(function (t) { BY_ID[t.id] = t; });
@@ -2020,6 +2103,7 @@ var TrollLogic = (function () {
   }
   // Which formats suit this exercise. Discovery (stage 0) prefers hands-on building; later stages mix everything.
   function formatsFor(q, stage, canPair) {
+    if (q.pack) return []; // an exercise of a subject pack keeps the format it was written in
     var s = semOf(q), out = [], addsub = s && (s.op === '+' || s.op === '−'), small = s && q.answer <= 100 && s.a <= 100;
     var buildable = q.ex.kind === 'blocks' && !q.rtl && q.answer >= 11 && q.answer <= 9999;
     if (stage === 0) {
@@ -2056,6 +2140,7 @@ var TrollLogic = (function () {
     q.topic = t.id; q.level = level; q.g = lv.g; q.enr = !!lv.enr;
     q.ex = q.exPre || explain(q); q.fmt = q.fmtPre || 'choice';
     // identity of the exercise; wording without numbers (e.g. 'which is biggest?') is told apart by its options
+    if (q.pack) { q.key = q.packKey; delete q.packKey; return q; }
     q.key = /\d/.test(q.text) && !(q.rtl && /מתחלק ב|שבר (שוה|גדול|קטן)/.test(plain(q.text))) ? q.text :q.text + '|' + q.options.slice().sort().join(',');
     return q;
   }
@@ -2324,6 +2409,7 @@ var TrollLogic = (function () {
       eyes: Math.floor(r() * 3)
     };
     if (id >= HERO_BASE && id < HERO_BASE + HEROES.length) { spec.name = HEROES[id - HERO_BASE]; spec.acc = 'crown'; spec.hero = true; }
+    else if (PACK_HERO[id - HERO_BASE]) { spec.name = PACK_HERO[id - HERO_BASE]; spec.acc = 'crown'; spec.hero = true; }
     return spec;
   }
   function rollTroll(ownedIds, rng) {
@@ -2348,12 +2434,14 @@ var TrollLogic = (function () {
   // inside such a topic, never a way into a topic the grade does not learn (no halves or multiplication in grade 1).
   function ownTopic(t, grade) { return t.levels.some(function (d) { return d.g === grade && !d.enr; }); }
   // The topics a player sees: those of the grade, plus any topic where the player already earned stars.
-  function topicsFor(state) { return TOPICS.filter(function (t) { return t.g === state.grade; }).map(function (t) { return t.id; }); }
+  // sub: the subject ('math' when not given, so everything written before the packs keeps meaning arithmetic)
+  function inSub(t, sub) { return (t.sub || 'math') === (sub || 'math'); }
+  function topicsFor(state, sub) { return TOPICS.filter(function (t) { return t.g === state.grade && inSub(t, sub); }).map(function (t) { return t.id; }); }
   // The tiles of the next grade wait behind the challenge gate; it opens after the first bridge mission of the player's own grade
   // (or when the player already has stars there, from before the gate existed).
-  function challengeFor(state) { return TOPICS.filter(function (t) { return t.g === state.grade + 1; }).map(function (t) { return t.id; }); }
-  function challengeOpen(state) {
-    return topicsFor(state).some(function (id) { return bossDone(state, id, state.grade); }) || challengeFor(state).some(function (id) { return topicStars(state, id) > 0; });
+  function challengeFor(state, sub) { return TOPICS.filter(function (t) { return t.g === state.grade + 1 && inSub(t, sub); }).map(function (t) { return t.id; }); }
+  function challengeOpen(state, sub) {
+    return topicsFor(state, sub).some(function (id) { return bossDone(state, id, state.grade); }) || challengeFor(state, sub).some(function (id) { return topicStars(state, id) > 0; });
   }
   // A save from before version 4 is keyed by the source lists; this re-keys it by tiles without losing a star.
   function toTiles(o) {
@@ -2498,6 +2586,7 @@ var TrollLogic = (function () {
   function forBoy(t) { return typeof t === 'string' ? t.replace(MALE_RE, function (m, pre, w) { return pre + MALE_MAP[w]; }) : t; }
 
   return {
+    SUBS: SUBS, KIT: KIT,
     MALE: MALE, forBoy: forBoy,
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
@@ -2827,7 +2916,9 @@ var TrollModels = (function () {
       }).join('') + '</tr>';
     }).join('') + '</table>';
   }
-  var R = { dstack: dstack, frame: frame, coins: coins, fb: fb, grid: grid, line: line, board: board, pv: pv, vert: vert, arr: arr, area: area, ptab: ptab, shift: shift, stack: stack, blocks: blocks, share: share, rline: rline, bar: bar, expr: expr };
+  function htmlM(m) { return '<div class="mpack">' + m.html + '</div>'; }
+  function bigM(m) { return '<div class="mbig" dir="' + (m.ltr ? 'ltr' : 'rtl') + '">' + String(m.text).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>'; }
+  var R = { html: htmlM, big: bigM, dstack: dstack, frame: frame, coins: coins, fb: fb, grid: grid, line: line, board: board, pv: pv, vert: vert, arr: arr, area: area, ptab: ptab, shift: shift, stack: stack, blocks: blocks, share: share, rline: rline, bar: bar, expr: expr };
   function render(m) { return m && R[m.t] ? R[m.t](m) : ''; }
   return { render: render, kinds: Object.keys(R) };
 })();
@@ -2844,6 +2935,8 @@ var TrollModels = (function () {
   var tv = window.__tv = { round: null, done: false };
   var GRADE_HE = ['', "א'", "ב'", "ג'", "ד'", "ה'"];
   var GUIDE = { id: 3, name: 'טְרוֹלִי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
+  var SUBJ = { math: ['🔢', 'חֶשְׁבּוֹן', 'tower'], geo: ['📐', 'גֵּאוֹמֶטְרִיָּה', 'pyramid'], heb: ['📖', 'שָׂפָה', 'house2'], eng: ['🔤', 'אַנְגְּלִית', 'castleSmall'] };
+  var curSub = 'math'; // the subject whose map is open
   var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈', bld: 'pyramidMayan' };
   // building picture for each topic (assets/, see assets/CREDITS.txt)
   var GATE = { id: 'gate', world: 'שַׁעַר הָאֶתְגָּר', bld: 'castleSmallAlt' };
@@ -3265,7 +3358,7 @@ var TrollModels = (function () {
       el.appendChild(title);
       if (VILLAGE) el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
       var row = h('div', { class: 'row' });
-      row.appendChild(btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', topics));
+      row.appendChild(btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', function () { subjects(); }));
       if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מַתָּנָה יוֹמִית', 'b3 wig', gift));
       if (state.owned.length) row.appendChild(btn('👗 הַלְבָּשָׁה וַחֲנוּת', 'b2', function () { dress(); }));
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
@@ -3306,12 +3399,35 @@ var TrollModels = (function () {
   function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
   function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
   // ch: the map behind the challenge gate, with the tiles of the next grade
+  // ---------- subjects: arithmetic, geometry, Hebrew, English. Each has a map of its own for the player's grade ----------
+  function subsHere() { return L.SUBS.filter(function (x) { return L.topicsFor(state, x).length > 0; }); }
+  function subjects() {
+    var list = subsHere();
+    if (list.length < 2) { curSub = 'math'; topics(); return; }
+    setMusic('home');
+    show(function (el) {
+      el.classList.add('map');
+      el.appendChild(topBar(true, home));
+      el.appendChild(h('h2', { class: 'h2', text: 'מָה לוֹמְדִים הַיּוֹם?' }));
+      var grid = h('div', { class: 'plots subj' });
+      list.forEach(function (x, i) {
+        var got = 0, all = 0;
+        L.topicsFor(state, x).forEach(function (id) { got += L.topicStars(state, id); all += topicOf(id).levels.length * 9; });
+        function go() { sfx.pop(); curSub = x; topics(); }
+        var sign = h('button', { class: 'sign', on: { click: go } }, h('b', { text: SUBJ[x][0] + ' ' + SUBJ[x][1] }), h('span', { class: 'pstars', text: '⭐ ' + got + ' / ' + all }),
+          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' })));
+        grid.appendChild(h('div', { class: 'plot', style: 'animation-delay:' + (i * 0.06) + 's' },
+          h('button', { class: 'bld', 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: go } }, h('img', { src: 'assets/' + SUBJ[x][2] + '.png', alt: '', draggable: 'false' })), sign));
+      });
+      el.appendChild(grid);
+    });
+  }
   function topics(ch) {
     ch = ch === true;
     setMusic('home');
     show(function (el) {
       el.classList.add('map');
-      el.appendChild(topBar(true, ch ? function () { topics(); } : home));
+      el.appendChild(topBar(true, ch ? function () { topics(); } : subsHere().length > 1 ? subjects : home));
       el.appendChild(h('h2', { class: 'h2', text: ch ? '🚀 אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
       var grid = h('div', { class: 'plots' });
       function plot(t, i, parts, go) {
@@ -3322,7 +3438,7 @@ var TrollModels = (function () {
             h('img', { src: 'assets/' + t.bld + '.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.37) + 's' })),
           sign));
       }
-      var mine = ch ? L.challengeFor(state) : L.topicsFor(state), shown = L.TOPICS.filter(function (t) { return mine.indexOf(t.id) >= 0; });
+      var mine = ch ? L.challengeFor(state, curSub) : L.topicsFor(state, curSub), shown = L.TOPICS.filter(function (t) { return mine.indexOf(t.id) >= 0; });
       shown.forEach(function (t, i) {
         var open = state.levels[t.id], got = 0, k;
         for (k = 1; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
@@ -3334,7 +3450,7 @@ var TrollModels = (function () {
       });
       if (!ch) {
         plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
-        var gopen = L.challengeOpen(state);
+        var gopen = L.challengeOpen(state, curSub);
         plot(GATE, shown.length + 1, [h('b', { text: (gopen ? '🚀 ' : '🔒 ') + GATE.world }), h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }), h('span', { class: 'pstars', text: gopen ? 'פָּתוּחַ!' : 'נִפְתָּח כְּשֶׁמְּסַיְּמִים בִּנְיָן אֶחָד' })], function () {
           if (gopen) { sfx.pop(); topics(true); return; }
           sfx.wrong(); var p = grid.lastChild; restart(p.lastChild, 'shake');
@@ -3349,6 +3465,7 @@ var TrollModels = (function () {
   // ---------- region: the clearings of one topic, three stages each, and the milestone missions ----------
   function region(topicId) {
     var t = topicOf(topicId);
+    curSub = t.sub || 'math';
     setMusic('home');
     show(function (el) {
       el.classList.add('map');
@@ -3444,13 +3561,30 @@ var TrollModels = (function () {
   // ---------- explanation window: step-by-step, the way it is shown in class ----------
   // Read aloud: first graders cannot read the questions yet, and in class the teacher reads them out. The device's own Hebrew
   // voice is used (free, nothing to download); when the device has none, the speaker buttons stay hidden.
-  var tts = window.speechSynthesis || null, heVoice = null;
+  var tts = window.speechSynthesis || null, heVoice = null, enVoice = null;
   function findVoice() {
     try {
       var vs = tts.getVoices().filter(function (v) { return /^(he|iw)/i.test(v.lang || ''); });
       heVoice = vs.filter(function (v) { return /natural|google|enhanced|premium/i.test(v.name); })[0] || vs[0] || null;
     } catch (e) { heVoice = null; }
     document.body.classList.toggle('cansay', !!heVoice);
+    try {
+      var es = tts.getVoices().filter(function (v) { return /^en/i.test(v.lang || ''); }), us = es.filter(function (v) { return /en[-_]US/i.test(v.lang); });
+      enVoice = us.filter(function (v) { return /natural|google|samantha|aria|jenny/i.test(v.name); })[0] || us[0] || es[0] || null;
+    } catch (e) { enVoice = null; }
+  }
+  // English is heard before it is read: the device reads the word out when the exercise opens. Without an English voice,
+  // or with the sound switched off, the word is written on the card instead.
+  function canEn() { return !!(tts && enVoice && !state.mute); }
+  function speakEn(text) {
+    if (!canEn()) return;
+    try {
+      tts.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.voice = enVoice; u.lang = enVoice.lang; u.rate = 0.8;
+      u.onstart = function () { duck(true); }; u.onend = u.onerror = function () { if (!tts.pending) duck(false); };
+      tts.speak(u);
+    } catch (e) {}
   }
   if (tts) { findVoice(); try { tts.addEventListener('voiceschanged', findVoice); } catch (e) {} }
   if (/say=1/.test(hash)) document.body.classList.add('cansay'); // layout check of the speaker buttons
@@ -3547,8 +3681,8 @@ var TrollModels = (function () {
     lvmap[topicId] = cfg.level;
     L.TOPICS.forEach(function (t) { if (topicId === 'mix' || topicId === t.id) avoid = avoid.concat(state.recent[t.id]); });
     var round = cfg.boss ? L.createBoss(topicId, cfg.boss, Math.random)
-      : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage, state.grade, L.topicsFor(state))
-      : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1, state.grade, L.topicsFor(state));
+      : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage, state.grade, L.topicsFor(state, curSub))
+      : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1, state.grade, L.topicsFor(state, curSub));
     var force = (/fmt=(\w+)/.exec(hash) || [])[1]; // debug: start with a given activity format
     if (/s=hint|pad=1/.test(hash) && !force) round.qs[0] = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random); // debug: a plain first question
     for (var fi = 0; force && fi < 80; fi++) {
@@ -3597,26 +3731,59 @@ var TrollModels = (function () {
         if (ASKS[q.fmt]) card.appendChild(h('small', { class: 'qhint', dir: 'rtl', text: ASKS[q.fmt] }));
         if (q.pre) card.appendChild(h('span', { class: 'qpre', text: q.pre + '  ✔' }));
         if (q.pic) card.appendChild(h('span', { class: 'qpic', text: q.pic + ' ' }));
+        if (q.svg) card.appendChild(h('span', { class: 'qsvg', html: q.svg }));
+        if (q.say) {
+          var srow = h('div', { class: 'qsrow', dir: 'ltr' }); // the spoken English on a line of its own, above the Hebrew question
+          if (canEn() || /say=1/.test(hash)) srow.appendChild(h('button', { class: 'qsay', text: '🔊', 'aria-label': 'לִשְׁמֹעַ שׁוּב', on: { click: function () { speakEn(q.say.text); } } }));
+          if (q.say.show || !canEn()) srow.appendChild(h('span', { class: 'qen', text: q.say.text }));
+          card.appendChild(srow);
+        }
         if (body) card.appendChild(h('span', { class: 'qtext', html: body }));
         qslot.innerHTML = ''; qslot.appendChild(card); fit(card);
-        el.classList.toggle('handson', q.fmt === 'array' || q.fmt === 'pairs' || q.fmt === 'build');
+        el.classList.toggle('packq', !!q.pack);
+        el.classList.toggle('handson', q.fmt === 'array' || q.fmt === 'pairs' || q.fmt === 'build' || q.fmt === 'order');
         hintSlot.innerHTML = ''; answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
         tv.solve = tv.flub = null;
         (WIDGET[q.fmt] || WIDGET.choice)(q);
         if (autoSay()) speak(sayQ()); else hush();
+        if (q.say) later(function () { speakEn(q.say.text); }, 450);
       }
       // Each activity format draws its own controls and reports through onAnswer(button, value, question).
-      var ASKS = { tf: 'הַאִם זֶה נָכוֹן?', cmp: 'אֵיזֶה סִימָן מַתְאִים?', line: 'הַקִּישִׁי עַל הַתְּשׁוּבָה בִּישַׁר הַמִּסְפָּרִים', build: 'בְּנִי אֶת הַמִּסְפָּר מִקֻּבִּיּוֹת', array: 'בְּנִי מַעֲרָךְ מַתְאִים', pairs: 'הַתְאִימִי כָּל תַּרְגִּיל לַתּוֹצָאָה שֶׁלּוֹ', use: 'הֵעָזְרִי בַּתַּרְגִּיל הַפָּתוּר' };
+      var ASKS = { order: 'הַקִּישִׁי לְפִי הַסֵּדֶר', tf: 'הַאִם זֶה נָכוֹן?', cmp: 'אֵיזֶה סִימָן מַתְאִים?', line: 'הַקִּישִׁי עַל הַתְּשׁוּבָה בִּישַׁר הַמִּסְפָּרִים', build: 'בְּנִי אֶת הַמִּסְפָּר מִקֻּבִּיּוֹת', array: 'בְּנִי מַעֲרָךְ מַתְאִים', pairs: 'הַתְאִימִי כָּל תַּרְגִּיל לַתּוֹצָאָה שֶׁלּוֹ', use: 'הֵעָזְרִי בַּתַּרְגִּיל הַפָּתוּר' };
       var LABEL = { yes: '✔ נָכוֹן', no: '✘ לֹא נָכוֹן' };
       var WIDGET = {
         choice: function (q) {
           q.options.forEach(function (v, k) {
             var num = typeof v === 'number';
-            var b = h('button', { class: 'ans c' + k, 'data-v': v, dir: num || !LABEL[v] ? 'ltr' : 'rtl' });
-            if (!num && /\d\/\d/.test(v)) b.innerHTML = frx(v); else b.textContent = LABEL[v] || (num ? L.fmt(v) : v);
+            var b = h('button', { class: 'ans c' + k + (q.optHtml ? ' pic' : ''), 'data-v': v, dir: q.pack ? (q.optLtr || num ? 'ltr' : 'rtl') : num || !LABEL[v] ? 'ltr' : 'rtl' });
+            if (q.optHtml && q.optHtml[v] != null) b.innerHTML = q.optHtml[v];
+            else if (!num && !q.pack && /\d\/\d/.test(v)) b.innerHTML = frx(v); else b.textContent = LABEL[v] || (num ? L.fmt(v) : v);
             b.addEventListener('click', function () { onAnswer(b, v, q); });
             answers.appendChild(b);
           });
+        },
+        order: function (q) { // tap the pieces in the right order: letters of a word, words of a sentence
+          var dir = q.rtl ? 'rtl' : 'ltr', strip = h('div', { class: 'ostrip', dir: dir }), bank = h('div', { class: 'obank', dir: dir }), picked = [];
+          var tiles = q.parts.map(function (p, i) { return { p: p, i: i }; });
+          function tile(t, placed) {
+            var b = h('button', { class: 'otile', text: t.p });
+            b.addEventListener('click', function () {
+              if (strip.classList.contains('right')) return;
+              sfx.tap();
+              if (placed) picked.splice(picked.indexOf(t), 1); else picked.push(t);
+              draw();
+              if (picked.length === tiles.length) { onAnswer(strip, picked.map(function (x) { return x.p; }).join(q.sep), q); if (!strip.classList.contains('right')) { picked = []; later(draw, 700); } }
+            });
+            return b;
+          }
+          function draw() {
+            strip.textContent = ''; bank.textContent = '';
+            picked.forEach(function (t) { strip.appendChild(tile(t, true)); });
+            tiles.forEach(function (t) { if (picked.indexOf(t) < 0) bank.appendChild(tile(t, false)); });
+          }
+          draw(); answers.appendChild(strip); answers.appendChild(bank);
+          tv.solve = function () { onAnswer(strip, q.answer, q); };
+          tv.flub = function () { onAnswer(strip, '\u0000', q); };
         },
         line: function (q) {
           var row = h('div', { class: 'nline', dir: 'ltr' });
@@ -4511,7 +4678,7 @@ var TrollModels = (function () {
   function drawTrack() {
     if (!trackEl || !race) return;
     var rid = myRid(), now = rt.now(), seen = {}, list = racers().sort(function (a, b) { return (b.id === rid) - (a.id === rid) || (a.id < b.id ? -1 : 1); }); // my lane on top, the rest in a fixed order
-    var laneH = Math.min(24, Math.floor(((window.innerHeight < 420 ? 56 : 72) - 8) / Math.max(1, list.length))); // two runners get tall lanes, four share the same strip
+    var laneH = Math.min(24, Math.floor(((window.innerHeight < 420 || window.innerHeight < 700 && window.innerWidth < 520 ? 56 : 72) - 8) / Math.max(1, list.length))); // two runners get tall lanes, four share the same strip
     document.documentElement.style.setProperty('--trk', (list.length * laneH + 8) + 'px');
     list.forEach(function (p) {
       var r = trackEl.runs[p.id];
@@ -4697,6 +4864,7 @@ var TrollModels = (function () {
   } else if (scr === 'topics') topics(/&ch/.test(hash));
   else if (scr === 'dress') dress(null, +((/tab=(\d)/.exec(hash) || [])[1] || 3));
   else if (scr === 'gift') gift();
+  else if (scr === 'subjects') subjects();
   else if (scr === 'cloud') cloud();
   else if (scr === 'region') region(ht);
   else if (scr === 'bossend') endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g);
