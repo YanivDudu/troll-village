@@ -485,7 +485,7 @@ t('cloud: newer progress wins per player, deleted players stay deleted, ids neve
 });
 t('race: points follow the own frontier of the child, ranking and finish', () => {
   const R = L.RACE;
-  assert.strictEqual(R.GOAL, 300); assert.strictEqual(R.MAX_MS, 600000); assert.strictEqual(R.INVITE_MS, 5000); assert.strictEqual(R.MAXP, 4);
+  assert.strictEqual(R.GOAL, 300); assert.strictEqual(R.MAX_MS, 600000); assert.strictEqual(R.INVITE_MS, 15000); assert.strictEqual(R.MAXP, 4);
   const s2 = L.newState(2), s4 = L.newState(4), ft = { firstTry: true };
   s2.levels.g2add = 3;
   assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3 }, { firstTry: false }), 0);

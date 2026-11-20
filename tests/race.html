@@ -69,8 +69,8 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     // 3: the guest does not answer
     await invite('A', NAME.B); // straight away, without reloading
     await until(function () { return doc('B').getElementById('invite'); }, 'B got the second invitation');
-    await until(function () { return !doc('B').getElementById('invite'); }, 'the bar leaves by itself after five seconds', 80);
-    await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined (no answer)');
+    await until(function () { return !doc('B').getElementById('invite'); }, 'the bar leaves by itself after fifteen seconds', 200);
+    await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined (no answer)', 300);
     document.title = 'RACE3 OK';
 
     // 1: a whole race. B is in the middle of a round when the invitation comes

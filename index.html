@@ -569,7 +569,7 @@ body.racing #frame{display:block}
 #invite .it{font-weight:700;font-size:clamp(13px,2.4vmin,20px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #invite button{min-height:38px;padding:4px 18px;border-radius:999px;font-weight:700;font-size:clamp(15px,2.6vmin,20px);color:#fff;flex:0 0 auto}
 #invite .y{background:#3ec46d;box-shadow:0 4px 0 #2a9150}#invite .n{background:#b9aecb;box-shadow:0 4px 0 #8e83a3}
-#invite .bar{position:absolute;top:0;right:0;height:4px;width:100%;background:#ff4f9a;transform-origin:right;animation:invBar 5s linear both}
+#invite .bar{position:absolute;top:0;right:0;height:4px;width:100%;background:#ff4f9a;transform-origin:right;animation:invBar 15s linear both}
 #invite.still .bar{animation:none}
 @keyframes invBar{to{transform:scaleX(0)}}@keyframes invUp{from{transform:translateY(100%)}}
 .rov{position:fixed;inset:0;z-index:60;background:rgba(40,25,70,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,2vmin,18px);padding:clamp(8px,2vmin,20px);animation:fadeIn .2s;overflow:hidden;direction:rtl}
@@ -2596,7 +2596,7 @@ var TrollLogic = (function () {
   }
 
   // ---- race between online players (the screens and the network are in the game script) ----
-  var RACE = { QN: 20, /* the closed list: every racer gets this many exercises of their own grade */ GOAL: 300, MAX_MS: 600000, INVITE_MS: 5000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 0, /* no rest after a refusal: the same child can be invited again at once */ MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
+  var RACE = { QN: 20, /* the closed list: every racer gets this many exercises of their own grade */ GOAL: 300, MAX_MS: 600000, INVITE_MS: 15000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 0, /* no rest after a refusal: the same child can be invited again at once */ MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
   // What a correct answer is worth. It depends on where the child stands, not on the material: the furthest house that is
   // open to them is worth the most, so a second grader and a fourth grader, or a new player and a veteran, race on equal terms.
   function racePoints(state, q, opts) {
@@ -4665,7 +4665,7 @@ var TrollModels = (function () {
       hostT = setTimeout(decide, RC.INVITE_MS + 1500);
     }, function () { if (!race || race.id !== id) return; race = null; pool.note = 'אֵין חִבּוּר לָרֶשֶׁת כָּרֶגַע'; if (poolDraw) poolDraw(); });
   }
-  // everybody answered, or the five seconds are over: the race leaves with whoever said yes
+  // everybody answered, or the time to answer is over: the race leaves with whoever said yes
   function decide() {
     clearTimeout(hostT); hostT = null;
     if (!race || !race.host || race.st !== 'wait') return;
@@ -4686,7 +4686,7 @@ var TrollModels = (function () {
     if (pool.resume) pool.resume();
   }
 
-  // ---- invitation: the guest's side. A small bar at the bottom, five seconds to answer, the screen above keeps working ----
+  // ---- invitation: the guest's side. A small bar at the bottom, fifteen seconds to answer, the screen above keeps working ----
   function onInvite(v) {
     if (!v || typeof v !== 'object' || !/^r\d{9}$/.test(v.race || '') || v.race === lastInv) return;
     lastInv = v.race;
@@ -4708,7 +4708,7 @@ var TrollModels = (function () {
       if (!yes || race) return;
       race = { id: raceId, host: false, st: 'wait', p: {}, on: false, over: false, t0: 0, stop: null };
       race.stop = rt.listen('races/' + raceId, onRace);
-      race.giveUp = setTimeout(function () { if (race && race.id === raceId && !race.on) dropRace(); }, 15000); // the host vanished before the launch
+      race.giveUp = setTimeout(function () { if (race && race.id === raceId && !race.on) dropRace(); }, RC.INVITE_MS + 15000); // the host vanished before the launch
     }, function () {});
   }
   function showInvite(from, raceId, ms) {
