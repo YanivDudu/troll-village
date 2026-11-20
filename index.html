@@ -3026,8 +3026,17 @@ var TrollModels = (function () {
     var old = lsGet(KEY); // progress saved before profiles existed becomes the first player
     if (!profiles.list.length && old) { profiles = L.addProfile(profiles, ''); lsSet(DKEY_OLD2 + profiles.cur, old); saveProfiles(); lsDel(KEY); }
   }
+  // Sound on or off belongs to the device, not to the player: it must not come back on when another player is chosen or when
+  // progress arrives from another device (where the sound was on).
+  var SNDKEY = 'trollVillage.snd', snd = null;
+  function sndApply() {
+    if (!snd) { try { snd = JSON.parse(lsGet(SNDKEY) || 'null'); } catch (e) {} if (!snd || typeof snd !== 'object') { snd = { mute: !!state.mute, music: state.music !== false }; lsSet(SNDKEY, JSON.stringify(snd)); } }
+    state.mute = !!snd.mute; state.music = snd.music !== false;
+  }
+  function sndSet(k, v) { sndApply(); snd[k] = v; lsSet(SNDKEY, JSON.stringify(snd)); state[k] = v; }
   function load() {
     state = L.loadState(profiles.cur ? rawOf(profiles.cur) : null);
+    sndApply();
     if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(true); }
   }
   // quiet: housekeeping (streak, starter troll) that must not count as newer progress than another device's
@@ -3461,9 +3470,9 @@ var TrollModels = (function () {
   function btn(text, cls, fn) { return h('button', { class: 'btn ' + (cls || ''), text: text, on: { click: function () { sfx.tap(); fn(); } } }); }
   function topBar(withHome, backFn) {
     var mute = h('button', { class: 'icon', 'aria-label': 'צְלִילִים', text: state.mute ? '🔇' : '🔊' });
-    mute.addEventListener('click', function () { state.mute = !state.mute; save(); mute.textContent = state.mute ? '🔇' : '🔊'; sfx.tap(); applyMusic(); });
+    mute.addEventListener('click', function () { sndSet('mute', !state.mute); save(true); mute.textContent = state.mute ? '🔇' : '🔊'; if (state.mute) hush(); sfx.tap(); applyMusic(); });
     var music = h('button', { class: 'icon' + (state.music ? '' : ' dim'), 'aria-label': 'מוּזִיקַת רֶקַע', text: '🎵' });
-    music.addEventListener('click', function () { state.music = !state.music; save(); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); applyMusic(); });
+    music.addEventListener('click', function () { sndSet('music', !state.music); save(true); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); applyMusic(); });
     var homeB = withHome ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה לַכְּפָר', text: '🏠', on: { click: function () { sfx.tap(); home(); } } }) : null;
     var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
     return h('div', { class: 'top' },
@@ -3756,7 +3765,7 @@ var TrollModels = (function () {
   function hush() { if (tts) try { tts.cancel(); } catch (e) {} duck(false); }
   function speak(text) {
     if (isBoy()) text = L.forBoy(text);
-    if (!tts || !heVoice) return;
+    if (!tts || !heVoice || state.mute) return;
     try {
       tts.cancel();
       var u = new SpeechSynthesisUtterance(spoken(text));
