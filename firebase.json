@@ -11,13 +11,17 @@
    "firebase.json",
    "*.rules",
    "*.rules.json",
+   ".*",
+   ".*/**",
    "**/.*",
+   "**/.*/**",
    "**/node_modules/**",
    "docs/**",
    "tests/**",
    "shots/**",
    "**/*.md",
-   "**/*.py"
+   "**/*.py",
+   "**/*.log"
   ],
   "headers": [
    {
