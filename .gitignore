@@ -4,3 +4,4 @@ preview.*
 firebase-debug.log
 .firebaserc
 .firebase/
+.firebase-auth.json

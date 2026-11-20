@@ -282,7 +282,10 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .cacct{font-weight:700;font-size:clamp(15px,3vmin,22px);background:#f3eefb;border-radius:14px;padding:4px 14px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .clink{background:none;font:inherit;font-size:14px;color:#6a3fd0;text-decoration:underline;padding:4px;min-height:32px}
 .cpanel>b{font-size:clamp(13px,2.4vmin,17px)}
-@media (max-height:480px){.cpanel{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:8px}.cpanel>b{width:44%;text-align:center}.cpanel .amail,.cpanel .apass{width:44%;min-height:38px;order:2}.cpanel .crow,.cpanel .clink,.cpanel .ctext,.cpanel .cmsg,.cpanel .cacct{order:3}.cpanel .ctext{font-size:12px;width:100%}.cpanel .cmsg{width:100%;text-align:center}.cpanel .btn{min-height:38px}}
+.gbtnin{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #dadce0;border-radius:999px;padding:6px 20px;min-height:46px;font:inherit;font-weight:700;font-size:clamp(15px,2.6vmin,19px);color:#3c4043;box-shadow:0 2px 0 rgba(59,42,85,.12)}
+.gbtnin i{font-style:normal;font-weight:700;font-size:22px;color:#4285f4;font-family:Arial,sans-serif}
+.cpanel .cor{margin:-4px 0}
+@media (max-height:480px){.gbtnin{order:1;min-height:38px}.cpanel .cor{order:1;width:auto}.cpanel{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:8px}.cpanel>b{width:44%;text-align:center}.cpanel .amail,.cpanel .apass{width:44%;min-height:38px;order:2}.cpanel .crow,.cpanel .clink,.cpanel .ctext,.cpanel .cmsg,.cpanel .cacct{order:3}.cpanel .ctext{font-size:12px;width:100%}.cpanel .cmsg{width:100%;text-align:center}.cpanel .btn{min-height:38px}}
 .dpt{position:absolute;transform:translateX(.12em);font-size:1em;font-weight:700}
 .mptab td.pt,.mptab th.pt{background:none;min-width:8px;width:10px;padding:0;font-weight:700}
 .mptab td.pad{color:#c9c0dd}
@@ -3064,6 +3067,21 @@ var TrollModels = (function () {
       auth = { uid: j.localId, email: j.email || email, rt: j.refreshToken, it: j.idToken, exp: Date.now() + (+j.expiresIn - 120) * 1000 }; saveAuth();
     });
   }
+  // Signing in with Google needs Google's own window, which only the Firebase library can open. The library is fetched
+  // when the account screen opens (and only there); everything after the sign-in goes on without it.
+  var gsdk = null;
+  function addScript(src) { return new Promise(function (ok, no) { var x = document.createElement('script'); x.src = src; x.onload = ok; x.onerror = function () { no(new Error('script')); }; document.head.appendChild(x); }); }
+  function googleReady() {
+    if (!gsdk) gsdk = addScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js').then(function () { return addScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js'); })
+      .then(function () { window.firebase.initializeApp({ apiKey: CLOUD.key, authDomain: CLOUD.pid + '.firebaseapp.com', projectId: CLOUD.pid }); return window.firebase.auth().setPersistence(window.firebase.auth.Auth.Persistence.NONE); });
+    gsdk.catch(function () { gsdk = null; });
+    return gsdk;
+  }
+  function googleSignIn() {
+    return googleReady().then(function () { return window.firebase.auth().signInWithPopup(new window.firebase.auth.GoogleAuthProvider()); }).then(function (res) {
+      return res.user.getIdToken().then(function (it) { auth = { uid: res.user.uid, email: res.user.email || 'Google', rt: res.user.refreshToken, it: it, exp: Date.now() + 50 * 60000 }; saveAuth(); });
+    }, function (e) { var x = new Error(e && e.code || 'google'); x.auth = true; throw x; });
+  }
   function token() { // a fresh id token; they live for an hour
     if (!auth) return Promise.reject(new Error('signed out'));
     if (auth.it && Date.now() < auth.exp) return Promise.resolve(auth.it);
@@ -4283,23 +4301,30 @@ var TrollModels = (function () {
         var mail = h('input', { class: 'pname amail', type: 'email', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
         var pass = h('input', { class: 'pname apass', type: 'password', maxlength: '60', placeholder: '••••••', autocomplete: 'current-password', 'aria-label': 'סִיסְמָה' });
         var ERR = { EMAIL_EXISTS: 'הַמֵּיְל הַזֶּה כְּבָר רָשׁוּם. נַסּוּ אֶת כַּפְתּוֹר הַכְּנִיסָה.', INVALID_LOGIN_CREDENTIALS: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', INVALID_PASSWORD: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', EMAIL_NOT_FOUND: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.',
-          WEAK_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', MISSING_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', INVALID_EMAIL: 'כְּתֹבֶת הַמֵּיְל לֹא תַּקִּינָה.', MISSING_EMAIL: 'כּוֹתְבִים קֹדֶם אֶת הַמֵּיְל.', TOO_MANY_ATTEMPTS_TRY_LATER: 'יוֹתֵר מִדַּי נִסְיוֹנוֹת. נְנַסֶּה שׁוּב בְּעוֹד כַּמָּה דַּקּוֹת.' };
-        function why(e) { if (!e || !e.auth) { fail(); return; } var k = String(e.message).split(/[ :]/)[0]; say(ERR[k] || 'זֶה לֹא הִצְלִיחַ. נְנַסֶּה שׁוּב.'); }
+          WEAK_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', MISSING_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', INVALID_EMAIL: 'כְּתֹבֶת הַמֵּיְל לֹא תַּקִּינָה.', MISSING_EMAIL: 'כּוֹתְבִים קֹדֶם אֶת הַמֵּיְל.', TOO_MANY_ATTEMPTS_TRY_LATER: 'יוֹתֵר מִדַּי נִסְיוֹנוֹת. נְנַסֶּה שׁוּב בְּעוֹד כַּמָּה דַּקּוֹת.',
+          'auth/popup-blocked': 'הַדַּפְדְּפָן חָסַם אֶת הַחַלּוֹן שֶׁל Google. נַסּוּ שׁוּב.', 'auth/popup-closed-by-user': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/cancelled-popup-request': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/network-request-failed': 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.', script: 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.' };
+        function why(e) { if (!e || !e.auth) { fail(); return; } var k = /^auth\//.test(e.message) ? e.message : String(e.message).split(/[ :]/)[0]; if (!ERR[k]) report('sign-in: ' + e.message); say(ERR[k] || 'זֶה לֹא הִצְלִיחַ. נְנַסֶּה שׁוּב.'); }
         var busy = false;
         function go(isNew) {
           var em = mail.value.trim(), pw = pass.value;
           if (busy) return;
           if (!em) { say(ERR.MISSING_EMAIL); return; }
           if (pw.length < 6) { say(ERR.WEAK_PASSWORD); return; }
+          enter1(signIn(em, pw, isNew), isNew);
+        }
+        // after any kind of sign-in: a device that was linked with a village code takes the newest state of that village with it,
+        // then the players of the device go into the account and the players of the account come to the device
+        function enter1(signing, isNew) {
           busy = true; say('מִתְחַבְּרִים...');
-          // a device that was linked with a village code takes the newest state of that village with it into the account
-          var before = L.CODE_RE.test(sync.code) ? new Promise(function (res) { syncNow(function () { res(); }); }) : Promise.resolve();
-          before.then(function () { return signIn(em, pw, isNew); }).then(function () {
+          signing.then(function () { return L.CODE_RE.test(sync.code) ? new Promise(function (res) { syncNow(function () { res(); }); }) : null; }).then(function () {
             linkTo('acct', true);
             syncNow(function (ok) { busy = false; if (!ok) { fail(); return; } if (!profiles.cur) who(false); else cloud(isNew ? 'הַחֶשְׁבּוֹן נוֹצַר, וְהַשַּׂחְקָנִים נִשְׁמְרוּ בּוֹ ✓' : 'מְחֻבָּרִים ✓'); });
           }, function (e) { busy = false; why(e); });
         }
         pass.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(false); });
+        var gb = h('button', { class: 'gbtnin', 'aria-label': 'כְּנִיסָה עִם Google', on: { click: function () { if (busy) return; sfx.tap(); enter1(googleSignIn(), false); } } }, h('i', { text: 'G' }), h('span', { text: 'כְּנִיסָה עִם Google' }));
+        p.appendChild(gb); p.appendChild(h('div', { class: 'ctext cor', text: 'אוֹ' }));
+        if (cloudOn()) googleReady().catch(function () {}); // ready before the tap, so the browser lets Google's window open
         p.appendChild(h('b', { text: 'הַמֵּיְל שֶׁל הַהוֹרֶה' })); p.appendChild(mail);
         p.appendChild(h('b', { text: 'סִיסְמָה (6 תָּוִים לְפָחוֹת)' })); p.appendChild(pass);
         p.appendChild(h('div', { class: 'crow' }, btn('כְּנִיסָה', 'signin', function () { go(false); }), btn('✨ חֶשְׁבּוֹן חָדָשׁ', 'b2 signup', function () { go(true); })));
