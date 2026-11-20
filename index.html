@@ -525,6 +525,7 @@ button.cbld:active{transform:scale(.94)}
 /* ---- race between online players: invitation bar, launch, track at the bottom, results ---- */
 :root{--trk:50px;--inv:62px}
 @media (max-height:420px){:root{--trk:42px;--inv:52px}}
+@media (max-width:420px){:root{--inv:52px}}
 body.racing #app,body.racing .ovl{bottom:var(--trk)}
 body.invited #app,body.invited .ovl{bottom:var(--inv)}
 /* a race is on: an orange frame around the whole page, fading towards the middle */
@@ -636,6 +637,48 @@ body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:no
 @media (max-width:520px){.screen.packq .buddy,.screen.packq .bubble{display:none}.screen.packq .qrow{min-height:0}}
 @media (max-height:520px){.screen.packq .buddy,.screen.packq .bubble{display:none}.screen.packq .qsvg svg{max-height:26vh}.screen.packq .ans{min-height:38px}.screen.packq .qen{font-size:22px}.screen.packq .qsay{width:44px;height:44px;font-size:20px}}
 .mpack svg{max-height:clamp(90px,30vh,260px)}
+/* ---- a livelier village: trolls that stroll and look around, a street with depth, animals, the sky by the clock ---- */
+.troll .pup{animation:look 9s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes look{0%,38%,62%,100%{transform:translate(0,0)}44%,52%{transform:translate(-4px,1px)}68%,78%{transform:translate(4px,-1px)}86%{transform:translate(0,-3px)}}
+.troll.cheer .pup,.troll.sad .pup{animation:none}
+.village{position:relative;z-index:1}
+.vt .walk{display:block;animation:stroll var(--wd,7s) ease-in-out infinite alternate;animation-delay:var(--wl,0s)}
+@keyframes stroll{from{transform:translateX(calc(var(--wx,10px) * -1))}to{transform:translateX(var(--wx,10px))}}
+.vt .walk .ft{animation:step .46s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+.vt .walk .ftR{animation-delay:-.46s}
+@keyframes step{from{transform:translateY(0)}to{transform:translateY(-7px) rotate(-6deg)}}
+.vt .walk .troll:not(.cheer) .armR{animation:hello 11s ease-in-out infinite;animation-delay:var(--d,0s);transform-box:fill-box;transform-origin:0 0}
+@keyframes hello{0%,82%,100%{transform:rotate(0)}86%,94%{transform:rotate(-105deg)}90%{transform:rotate(-80deg)}}
+.street{position:absolute;left:0;right:0;bottom:clamp(60px,15vh,150px);height:clamp(60px,17vh,150px);display:flex;align-items:flex-end;justify-content:space-around;pointer-events:none;z-index:0;opacity:.92;transform:translate(calc(var(--px,0) * -14px),calc(var(--py,0) * -4px));transition:transform .5s ease-out;overflow:hidden}
+.street .hs{position:relative;height:calc(100% * var(--s,1) * .82);flex:0 1 auto;min-width:0}
+.street .hs img{height:100%;width:auto;display:block}
+.street .tree{height:calc(62% * var(--s,1));width:auto;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite}
+.puff{position:absolute;left:58%;top:6%;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.85);animation:smoke 4s ease-out infinite;opacity:0}
+@keyframes smoke{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:.85}100%{transform:translate(18px,-46px) scale(1.8);opacity:0}}
+.critter{position:absolute;bottom:0;width:clamp(18px,3.4vmin,30px);height:auto;animation-timing-function:linear;animation-iteration-count:infinite}
+.crawl{animation-name:crawl}.scurry{animation-name:scurry}.buzz{animation-name:buzz;bottom:45%}.waddle{animation-name:waddle}
+@keyframes crawl{from{transform:translateX(-6vw)}to{transform:translateX(106vw)}}
+@keyframes scurry{0%{transform:translateX(104vw) scaleX(-1)}40%{transform:translateX(60vw) scaleX(-1) translateY(-8px)}45%,60%{transform:translateX(58vw) scaleX(-1)}100%{transform:translateX(-8vw) scaleX(-1)}}
+@keyframes buzz{0%{transform:translate(-6vw,0)}20%{transform:translate(18vw,-14px)}40%{transform:translate(40vw,10px)}60%{transform:translate(62vw,-18px)}80%{transform:translate(84vw,6px)}100%{transform:translate(106vw,-8px)}}
+@keyframes waddle{0%{transform:translateX(-6vw) rotate(-5deg)}50%{transform:translateX(50vw) rotate(5deg)}100%{transform:translateX(106vw) rotate(-5deg)}}
+.hills{transform:translate(calc(var(--px,0) * -6px),0);transition:transform .5s ease-out;width:104%;left:-2%}
+.bird{position:absolute;left:0;width:clamp(22px,4vmin,38px);height:auto;animation:fly linear infinite}
+@keyframes fly{0%{transform:translate(-8vw,0) scaleY(1)}10%{transform:translate(4vw,-10px) scaleY(.82)}20%{transform:translate(16vw,4px) scaleY(1)}30%{transform:translate(28vw,-12px) scaleY(.82)}40%{transform:translate(40vw,2px) scaleY(1)}50%{transform:translate(52vw,-10px) scaleY(.82)}60%{transform:translate(64vw,6px) scaleY(1)}70%{transform:translate(76vw,-8px) scaleY(.82)}80%{transform:translate(88vw,3px) scaleY(1)}90%{transform:translate(100vw,-10px) scaleY(.82)}100%{transform:translate(112vw,0) scaleY(1)}}
+.stars{position:absolute;inset:0;display:none}
+.stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:twinkle 2.6s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+body.dusk{background:linear-gradient(#ff9a62 0%,#ffc78a 38%,#f8e9b9 74%,#a8e58a 100%)}
+body.dusk .sun{top:22vh;filter:saturate(1.3) hue-rotate(-18deg)}
+body.night{background:linear-gradient(#1c2757 0%,#3a4c8c 42%,#8fb3c2 76%,#6dbb78 100%)}
+body.night .stars{display:block}
+body.night .sun{animation:none;background:radial-gradient(circle at 38% 38%,#fff 0 30%,#e6ecff 32% 48%,transparent 50%)}
+body.night .sun:before{background:radial-gradient(transparent 50%,rgba(210,225,255,.35) 52%,transparent 70%)}
+body.night .cloud{opacity:.28!important}
+body.night .hills{filter:brightness(.72) saturate(.9)}
+body.night .bird,body.night .fly{display:none}
+body.night .mote{background:rgba(255,244,150,.9);box-shadow:0 0 12px #ffe45c}
+@media (max-height:520px){.street{bottom:clamp(40px,13vh,80px);height:clamp(44px,16vh,80px)}}
+@media (prefers-reduced-motion:reduce){.bird,.critter,.puff{display:none}}
 </style>
 </head>
 <body>
@@ -2655,8 +2698,8 @@ var TrollArt = (function () {
     var eyes = mood === 'cheer'
       ? '<path d="M62,164 q14,-18 28,0 M110,164 q14,-18 28,0" fill="none" stroke="' + ink + '" stroke-width="6" stroke-linecap="round"/>'
       : '<g class="eyes"><circle cx="76" cy="160" r="16" fill="#fff"/><circle cx="124" cy="160" r="16" fill="#fff"/>' +
-        '<circle cx="' + (78 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/><circle cx="' + (126 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/>' +
-        '<circle cx="' + (81 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/><circle cx="' + (129 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/>' +
+        '<g class="pup"><circle cx="' + (78 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/><circle cx="' + (126 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/>' +
+        '<circle cx="' + (81 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/><circle cx="' + (129 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/></g>' +
         (s.eyes === 2 ? '<path d="M61,150 l-7,-5 M66,145 l-4,-8 M139,150 l7,-5 M134,145 l4,-8" stroke="' + ink + '" stroke-width="3.5" stroke-linecap="round"/>' : '') + '</g>';
     var mouth = mood === 'cheer'
       ? '<path d="M80,194 Q100,228 120,194 Z" fill="#6b2140" stroke="#6b2140" stroke-width="4" stroke-linejoin="round"/><path d="M90,208 Q100,200 110,208 Q100,220 90,208 Z" fill="#ff7aa8"/>'
@@ -2670,7 +2713,7 @@ var TrollArt = (function () {
       '<ellipse cx="100" cy="253" rx="56" ry="7" fill="rgba(0,0,0,.14)"/>' +
       '<g class="tb"><g class="hair">' + (HAIR[s.hair] || HAIR[0])(s.hairColor, shade(s.hairColor, 0.5)) + '</g>' + (BACK[s.acc] || '') +
       '<g stroke="' + dk + '">' + arms + '</g>' +
-      '<ellipse cx="74" cy="246" rx="22" ry="10" fill="' + dk + '"/><ellipse cx="126" cy="246" rx="22" ry="10" fill="' + dk + '"/>' +
+      '<ellipse class="ft ftL" cx="74" cy="246" rx="22" ry="10" fill="' + dk + '"/><ellipse class="ft ftR" cx="126" cy="246" rx="22" ry="10" fill="' + dk + '"/>' +
       '<ellipse cx="36" cy="166" rx="14" ry="18" fill="' + s.body + '"/><ellipse cx="164" cy="166" rx="14" ry="18" fill="' + s.body + '"/>' +
       '<ellipse cx="35" cy="166" rx="6" ry="9" fill="' + dk + '" opacity=".5"/><ellipse cx="165" cy="166" rx="6" ry="9" fill="' + dk + '" opacity=".5"/>' +
       '<path d="M100,96 C150,96 166,140 166,186 C166,226 140,246 100,246 C60,246 34,226 34,186 C34,140 50,96 100,96 Z" fill="' + s.body + '"/>' +
@@ -3293,6 +3336,12 @@ var TrollModels = (function () {
       { transform: tr(b[0], b[1], 'scale(.7) rotate(360deg)') }
     ], { duration: 850, easing: 'ease-in-out' }, cb);
   }
+  // fireworks for the biggest moments: a rescued troll, a race that was won
+  function fireworks(n) {
+    for (var i = 0; i < n; i++) (function (k) {
+      setTimeout(function () { burst(window.innerWidth * (0.15 + Math.random() * 0.7), window.innerHeight * (0.12 + Math.random() * 0.4), 22); sfx.star(k % 5); }, 250 + k * 380);
+    })(i);
+  }
   function confetti(n) {
     if (reduced) return;
     for (var i = 0; i < n; i++) (function () {
@@ -3312,7 +3361,19 @@ var TrollModels = (function () {
     bg.appendChild(h('div', { class: 'fly', text: '🦋', style: 'top:30%;animation-duration:27s' }));
     bg.appendChild(h('div', { class: 'fly', text: '🦋', style: 'top:58%;animation-duration:36s;animation-delay:-14s' }));
     bg.insertAdjacentHTML('beforeend', '<svg class="hills" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,14 Q20,0 42,12 T100,8 V30 H0Z" fill="#8fdc74"/><path d="M0,22 Q30,10 55,20 T100,16 V30 H0Z" fill="#6fc95a"/></svg>');
+    for (i = 0; i < 3; i++) bg.appendChild(h('img', { class: 'bird', src: 'assets/ico/1f99c.png', alt: '', style: 'top:' + (12 + i * 11) + '%;animation-duration:' + (31 + i * 9) + 's;animation-delay:-' + (i * 13) + 's' }));
+    var stars = h('div', { class: 'stars' }); for (i = 0; i < 40; i++) stars.appendChild(h('i', { style: 'left:' + (i * 37 % 100) + '%;top:' + (i * 53 % 55) + '%;animation-delay:-' + (i % 7) * 0.6 + 's' })); bg.appendChild(stars);
     document.body.insertBefore(bg, app);
+    // the sky follows the real clock: orange towards evening, dark blue with a moon, stars and an owl at night
+    var hr = +((/[&#]hour=(\d+)/.exec(hash) || [])[1] || new Date().getHours());
+    document.body.classList.add(hr >= 19 || hr < 6 ? 'night' : hr >= 17 ? 'dusk' : 'day');
+    // depth: far things move less than near things when the pointer (or the device) moves
+    var pxy = [0, 0], praf = 0;
+    function par(x, y) { pxy = [Math.max(-1, Math.min(1, x)), Math.max(-1, Math.min(1, y))]; if (!praf) praf = requestAnimationFrame(function () { praf = 0; document.body.style.setProperty('--px', pxy[0].toFixed(3)); document.body.style.setProperty('--py', pxy[1].toFixed(3)); }); }
+    if (!/fit|auto/.test(hash)) {
+      addEventListener('pointermove', function (e) { par(e.clientX / window.innerWidth * 2 - 1, e.clientY / window.innerHeight * 2 - 1); }, { passive: true });
+      addEventListener('deviceorientation', function (e) { if (e.gamma != null) par(e.gamma / 25, ((e.beta || 0) - 40) / 30); }, { passive: true });
+    }
     fx = h('div', { id: 'fx' }); document.body.appendChild(fx);
   }
 
@@ -3378,17 +3439,37 @@ var TrollModels = (function () {
         ids.unshift(mine);
         ids.forEach(function (id, i) {
           var s = specOf(id), label = '<b>' + (id === mine ? '💖 ' : '') + s.name + '</b>';
-          var b = h('button', { class: 'vt' + (id === mine ? ' mine' : sm ? ' sm' : ''), style: 'animation-delay:' + (i * 0.05) + 's', html: A.trollSVG(s) + label });
+          function body(mood) { return '<span class="walk">' + A.trollSVG(s, mood ? { mood: mood } : undefined) + '</span>' + label; }
+          var wx = 6 + (id * 7 + i * 5) % 15, wd = 5 + (id * 3 + i) % 6; // every troll has a walk of its own
+          var b = h('button', { class: 'vt' + (id === mine ? ' mine' : sm ? ' sm' : ''), style: 'animation-delay:' + (i * 0.05) + 's;--wx:' + (i % 2 ? wx : -wx) + 'px;--wd:' + wd + 's;--wl:-' + ((id + i * 2) % 9) + 's', html: body() });
           b.addEventListener('click', function () {
             sfx.giggle(); var c = center(b); burst(c[0], c[1], 9);
-            b.innerHTML = A.trollSVG(s, { mood: 'cheer' }) + label;
-            later(function () { b.innerHTML = A.trollSVG(s) + label; }, 1200);
+            b.innerHTML = body('cheer');
+            later(function () { b.innerHTML = body(); }, 1200);
           });
           village.appendChild(b);
         });
       }
       el.appendChild(village);
+      el.appendChild(street());
     });
+  }
+  // The street behind the trolls: houses with smoke from the chimneys, trees that sway, small animals that pass by.
+  // It moves a little against the hills when the pointer or the device moves, which gives the village depth.
+  function street() {
+    var st = h('div', { class: 'street', 'aria-hidden': 'true' }), wide = window.innerWidth >= 700;
+    var items = wide ? ['t', 'houseSmall1', 't', 'house1', 'towerSmall', 't', 'houseAlt2', 'houseSmallAlt1', 't', 'house2', 't'] : ['t', 'houseSmall1', 'house1', 't', 'houseAlt2', 't'];
+    items.forEach(function (x, i) {
+      if (x === 't') { st.appendChild(h('img', { class: 'tree', src: 'assets/ico/1f333.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.7) + 's;--s:' + (0.8 + (i % 3) * 0.18) })); return; }
+      var hs = h('span', { class: 'hs', style: '--s:' + (0.85 + (i % 4) * 0.1) }, h('img', { src: 'assets/' + x + '.png', alt: '', draggable: 'false' }));
+      if (/house/.test(x)) for (var k = 0; k < 3; k++) hs.appendChild(h('i', { class: 'puff', style: 'animation-delay:-' + (k * 1.3 + i * 0.4) + 's' }));
+      st.appendChild(hs);
+    });
+    [['1f40c', 'crawl', 70], ['1f43f', 'scurry', 23], ['1f41d', 'buzz', 17], ['1f986', 'waddle', 41]].forEach(function (c, i) {
+      if (!wide && i > 1) return;
+      st.appendChild(h('img', { class: 'critter ' + c[1], src: 'assets/ico/' + c[0] + '.png', alt: '', draggable: 'false', style: 'animation-duration:' + c[2] + 's;animation-delay:-' + (i * 9) + 's' }));
+    });
+    return st;
   }
 
   // ---------- world map: a village in the forest, one building per topic ----------
@@ -4020,7 +4101,7 @@ var TrollModels = (function () {
       el.appendChild(stage);
       el.appendChild(h('div', { class: 'banners' }, h('div', { class: 'banner chest gold', style: 'animation-delay:.9s', text: CHEST.gold + ': 30+ 🪙' })));
       el.appendChild(h('div', { class: 'row' }, btn('לַכְּפָר שֶׁלִּי', '', home), btn('לַמַּפָּה', 'b2', function () { region(topicId); })));
-      later(function () { var c = center(stage); burst(c[0], c[1], 20); confetti(120); sfx.win(); bumpStars(el); }, 500);
+      later(function () { var c = center(stage); burst(c[0], c[1], 20); confetti(120); sfx.win(); bumpStars(el); fireworks(6); }, 500);
       tv.done = true; tv.hero = hero.name;
     });
   }
@@ -4747,7 +4828,7 @@ var TrollModels = (function () {
       rtOn() || raceDbg ? btn('🔁 מֵרוֹץ חוֹזֵר', '', function () { close(); pool(others); }) : null,
       btn('חֲזָרָה', 'b2', close)));
     document.body.appendChild(ov);
-    sfx.win(); confetti(won ? 140 : 60);
+    sfx.win(); confetti(won ? 140 : 60); if (won) fireworks(7);
   }
   // ---- ranking: every public player, by experience points (one for every solved exercise), then by stars ----
   var boardT = 0;
