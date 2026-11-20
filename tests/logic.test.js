@@ -530,4 +530,25 @@ t('race: points follow the own frontier of the child, ranking and finish', () =>
   assert.strictEqual(L.loadState({ v: 4, grade: 2, lastRace: 'r123456789' }).lastRace, 'r123456789');
   assert.strictEqual(L.loadState({ v: 4, grade: 2, lastRace: { x: 1 } }).lastRace, '');
 });
-console.log('all ' + n + ' passed (cloud)');
+t('players: boy or girl wording, public or local, experience points', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  L.MALE.forEach(([f, m]) => { assert(html.split(f).length > 2, 'feminine form is used in the game: ' + f); assert.notStrictEqual(f, m); assert.strictEqual(L.forBoy(f), m); assert.strictEqual(L.forBoy(m), m, 'already masculine: ' + m); });
+  const fem = L.MALE.map(x => x[0])[3], mas = L.MALE.map(x => x[1])[3];
+  assert.strictEqual(L.forBoy('▶ ' + fem + ' 3 + 4!'), '▶ ' + mas + ' 3 + 4!');
+  assert.strictEqual(L.forBoy('x' + fem + 'א'), 'x' + fem + 'א'); // only whole words
+  assert.strictEqual(L.forBoy(null), null);
+  let P = L.addProfile({ cur: null, list: [] }, 'a', 'p111111111', { sex: 'm', loc: true });
+  P = L.addProfile(P, 'b', 'p222222222', { sex: 'f' });
+  P = L.addProfile(P, 'c', 'p333333333');
+  const j = x => JSON.parse(JSON.stringify(x));
+  assert.deepStrictEqual(j(P.list), [{ id: 'p111111111', name: 'a', sex: 'm', loc: true }, { id: 'p222222222', name: 'b', sex: 'f' }, { id: 'p333333333', name: 'c' }]);
+  assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify(P)).list), j(P.list));
+  assert.deepStrictEqual(j(L.loadProfiles({ list: [{ id: 'p1', name: 'x', sex: 'zz', loc: 'yes' }] }).list), [{ id: 'p1', name: 'x' }]);
+  const m = j(L.mergeCloud({ list: P.list, gone: [], t: {} }, { list: [], gone: [], t: {} }));
+  assert.deepStrictEqual(m.list, j(P.list)); assert(m.meta, 'the list with the new fields is pushed');
+  assert(!j(L.mergeCloud({ list: P.list, gone: [], t: {} }, { list: P.list, gone: [], t: {} })).meta);
+  assert.strictEqual(L.newState(2).xp, 0);
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10 }).xp, 30); // an estimate for players from before the points
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10, xp: 7 }).xp, 7);
+});
+console.log('all ' + n + ' passed (players)');

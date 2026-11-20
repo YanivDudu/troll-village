@@ -115,6 +115,41 @@
      ".validate": false
     }
    }
+  },
+  "board": {
+   ".read": true,
+   ".indexOn": [
+    "xp",
+    "t"
+   ],
+   "$id": {
+    ".write": "$id.matches(/^[pr][0-9]{6,12}$/)",
+    ".validate": "newData.hasChildren([\"n\",\"b\",\"g\",\"xp\",\"t\"])",
+    "n": {
+     ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+    },
+    "b": {
+     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+    },
+    "d": {
+     ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 200"
+    },
+    "g": {
+     ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 4"
+    },
+    "t": {
+     ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+    },
+    "xp": {
+     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+    },
+    "st": {
+     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+    },
+    "$other": {
+     ".validate": false
+    }
+   }
   }
  }
 }

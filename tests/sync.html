@@ -24,7 +24,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     restore({});
     await open(); // device A: a new player, then a new village code
     var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
-    inp.value = 'A1'; q('.pnew .gbtn[data-g="2"]').click(); q('.pnew .btn').click();
+    inp.value = 'A1'; q('.pnew .gbtn[data-g="2"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .btn').click();
     await until(function () { return q('.chip.who'); }, 'home A');
     q('.chip.who').click();
     (await until(function () { return q('.cloudb'); }, 'cloud button')).click();
@@ -37,7 +37,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     restore({}); // device B: its own player first, then joins with the link
     await open();
     inp = await until(function () { return q('.pnew .pname'); }, 'who screen B');
-    inp.value = 'B1'; q('.pnew .gbtn[data-g="4"]').click(); q('.pnew .btn').click();
+    inp.value = 'B1'; q('.pnew .gbtn[data-g="4"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .btn').click();
     await until(function () { return q('.chip.who'); }, 'home B');
     await open('#join=' + code);
     await until(function () { return profs().list.length === 2 && sync().code === code; }, 'B joined');

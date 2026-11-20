@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>כפר הטרולים של הילה</title>
+<title>עולם הטרולים</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;font-family:"Rubik","Varela Round","Assistant","Segoe UI","Arial Hebrew",Arial,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -289,6 +289,19 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .grow{display:flex;gap:4px;justify-content:center;width:100%}
 .gbtn{flex:1 1 0;min-width:0;max-width:46px;height:38px;padding:0;border-radius:14px;background:#f3eefb;font:inherit;font-weight:700;font-size:17px;color:inherit;border:3px solid transparent}
 .gbtn.on{background:#8e5cff;color:#fff;border-color:#5a2fd0}
+.gbtn.wide{max-width:none;height:32px;font-size:12px;white-space:nowrap;border-radius:12px}
+.psex{position:absolute;top:42px;right:4px;min-width:34px;height:30px;border-radius:99px;background:#fdeef6;font-size:14px;padding:0 6px}
+.blist{flex:1 1 auto;min-height:0;width:100%;max-width:720px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:4px}
+.brow{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.94);border-radius:16px;padding:3px 10px;font-weight:700;font-size:clamp(13px,2.4vmin,19px);flex:0 0 auto}
+.brow.me{background:#fff3b8;box-shadow:inset 0 0 0 3px #ffd84d}
+.brow .bp{min-width:28px;text-align:center}
+.brow .bt{width:38px;height:38px;flex:0 0 auto}.brow .bt svg{width:100%;height:100%}
+.brow .bn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.brow small{color:#8e5cff;white-space:nowrap}
+.brow .bx,.brow .bs{white-space:nowrap;min-width:52px;text-align:left}
+@media (max-width:420px){.brow small{display:none}}
+/* a short screen: the new player card spreads sideways */
+@media (max-height:480px){.pcard.pnew{width:clamp(270px,78vmin,360px);flex-direction:row;flex-wrap:wrap;gap:4px 6px;align-content:center}.pnew>b{width:100%;font-size:14px}.pnew .pname{width:48%;flex:1 1 40%}.pnew .gask{display:none}.pnew .grow{width:48%;flex:1 1 44%}.pnew .btn{min-height:38px;width:100%}}
 .gask{font-size:13px;font-weight:700}.gask.need{color:#d0284e}
 .pnew{gap:5px}
 .grade.g1{background:#f08a24}.grade.g4{background:#d0284e}
@@ -2218,6 +2231,14 @@ var TrollLogic = (function () {
   }
   // ---- player profiles (kept on this device) ----
   function cleanName(x, n) { x = typeof x === 'string' ? x.replace(/[<>&"']/g, '').trim().slice(0, 14) : ''; return x || 'שַׂחְקָן ' + n; }
+  // A player of the device: name, boy or girl (for the wording), and whether other families may see them (race, ranking).
+  // Public is the default; a local player is chosen when the player is made and stays local.
+  function prof(p, n) {
+    var o = { id: p.id, name: cleanName(p.name, n) };
+    if (p.sex === 'f' || p.sex === 'm') o.sex = p.sex;
+    if (p.loc === true) o.loc = true;
+    return o;
+  }
   function loadProfiles(raw) {
     var out = { cur: null, list: [] }, o;
     try { o = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return out; }
@@ -2225,15 +2246,16 @@ var TrollLogic = (function () {
     var seen = {};
     o.list.forEach(function (p) {
       if (out.list.length >= 8 || !p || !/^p\d+$/.test(p.id) || seen[p.id]) return;
-      seen[p.id] = true; out.list.push({ id: p.id, name: cleanName(p.name, out.list.length + 1) });
+      seen[p.id] = true; out.list.push(prof(p, out.list.length + 1));
     });
     if (seen[o.cur]) out.cur = o.cur;
     return out;
   }
-  function addProfile(p, name, id) {
+  function addProfile(p, name, id, extra) {
     var n = 0; p.list.forEach(function (x) { n = Math.max(n, +x.id.slice(1)); });
     if (!/^p\d+$/.test(id || '') || p.list.some(function (x) { return x.id === id; })) id = 'p' + (n + 1);
-    return { cur: id, list: p.list.concat([{ id: id, name: cleanName(name, p.list.length + 1) }]) };
+    extra = extra || {};
+    return { cur: id, list: p.list.concat([prof({ id: id, name: name, sex: extra.sex, loc: extra.loc }, p.list.length + 1)]) };
   }
   function removeProfile(p, id) {
     return { cur: p.cur === id ? null : p.cur, list: p.list.filter(function (x) { return x.id !== id; }) };
@@ -2250,14 +2272,14 @@ var TrollLogic = (function () {
     out.gone = out.gone.slice(-60);
     (b.list || []).concat(a.list || []).forEach(function (p) {
       if (seen[p.id] || gone[p.id] || out.list.length >= 8) return;
-      seen[p.id] = true; out.list.push({ id: p.id, name: p.name });
+      seen[p.id] = true; out.list.push(prof(p, out.list.length + 1));
     });
     out.list.forEach(function (p) {
       var ta = +(a.t || {})[p.id] || 0, tb = +(b.t || {})[p.id] || 0;
       if (tb > ta) out.pull.push(p.id); else if (ta > tb) out.push.push(p.id);
       out.t[p.id] = Math.max(ta, tb);
     });
-    if (JSON.stringify(out.list) !== JSON.stringify((b.list || []).map(function (p) { return { id: p.id, name: p.name }; })) ||
+    if (JSON.stringify(out.list) !== JSON.stringify((b.list || []).map(function (p, i) { return prof(p, i + 1); })) ||
         out.gone.slice().sort().join() !== (b.gone || []).slice().sort().join()) out.meta = true;
     return out;
   }
@@ -2348,7 +2370,7 @@ var TrollLogic = (function () {
   function shiftOf(t) { return t.shift || 0; }
   function newState(grade) {
     grade = Math.max(1, Math.min(4, grade | 0 || 2));
-    var s = { v: 4, grade: grade, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', lastRace: '', mute: false, music: true, buddy: null };
+    var s = { v: 4, grade: grade, levels: {}, hists: {}, recent: {}, prog: {}, boss: {}, intro: {}, streak: 0, lastDay: '', stars: 0, rounds: 0, owned: [], dress: {}, coins: 0, items: FREE_ITEMS.slice(), lastGift: '', lastRace: '', xp: 0, mute: false, music: true, buddy: null };
     TOPICS.forEach(function (t) { s.levels[t.id] = startLevel(t, grade); s.hists[t.id] = []; s.recent[t.id] = []; s.prog[t.id] = []; s.boss[t.id] = {}; });
     return s;
   }
@@ -2379,6 +2401,7 @@ var TrollLogic = (function () {
     s.rounds = int(o.rounds, 0, 1e9, 0);
     s.lastDay = day(o.lastDay);
     s.lastGift = day(o.lastGift);
+    s.xp = o.xp == null ? int(o.stars, 0, 1000000, 0) * 3 : int(o.xp, 0, 10000000, 0); // players from before the points existed get an estimate
     s.lastRace = typeof o.lastRace === 'string' && /^r\d{9}$/.test(o.lastRace) ? o.lastRace : '';
     s.mute = o.mute === true;
     s.music = o.music !== false;
@@ -2441,7 +2464,13 @@ var TrollLogic = (function () {
     return elapsedMs >= RACE.MAX_MS || raceRank(players).some(function (x) { return x.pts >= RACE.GOAL; });
   }
 
+  // The texts of the game speak to a girl. For a boy the same texts are shown with these words replaced.
+  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["אַלּוּפָה", "אַלּוּף"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְתוּכְלִי", "וְתוּכַל"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"]];
+  var MALE_MAP = {}, MALE_RE = new RegExp('(^|[^\u0590-\u05FF])(' + MALE.map(function (x) { MALE_MAP[x[0]] = x[1]; return x[0]; }).join('|') + ')(?![\u0590-\u05FF])', 'g');
+  function forBoy(t) { return typeof t === 'string' ? t.replace(MALE_RE, function (m, pre, w) { return pre + MALE_MAP[w]; }) : t; }
+
   return {
+    MALE: MALE, forBoy: forBoy,
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
@@ -2779,7 +2808,7 @@ var TrollModels = (function () {
 (function () {
   'use strict';
   var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.r.', DKEY_OLD = 'trollVillage.q.', DKEY_OLD2 = 'trollVillage.p.';
-  var VILLAGE = 'שֶׁל הִילָה'; // second line of the village name on the home screen
+  var VILLAGE = ''; // an optional second line under the name of the game
   var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
@@ -2816,7 +2845,7 @@ var TrollModels = (function () {
     if (profiles.cur && !state.owned.length) { var first = L.rollTroll([], Math.random); state.owned.push(first.id); state.buddy = first.id; save(true); }
   }
   // quiet: housekeeping (streak, starter troll) that must not count as newer progress than another device's
-  function save(quiet) { if (!profiles.cur) return; lsSet(DKEY + profiles.cur, JSON.stringify(state)); if (!quiet) touch(profiles.cur); }
+  function save(quiet) { if (!profiles.cur) return; lsSet(DKEY + profiles.cur, JSON.stringify(state)); if (!quiet) { touch(profiles.cur); pushBoard(); } }
   function refresh() { load(); state = L.updateStreak(state, L.todayStr()); save(true); }
 
   // ---- the same village on several devices (Firestore document per village code, see TrollLogic.mergeCloud) ----
@@ -3183,13 +3212,14 @@ var TrollModels = (function () {
     var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
     return h('div', { class: 'top' },
       h('div', { class: 'chips' },
-        h('div', { class: 'chip', title: 'יָמִים בְּרֶצֶף', 'aria-label': state.streak + ' יָמִים בְּרֶצֶף', text: '🔥 ' + Math.max(1, state.streak) }),
+        h('div', { class: 'chip xpchip', 'data-n': state.xp, title: 'נְקֻדּוֹת נִסָּיוֹן: נְקֻדָּה עַל כָּל תַּרְגִּיל שֶׁנִּפְתַּר', 'aria-label': state.xp + ' נְקֻדּוֹת נִסָּיוֹן', text: '⚡ ' + state.xp }),
         h('div', { class: 'chip starchip', 'data-n': state.stars, text: '⭐ ' + state.stars }),
         h('div', { class: 'chip coinchip', 'data-n': state.coins, title: 'מַטְבְּעוֹת', text: '🪙 ' + state.coins })),
       h('div', { class: 'chips' }, backB, homeB, music, mute));
   }
   function bumpStars(el) {
-    var chip = el.querySelector('.starchip'), coin = el.querySelector('.coinchip');
+    var chip = el.querySelector('.starchip'), coin = el.querySelector('.coinchip'), xpc = el.querySelector('.xpchip');
+    if (xpc && xpc.getAttribute('data-n') !== String(state.xp)) { xpc.setAttribute('data-n', state.xp); xpc.textContent = '⚡ ' + state.xp; restart(xpc, 'bump'); }
     if (chip && chip.getAttribute('data-n') !== String(state.stars)) { chip.setAttribute('data-n', state.stars); chip.textContent = '⭐ ' + state.stars; restart(chip, 'bump'); }
     if (coin && coin.getAttribute('data-n') !== String(state.coins)) { coin.setAttribute('data-n', state.coins); coin.textContent = '🪙 ' + state.coins; restart(coin, 'bump'); }
   }
@@ -3202,14 +3232,18 @@ var TrollModels = (function () {
       tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
       el.appendChild(tb);
       var title = h('h1', { class: 'title' });
-      'כְּפַר הַטְּרוֹלִים'.match(/[\u05D0-\u05EA][\u0591-\u05C7]*|[^]/g).forEach(function (ch, i) { title.appendChild(ch === ' ' ? document.createTextNode(' ') : h('span', { text: ch, style: 'animation-delay:' + (i * 0.09) + 's' })); });
+      'עוֹלַם הַטְּרוֹלִים'.match(/[\u05D0-\u05EA][\u0591-\u05C7]*|[^]/g).forEach(function (ch, i) { title.appendChild(ch === ' ' ? document.createTextNode(' ') : h('span', { text: ch, style: 'animation-delay:' + (i * 0.09) + 's' })); });
       el.appendChild(title);
-      el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
+      if (VILLAGE) el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
       var row = h('div', { class: 'row' });
       row.appendChild(btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', topics));
       if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מַתָּנָה יוֹמִית', 'b3 wig', gift));
       if (state.owned.length) row.appendChild(btn('👗 הַלְבָּשָׁה וַחֲנוּת', 'b2', function () { dress(); }));
-      if (state.owned.length && (rtOn() || raceDbg)) row.appendChild(btn('🏁 מֵרוֹץ', 'b3 raceb', function () { pool(); }));
+      if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
+        row.appendChild(btn('🏁 מֵרוֹץ', 'b3 raceb', function () { pool(); }));
+        row.appendChild(btn('🏆 דֵּרוּג', 'b2 boardb', function () { board(); }));
+        pushBoard(true);
+      }
       el.appendChild(row);
       var village = h('div', { class: 'village' });
       if (!state.owned.length) {
@@ -3404,6 +3438,7 @@ var TrollModels = (function () {
   function duck(on) { for (var k in bgm) bgm[k].volume = on ? 0.05 : 0.2; }
   function hush() { if (tts) try { tts.cancel(); } catch (e) {} duck(false); }
   function speak(text) {
+    if (isBoy()) text = L.forBoy(text);
     if (!tts || !heVoice) return;
     try {
       tts.cancel();
@@ -3638,7 +3673,7 @@ var TrollModels = (function () {
           sfx.correct(combo); var c = center(b); burst(c[0], c[1], 12 + combo * 2);
           mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + rnd(PRAISE) : rnd(PRAISE));
           var hs = state.hists[q.topic]; hs.push(res.firstTry); state.hists[q.topic] = hs.slice(-5);
-          state.coins += res.firstTry ? 2 : 1;
+          state.coins += res.firstTry ? 2 : 1; state.xp += 1; // one experience point for every exercise that was solved
           raceScore(q, res, cfg);
           flyStar(b, el.querySelector('.coinchip'), function () { bumpStars(el); }, '🪙');
           save();
@@ -3810,7 +3845,10 @@ var TrollModels = (function () {
         var card = h('div', { class: 'pcard', style: 'animation-delay:' + (i * 0.07) + 's' });
         card.appendChild(h('button', { class: 'go', 'aria-label': 'לְשַׂחֵק בְּתוֹר ' + p.name, on: { click: function () { enter(p.id); } } },
           h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
-          h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' })));
+          h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' + (p.loc ? ' · 🏠' : '') })));
+        card.appendChild(h('button', { class: 'psex', text: p.sex === 'm' ? '👦' : p.sex === 'f' ? '👧' : '👧👦', 'aria-label': 'בֵּן אוֹ בַּת: ' + p.name, on: { click: function () {
+          sfx.tap(); p.sex = p.sex === 'f' ? 'm' : 'f'; saveProfiles(); if (sync.code) syncNow(); who(false);
+        } } }));
         card.appendChild(h('button', { class: 'pgrade', text: 'כִּתָּה ' + GRADE_HE[st.grade], 'aria-label': 'הַחְלָפַת כִּתָּה שֶׁל ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
@@ -3825,7 +3863,7 @@ var TrollModels = (function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
           card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
+            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { var gone = ridOf(p.id); if (gone && !p.loc) { rt.del('board/' + gone); rt.del('online/' + gone); } if (p.id === profiles.cur) { if (race) quitRace(); presence.stop(); } profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
@@ -3834,14 +3872,26 @@ var TrollModels = (function () {
         var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'הַשֵּׁם שֶׁלִּי', 'aria-label': 'שֵׁם הַשַּׂחְקָן הֶחָדָשׁ' });
         var newG = 0, gmsg = h('small', { class: 'gask', text: 'בְּאֵיזוֹ כִּתָּה?' });
         var grow = gradeRow(0, function (g) { newG = g; gmsg.classList.remove('need'); });
+        var newSex = '', newLoc = false;
+        function pair(cls, opts, pickV) { // two buttons, one of them chosen
+          var row = h('div', { class: 'grow ' + cls });
+          opts.forEach(function (o) {
+            var b = h('button', { class: 'gbtn wide' + (o[2] ? ' on' : ''), text: o[1], 'data-v': o[0], on: { click: function () { sfx.tap(); [].forEach.call(row.children, function (x) { x.classList.remove('on'); }); b.classList.add('on'); pickV(o[0]); } } });
+            row.appendChild(b);
+          });
+          return row;
+        }
+        var srow = pair('sxrow', [['f', '👧 בַּת'], ['m', '👦 בֵּן']], function (v) { newSex = v; });
+        var vrow = pair('vrow', [['pub', '🌍 גָּלוּי', true], ['loc', '🏠 מְקוֹמִי']], function (v) { newLoc = v === 'loc'; });
         var add = function () {
           if (!newG) { gmsg.classList.add('need'); restart(grow, 'shake'); sfx.wrong(); return; }
-          profiles = L.addProfile(profiles, inp.value, rndId()); saveProfiles();
+          if (!newSex) { restart(srow, 'shake'); sfx.wrong(); return; }
+          profiles = L.addProfile(profiles, inp.value, rndId(), { sex: newSex, loc: newLoc }); saveProfiles();
           lsSet(DKEY + profiles.cur, JSON.stringify(L.newState(newG)));
           enter(profiles.cur); save(); if (sync.code) syncNow();
         };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
-        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, gmsg, grow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
+        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, gmsg, grow, srow, vrow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
       el.appendChild(grid);
       if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', text: sync.code ? '☁️ הַכְּפָר מְחֻבָּר · ' + sync.code : '☁️ לְשַׂחֵק גַּם בְּמַכְשִׁיר אַחֵר', on: { click: function () { sfx.tap(); cloud(); } } }));
@@ -4026,11 +4076,22 @@ var TrollModels = (function () {
     });
   }
 
+  // ---------- a boy is spoken to as a boy: every text that reaches the screen passes through TrollLogic.forBoy ----------
+  function curProf() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i]; return null; }
+  function isBoy() { var p = curProf(); return !!p && p.sex === 'm'; }
+  function isPub() { var p = curProf(); return !!p && !p.loc; }
+  function boyText(n) { var t = L.forBoy(n.nodeValue); if (t !== n.nodeValue) n.nodeValue = t; }
+  function boyWalk(n) { if (n.nodeType === 3) boyText(n); else if (n.nodeType === 1 && n.tagName !== 'SCRIPT' && n.tagName !== 'STYLE' && n.tagName !== 'INPUT') for (var c = n.firstChild; c; c = c.nextSibling) boyWalk(c); }
+  if (window.MutationObserver) new MutationObserver(function (ms) {
+    if (!isBoy()) return;
+    ms.forEach(function (m) { if (m.type === 'characterData') boyText(m.target); else [].forEach.call(m.addedNodes, boyWalk); });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+
   // ---------- race between online players ----------
   // The Realtime Database is used without a library: fetch writes, EventSource listens. Three branches:
   // online/<player> (who is in the game now), invites/<player> (the last invitation), races/<race> (the players and their points).
   CLOUD.rt = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
-  var RC = L.RACE, SV = { '.sv': 'timestamp' }, raceDbg = /[&#](race|pool|inv|podium|rbtn)=/.test(hash), RID_RE = /^[pr]\d{6,12}$/;
+  var RC = L.RACE, SV = { '.sv': 'timestamp' }, raceDbg = /[&#](race|pool|inv|podium|rbtn|board)=/.test(hash), RID_RE = /^[pr]\d{6,12}$/;
   if (LOCAL && /[&#]goal=(\d+)/.test(hash)) RC.GOAL = +/[&#]goal=(\d+)/.exec(hash)[1]; // a short race for tests/race.html
   var race = null, onLeave = null, ridNow = null, beatT = null, invStop = null, lastInv = '', invEl = null, invT = null, cool = {}, hostT = null, poolDraw = null, trackEl = null;
   function rtOn() { return !sandbox && !raceDbg && !!window.EventSource && !!window.fetch && navigator.onLine !== false; }
@@ -4104,14 +4165,14 @@ var TrollModels = (function () {
 
   // ---- presence: "I am in the game now", and the ear for invitations ----
   function beat(keep) {
-    if (!rtOn() || !profiles.cur) return;
+    if (!rtOn() || !profiles.cur || !isPub()) return;
     var v = me(); v.t = SV; v.r = race && !race.over && race.on ? race.id : '';
     rt.put('online/' + myRid(), v, keep).then(function (r) { if (r && typeof r.t === 'number') rt.off = r.t - Date.now(); }, function () {});
   }
   var presence = {
     start: function () {
       presence.stop();
-      if (!rtOn() || !profiles.cur) return;
+      if (!rtOn() || !profiles.cur || !isPub()) return; // a local player is not shown to anyone
       ridNow = myRid(); beat();
       beatT = setInterval(function () { if (!document.hidden) beat(); }, RC.BEAT_MS);
       invStop = rt.listen('invites/' + ridNow, onInvite);
@@ -4403,6 +4464,50 @@ var TrollModels = (function () {
     document.body.appendChild(ov);
     sfx.win(); confetti(won ? 140 : 60);
   }
+  // ---- ranking: every public player, by experience points (one for every solved exercise), then by stars ----
+  var boardT = 0;
+  function pushBoard(force) {
+    if (!CLOUD.rt || !rtOn() || !profiles.cur || !isPub() || !state.owned.length) return;
+    if (!force && Date.now() - boardT < 30000) return;
+    boardT = Date.now();
+    var v = me(); v.xp = state.xp; v.st = state.stars; v.t = SV;
+    rt.put('board/' + myRid(), v).catch(function () {});
+  }
+  function ridOf(id) { return /^p\d{9}$/.test(id) ? id : lsGet('trollVillage.rid.' + id) || ''; }
+  function board() {
+    setMusic('home');
+    show(function (el) {
+      here = 'board';
+      el.appendChild(topBar(true, home));
+      el.appendChild(h('h2', { class: 'h2', text: '🏆 טַבְלַת הַדֵּרוּג' }));
+      var list = h('div', { class: 'blist' }, h('div', { class: 'banner pmsg', text: 'רֶגַע...' }));
+      el.appendChild(list);
+      function num(x, hi) { x = Math.floor(+x); return isFinite(x) ? Math.max(0, Math.min(hi, x)) : 0; }
+      function draw(v) {
+        var rows = [], mine = myRid(), id, p, own = null;
+        v = v && typeof v === 'object' ? v : {};
+        if (!raceDbg) { v[mine] = me(); v[mine].xp = state.xp; v[mine].st = state.stars; } // my own line is always up to date
+        for (id in v) { p = person(id, v[id]); if (p) { p.xp = num(v[id].xp, 10000000); p.st = num(v[id].st, 100000); rows.push(p); } }
+        rows.sort(function (a, b) { return b.xp - a.xp || b.st - a.st || (a.id < b.id ? -1 : 1); });
+        list.textContent = '';
+        rows.slice(0, 100).forEach(function (p, i) {
+          var r = h('div', { class: 'brow' + (p.id === mine ? ' me' : '') },
+            h('b', { class: 'bp', text: i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1) }), h('span', { class: 'bt', html: trollOf(p) }), h('span', { class: 'bn', text: p.n }),
+            h('small', { text: 'כִּתָּה ' + GRADE_HE[p.g] }), h('span', { class: 'bx', text: '⚡ ' + p.xp }), h('span', { class: 'bs', text: '⭐ ' + p.st }));
+          if (p.id === mine) own = r;
+          list.appendChild(r);
+        });
+        if (own && own.scrollIntoView) own.scrollIntoView({ block: 'nearest' });
+      }
+      if (raceDbg) {
+        var fake = {}; ['נֹעָה', 'אוּרִי', 'תָּמָר', 'דָּנִיֵּאל', 'מַאיָה', 'אִיתַי', 'שִׁירָה', 'עִדּוֹ', 'רוֹנִי', 'גַּל'].forEach(function (n, i) { fake['p30000000' + i] = { n: n, b: 5 + i * 37, d: '', g: 1 + i % 4, xp: 940 - i * 83, st: 120 - i * 9 }; });
+        fake[myRid()] = me(); fake[myRid()].xp = 510; fake[myRid()].st = 60;
+        draw(fake); return;
+      }
+      fetch(CLOUD.rt + 'board.json?orderBy=%22xp%22&limitToLast=100').then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+        .then(function (v) { if (here === 'board') draw(v); }, function () { if (here === 'board') draw(null); });
+    });
+  }
   addEventListener('pagehide', function () { if (race) quitRace(true); presence.stop(true); });
   addEventListener('pageshow', function (e) { if (e.persisted && profiles.cur) presence.start(); });
   addEventListener('online', function () { if (profiles.cur && !race) { presence.start(); if (here === 'home') home(); } });
@@ -4415,8 +4520,9 @@ var TrollModels = (function () {
     return { id: 'r000000000', host: true, st: 'run', p: p, on: true, over: false, t0: Date.now(), lastBeat: Date.now(), stop: null, fake: true };
   }
   function raceDebug() {
-    var m = /[&#](race|pool|inv|podium)=(\w+)/.exec(hash); if (!m) return;
+    var m = /[&#](race|pool|inv|podium|board)=(\w+)/.exec(hash); if (!m) return;
     if (m[1] === 'pool') pool();
+    else if (m[1] === 'board') board();
     else if (m[1] === 'inv') showInvite({ id: 'p200000000', n: 'אוּרִי', b: 42, d: '', g: 3 }, '', 0);
     else if (m[1] === 'podium') podium(fakeRace(m[2] === '2' ? [300, 300, 180, 60] : [215, 300, 180, 60]));
     else { race = fakeRace([40, 120, 210, 285]); if (/launch=/.test(hash)) launch(true); else startTrack(); }
@@ -4424,6 +4530,7 @@ var TrollModels = (function () {
 
   // ---------- start ----------
   if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadSync(); }
+  if (sandbox && /boy=1/.test(hash)) profiles.list[0].sex = 'm'; // layout check of the masculine wording
   load(); buildBg();
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
