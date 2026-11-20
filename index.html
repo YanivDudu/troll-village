@@ -2596,7 +2596,7 @@ var TrollLogic = (function () {
   }
 
   // ---- race between online players (the screens and the network are in the game script) ----
-  var RACE = { GOAL: 300, MAX_MS: 600000, INVITE_MS: 5000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 0, /* no rest after a refusal: the same child can be invited again at once */ MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
+  var RACE = { QN: 20, /* the closed list: every racer gets this many exercises of their own grade */ GOAL: 300, MAX_MS: 600000, INVITE_MS: 5000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 0, /* no rest after a refusal: the same child can be invited again at once */ MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
   // What a correct answer is worth. It depends on where the child stands, not on the material: the furthest house that is
   // open to them is worth the most, so a second grader and a fourth grader, or a new player and a veteran, race on equal terms.
   function racePoints(state, q, opts) {
@@ -3390,7 +3390,9 @@ var TrollModels = (function () {
     timers.forEach(clearTimeout); timers = []; closeExplain(); hush(); here = null;
     if (onLeave) { var bye = onLeave; onLeave = null; bye(); }
     var old = cur, el = h('div', { class: 'screen' });
+    raceRound = false;
     cur = el; app.appendChild(el); build(el);
+    if (!raceRound && race && race.on && race.t0 && !race.over) quitRace();
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
   }
   function btn(text, cls, fn) { return h('button', { class: 'btn ' + (cls || ''), text: text, on: { click: function () { sfx.tap(); fn(); } } }); }
@@ -3771,7 +3773,7 @@ var TrollModels = (function () {
     L.TOPICS.forEach(function (t) { if (topicId === 'mix' || topicId === t.id) avoid = avoid.concat(state.recent[t.id]); });
     var round = cfg.boss ? L.createBoss(topicId, cfg.boss, Math.random)
       : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage, state.grade, L.topicsFor(state, curSub))
-      : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1, state.grade, L.topicsFor(state, curSub));
+      : L.createRound(topicId, state.levels, Math.random, cfg.race ? RC.QN : 10, avoid, null, 1, state.grade, L.topicsFor(state, curSub));
     var force = (/fmt=(\w+)/.exec(hash) || [])[1]; // debug: start with a given activity format
     if (/s=hint|pad=1/.test(hash) && !force) round.qs[0] = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random); // debug: a plain first question
     for (var fi = 0; force && fi < 80; fi++) {
@@ -3786,8 +3788,10 @@ var TrollModels = (function () {
     var buddy = buddySpec(), combo = 0;
     tv.round = round; tv.done = false;
     show(function (el) {
+      if (cfg.race) raceRound = true; // leaving this screen while the race runs means leaving the race
       el.appendChild(topBar(true, backTo));
       var nodes = [], path = h('div', { class: 'path' }), i;
+      if (cfg.race) path.style.display = 'none'; // the track at the bottom shows the progress
       for (i = 0; i < round.qs.length; i++) { nodes.push(h('div', { class: 'node' })); path.appendChild(nodes[i]); }
       var label = h('div', { class: 'chip lv' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div');
       var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
@@ -3811,7 +3815,7 @@ var TrollModels = (function () {
           n.className = 'node' + (k < round.i ? ' done' : k === round.i ? ' cur' : '');
           n.textContent = k < round.i ? (cfg.boss ? '🪵' : round.results[k] ? '⭐' : '🌸') : String(k + 1);
         });
-        label.textContent = (cfg.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][0] + ' ' + STAGES[cfg.stage][1] + ' · ' : '') + t.icon + ' ' + t.levels[q.level - 1].name + (q.review ? ' · 🔁 חֲזָרָה' : '');
+        label.textContent = (cfg.race ? '🏁 ' + (round.i + 1) + ' / ' + round.qs.length + ' · ' : '') + (cfg.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][0] + ' ' + STAGES[cfg.stage][1] + ' · ' : '') + t.icon + ' ' + t.levels[q.level - 1].name + (q.review ? ' · 🔁 חֲזָרָה' : '');
         mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : rnd(ASK));
         helpB.classList.toggle('glow', cfg.stage === 0);
         var BOX = '<span class="box">?</span>';
@@ -3957,6 +3961,7 @@ var TrollModels = (function () {
         if (!round.solved || cur !== el) return;
         round.next(); tv.solvedAt = 0;
         if (!round.done()) renderQ();
+        else if (cfg.race) { tv.round = null; curSub = 'math'; topics(); } // the list is finished: the results of the race come up by themselves
         else if (cfg.boss) endBoss(round, topicId, cfg.boss);
         else if (cfg.stage != null) endStage(round, topicId, cfg);
         else endRound(round);
@@ -4480,7 +4485,9 @@ var TrollModels = (function () {
   CLOUD.rt = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
   var RC = L.RACE, SV = { '.sv': 'timestamp' }, raceDbg = /[&#](race|pool|inv|podium|rbtn|board)=/.test(hash), RID_RE = /^[pr]\d{6,12}$/;
   if (LOCAL && /[&#]goal=(\d+)/.test(hash)) RC.GOAL = +/[&#]goal=(\d+)/.exec(hash)[1]; // a short race for tests/race.html
+  if (LOCAL && /[&#]qn=(\d+)/.test(hash)) RC.QN = +/[&#]qn=(\d+)/.exec(hash)[1];
   if (LOCAL && /[&#]maxms=(\d+)/.test(hash)) RC.MAX_MS = +/[&#]maxms=(\d+)/.exec(hash)[1];
+  var raceRound = false;
   var race = null, onLeave = null, ridNow = null, beatT = null, invStop = null, lastInv = '', invEl = null, invT = null, cool = {}, hostT = null, poolDraw = null, trackEl = null;
   function rtOn() { return !sandbox && !raceDbg && !!window.EventSource && !!window.fetch && navigator.onLine !== false; }
   function setAt(root, path, data) {
@@ -4755,7 +4762,7 @@ var TrollModels = (function () {
       if (race !== r || r.over) return;
       tv.hold = false; r.t0 = Date.now(); r.s0 = rt.now(); r.lastBeat = Date.now();
       startTrack();
-      if (here === 'pool') topics(); // the host comes from the pool screen: on to the exercises
+      curSub = 'math'; startRound('mix', { race: true }); // everybody gets a closed list of exercises of their own grade
     }, 800 * 4);
   }
   function startTrack() {
@@ -4803,15 +4810,17 @@ var TrollModels = (function () {
   }
   // called for every correct answer of a round
   function raceScore(q, res, cfg) {
-    if (!race || !race.on || race.over || !race.t0) return;
-    var add = L.racePoints(state, q, { firstTry: res.firstTry, stage: cfg.stage, boss: !!cfg.boss }), rid = myRid(), mine = race.p[rid];
-    if (!add || !mine) return;
-    mine.pts = Math.min(400, (+mine.pts || 0) + add);
+    if (!cfg.race || !race || !race.on || race.over || !race.t0 || !tv.round) return;
+    var rid = myRid(), mine = race.p[rid], solved = tv.round.results.length;
+    if (!mine) return;
+    var was = +mine.pts || 0, add;
+    mine.pts = Math.min(400, Math.max(was, Math.round(solved * RC.GOAL / RC.QN))); add = mine.pts - was;
+    if (!add) return;
     var up = { pts: mine.pts, t: SV }; if (mine.pts >= RC.GOAL && !mine.fin) { up.fin = SV; mine.fin = rt.now(); }
     if (!race.fake) rt.patch('races/' + race.id + '/p/' + rid, up).catch(function () {});
     race.lastBeat = Date.now(); drawTrack();
     var r = trackEl && trackEl.runs[rid];
-    if (r) { var pl = h('span', { class: 'plus', text: '+' + add }); r.appendChild(pl); setTimeout(function () { pl.remove(); }, 1100); }
+    if (r) { var pl = h('span', { class: 'plus', text: '✓' }); r.appendChild(pl); setTimeout(function () { pl.remove(); }, 1100); }
     if (L.raceDone(race.p, Date.now() - race.t0)) finish(true);
   }
   function quitRace(keep) {

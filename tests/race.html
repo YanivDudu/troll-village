@@ -3,7 +3,7 @@
 <title>running</title>
 <!-- End-to-end check of the race against the real Realtime Database. Needs http (python -m http.server 8765 in the project root),
      then open http://localhost:8765/tests/race.html . Two players in two frames, each with its own storage corner (#ns=).
-     The finish line is 20 points here (#goal=20, honoured on localhost only). Expects title "RACE OK". -->
+     The closed list has 4 exercises here (#qn=4, honoured on localhost only). Expects title "RACE OK". -->
 <iframe id="fa" width="420" height="700"></iframe><iframe id="fb" width="420" height="700"></iframe><pre id="log"></pre>
 <script>
 var U = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -16,7 +16,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
 function doc(x) { return F[x].contentDocument; }
 function q(x, sel) { return doc(x).querySelector('.screen:not(.out) ' + sel); }
 function all(x, sel) { return [].slice.call(doc(x).querySelectorAll(sel)); }
-function open(x) { return new Promise(function (r) { F[x].onload = function () { r(); }; F[x].src = 'about:blank'; setTimeout(function () { F[x].src = '../index.html?' + Date.now() + '#ns=' + x + tag + '&goal=20'; }, 50); }); }
+function open(x) { return new Promise(function (r) { F[x].onload = function () { r(); }; F[x].src = 'about:blank'; setTimeout(function () { F[x].src = '../index.html?' + Date.now() + '#ns=' + x + tag + '&qn=4'; }, 50); }); }
 function close(x) { F[x].src = 'about:blank'; return wait(300); }
 function clean() { for (var i = localStorage.length - 1; i >= 0; i--) { var k = localStorage.key(i); if (/^[AB]\d{5}:/.test(k)) localStorage.removeItem(k); } }
 async function enter(x, grade) { // a new player the first time, the same player after a reload
@@ -80,15 +80,19 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     await invite('A', NAME.B);
     (await until(function () { return doc('B').getElementById('invite'); }, 'B got the invitation in a round')).querySelector('.y').click();
     await until(function () { return doc('A').getElementById('launch') && doc('B').getElementById('launch'); }, 'both screens show the launch');
-    check(F.B.contentWindow.__tv.round === roundB && roundB.current() === qB, 'the round of B was not reset by the race');
+    function inRace(x) { var r = F[x].contentWindow.__tv.round; return r && r.qs.length === 4 && r; }
     await until(function () { return doc('A').getElementById('track') && doc('B').getElementById('track') && !doc('A').getElementById('launch'); }, 'both screens show the track');
     check(all('A', '#track .run').length === 2 && all('B', '#track .run').length === 2, 'two runners on each track');
-    await until(function () { return q('A', '.bld[data-t]'); }, 'the host was taken from the pool to the map');
-    await toRound('A');
+    await until(function () { return inRace('A') && inRace('B'); }, 'both were put into the closed list of 4 exercises');
+    check(inRace('B') !== roundB, 'B left the round she was in and got the race list');
+    check(/1 \/ 4/.test(q('A', '.lv').textContent), 'the list shows where the child is: 1 / 4');
     await solve('A');
     var mine = pts('A', NAME.A);
     check(mine > 0, 'a correct answer moved the runner of A (' + mine + ' points)');
     await until(function () { return pts('B', NAME.A) === mine; }, 'B sees the runner of A move', 40);
+    check(mine === 75, 'one solved exercise of four is a quarter of the way');
+    await solve('B');
+    await until(function () { return pts('A', NAME.B) === 75; }, 'A sees the runner of B move', 40);
     for (var k = 0; k < 4 && !doc('A').getElementById('podium'); k++) await solve('A');
     await until(function () { return doc('A').getElementById('podium') && doc('B').getElementById('podium'); }, 'both screens show the results');
     ['A', 'B'].forEach(function (x) {
@@ -97,7 +101,13 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     });
     check(/30/.test(doc('A').querySelector('#podium .banner').textContent) && /10/.test(doc('B').querySelector('#podium .banner').textContent), 'winner got 30 coins, the other 10');
     all('B', '#podium .btn')[1].click();
-    check(!doc('B').getElementById('podium') && !doc('B').getElementById('track') && F.B.contentWindow.__tv.round === roundB, 'after closing the results B is back in the same round');
+    check(!doc('B').getElementById('podium') && !doc('B').getElementById('track'), 'the results close and the track is gone');
+    var rb = inRace('B'), ib = rb.i; await solve('B');
+    check(rb.i > ib || rb.done(), 'after the race B can go on answering');
+    all('A', '#podium .btn')[1].click();
+    await until(function () { return q('A', '.bld[data-t]'); }, 'A, who finished the list, is on the map');
+    q('A', '.bld[data-t]').click();
+    await until(function () { return q('A', '.sbtn'); }, 'and A can go into a building');
     document.title = 'RACE1 OK';
 
     // 4: the host disappears during the race, the guest still finishes
@@ -106,7 +116,8 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     (await until(function () { return doc('B').getElementById('invite'); }, 'B got the fourth invitation', 300)).querySelector('.y').click();
     await until(function () { return doc('B').getElementById('track') && !doc('B').getElementById('launch'); }, 'race four is running');
     await close('A');
-    for (k = 0; k < 5 && !doc('B').getElementById('podium'); k++) { if (!F.B.contentWindow.__tv.round || F.B.contentWindow.__tv.round.done()) await toRound('B'); await solve('B'); }
+    await until(function () { return inRace('B'); }, 'B is in the list of race four');
+    for (k = 0; k < 5 && !doc('B').getElementById('podium'); k++) await solve('B');
     await until(function () { return doc('B').getElementById('podium'); }, 'B gets the results without the host');
     check(doc('B').querySelector('#podium .rp.win b').textContent === NAME.B, 'B won the race the host left');
     document.title = 'RACE4 OK';
@@ -115,8 +126,8 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     await enter('A', 2);
     await invite('A', NAME.B);
     (await until(function () { return doc('B').getElementById('invite'); }, 'B got the sixth invitation', 300)).querySelector('.y').click();
-    await until(function () { return doc('A').getElementById('track') && !doc('A').getElementById('launch') && q('A', '.bld[data-t]'); }, 'race six is running');
-    await toRound('A');
+    await until(function () { return doc('A').getElementById('track') && !doc('A').getElementById('launch'); }, 'race six is running');
+    await until(function () { return inRace('A'); }, 'A is in the list of race six');
     for (k = 0; k < 5 && !doc('A').getElementById('podium'); k++) await solve('A');
     await until(function () { return doc('A').getElementById('podium') && doc('B').getElementById('podium'); }, 'both on the results of race six');
     await wait(1500); // both are listed as free again
@@ -127,6 +138,19 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     // a guest who is still looking at the old results accepts a new race
     await enter('A', 2); await enter('B', 4);
     document.title = 'RACE6 OK';
+
+    // 8: leaving the list means leaving the race; the other one goes on
+    await enter('A', 2); await enter('B', 4);
+    await invite('A', NAME.B);
+    (await until(function () { return doc('B').getElementById('invite'); }, 'B got the eighth invitation', 300)).querySelector('.y').click();
+    await until(function () { return inRace('A') && inRace('B') && doc('A').getElementById('track') && !doc('A').getElementById('launch'); }, 'race eight is running');
+    doc('A').querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]').click();
+    await until(function () { return q('A', '.btn.big') && !doc('A').getElementById('track'); }, 'A went home and is out of the race');
+    q('A', '.btn.big').click();
+    await until(function () { return q('A', '.bld'); }, 'A can play on');
+    for (k = 0; k < 5 && !doc('B').getElementById('podium'); k++) await solve('B');
+    await until(function () { return doc('B').getElementById('podium'); }, 'B finishes the list and gets the results');
+    document.title = 'RACE8 OK';
 
     // 5: hostile records in the open database
     var r1 = await put('online/p999000001', { n: new Array(41).join('x'), b: 1, d: '', g: 2, t: { '.sv': 'timestamp' } });
