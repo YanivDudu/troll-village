@@ -3,7 +3,9 @@
 <title>running</title>
 <!-- Layout check: loads every screen at phone / tablet / laptop sizes and reports overflow.
      Usage: fit.html            -> all sizes, result in document.title + table
-            fit.html#390x800    -> only that size (handy for screenshots) -->
+            fit.html#390x800    -> only that size (handy for screenshots)
+            fit.html#390x800&sky=21 -> every screen at that hour (18 = dusk, 21 = night): a decorative sky layer must never cover a button
+     The title also reports, without failing: small = buttons under 48 px, loops = endless animations on exercise screens. -->
 <style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}td,th{padding:2px 8px;border:1px solid #777}.bad{background:#a00}</style>
 <div id="frames"></div><table id="out"></table>
 <script>
@@ -24,6 +26,9 @@ SCREENS = SCREENS.concat(['home&rbtn=1', 'home&pool=1', 'round&inv=1', 'topics&i
 SCREENS = SCREENS.concat(['round&t=add&l=7&fmt=choice', 'round&g=3&t=add&l=11&fmt=choice', 'round&g=4&t=mul&l=11&fmt=choice', 'round&g=4&t=add&l=13&fmt=choice&race=1', 'cloud&linked', 'who&linked', 'end&hour=21', 'end&hatch&hour=21', 'bossend&hour=21', 'home&hour=21', 'topics&hour=18', 'subjects', 'subjects&g=1', 'topics&g=3', 'region&t=geo2poly', 'region&t=heb2words', 'region&g=3&t=eng3listen', 'round&t=geo2clock&l=2', 'round&t=geo2poly&l=5', 'round&t=geo2solid&l=5', 'round&t=heb2sent&l=1', 'round&t=heb2sent&l=3', 'round&t=heb2spell&l=1', 'round&t=eng2words&l=2&say=1', 'round&t=eng2talk&l=1&say=1', 'round&g=1&t=geo1poly&l=3', 'round&g=1&t=heb1nik&l=7', 'round&g=1&t=heb1mish&l=4', 'round&g=1&t=eng1listen&l=4&say=1', 'round&g=3&t=geo3box&l=3', 'round&g=3&t=heb3read&l=3', 'round&g=3&t=eng3read&l=5&say=1', 'round&g=4&t=geo4box&l=3', 'round&g=4&t=heb4read&l=2', 'round&g=4&t=eng4talk&l=4&say=1', 'round&g=4&t=geo5quad&l=2', 'round&g=4&t=heb5read&l=2', 'round&g=4&t=eng5read&l=3&say=1', 'hint&step=last&t=geo2ruler&l=5', 'hint&step=last&t=heb2root&l=3', 'hint&step=last&t=eng2words&l=1', 'hint&step=last&g=3&t=geo3area&l=5', 'hint&step=last&g=4&t=geo4box&l=5', 'hint&step=last&g=1&t=heb1nik&l=2']);
 var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
+var sky = /sky=(\d+)/.exec(location.hash);
+if (sky) SCREENS = SCREENS.filter(function (sc, i) { return !/hour=/.test(sc) && SCREENS.indexOf(sc) === i; }).map(function (sc) { return sc + '&hour=' + sky[1]; });
+var small = 0, loops = 0;
 var want = SIZES.length * SCREENS.length, got = 0, fails = [];
 SIZES.forEach(function (s) {
   SCREENS.forEach(function (sc) {
@@ -35,12 +40,12 @@ SIZES.forEach(function (s) {
 });
 addEventListener('message', function (e) {
   var d = e.data; if (!d || !d.id) return;
-  got++;
+  got++; small += d.sm || 0; loops += d.inf || 0;
   var bad = d.oh > 1 || d.ow > 1 || d.off > 0 || d.nav < 1 || d.ovf > 1 || (/hint/.test(d.id) && !d.card);
   if (bad) fails.push(d.w + 'x' + d.h + ' ' + d.id.replace('#demo&fit&s=', '') + ' oh=' + d.oh + ' ow=' + d.ow + ' off=' + d.off + ' nav=' + d.nav + ' ovf=' + d.ovf + ' card=' + d.card);
   var tr = document.createElement('tr'); if (bad) tr.className = 'bad';
   tr.innerHTML = '<td>' + d.w + 'x' + d.h + '</td><td>' + d.id + '</td><td>overflow-y ' + d.oh + '</td><td>overflow-x ' + d.ow + '</td><td>off-screen buttons ' + d.off + '</td><td>nav buttons ' + d.nav + '</td>';
   document.getElementById('out').appendChild(tr);
-  if (got === want) document.title = 'FIT ' + (fails.length ? 'FAIL ' + fails.join(' | ') : 'OK ' + got);
+  if (got === want) document.title = 'FIT ' + (fails.length ? 'FAIL ' + fails.join(' | ') : 'OK ' + got + ' small=' + small + ' loops=' + loops);
 });
 </script>

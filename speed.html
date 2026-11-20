@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת מהירות</title>
+<!-- One-minute speed check for a real phone: counts drawn frames per second while a game screen runs.
+     Not linked from the game. Shows the demo sandbox only, never a player's saved progress. -->
+<style>
+html,body{margin:0;height:100%;font-family:Arial,sans-serif;background:#1f1a2e;color:#fff}
+#top{padding:10px 14px;font-size:18px;line-height:1.4}
+#res{font-size:22px;font-weight:bold;white-space:pre-line;direction:ltr;text-align:left;background:#000;padding:10px 14px;margin:0}
+iframe{border:0;width:100%;height:60vh;background:#fff;display:block}
+button{font-size:20px;padding:14px 22px;border:0;border-radius:12px;background:#ff4f9a;color:#fff;margin:6px 14px}
+</style>
+<div id="top">בדיקת מהירות: כדקה. לא לגעת במסך עד שמופיע "סוף".</div>
+<pre id="res">...</pre>
+<button id="go">התחל</button>
+<iframe id="f"></iframe>
+<script>
+var STEPS = [['home', 'demo&s=home&hour=10'], ['home night', 'demo&s=home&hour=21'], ['exercise', 'demo&s=round&hour=10'], ['map', 'demo&s=topics&hour=10'], ['empty', '']];
+var out = [], f = document.getElementById('f'), res = document.getElementById('res');
+function measure(ms, done) { // frames actually drawn, and the longest gap between two of them
+  var n = 0, worst = 0, t0 = performance.now(), last = t0;
+  (function tick(t) { n++; worst = Math.max(worst, t - last); last = t; if (t - t0 < ms) requestAnimationFrame(tick); else done(Math.round(n * 1000 / (t - t0)), Math.round(worst)); })(t0);
+}
+function step(i) {
+  if (i === STEPS.length) { res.textContent = out.join('\n') + '\n' + screen.width + 'x' + screen.height + ' dpr ' + devicePixelRatio + ' cores ' + (navigator.hardwareConcurrency || '?') + ' mem ' + (navigator.deviceMemory || '?') + '\n' + navigator.userAgent.replace(/^.*?\(([^)]*)\).*?((Chrome|Version|SamsungBrowser)\/[\d.]+).*$/, '$1 $2') + '\nסוף. לצלם את המסך ולשלוח.'; f.src = 'about:blank'; if (/^#go/.test(location.hash)) fetch('/__report', { method: 'POST', body: 'SPEED OK' + String.fromCharCode(10) + out.join(String.fromCharCode(10)) }).catch(function () {}); return; }
+  res.textContent = out.join('\n') + '\n' + STEPS[i][0] + ' ...';
+  f.src = 'about:blank'; // a change of hash alone would not reload the game
+  setTimeout(function () { if (STEPS[i][1]) f.src = 'index.html#' + STEPS[i][1]; }, 300);
+  setTimeout(function () { measure(+location.hash.slice(4) || 8000, function (fps, worst) { out.push(STEPS[i][0] + ': ' + fps + ' fps, worst ' + worst + ' ms'); step(i + 1); }); }, 3500);
+}
+document.getElementById('go').onclick = function () { this.style.display = 'none'; step(0); };
+if (/^#go/.test(location.hash)) document.getElementById('go').onclick();
+</script>
+</html>

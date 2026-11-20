@@ -5115,7 +5115,10 @@ var TrollModels = (function () {
     });
     if (card) ovf = Math.max(ovf, card.scrollHeight - card.clientHeight, card.scrollWidth - card.clientWidth, md.scrollHeight - md.clientHeight, md.scrollWidth - md.clientWidth, card.getBoundingClientRect().bottom - window.innerHeight);
     if (again !== true && (ovf > 1 || cur.scrollHeight - cur.clientHeight > 1 || cur.scrollWidth - cur.clientWidth > 1)) { setTimeout(function () { fitCheck(true); }, 3000); return; } // measured mid-animation on a busy machine: look once more
-    parent.postMessage({ id: hash, ovf: ovf, card: !!card, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
+    // reported, not failed (yet): touch targets under 48 px, and endless animations on an exercise screen
+    var sm = 0, inf = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && r.height && Math.min(r.width, r.height) < 47.5) sm++; });
+    if (/s=round/.test(hash) && document.getAnimations) inf = document.getAnimations().filter(function (x) { var t = x.effect && x.effect.getTiming && x.effect.getTiming(); return t && t.iterations === Infinity; }).length;
+    parent.postMessage({ sm: sm, inf: inf, id: hash, ovf: ovf, card: !!card, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
   }, 3000);
 })();
 </script>

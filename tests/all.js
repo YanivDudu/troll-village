@@ -24,6 +24,9 @@ job('logic', /^all \d+ passed/m, () => run('node', ['tests/logic.test.js'], 1200
 job('packs', /^PACKS OK/, () => run('node', ['tests/packs.test.js'], 300000).then(o => o.trim().split('\n').slice(0, 6).join(' | ')));
 (quick ? ['360x640', '800x380'] : ['360x640', '390x800', '800x380', '768x1024', '1024x768', '1280x620', '1366x650', '1920x950'])
   .forEach(sz => job('fit ' + sz, /^FIT OK/, () => edge(page + '/tests/fit.html#' + sz, 40000)));
+// every screen again at dusk and at night: a sky layer once covered every button of the end screens, and the daytime run did not see it
+(quick ? ['360x640&sky=21'] : ['360x640&sky=18', '360x640&sky=21', '1366x650&sky=18', '1366x650&sky=21'])
+  .forEach(sz => job('fit ' + sz, /^FIT OK/, () => edge(page + '/tests/fit.html#' + sz, 40000)));
 (quick ? ['auto&g=2&t=mix', 'auto&g=2&t=geo2clock&l=2&st=1', 'auto&g=2&t=mix&race=1']
   : ['auto&g=1&t=mix', 'auto&g=2&t=mix', 'auto&g=3&t=mix', 'auto&g=4&t=mix', 'auto&g=2&t=mix&race=1', 'auto&g=3&t=g3mul&boss=3', 'auto&g=2&t=mix&boy=1',
     'auto&g=1&t=geo1poly&l=3&st=1', 'auto&g=1&t=heb1nik&l=4&st=2', 'auto&g=1&t=eng1listen&l=2&st=1', 'auto&g=2&t=geo2ruler&l=5&st=2', 'auto&g=2&t=heb2sent&l=1&st=1', 'auto&g=2&t=eng2talk&l=1&st=1',
