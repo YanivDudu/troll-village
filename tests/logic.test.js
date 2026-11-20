@@ -551,4 +551,96 @@ t('players: boy or girl wording, public or local, experience points', () => {
   assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10 }).xp, 30); // an estimate for players from before the points
   assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10, xp: 7 }).xp, 7);
 });
+t('next step: always forward, from the newest open house; a ready bridge; never locked, never another grade, never an earlier house', () => {
+  const j = x => JSON.parse(JSON.stringify(x));
+  const finishHouse = (s, id, lv) => { for (let k = 0; k < 3; k++) s = L.finishStage(s, id, lv, k, [true]).state; s.last = { t: id, l: lv }; return s; };
+  const check = (s, st) => { // whatever is offered is open by the existing rules and belongs to the player's grade
+    if (!st || st.challenge) return;
+    const tl = L.TOPICS.find(x => x.id === st.topic);
+    assert.strictEqual(tl.g, s.grade, 'own grade: ' + JSON.stringify(st)); assert.strictEqual(tl.sub || 'math', st.sub);
+    assert(L.topicsFor(s, st.sub).includes(st.topic));
+    if (st.boss) assert(L.bossReady(s, st.topic, st.boss) && st.boss === s.grade, JSON.stringify(st));
+    else { assert(L.stageOpen(s, st.topic, st.level, st.stage), 'open: ' + JSON.stringify(st)); assert.strictEqual(L.progOf(s, st.topic, st.level)[st.stage], 0, 'a stage without a star'); }
+  };
+  // a brand-new player of every grade starts where the game starts them: the start-level house of the first tile, first stage
+  for (const g of [1, 2, 3, 4]) {
+    const s = L.newState(g), id = L.topicsFor(s)[0], st = j(L.nextStep(s));
+    assert.deepStrictEqual(st, { sub: 'math', topic: id, level: L.startLevel(L.TOPICS.find(x => x.id === id), g), stage: 0 }, 'grade ' + g); check(s, st);
+    assert.strictEqual(st.level, s.levels[id]);
+  }
+  assert.deepStrictEqual(j(L.nextStep(L.newState(2))), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  // a save without the optional field (every save made before this change) loads and gets a step
+  assert.strictEqual(L.loadState(JSON.stringify(L.newState(2))).last, undefined);
+  assert.strictEqual(L.newState(2).last, undefined); assert.strictEqual(L.newState(2).v, 4);
+  assert.deepStrictEqual(j(L.loadState({ v: 4, grade: 2, last: { t: 'g2sub', l: 2 } }).last), { t: 'g2sub', l: 2 });
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, last: { t: 'nope', l: 2 } }).last, undefined);
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, last: 'x' }).last, undefined);
+  assert.deepStrictEqual(j(L.loadState({ v: 4, grade: 2, last: { t: 'g2sub', l: 99 } }).last), { t: 'g2sub', l: 4 });
+  // continue the house the child played last (also an earlier house the child chose in the map), while it has a stage without a star
+  let s = L.newState(2); s.last = { t: 'g2sub', l: 2 };
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 2, stage: 0 });
+  s = L.finishStage(s, 'g2sub', 2, 0, [true]).state;
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 2, stage: 1 });
+  // that house is finished: the newest open house of the same tile, not house 1
+  s = finishHouse(s, 'g2sub', 2);
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3, stage: 0 });
+  // after the newest house is finished the step is the house that has just opened
+  s = finishHouse(L.newState(2), 'g2add', 3);
+  assert.strictEqual(s.levels.g2add, 4); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 4, stage: 0 }); check(s, L.nextStep(s));
+  // the last house of a tile is finished, houses 1-2 were never played: the bridge waits for them, so they come now (marked), then the bridge, then the next tile
+  s = finishHouse(s, 'g2add', 4);
+  assert(!L.bossReady(s, 'g2add', 2)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 1, stage: 0, bridge: true }); check(s, L.nextStep(s));
+  s = L.finishStage(s, 'g2add', 1, 0, [true]).state; s.last = { t: 'g2add', l: 1 };
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 1, stage: 1, bridge: true });
+  s = finishHouse(s, 'g2add', 1); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 2, stage: 0, bridge: true });
+  s = finishHouse(s, 'g2add', 2); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', boss: 2 });
+  s = j(s); s.boss.g2add[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3, stage: 0 });
+  // an earlier house the child chose in the map while the newest house is not finished is not marked as bridge work
+  s = L.newState(2); s.last = { t: 'g2add', l: 1 }; assert.strictEqual(L.nextStep(s).bridge, undefined);
+  // the newest house: a stage opens only after the one before it
+  s = L.newState(2); s.last = { t: 'g2add', l: 3 }; s = L.finishStage(s, 'g2add', 3, 0, [true]).state;
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 1 }); check(s, L.nextStep(s));
+  // a house that is still closed is never offered, even when it was written as the last one
+  s = L.newState(2); s.last = { t: 'g2add', l: 4 };
+  assert(!L.stageOpen(s, 'g2add', 4, 0)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  // a tile of another grade is never offered, also when the child played there last (the challenge map)
+  s = L.newState(2); s.last = { t: 'g3mul', l: 1 };
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  s = L.setGrade(Object.assign(L.newState(2), { last: { t: 'g2add', l: 1 } }), 3);
+  assert.strictEqual(L.nextStep(s).topic, 'g3add');
+  // a bridge mission that is ready comes when the tile has no next house, before another tile
+  s = L.newState(2); s.levels.g2mul = 1; for (let lv = 1; lv <= 4; lv++) s = finishHouse(s, 'g2mul', lv);
+  assert(L.bossReady(s, 'g2mul', 2)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2mul', boss: 2 }); check(s, L.nextStep(s));
+  s.last = { t: 'g2add', l: 3 }; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 }); // but the open house is finished first
+  s.last = { t: 'g2mul', l: 4 }; s.boss.g2mul[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2div', level: 3, stage: 0 }); // then the tile after it
+  // the subject that was used last; arithmetic when nothing was played
+  s = L.newState(2); const geo = L.topicsFor(s, 'geo');
+  if (geo.length) { s = finishHouse(s, geo[0], s.levels[geo[0]]); const st = L.nextStep(s); assert.strictEqual(st.sub, 'geo'); check(s, st); }
+  // playing on by the recommended step alone never dead-ends: every house and every bridge of the grade, each stage once,
+  // an earlier house only as bridge work after the end of its tile, then the challenge map, and null only when that is finished too
+  for (const g of [1, 2, 3, 4]) {
+    let p = L.newState(g), steps = 0, bosses = 0, houses = 0;
+    for (;;) {
+      const st = L.nextStep(p); assert(st, 'grade ' + g + ' never dead-ends'); check(p, st);
+      if (st.challenge) break;
+      assert(++steps < 5000, 'no endless loop');
+      if (st.boss) { p = j(p); p.boss[st.topic][st.boss] = true; bosses++; continue; }
+      const tl = L.TOPICS.find(x => x.id === st.topic);
+      if (st.level < p.levels[st.topic]) { assert(st.bridge, 'an earlier house only toward the bridge: ' + JSON.stringify(st)); assert.strictEqual(p.levels[st.topic], tl.levels.length);
+        for (let lv = L.startLevel(tl, g); lv <= tl.levels.length; lv++) assert(L.progOf(p, st.topic, lv).every(x => x >= 1)); }
+      else assert(!st.bridge);
+      p = L.finishStage(p, st.topic, st.level, st.stage, [true]).state; p.last = { t: st.topic, l: st.level };
+    }
+    for (const sub of L.SUBS) for (const id of L.topicsFor(p, sub)) { const tl = L.TOPICS.find(x => x.id === id); houses += tl.levels.length;
+      assert(L.bossDone(p, id, g), id); tl.levels.forEach((d, i) => assert(L.progOf(p, id, i + 1).every(x => x >= 1), id + ' ' + (i + 1))); }
+    assert.strictEqual(steps, houses * 3 + bosses, 'every stage exactly once, grade ' + g);
+    assert(L.challengeOpen(p, L.nextStep(p).sub));
+    for (const sub of L.SUBS) for (const id of L.challengeFor(p, sub)) p.prog[id] = L.TOPICS.find(x => x.id === id).levels.map(() => [1, 1, 1]);
+    assert.strictEqual(L.nextStep(p), null, 'the grade and its challenge are finished, grade ' + g);
+  }
+  // the unlock rules themselves did not move
+  s = L.newState(2);
+  assert(L.stageOpen(s, 'g2add', 1, 2) && L.stageOpen(s, 'g2add', 3, 0) && !L.stageOpen(s, 'g2add', 3, 1) && !L.stageOpen(s, 'g2add', 4, 0));
+  const before = JSON.stringify(s); L.nextStep(s); assert.strictEqual(JSON.stringify(s), before, 'pure');
+});
 console.log('all ' + n + ' passed (players)');

@@ -27,8 +27,9 @@ job('packs', /^PACKS OK/, () => run('node', ['tests/packs.test.js'], 300000).the
 // every screen again at dusk and at night: a sky layer once covered every button of the end screens, and the daytime run did not see it
 (quick ? ['360x640&sky=21'] : ['360x640&sky=18', '360x640&sky=21', '1366x650&sky=18', '1366x650&sky=21'])
   .forEach(sz => job('fit ' + sz, /^FIT OK/, () => edge(page + '/tests/fit.html#' + sz, 40000)));
-(quick ? ['auto&g=2&t=mix', 'auto&g=2&t=geo2clock&l=2&st=1', 'auto&g=2&t=mix&race=1']
-  : ['auto&g=1&t=mix', 'auto&g=2&t=mix', 'auto&g=3&t=mix', 'auto&g=4&t=mix', 'auto&g=2&t=mix&race=1', 'auto&g=3&t=g3mul&boss=3', 'auto&g=2&t=mix&boy=1',
+// tap=1: ONE tap on the big button of the home screen must put an exercise on the screen (a new player of that grade), then the stage is played
+(quick ? ['auto&g=2&t=mix', 'auto&g=2&t=geo2clock&l=2&st=1', 'auto&g=2&t=mix&race=1', 'auto&g=1&tap=1', 'auto&g=4&tap=1']
+  : ['auto&g=1&t=mix', 'auto&g=2&t=mix', 'auto&g=3&t=mix', 'auto&g=4&t=mix', 'auto&g=2&t=mix&race=1', 'auto&g=3&t=g3mul&boss=3', 'auto&g=2&t=mix&boy=1', 'auto&g=1&tap=1', 'auto&g=2&tap=1', 'auto&g=3&tap=1', 'auto&g=4&tap=1', 'auto&g=2&tap=1&home=mid', 'auto&g=3&tap=1&home=bridge',
     'auto&g=1&t=geo1poly&l=3&st=1', 'auto&g=1&t=heb1nik&l=4&st=2', 'auto&g=1&t=eng1listen&l=2&st=1', 'auto&g=2&t=geo2ruler&l=5&st=2', 'auto&g=2&t=heb2sent&l=1&st=1', 'auto&g=2&t=eng2talk&l=1&st=1',
     'auto&g=3&t=geo3area&l=4&st=2', 'auto&g=3&t=heb3read&l=2&st=1', 'auto&g=3&t=eng3read&l=3&st=1', 'auto&g=4&t=geo4box&l=3&st=2', 'auto&g=4&t=heb4root&l=4&st=1', 'auto&g=4&t=eng4talk&l=3&st=1',
     'auto&g=4&t=geo5area&l=5&st=2', 'auto&g=4&t=heb5verbs&l=4&st=1', 'auto&g=4&t=eng5gram&l=6&st=1'])

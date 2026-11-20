@@ -701,6 +701,35 @@ body.night .bird,body.night .fly{display:none}
 body.night .mote{background:rgba(255,244,150,.9);box-shadow:0 0 12px #ffe45c}
 @media (max-height:520px){.street{bottom:clamp(40px,13vh,80px);height:clamp(44px,16vh,80px)}}
 @media (prefers-reduced-motion:reduce){.bird,.critter,.puff{display:none}}
+/* ---------- home: the one big button of the next step, and the smaller choices under it ---------- */
+.btn.big.nextb{display:flex;align-items:center;gap:clamp(10px,2.4vmin,22px);padding:10px clamp(16px,3.4vmin,32px);border-radius:clamp(28px,6vmin,48px);max-width:min(94%,660px);min-width:min(94%,300px);text-align:start;flex:0 0 auto;position:relative;z-index:1;animation:pulse2 1.8s ease-in-out infinite}
+@keyframes pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}} /* a wide button: a small pulse, so that it never leaves a narrow screen */
+.nextb .npic{flex:0 0 auto;width:clamp(54px,11vmin,92px);height:clamp(54px,11vmin,92px);display:flex;align-items:center;justify-content:center;font-size:clamp(40px,8.5vmin,70px);line-height:1;background:rgba(255,255,255,.22);border-radius:22%}
+.nextb .npic img{width:88%;height:88%;object-fit:contain;display:block;min-width:0}
+.nextb .npic img.ico{width:78%;height:78%;vertical-align:0}
+.nextb .ntxt{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 auto}
+.nextb .ntxt b{font-size:clamp(27px,5.4vmin,46px);line-height:1.2;white-space:nowrap}
+.nextb .ntxt small{font-size:clamp(16px,2.6vmin,21px);font-weight:700;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nextb .nstage{display:flex;align-items:center;gap:9px;overflow:visible}.nextb .nstage span{flex:0 0 auto}
+.pips{display:inline-flex;gap:6px;align-items:center;flex:0 0 auto;padding:0 3px}
+.pips i{width:13px;height:13px;border-radius:50%;border:2px solid #fff;background:rgba(255,255,255,.25)}
+.pips i.on{background:#ffd66b}
+.pips i.now{background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.4)}
+.nextb .ngo{flex:0 0 auto;width:clamp(44px,8vmin,66px);height:clamp(44px,8vmin,66px);border-radius:50%;background:#fff;color:#ff4f9a;text-shadow:none;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,3.8vmin,32px);line-height:1;padding-inline-end:.12em}
+.hrow{position:relative;z-index:1;gap:10px 12px}
+.hrow .btn{min-height:56px;padding:8px 22px;font-size:clamp(17px,2.8vmin,24px);box-shadow:0 5px 0 rgba(0,0,0,.25),0 9px 14px rgba(0,0,0,.15)}
+.hrow .btn.b2{box-shadow:0 5px 0 #6337cf,0 9px 14px rgba(0,0,0,.15)}.hrow .btn.b3{box-shadow:0 5px 0 #cf8a00,0 9px 14px rgba(0,0,0,.15)}
+@media (max-width:640px),(max-height:520px){.hrow .btn{min-height:48px;padding:6px 14px;font-size:16px}.hrow{gap:10px 8px}}
+@media (max-height:520px){.btn.big.nextb{padding:5px 18px;min-height:60px}.nextb .npic{width:50px;height:50px;font-size:36px}.nextb .ntxt b{font-size:24px;line-height:1.1}.nextb .ntxt small{font-size:15px;line-height:1.2}}
+/* parents: one small button in the map of a topic opens the panel with the open houses */
+.parb{flex:0 0 auto;min-height:48px;padding:4px 18px;border-radius:999px;background:rgba(255,248,230,.92);color:#5b4a3a;font-size:clamp(13px,2vmin,16px);font-weight:700;box-shadow:0 3px 0 rgba(0,0,0,.25);margin-top:auto;align-self:flex-start;transition:transform .12s}
+.parb:active{transform:scale(.94)}
+.ovl .card.pcard2{max-width:460px;gap:14px}
+.pcard2 .ohead b.ptitle{display:block;color:#5b4a3a}
+.pcard2 .pctl{gap:16px;padding:6px 0}
+.pcard2 .pctl .step{width:58px;height:58px;border-radius:50%;font-size:30px;background:#efe8ff;flex:0 0 auto}
+.pcount{font-size:clamp(18px,3.2vmin,24px);text-align:center}
+.pnote{font-size:clamp(14px,2.2vmin,17px);line-height:1.5;text-align:center;color:#5b4a3a}
 /* ---- the companion during an exercise: it looks at the question, jumps once, and never disappears on a phone ---- */
 .buddy .troll.cheer .tb{animation:jump .55s ease-in-out 1}
 .buddy .troll.cheer .hair{animation-duration:3s}
@@ -2515,6 +2544,52 @@ var TrollLogic = (function () {
   function challengeOpen(state, sub) {
     return topicsFor(state, sub).some(function (id) { return bossDone(state, id, state.grade); }) || challengeFor(state, sub).some(function (id) { return topicStars(state, id) > 0; });
   }
+  // The one step the home screen offers: { sub, topic, level, stage } (a stage of a house; bridge: true when it is an earlier
+  // house that the bridge mission still waits for), { sub, topic, boss } (a bridge mission), { sub, challenge: true } (the
+  // challenge map) or null (the grade and its challenge are finished). Always forward: the house played last while it has a
+  // stage without a star; then, tile by tile from the tile played last: its newest open house (state.levels); when the houses
+  // from there to the end are finished, the earliest house the bridge still waits for; then the bridge; only then the next tile.
+  // Nothing closed is offered, and only tiles of the player's own grade. state.last = { t, l } is the house whose stage was
+  // started last; it is optional, and without it the step is worked out from the stars alone.
+  function nextStep(state) {
+    var last = state.last && BY_ID[state.last.t] ? state.last : null, grade = state.grade;
+    var lsub = last ? BY_ID[last.t].sub || 'math' : 'math';
+    if (!topicsFor(state, lsub).length) lsub = 'math';
+    function full(id, lv) { return progOf(state, id, lv).every(function (x) { return x >= 1; }); }
+    function stageIn(id, lv) { // the first stage of a house that has no star yet, when it is open
+      var pr = progOf(state, id, lv);
+      for (var k = 0; k < 3; k++) if (!(pr[k] >= 1)) return stageOpen(state, id, lv, k) ? { sub: BY_ID[id].sub || 'math', topic: id, level: lv, stage: k } : null;
+      return null;
+    }
+    function tile(id) {
+      var sp = span(id, grade), cur = state.levels[id] || 1, lv, r;
+      if (!sp) return null;
+      cur = Math.max(sp.lo, Math.min(sp.hi, cur));
+      r = stageIn(id, cur); if (r) return r;                                              // the newest open house
+      for (lv = sp.lo; lv < cur; lv++) if (!full(id, lv)) { r = stageIn(id, lv); if (r) { r.bridge = true; return r; } } // what the bridge waits for
+      if (bossReady(state, id, grade)) return { sub: BY_ID[id].sub || 'math', topic: id, boss: grade };
+      // a house after the newest one is still closed (a parent closed it): the challenge of the newest open house opens it
+      if (cur < sp.hi && stageOpen(state, id, cur, 2)) return { sub: BY_ID[id].sub || 'math', topic: id, level: cur, stage: 2 };
+      return null;
+    }
+    function inSubject(sub, after) {
+      var ids = topicsFor(state, sub), i, r, from = Math.max(0, ids.indexOf(after));
+      for (i = 0; i < ids.length; i++) { r = tile(ids[(from + i) % ids.length]); if (r) return r; }
+      return null;
+    }
+    var mine = last && BY_ID[last.t].g === grade && topicsFor(state, lsub).indexOf(last.t) >= 0, go;
+    if (mine) {
+      var sp0 = span(last.t, grade), l0 = Math.floor(Number(last.l));
+      if (sp0 && l0 >= sp0.lo && l0 <= sp0.hi) { go = stageIn(last.t, l0); if (go) { if (l0 < (state.levels[last.t] || 1) && full(last.t, state.levels[last.t] || 1)) go.bridge = true; return go; } }
+    }
+    var subs = [lsub].concat(SUBS.filter(function (x) { return x !== lsub; })), n, r;
+    for (n = 0; n < subs.length; n++) { r = inSubject(subs[n], mine && n === 0 ? last.t : null); if (r) return r; }
+    for (n = 0; n < subs.length; n++) {
+      var ch = challengeFor(state, subs[n]);
+      if (topicsFor(state, subs[n]).length && challengeOpen(state, subs[n]) && ch.some(function (id) { return BY_ID[id].levels.some(function (d, i) { return !full(id, i + 1); }); })) return { sub: subs[n], challenge: true };
+    }
+    return null;
+  }
   // A save from before version 4 is keyed by the source lists; this re-keys it by tiles without losing a star.
   function toTiles(o) {
     var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; };
@@ -2584,6 +2659,8 @@ var TrollLogic = (function () {
       if (it[t.id] === true) s.intro[t.id] = true;
     });
     fitGrade(s);
+    var la = obj(o.last); // optional: the house whose stage was started last (see nextStep)
+    if (typeof la.t === 'string' && BY_ID[la.t]) s.last = { t: la.t, l: int(la.l, 1, BY_ID[la.t].levels.length, 1) };
     s.streak = int(o.streak, 0, 100000, 0);
     s.stars = int(o.stars, 0, 1e9, 0);
     s.rounds = int(o.rounds, 0, 1e9, 0);
@@ -2664,7 +2741,7 @@ var TrollLogic = (function () {
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
-    explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
+    explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
     TOPICS: TOPICS, maxLevel: maxLevel, clampLevel: clampLevel, fmt: fmt,
@@ -3229,7 +3306,7 @@ var TrollModels = (function () {
   // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
   // the same on every device; if a picture is missing the emoji itself stays as the fallback ----------
   var ICO = {};
-  '1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
+  '1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f5fa 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 2699 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
   var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
   function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
   function swapEmoji(node) {
@@ -3520,7 +3597,10 @@ var TrollModels = (function () {
       el.appendChild(title);
       if (VILLAGE) el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
       var row = h('div', { class: 'row' });
-      row.appendChild(btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', function () { subjects(); }));
+      var nx = L.nextStep(state), nb = nextBtn(nx);
+      el.appendChild(nb || btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', function () { subjects(); }));
+      if (nb) row.appendChild(btn('🗺️ כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); }));
+      row.classList.add('hrow');
       if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מַתָּנָה יוֹמִית', 'b3 wig', gift));
       if (state.owned.length) row.appendChild(btn('👗 הַלְבָּשָׁה וַחֲנוּת', 'b2', function () { dress(); }));
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
@@ -3554,6 +3634,34 @@ var TrollModels = (function () {
       el.appendChild(village);
       el.appendChild(street());
     });
+  }
+  // The one big button of the home screen: the next step of this player, started by one tap (the same call as a tap on
+  // the stage in the map of the topic). An icon, two short lines and three pips: done, now, to do.
+  function goStep(nx) {
+    curSub = nx.sub;
+    if (nx.challenge) topics(true);
+    else startRound(nx.topic, nx.boss ? { boss: nx.boss } : { level: nx.level, stage: nx.stage });
+  }
+  function nextBtn(nx) {
+    if (!nx) return null;
+    var t = nx.challenge ? null : topicOf(nx.topic), fresh = !state.rounds && !state.stars && !state.last;
+    var pic = h('span', { class: 'npic' }), txt = h('span', { class: 'ntxt' });
+    if (nx.challenge) {
+      pic.appendChild(h('img', { src: 'assets/' + GATE.bld + '.png', alt: '', draggable: 'false' }));
+      txt.appendChild(h('b', { text: GATE.world })); txt.appendChild(h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }));
+    } else if (nx.boss) {
+      pic.textContent = '🌉';
+      txt.appendChild(h('b', { text: 'מְשִׂימַת הַגֶּשֶׁר' })); txt.appendChild(h('small', { text: t.icon + ' ' + t.world }));
+    } else {
+      var pr = L.progOf(state, nx.topic, nx.level), pips = h('span', { class: 'pips', 'aria-hidden': 'true' });
+      if (t.bld) pic.appendChild(h('img', { src: 'assets/' + t.bld + '.png', alt: '', draggable: 'false' })); else pic.textContent = t.icon || STAGES[nx.stage][0];
+      [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: k === nx.stage ? 'now' : pr[k] >= 1 ? 'on' : '' })); });
+      txt.appendChild(h('b', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }));
+      txt.appendChild(h('small', { class: 'nname', text: t.levels[nx.level - 1].name }));
+      txt.appendChild(h('small', { class: 'nstage' }, nx.bridge ? null : pips, h('span', { text: nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר' : 'שָׁלָב ' + (nx.stage + 1) + ' מִתּוֹךְ 3' })));
+    }
+    return h('button', { class: 'btn big nextb', 'data-next': nx.challenge ? 'challenge' : nx.topic + (nx.boss ? '-boss' : '-' + nx.level + '-' + nx.stage), on: { click: function () { sfx.pop(); goStep(nx); } } },
+      pic, txt, h('span', { class: 'ngo', 'aria-hidden': 'true', text: '◀' }));
   }
   // The street behind the trolls: houses with smoke from the chimneys, trees that sway, small animals that pass by.
   // It moves a little against the hills when the pointer or the device moves, which gives the village depth.
@@ -3702,15 +3810,28 @@ var TrollModels = (function () {
         if (!d.enr && d.g <= 4 && (!next || next.g !== d.g || next.enr)) bossCard(d.g); // the bridge mission closes each grade
       });
       el.appendChild(msg); el.appendChild(grid);
-      function step(sym, d, label) {
-        return h('button', { class: 'step', text: sym, 'aria-label': label, on: { click: function () {
-          var nl = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] + d));
-          if (nl === state.levels[t.id]) return;
-          state.levels[t.id] = nl; save(); sfx.tap(); region(t.id);
-        } } });
-      }
-      el.appendChild(h('div', { class: 'note pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), h('span', { text: 'לַהוֹרִים: בָּתִּים פְּתוּחִים ' + (state.levels[t.id] - sp.lo + 1) + '/' + win.length }), step('−', -1, 'לִסְגֹּר בַּיִת')));
+      el.appendChild(h('button', { class: 'parb', text: '⚙️ הוֹרִים', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, win.length); } } }));
     });
+  }
+  // For parents: how many houses of the topic are open. Behind a small button, so that it is not among the child's stages.
+  function openParents(t, sp, n) {
+    closeExplain();
+    var from = state.levels[t.id], count = h('b', { class: 'pcount' });
+    function draw() { count.textContent = 'בָּתִּים פְּתוּחִים ' + (state.levels[t.id] - sp.lo + 1) + '/' + n; }
+    function close() { closeExplain(); if (state.levels[t.id] !== from) region(t.id); }
+    function step(sym, d, label) {
+      return h('button', { class: 'step', text: sym, 'aria-label': label, on: { click: function () {
+        var nl = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] + d));
+        if (nl === state.levels[t.id]) return;
+        state.levels[t.id] = nl; save(); sfx.tap(); draw();
+      } } });
+    }
+    draw();
+    ovl = h('div', { class: 'ovl', on: { click: function (e) { if (e.target === ovl) close(); } } }, h('div', { class: 'card pcard2' },
+      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: '⚙️ לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } })),
+      h('div', { class: 'pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('−', -1, 'לִסְגֹּר בַּיִת')),
+      h('div', { class: 'pnote', text: 'בַּיִת נִפְתָּח מֵעַצְמוֹ אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו. כָּאן אֶפְשָׁר לִפְתֹּחַ אוֹ לִסְגֹּר בָּתִּים בְּיָד; הַכּוֹכָבִים נִשְׁמָרִים.' })));
+    document.body.appendChild(ovl);
   }
 
   function gift() {
@@ -3875,6 +3996,7 @@ var TrollModels = (function () {
     }
     var backTo = topicId === 'mix' ? function () { topics(); } : function () { region(topicId); };
     round.qs.forEach(function (q) { state.recent[q.topic] = state.recent[q.topic].concat([q.key]).slice(-10); });
+    if (cfg.stage != null && !cfg.boss && !cfg.race) state.last = { t: topicId, l: cfg.level }; // optional field: where the home button continues
     save();
     var buddy = buddySpec(), combo = 0;
     tv.round = round; tv.done = false;
@@ -4186,8 +4308,11 @@ var TrollModels = (function () {
       extra.appendChild(h('div', { class: 'banner chest ' + rw.tier, style: 'animation-delay:1.4s', text: CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙' }));
       if (r.opened) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:1.7s', text: '🏠 נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name }));
       if (bossG) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:2s', text: '🌉 מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!' }));
+      var nx = t.g === state.grade ? L.nextStep(state) : null; // the same step the home button offers; a tile of the challenge map keeps its own order
       function buttons() {
-        if (bossG) btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', '', function () { startRound(topicId, { boss: bossG }); }));
+        if (nx) btns.appendChild(btn(nx.challenge ? '🚀 ' + GATE.world : nx.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).icon + ' ' + topicOf(nx.topic).world : nx.topic === topicId && nx.level === cfg.level ? 'הַשָּׁלָב הַבָּא ◀' : nx.topic === topicId && nx.level === r.opened ? 'לַבַּיִת הַבָּא ◀' : nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀', 'nxt', function () { goStep(nx); }));
+        else if (t.g === state.grade) { /* nothing left in the grade and no challenge map */ }
+        else if (bossG) btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', '', function () { startRound(topicId, { boss: bossG }); }));
         else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', '', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
         else if (r.opened) btns.appendChild(btn('לַבַּיִת הַבָּא ◀', '', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
         if (r.stars < 3) btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', 'b3', function () { startRound(topicId, cfg); }));
@@ -5053,6 +5178,16 @@ var TrollModels = (function () {
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
+  var hhome = sandbox ? (/[#&]home=(\w+)/.exec(hash) || [])[1] : ''; // debug: states of the big home button (new, mid, next, bridge, done)
+  if (hhome) {
+    var hfull = function (id) { var tl = topicOf(id); state.levels[id] = tl.levels.length; state.prog[id] = tl.levels.map(function () { return [3, 3, 3]; }); }, hT = L.topicsFor(state)[0];
+    if (hhome === 'new') state = L.newState(state.grade);
+    else if (hhome === 'mid') { state.prog[hT] = [[3, 3, 3], [2, 0, 0]]; state.last = { t: hT, l: 2 }; state.rounds = 4; }
+    else if (hhome === 'bridge') { hfull(hT); state.rounds = 12; }
+    else if (hhome === 'catch') { hfull(hT); state.prog[hT][0] = [0, 0, 0]; state.prog[hT][1] = [2, 0, 0]; state.last = { t: hT, l: state.levels[hT] }; state.rounds = 8; } // the end of the tile is done, the first houses are not
+    else if (hhome === 'next') { var hc = state.levels[hT]; state = L.finishStage(state, hT, hc, 0, [true]).state; state = L.finishStage(state, hT, hc, 1, [true]).state; state = L.finishStage(state, hT, hc, 2, [true]).state; state.last = { t: hT, l: hc }; state.rounds = 3; } // a house has just been finished
+    else if (hhome === 'done') L.SUBS.forEach(function (x) { L.topicsFor(state, x).forEach(function (id) { hfull(id); state.boss[id][state.grade] = true; }); });
+  }
   state = L.updateStreak(state, L.todayStr()); save(true);
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
@@ -5069,10 +5204,17 @@ var TrollModels = (function () {
   if (hl && state.levels[ht]) state.levels[ht] = L.clampLevel(ht, +hl);
   if (/auto/.test(hash)) { // self-test: plays one round through the real click handlers
     window.onerror = function (m) { document.title = 'ERR ' + m; };
+    if (/tap=1/.test(hash)) { // one tap on the big button of the home screen must put an exercise on the screen
+      home();
+      var nb1 = cur.querySelector('.nextb'), want1 = nb1 && nb1.getAttribute('data-next');
+      if (nb1) { nb1.click(); tv.taps = 1; }
+      if (!tv.round || !tv.round.current() || !cur.querySelector('.qrow') || !cur.querySelector('.answers')) { document.title = 'ERR one tap from home did not reach an exercise'; throw new Error('one tap'); }
+      ht = tv.round.topic; tv.next = want1;
+    } else
     startRound(ht, ht === 'mix' ? null : /boss=/.test(hash) ? { boss: +(/boss=(\d)/.exec(hash)[1]) } : { level: state.levels[ht], stage: +((/st=(\d)/.exec(hash) || [])[1] || 0) });
     var flubbed = {};
     setInterval(function () {
-      if (tv.done) { document.title = 'DONE ' + JSON.stringify({ t: ht, stars: state.stars, coins: state.coins, tier: tv.tier, sstars: tv.sstars, opened: tv.opened, egg: tv.egg, hero: tv.hero, owned: state.owned.length, items: state.items.length, rounds: state.rounds, level: state.levels[ht], hint: !!tv.hint, steps: tv.steps, fmts: Object.keys(tv.fmts || {}).join(','), ups: tv.ups }); return; }
+      if (tv.done) { document.title = 'DONE ' + JSON.stringify({ t: ht, stars: state.stars, coins: state.coins, tier: tv.tier, sstars: tv.sstars, opened: tv.opened, egg: tv.egg, hero: tv.hero, owned: state.owned.length, items: state.items.length, rounds: state.rounds, level: state.levels[ht], hint: !!tv.hint, steps: tv.steps, fmts: Object.keys(tv.fmts || {}).join(','), ups: tv.ups, taps: tv.taps, next: tv.next }); return; }
       var nx = document.querySelector('.ovl .next');
       if (nx) { tv.steps = (tv.steps || 0) + 1; nx.click(); return; }
       var egg = cur.querySelector('.egg');
@@ -5099,7 +5241,7 @@ var TrollModels = (function () {
   else if (scr === 'gift') gift();
   else if (scr === 'subjects') subjects();
   else if (scr === 'cloud') cloud();
-  else if (scr === 'region') region(ht);
+  else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); }
   else if (scr === 'bossend') endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g);
   else if (scr === 'end') {
     var lv0 = state.levels[ht], r0 = L.createRound(ht, state.levels, Math.random, 7);
