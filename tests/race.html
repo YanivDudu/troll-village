@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- End-to-end check of the race against the real Realtime Database. Needs http (python -m http.server 8765 in the project root),
+     then open http://localhost:8765/tests/race.html . Two players in two frames, each with its own storage corner (#ns=).
+     The finish line is 20 points here (#goal=20, honoured on localhost only). Expects title "RACE OK". -->
+<iframe id="fa" width="420" height="700"></iframe><iframe id="fb" width="420" height="700"></iframe><pre id="log"></pre>
+<script>
+var U = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
+var log = document.getElementById('log'), F = { A: document.getElementById('fa'), B: document.getElementById('fb') };
+var tag = String(Date.now()).slice(-5), NAME = { A: 'TA' + tag, B: 'TB' + tag };
+function say(t) { log.textContent += t + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function until(fn, what, max) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > (max || 150)) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
+function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
+function doc(x) { return F[x].contentDocument; }
+function q(x, sel) { return doc(x).querySelector('.screen:not(.out) ' + sel); }
+function all(x, sel) { return [].slice.call(doc(x).querySelectorAll(sel)); }
+function open(x) { return new Promise(function (r) { F[x].onload = function () { r(); }; F[x].src = 'about:blank'; setTimeout(function () { F[x].src = '../index.html?' + Date.now() + '#ns=' + x + tag + '&goal=20'; }, 50); }); }
+function close(x) { F[x].src = 'about:blank'; return wait(300); }
+function clean() { for (var i = localStorage.length - 1; i >= 0; i--) { var k = localStorage.key(i); if (/^[AB]\d{5}:/.test(k)) localStorage.removeItem(k); } }
+async function enter(x, grade) { // a new player the first time, the same player after a reload
+  await open(x);
+  await until(function () { return q(x, '.pnew .pname') || q(x, '.chip.who'); }, 'start ' + x);
+  if (q(x, '.pnew .pname')) { q(x, '.pnew .pname').value = NAME[x]; q(x, '.pnew .gbtn[data-g="' + grade + '"]').click(); q(x, '.pnew .btn').click(); }
+  await until(function () { return q(x, '.raceb'); }, 'home with a race button ' + x);
+}
+function row(x, name) { return all(x, '.screen:not(.out) .prow').filter(function (b) { return b.querySelector('b').textContent === name; })[0]; }
+async function invite(x, name) {
+  if (!q(x, '.plist')) q(x, '.raceb').click();
+  var r = await until(function () { var b = row(x, name); return b && !b.classList.contains('off') && b; }, x + ' sees ' + name + ' in the pool', 300);
+  r.click(); q(x, '.pgo').click();
+}
+async function toRound(x) { // first building, first house, discovery stage
+  if (!q(x, '.bld[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.btn.big'); }, 'home ' + x)).click(); }
+  (await until(function () { return q(x, '.bld[data-t]'); }, 'map ' + x)).click();
+  (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'region ' + x)).click();
+  await until(function () { return F[x].contentWindow.__tv.round; }, 'round ' + x);
+}
+async function solve(x) { // one correct answer, the way the self-play test gives it
+  var tv = F[x].contentWindow.__tv, r = tv.round, cur = r.current(), i0 = r.i;
+  await wait(300);
+  var b = all(x, '.screen:not(.out) [data-v]').filter(function (e) { return e.getAttribute('data-v') === String(cur.answer); })[0];
+  if (b) { b.click(); b.click(); } else if (tv.solve) tv.solve();
+  await wait(1700);
+}
+function pts(x, name) { var r = all(x, '#track .run').filter(function (e) { return e.querySelector('b').textContent === name; })[0]; return r ? +r.getAttribute('data-pts') : -1; }
+function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: JSON.stringify(v) }); }
+
+(async function () {
+  try {
+    clean();
+    await enter('A', 2); await enter('B', 4);
+
+    // 2: the guest says no
+    await invite('A', NAME.B);
+    var bar = await until(function () { return doc('B').getElementById('invite'); }, 'B got the invitation bar');
+    check(bar.querySelector('.it').textContent.indexOf(NAME.A) >= 0, 'the bar names the inviter');
+    check(doc('B').body.classList.contains('invited') && !doc('B').getElementById('launch'), 'the bar does not replace the screen of B');
+    bar.querySelector('.n').click();
+    await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined');
+    check(row('A', NAME.B).classList.contains('off'), 'after a refusal the same child cannot be invited again right away');
+    check(!doc('A').getElementById('track') && !doc('A').getElementById('launch'), 'no race started');
+    document.title = 'RACE2 OK';
+
+    // 3: the guest does not answer
+    await enter('A', 2);
+    await invite('A', NAME.B);
+    await until(function () { return doc('B').getElementById('invite'); }, 'B got the second invitation');
+    await until(function () { return !doc('B').getElementById('invite'); }, 'the bar leaves by itself after five seconds', 80);
+    await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined (no answer)');
+    document.title = 'RACE3 OK';
+
+    // 1: a whole race. B is in the middle of a round when the invitation comes
+    await enter('A', 2);
+    await toRound('B');
+    var roundB = F.B.contentWindow.__tv.round, qB = roundB.current();
+    await invite('A', NAME.B);
+    (await until(function () { return doc('B').getElementById('invite'); }, 'B got the invitation in a round')).querySelector('.y').click();
+    await until(function () { return doc('A').getElementById('launch') && doc('B').getElementById('launch'); }, 'both screens show the launch');
+    check(F.B.contentWindow.__tv.round === roundB && roundB.current() === qB, 'the round of B was not reset by the race');
+    await until(function () { return doc('A').getElementById('track') && doc('B').getElementById('track') && !doc('A').getElementById('launch'); }, 'both screens show the track');
+    check(all('A', '#track .run').length === 2 && all('B', '#track .run').length === 2, 'two runners on each track');
+    await until(function () { return q('A', '.bld[data-t]'); }, 'the host was taken from the pool to the map');
+    await toRound('A');
+    await solve('A');
+    var mine = pts('A', NAME.A);
+    check(mine > 0, 'a correct answer moved the runner of A (' + mine + ' points)');
+    await until(function () { return pts('B', NAME.A) === mine; }, 'B sees the runner of A move', 40);
+    for (var k = 0; k < 4 && !doc('A').getElementById('podium'); k++) await solve('A');
+    await until(function () { return doc('A').getElementById('podium') && doc('B').getElementById('podium'); }, 'both screens show the results');
+    ['A', 'B'].forEach(function (x) {
+      var cards = all(x, '#podium .rp');
+      check(cards.length === 2 && cards[0].classList.contains('win') && cards[0].querySelector('b').textContent === NAME.A, 'results on ' + x + ': A first, then B');
+    });
+    check(/30/.test(doc('A').querySelector('#podium .banner').textContent) && /10/.test(doc('B').querySelector('#podium .banner').textContent), 'winner got 30 coins, the other 10');
+    all('B', '#podium .btn')[1].click();
+    check(!doc('B').getElementById('podium') && !doc('B').getElementById('track') && F.B.contentWindow.__tv.round === roundB, 'after closing the results B is back in the same round');
+    document.title = 'RACE1 OK';
+
+    // 4: the host disappears during the race, the guest still finishes
+    await enter('A', 2);
+    await invite('A', NAME.B);
+    (await until(function () { return doc('B').getElementById('invite'); }, 'B got the fourth invitation', 300)).querySelector('.y').click();
+    await until(function () { return doc('B').getElementById('track') && !doc('B').getElementById('launch'); }, 'race four is running');
+    await close('A');
+    for (k = 0; k < 5 && !doc('B').getElementById('podium'); k++) { if (!F.B.contentWindow.__tv.round || F.B.contentWindow.__tv.round.done()) await toRound('B'); await solve('B'); }
+    await until(function () { return doc('B').getElementById('podium'); }, 'B gets the results without the host');
+    check(doc('B').querySelector('#podium .rp.win b').textContent === NAME.B, 'B won the race the host left');
+    document.title = 'RACE4 OK';
+
+    // 6: both children tap "race again" on the results at the same moment
+    await enter('A', 2);
+    await invite('A', NAME.B);
+    (await until(function () { return doc('B').getElementById('invite'); }, 'B got the sixth invitation', 300)).querySelector('.y').click();
+    await until(function () { return doc('A').getElementById('track') && !doc('A').getElementById('launch') && q('A', '.bld[data-t]'); }, 'race six is running');
+    await toRound('A');
+    for (k = 0; k < 5 && !doc('A').getElementById('podium'); k++) await solve('A');
+    await until(function () { return doc('A').getElementById('podium') && doc('B').getElementById('podium'); }, 'both on the results of race six');
+    await wait(1500); // both are listed as free again
+    all('A', '#podium .btn')[0].click(); all('B', '#podium .btn')[0].click();
+    await until(function () { return doc('A').getElementById('track') && doc('B').getElementById('track') && !doc('A').getElementById('launch') && !doc('B').getElementById('launch'); }, 'the rematch started on both screens although both asked for it', 300);
+    check(!doc('A').getElementById('podium') && !doc('B').getElementById('podium'), 'the old results do not cover the new race');
+    check(all('A', '#track .run').length === 2 && all('B', '#track .run').length === 2, 'two runners in the rematch');
+    // a guest who is still looking at the old results accepts a new race
+    await enter('A', 2); await enter('B', 4);
+    document.title = 'RACE6 OK';
+
+    // 5: hostile records in the open database
+    var r1 = await put('online/p999000001', { n: new Array(41).join('x'), b: 1, d: '', g: 2, t: { '.sv': 'timestamp' } });
+    check(!r1.ok, 'a 40 letter name is refused by the database');
+    var r2 = await put('online/p999000002', { n: '<b>x</b>', b: 1, d: '{"hat":"<img>","body":"red"}', g: 2, t: { '.sv': 'timestamp' } });
+    check(r2.ok, 'a short name with html in it is stored');
+    await enter('A', 2); q('A', '.raceb').click();
+    var bad = await until(function () { return row('A', '<b>x</b>'); }, 'the odd record is listed as plain text');
+    check(bad.querySelector('b').children.length === 0 && !bad.querySelector('img'), 'nothing from the record became html');
+    await fetch(U + 'online/p999000002.json', { method: 'DELETE' });
+    document.title = 'RACE OK';
+  } catch (e) { say(String(e)); document.title = 'RACE FAIL (' + document.title + ') ' + e.message; }
+  await close('A'); await close('B'); clean();
+  fetch('/__report', { method: 'POST', body: document.title + String.fromCharCode(10) + log.textContent }).catch(function () {});
+})();
+</script>

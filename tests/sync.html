@@ -69,5 +69,6 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     document.title = 'SYNC OK ' + code;
   } catch (e) { say(String(e)); document.title = 'SYNC FAIL ' + e.message; }
   restore(keep);
+  fetch('/__report', { method: 'POST', body: document.title + String.fromCharCode(10) + log.textContent }).catch(function () {}); // for node tests/run-page.js
 })();
 </script>

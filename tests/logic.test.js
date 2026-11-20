@@ -483,4 +483,51 @@ t('cloud: newer progress wins per player, deleted players stay deleted, ids neve
   assert.strictEqual(P.cur, 'p987654321');
   assert.strictEqual(L.addProfile(P, 'z', 'p987654321').cur, 'p987654322');
 });
+t('race: points follow the own frontier of the child, ranking and finish', () => {
+  const R = L.RACE;
+  assert.strictEqual(R.GOAL, 300); assert.strictEqual(R.MAX_MS, 600000); assert.strictEqual(R.INVITE_MS, 5000); assert.strictEqual(R.MAXP, 4);
+  const s2 = L.newState(2), s4 = L.newState(4), ft = { firstTry: true };
+  s2.levels.g2add = 3;
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3 }, { firstTry: false }), 0);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3 }, ft), 20);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 2 }, ft), 15);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 1 }, ft), 10);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g3add', level: 1 }, ft), 20); // challenge map
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 1 }, { firstTry: true, boss: true }), 20);
+  // a brand new player of any grade earns the full value on the first open house
+  [1, 2, 3, 4].forEach(g => { const s = L.newState(g), t = L.topicsFor(s)[0]; assert.strictEqual(L.racePoints(s, { topic: t, level: s.levels[t] }, ft), 20, 'grade ' + g); });
+  assert.strictEqual(L.racePoints(s4, { topic: L.topicsFor(s4)[0], level: s4.levels[L.topicsFor(s4)[0]] }, ft), L.racePoints(s2, { topic: 'g2add', level: 3 }, ft));
+  // a yes / no question can be guessed, and the discovery stage shows the hint: half each
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3, fmt: 'tf' }, ft), 10);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 2, fmt: 'tf' }, ft), 8);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 1, fmt: 'tf' }, ft), 5);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3 }, { firstTry: true, stage: 0 }), 10);
+  assert.strictEqual(L.racePoints(s2, { topic: 'g2add', level: 3, fmt: 'tf' }, { firstTry: true, stage: 0 }), 5);
+  assert.strictEqual(L.racePoints(s2, { topic: 'nope', level: 1 }, ft), 10); // unknown house: the lowest value, never a crash
+  const j = x => JSON.parse(JSON.stringify(x));
+  let r = j(L.raceRank({ p1: { n: 'a', pts: 120 }, p2: { n: 'b', pts: 300, fin: 9 }, p3: { n: 'c', pts: 300, fin: 5 }, p4: { n: 'd', pts: 120, out: true } }));
+  assert.deepStrictEqual(r.map(x => x.id), ['p3', 'p2', 'p1', 'p4']);
+  assert.deepStrictEqual(r.map(x => x.place), [1, 2, 3, 3]);
+  assert.strictEqual(r[3].out, true);
+  r = j(L.raceRank({ p1: { n: 'a', pts: 200 }, p2: { n: 'b', pts: 200 }, p3: { n: 'c', pts: 10 } }));
+  assert.deepStrictEqual(r.map(x => x.place), [1, 1, 3]);
+  r = j(L.raceRank({ p1: { n: 'a', pts: 300 }, p2: { n: 'b', pts: 300, fin: 7 } })); // a missing finish time ranks last among equals
+  assert.deepStrictEqual(r.map(x => x.id), ['p2', 'p1']);
+  r = j(L.raceRank({ p1: { n: 'a', pts: 5 }, bad: null, p2: { pts: 9 }, p3: { n: 'x'.repeat(40), pts: 'many' }, p4: { n: '<b>z</b>', pts: 9999, g: 77, b: 'x', d: 5 } }));
+  assert.deepStrictEqual(r.map(x => x.id), ['p4', 'p1']);
+  assert.strictEqual(r[0].pts, 400); assert.strictEqual(r[0].n, '<b>z</b>'); assert.strictEqual(r[0].g, 4); assert.strictEqual(r[0].b, 0); assert.strictEqual(r[0].d, '');
+  assert.deepStrictEqual(j(L.raceRank(null)), []);
+  // the first across the line wins, even when a slower player collects more points before the race stops
+  r = j(L.raceRank({ p1: { n: 'a', pts: 300, fin: 5 }, p2: { n: 'b', pts: 315, fin: 8 }, p3: { n: 'c', pts: 320 }, p4: { n: 'd', pts: 320 } }));
+  assert.deepStrictEqual(r.map(x => x.id), ['p1', 'p2', 'p3', 'p4']);
+  assert.deepStrictEqual(r.map(x => x.place), [1, 2, 3, 3]);
+  r = j(L.raceRank({ p1: { n: 'a', pts: 300, fin: 5 }, p2: { n: 'b', pts: 320, fin: 5 } }));
+  assert.deepStrictEqual(r.map(x => x.place), [1, 1]);
+  assert.strictEqual(L.raceDone({ a: { n: 'a', pts: 299 } }, 599999), false);
+  assert.strictEqual(L.raceDone({ a: { n: 'a', pts: 300 } }, 10), true);
+  assert.strictEqual(L.raceDone({ a: { n: 'a', pts: 0 } }, 600000), true);
+  assert.strictEqual(L.raceDone(null, 0), false);
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, lastRace: 'r123456789' }).lastRace, 'r123456789');
+  assert.strictEqual(L.loadState({ v: 4, grade: 2, lastRace: { x: 1 } }).lastRace, '');
+});
 console.log('all ' + n + ' passed (cloud)');

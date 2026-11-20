@@ -1,0 +1,120 @@
+{
+ "rules": {
+  "online": {
+   ".read": true,
+   ".indexOn": [
+    "t"
+   ],
+   "$id": {
+    ".write": "$id.matches(/^[pr][0-9]{6,12}$/)",
+    ".validate": "newData.hasChildren([\"n\",\"b\",\"g\",\"t\"])",
+    "n": {
+     ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+    },
+    "b": {
+     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+    },
+    "d": {
+     ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 200"
+    },
+    "g": {
+     ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 4"
+    },
+    "t": {
+     ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+    },
+    "r": {
+     ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 13"
+    },
+    "$other": {
+     ".validate": false
+    }
+   }
+  },
+  "invites": {
+   "$id": {
+    ".read": true,
+    ".write": "$id.matches(/^[pr][0-9]{6,12}$/)",
+    ".validate": "newData.hasChildren([\"race\",\"from\",\"n\",\"t\"])",
+    "race": {
+     ".validate": "newData.isString() && newData.val().matches(/^r[0-9]{9}$/)"
+    },
+    "from": {
+     ".validate": "newData.isString() && newData.val().matches(/^[pr][0-9]{6,12}$/)"
+    },
+    "n": {
+     ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+    },
+    "b": {
+     ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+    },
+    "d": {
+     ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 200"
+    },
+    "t": {
+     ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+    },
+    "$other": {
+     ".validate": false
+    }
+   }
+  },
+  "races": {
+   ".read": true,
+   ".indexOn": [
+    "t"
+   ],
+   "$id": {
+    ".write": "$id.matches(/^r[0-9]{9}$/)",
+    ".validate": "newData.hasChildren([\"host\",\"st\",\"t\",\"p\"])",
+    "host": {
+     ".validate": "newData.isString() && newData.val().matches(/^[pr][0-9]{6,12}$/)"
+    },
+    "st": {
+     ".validate": "newData.isString() && newData.val().matches(/^(wait|run|end)$/)"
+    },
+    "t": {
+     ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+    },
+    "p": {
+     "$pid": {
+      ".validate": "$pid.matches(/^[pr][0-9]{6,12}$/) && newData.hasChildren([\"n\",\"ans\",\"pts\"])",
+      "n": {
+       ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14"
+      },
+      "b": {
+       ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+      },
+      "d": {
+       ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 200"
+      },
+      "g": {
+       ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 4"
+      },
+      "ans": {
+       ".validate": "newData.isString() && newData.val().matches(/^[?yn]$/)"
+      },
+      "pts": {
+       ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 400"
+      },
+      "t": {
+       ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+      },
+      "fin": {
+       ".validate": "newData.isNumber() && newData.val() <= now + 60000"
+      },
+      "out": {
+       ".validate": "newData.isBoolean()"
+      },
+      "$other": {
+       ".validate": false
+      }
+     }
+    },
+    "$other": {
+     ".validate": false
+    }
+   }
+  }
+ }
+}

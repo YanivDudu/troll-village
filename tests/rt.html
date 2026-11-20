@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>RT RUN</title><body><script>
+// Realtime Database smoke test: a browser can write, is refused bad data, and gets live events.
+var U = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/', P = 'races/r000000001';
+function fail(m) { document.title = 'RT FAIL ' + m; }
+function put(path, v, method) { return fetch(U + path + '.json', { method: method || 'PUT', body: JSON.stringify(v) }); }
+var ts = { '.sv': 'timestamp' }, got = [], es = new EventSource(U + P + '.json');
+es.addEventListener('put', function (e) { got.push(JSON.parse(e.data)); step(); });
+es.addEventListener('patch', function (e) { got.push(JSON.parse(e.data)); step(); });
+es.onerror = function () { if (!got.length) fail('stream'); };
+var phase = 0;
+function step() {
+  var last = got[got.length - 1];
+  if (phase === 0) { phase = 1;
+    put(P, { host: 'p100000001', st: 'wait', t: ts, p: { p100000001: { n: 'בדיקה', b: 1, d: '', g: 2, ans: 'y', pts: 0, t: ts } } }).then(function (r) { if (!r.ok) fail('put ' + r.status); });
+  } else if (phase === 1 && last.data && last.data.host === 'p100000001' && last.data.t > 1e12) { phase = 2;
+    put(P + '/p/p100000001', { pts: 9999 }, 'PATCH').then(function (r) {
+      if (r.ok) return fail('bad data accepted');
+      return put(P + '/p/p100000001/x', 'hi').then(function (r2) {
+        if (r2.ok) return fail('unknown field accepted');
+        return put(P + '/p/p100000001', { pts: 20 }, 'PATCH');
+      });
+    });
+  } else if (phase === 2 && last.path === '/p/p100000001' && last.data.pts === 20) { phase = 3;
+    fetch(U + P + '.json', { method: 'DELETE' }).then(function () { es.close(); document.title = 'RT OK'; });
+  }
+}
+setTimeout(function () { if (document.title === 'RT RUN') fail('timeout phase ' + phase + ' ' + JSON.stringify(got).slice(0, 200)); }, 15000);
+</script></body>
