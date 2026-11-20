@@ -580,6 +580,8 @@ body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:no
 .rp .pl{position:absolute;top:-12px;right:-8px;min-width:30px;height:30px;border-radius:50%;background:#8e5cff;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px}
 .rp.win .pl{background:#ffb300;font-size:18px}
 .rp.gone{opacity:.6}
+#podium{overflow-y:auto;justify-content:safe center}
+@media (max-height:400px){#podium .h2{font-size:22px}#podium .rp svg{height:44px}#podium .rp.win svg{height:60px}#podium .banner{font-size:14px;padding:2px 12px}#podium .btn{min-height:38px}#podium{gap:4px;padding:6px}}
 .rov .btn{min-height:50px;font-size:clamp(16px,3vmin,24px);padding:6px 24px}
 .rov .banner{animation-delay:.5s}
 .plist{flex:1 1 auto;min-height:0;width:100%;max-width:920px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-content:flex-start;overflow-y:auto;padding:8px 4px}
@@ -3946,7 +3948,8 @@ var TrollModels = (function () {
         }
       };
       function onAnswer(b, v, q) {
-        if (tv.hold) return; // the countdown of a race is on the screen
+        if (tv.hold && Date.now() < tv.holdTill) return; // the countdown of a race is on the screen (never for more than a few seconds)
+        tv.hold = false;
         var res = round.answer(v);
         if (!res) return; // repeated tap or already solved
         hush();
@@ -4454,6 +4457,7 @@ var TrollModels = (function () {
   CLOUD.rt = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
   var RC = L.RACE, SV = { '.sv': 'timestamp' }, raceDbg = /[&#](race|pool|inv|podium|rbtn|board)=/.test(hash), RID_RE = /^[pr]\d{6,12}$/;
   if (LOCAL && /[&#]goal=(\d+)/.test(hash)) RC.GOAL = +/[&#]goal=(\d+)/.exec(hash)[1]; // a short race for tests/race.html
+  if (LOCAL && /[&#]maxms=(\d+)/.test(hash)) RC.MAX_MS = +/[&#]maxms=(\d+)/.exec(hash)[1];
   var race = null, onLeave = null, ridNow = null, beatT = null, invStop = null, lastInv = '', invEl = null, invT = null, cool = {}, hostT = null, poolDraw = null, trackEl = null;
   function rtOn() { return !sandbox && !raceDbg && !!window.EventSource && !!window.fetch && navigator.onLine !== false; }
   function setAt(root, path, data) {
@@ -4715,7 +4719,7 @@ var TrollModels = (function () {
   // 3, 2, 1, go: on every player's screen at the same moment, above whatever they were doing
   function launch(still) {
     clearTimeout(race.giveUp);
-    race.on = true; race.st = 'run'; tv.hold = true; hideInvite(); closeExplain();
+    race.on = true; race.st = 'run'; tv.hold = true; tv.holdTill = Date.now() + 5000; hideInvite(); closeExplain();
     var old = document.getElementById('podium'); if (old) old.remove(); // still looking at the last results
     var big = h('div', { class: 'big', text: '3' }), row = h('div', { class: 'rrow' }), r = race;
     racers().forEach(function (p, i) { var c = h('div', { class: 'rp' + (p.id === myRid() ? ' me' : ''), style: 'animation-delay:' + (i * 0.12) + 's', html: trollOf(p, 'cheer') }); c.appendChild(h('b', { text: p.n })); row.appendChild(c); });
@@ -4795,20 +4799,23 @@ var TrollModels = (function () {
   // somebody crossed the line, or the ten minutes are over. The results wait a moment for the last points to arrive.
   function finish(tell) {
     if (!race || race.over) return;
-    race.over = true; clearInterval(race.tick); tv.hold = true;
+    race.over = true; clearInterval(race.tick); tv.hold = true; tv.holdTill = Date.now() + 5000;
     if (tell && !race.fake) rt.patch('races/' + race.id, { st: 'end' }).catch(function () {});
     var r = race;
     setTimeout(function () {
       if (race !== r) return;
       if (r.stop) r.stop();
       if (r.host && !r.fake) setTimeout(function () { rt.del('races/' + r.id); }, 30000);
-      race = null; beat(); applyMusic(); podium(r);
+      race = null; tv.hold = false;
+      try { beat(); applyMusic(); } catch (e) {}
+      try { podium(r); } catch (e) { var po = document.getElementById('podium'); if (po) po.remove(); document.body.classList.remove('racing'); if (trackEl) { trackEl.remove(); trackEl = null; } }
     }, r.fake ? 0 : 1400);
   }
   function podium(r) {
-    var rid = myRid(), rank = L.raceRank(r.p).filter(function (x) { return x.ans === 'y'; }), mine = rank.filter(function (x) { return x.id === rid; })[0];
+    // first of all the game is given back to the child, whatever happens while the results are drawn
     document.body.classList.remove('racing'); if (trackEl) { trackEl.remove(); trackEl = null; }
     closeExplain(); tv.hold = false;
+    var rid = myRid(), rank = L.raceRank(r.p).filter(function (x) { return x.ans === 'y'; }), mine = rank.filter(function (x) { return x.id === rid; })[0];
     var coins = !mine || mine.out ? 0 : mine.place === 1 ? RC.WIN_COINS : RC.PLAY_COINS;
     if (coins && state.lastRace !== r.id) { state.coins += coins; state.lastRace = r.id; save(); if (cur) bumpStars(cur); } else coins = 0;
     var row = h('div', { class: 'rrow' });
@@ -4822,7 +4829,8 @@ var TrollModels = (function () {
     var ov = h('div', { class: 'rov', id: 'podium', 'data-fit': '1' },
       h('h2', { class: 'h2', text: won ? '🏆 נִצַּחְתְּ בַּמֵּרוֹץ!' : '🏁 הַמֵּרוֹץ נִגְמַר!' }), row,
       coins ? h('div', { class: 'banner', text: '+' + coins + ' 🪙' }) : null);
-    function close() { ov.remove(); }
+    function close() { ov.remove(); tv.hold = false; }
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
     var others = rank.filter(function (p) { return p.id !== rid; });
     ov.appendChild(h('div', { class: 'row' },
       rtOn() || raceDbg ? btn('🔁 מֵרוֹץ חוֹזֵר', '', function () { close(); pool(others); }) : null,
