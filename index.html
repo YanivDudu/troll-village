@@ -268,6 +268,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 .pdel{position:absolute;top:4px;left:4px;width:38px;height:38px;border-radius:50%;background:#f3eefb;font-size:16px}
 .sure{position:absolute;inset:0;background:#fff;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;padding:6px}
 .sure .btn{min-height:44px;font-size:16px;padding:4px 14px;box-shadow:none}
+.sure3{gap:4px}.sure3 b{font-size:13px}.sure3 .btn{min-height:32px;font-size:12px;padding:2px 8px;white-space:nowrap;max-width:100%}
 .pnew{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center}
 .pnew .btn{min-height:50px;font-size:18px;padding:4px 22px}
 .cloudb{min-height:44px;font-size:clamp(13px,2.2vmin,17px);padding:4px 16px;flex:0 0 auto;box-shadow:none}
@@ -580,6 +581,21 @@ body.racing:after{content:'';position:fixed;inset:0;z-index:46;pointer-events:no
 .pmsg{font-size:clamp(14px,2.6vmin,22px);padding:6px 18px;flex:0 0 auto}
 .pgo{flex:0 0 auto;min-height:54px;font-size:clamp(17px,3vmin,26px)}
 .pgo[disabled]{filter:grayscale(1);opacity:.6}
+/* ---- scratch pad: the exercise written in columns, with small boxes for what is carried ---- */
+.padb{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:clamp(8px,3vmin,28px);flex:1 1 auto;min-height:0;direction:ltr}
+.padg{display:grid;gap:4px;justify-items:center;align-items:center;direction:ltr;font-weight:700}
+.pd,.ps{font-size:clamp(22px,5.5vmin,40px);min-width:clamp(28px,7.5vmin,50px);text-align:center;line-height:1.15}
+.pc{width:clamp(28px,7.5vmin,50px);height:clamp(30px,8vmin,54px);border-radius:10px;background:#f3eefb;border:2px dashed #b99bff;font:inherit;font-weight:700;font-size:clamp(20px,5vmin,36px);color:#3b2a55;padding:0}
+.pc.car{height:clamp(22px,5vmin,34px);width:clamp(22px,5vmin,34px);font-size:clamp(13px,3vmin,20px);color:#ff4f9a;border-color:#ffb3d6;background:#fff5fa}
+.pc.on{border-style:solid;border-color:#ff4f9a;box-shadow:0 0 0 3px rgba(255,79,154,.25)}
+.pl{height:4px;background:#3b2a55;border-radius:2px;width:100%}
+.padk{display:grid;grid-template-columns:repeat(4,auto);gap:6px;direction:ltr}
+.pk{width:clamp(40px,9.5vmin,60px);height:clamp(34px,8.5vmin,54px);border-radius:14px;background:#8e5cff;color:#fff;font:inherit;font-weight:700;font-size:clamp(18px,4.2vmin,28px);box-shadow:0 3px 0 #5a2fd0;padding:0}
+.pk.del{background:#b9aecb;box-shadow:0 3px 0 #8e83a3}
+.padtip{font-size:clamp(12px,2.2vmin,17px);text-align:center;color:#5b4a78;font-weight:700}
+.padc .btn{min-height:52px;font-size:clamp(16px,3vmin,24px);flex:0 0 auto;align-self:center}
+@media (max-width:520px){.padbtn .pt{display:none}}
+@media (max-height:480px){.padtip{display:none}.padc .btn{min-height:40px}}
 </style>
 </head>
 <body>
@@ -2850,11 +2866,11 @@ var TrollModels = (function () {
 
   // ---- the same village on several devices (Firestore document per village code, see TrollLogic.mergeCloud) ----
   var CLOUD = { pid: 'troll-math', key: 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0' }, SKEY = 'trollVillage.sync';
-  var sync = { code: '', t: {}, gone: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
+  var sync = { code: '', t: {}, gone: [], hide: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
   function cloudOn() { return !!(CLOUD.pid && !sandbox && window.fetch); }
   function saveSync() { if (sync.code) lsSet(SKEY, JSON.stringify(sync)); else lsDel(SKEY); }
   function loadSync() {
-    try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code)) sync = { code: o.code, t: o.t || {}, gone: Array.isArray(o.gone) ? o.gone : [] }; } catch (e) {}
+    try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code)) sync = { code: o.code, t: o.t || {}, gone: Array.isArray(o.gone) ? o.gone : [], hide: Array.isArray(o.hide) ? o.hide.filter(function (x) { return /^p\d+$/.test(x); }) : [] }; } catch (e) {}
   }
   function touch(id) {
     if (!sync.code) return;
@@ -2892,12 +2908,13 @@ var TrollModels = (function () {
     syncBusy = true; clearTimeout(pushTimer);
     var changed = false;
     cloudGet(sync.code).then(function (rem) {
+      var hid = {}; (sync.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only
       var before = JSON.stringify(profiles.list), m = L.mergeCloud({ list: profiles.list, gone: sync.gone, t: sync.t }, rem), f = {};
-      m.pull.forEach(function (id) { lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
+      m.pull.forEach(function (id) { if (hid[id]) return; lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
       m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); lsDel(DKEY_OLD2 + id); delete sync.t[id]; });
-      var alive = m.list.some(function (p) { return p.id === profiles.cur; });
-      profiles = { cur: alive ? profiles.cur : null, list: m.list };
-      if (JSON.stringify(m.list) !== before) changed = true;
+      var alive = m.list.some(function (p) { return p.id === profiles.cur && !hid[p.id]; });
+      profiles = { cur: alive ? profiles.cur : null, list: m.list.filter(function (p) { return !hid[p.id]; }) };
+      if (JSON.stringify(profiles.list) !== before) changed = true;
       sync.gone = m.gone; saveProfiles(); saveSync();
       if (changed && profiles.cur) refresh();
       m.push.forEach(function (id) { var raw = rawOf(id); if (raw) { f['s3_' + id] = JSON.stringify(L.loadState(raw)); f['t3_' + id] = String(sync.t[id]); } });
@@ -2924,12 +2941,12 @@ var TrollModels = (function () {
         p.id = id;
       }
     });
-    sync = { code: code, t: {}, gone: [] };
+    sync = { code: code, t: {}, gone: [], hide: [] };
     profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = Date.now(); });
     saveProfiles(); saveSync();
     if (presence && profiles.cur) presence.start();
   }
-  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, gone: [] }; saveSync(); }
+  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, gone: [], hide: [] }; saveSync(); }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
   function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
@@ -3521,7 +3538,7 @@ var TrollModels = (function () {
       : cfg.stage != null ? L.createRound(topicId, lvmap, Math.random, L.STAGE_SIZE[cfg.stage], avoid, cfg.stage === 2 ? state.levels : null, cfg.stage, state.grade, L.topicsFor(state))
       : L.createRound(topicId, state.levels, Math.random, 10, avoid, null, 1, state.grade, L.topicsFor(state));
     var force = (/fmt=(\w+)/.exec(hash) || [])[1]; // debug: start with a given activity format
-    if (/s=hint/.test(hash) && !force) round.qs[0] = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random); // debug: a plain first question
+    if (/s=hint|pad=1/.test(hash) && !force) round.qs[0] = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random); // debug: a plain first question
     for (var fi = 0; force && fi < 80; fi++) {
       var fb = L.makeQuestion(round.qs[0].topic, round.qs[0].level, Math.random);
       if (L.formatsFor(fb, 0, true).concat(L.formatsFor(fb, 1, true)).indexOf(force) < 0) continue;
@@ -3540,14 +3557,21 @@ var TrollModels = (function () {
       var label = h('div', { class: 'chip lv' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div');
       var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
       var helpB = h('button', { class: 'helpb', text: '💡 אֵיךְ פּוֹתְרִים?', on: { click: function () { sfx.tap(); openExplain(round.current()); } } });
+      var padB = h('button', { class: 'helpb padbtn', 'aria-label': 'חִשּׁוּב בִּמְאֻנָּךְ', on: { click: function () { sfx.tap(); openPad(round.current(), padShow); } } });
+      function padShow() { // the button appears only for a long addition or multiplication, and keeps the result the child wrote
+        var q = round.current(), sum = padSum(q);
+        padB.style.display = padOf(q) ? '' : 'none';
+        padB.textContent = '🧮'; padB.appendChild(h('span', { class: 'pt', text: sum ? '' : ' בִּמְאֻנָּךְ' })); if (sum) padB.appendChild(h('b', { text: ' ' + sum }));
+      }
       function sayQ() { var q = round.current(); return q ? (ASKS[q.fmt] ? ASKS[q.fmt] + '. ' : '') + (q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : q.text) : ''; }
-      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, sayBtn(sayQ, 'helpb'), helpB));
+      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, sayBtn(sayQ, 'helpb'), padB, helpB));
       el.appendChild(h('div', { class: 'qrow' }, bud, h('div', { class: 'qside' }, bubble, qslot)));
       el.appendChild(answers); el.appendChild(hintSlot);
 
       function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; restart(bubble, 'pop'); }
       function renderQ() {
         var q = round.current(), t = topicOf(q.topic);
+        padShow();
         nodes.forEach(function (n, k) {
           n.className = 'node' + (k < round.i ? ' done' : k === round.i ? ' cur' : '');
           n.textContent = k < round.i ? (cfg.boss ? '🪵' : round.results[k] ? '⭐' : '🌸') : String(k + 1);
@@ -3862,8 +3886,19 @@ var TrollModels = (function () {
         card.appendChild(h('button', { class: 'pdel', text: '🗑', 'aria-label': 'מְחִיקַת ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
-          card.appendChild(h('div', { class: 'sure' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b2', text: 'כֵּן, לִמְחֹק', on: { click: function () { var gone = ridOf(p.id); if (gone && !p.loc) { rt.del('board/' + gone); rt.del('online/' + gone); } if (p.id === profiles.cur) { if (race) quitRace(); presence.stop(); } profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles(); if (sync.code) { sync.gone.push(p.id); delete sync.t[p.id]; saveSync(); syncNow(); } load(); who(); } } }),
+          // Two very different things. From this device only: the player stays in the cloud (the village code, the ranking) and on
+          // the other devices. From everywhere: the progress, the ranking line and the presence are deleted on the server too.
+          function drop(server) {
+            var gone = ridOf(p.id);
+            if (p.id === profiles.cur) { if (race) quitRace(); presence.stop(); }
+            if (server && gone && !p.loc) { rt.del('board/' + gone); rt.del('online/' + gone); }
+            profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles();
+            if (sync.code) { if (server) sync.gone.push(p.id); else sync.hide.push(p.id); delete sync.t[p.id]; saveSync(); if (server) syncNow(); }
+            load(); who(server ? undefined : false);
+          }
+          card.appendChild(h('div', { class: 'sure sure3' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
+            h('button', { class: 'btn b3 onlyhere', text: '📱 רַק מֵהַמַּכְשִׁיר הַזֶּה', on: { click: function () { drop(false); } } }),
+            h('button', { class: 'btn b2', text: '☁️ מְחִיקָה מִכָּל מָקוֹם', on: { click: function () { drop(true); } } }),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
         } } }));
         grid.appendChild(card);
@@ -4074,6 +4109,72 @@ var TrollModels = (function () {
       drawPrev(false); drawOpts(); drawHead();
       drawThumbs();
     });
+  }
+
+  // ---------- scratch pad ----------
+  // A long addition or multiplication is hard to hold in the head. The child can open the exercise written in columns (ones under
+  // ones), write what is carried in the small boxes on top and the digits of the result below. It is paper: nothing is checked.
+  var padKeep = null;
+  function padOf(q) {
+    if (!q || /^(tf|cmp|pairs|array|line|build)$/.test(q.fmt || '')) return null;
+    var m = /^(\d{1,5}) ([+×]) (\d{1,5}) = \?$/.exec(String(q.text).replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim());
+    if (!m) return null;
+    var a = +m[1], b = +m[3], t;
+    if (a < 10 && b < 10) return null;
+    if (m[2] === '×' && a < b) { t = a; a = b; b = t; } // the longer number on top
+    return { a: a, b: b, op: m[2], key: q.key + '|' + q.text };
+  }
+  function padSum(q) { // what the child wrote on the result line of this exercise
+    var pd = padOf(q), out = '';
+    if (!pd || !padKeep || padKeep.key !== pd.key) return '';
+    for (var i = 0; i < 12; i++) if (padKeep.v['r' + i]) out += padKeep.v['r' + i];
+    return out;
+  }
+  function openPad(q, done) {
+    var pd = padOf(q); if (!pd) return;
+    closeExplain();
+    if (!padKeep || padKeep.key !== pd.key) padKeep = { key: pd.key, v: {}, sel: null };
+    var cols = pd.op === '+' ? Math.max(String(pd.a).length, String(pd.b).length) + 1 : String(pd.a).length + String(pd.b).length;
+    var parts = pd.op === '×' && pd.b >= 10 ? String(pd.b).length : 0; // a line for every digit of the multiplier, then their sum
+    var grid = h('div', { class: 'padg', style: 'grid-template-columns:repeat(' + (cols + 1) + ',auto)' }), cells = {}, sel = null, k;
+    function pick(id) { if (sel && cells[sel]) cells[sel].classList.remove('on'); sel = padKeep.sel = id; cells[id].classList.add('on'); }
+    function cell(id, cls) {
+      var b = h('button', { class: 'pc ' + cls, 'data-c': id, text: padKeep.v[id] || '', on: { click: function () { sfx.tap(); pick(id); } } });
+      cells[id] = b; return b;
+    }
+    function put(arr) { arr.forEach(function (x) { grid.appendChild(x); }); }
+    function digits(n, sign) {
+      var t = String(n), out = [h('span', { class: 'ps', text: sign || '' })], i;
+      for (i = 0; i < cols; i++) out.push(h('span', { class: 'pd', text: t.charAt(t.length - cols + i) }));
+      return out;
+    }
+    function boxes(prefix, cls, noOnes) {
+      var out = [h('span')], i;
+      for (i = 0; i < cols; i++) out.push(noOnes && i === cols - 1 ? h('span') : cell(prefix + i, cls));
+      return out;
+    }
+    function line() { grid.appendChild(h('i', { class: 'pl', style: 'grid-column:1/-1' })); }
+    put(boxes('c', 'car', true)); put(digits(pd.a)); put(digits(pd.b, pd.op)); line();
+    for (k = 0; k < parts; k++) put(boxes('p' + k + '_', 'res'));
+    if (parts) line();
+    put(boxes('r', 'res'));
+    function type(d) {
+      if (!sel) return;
+      padKeep.v[sel] = d; cells[sel].textContent = d;
+      var m = /^(.*?)(\d+)$/.exec(sel), nx = m[1] + (+m[2] - 1);
+      if (d !== '' && sel.charAt(0) !== 'c' && cells[nx]) pick(nx); // the next digit is written to the left
+    }
+    var keys = h('div', { class: 'padk' });
+    '1234567890'.split('').forEach(function (d) { keys.appendChild(h('button', { class: 'pk', text: d, on: { click: function () { sfx.tap(); type(d); } } })); });
+    keys.appendChild(h('button', { class: 'pk del', text: '⌫', 'aria-label': 'מְחִיקָה', on: { click: function () { sfx.tap(); type(''); } } }));
+    function close() { sfx.tap(); closeExplain(); if (done) done(); }
+    var card = h('div', { class: 'card padc', 'data-fit': '1' },
+      h('div', { class: 'ohead' }, h('b', { text: '🧮 חִשּׁוּב בִּמְאֻנָּךְ' }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: close } })),
+      h('div', { class: 'padtip', text: 'מַתְחִילִים מֵהָאֲחָדוֹת. אֶת מַה שֶּׁזּוֹכְרִים כּוֹתְבִים בַּמִּשְׁבְּצוֹת הַקְּטַנּוֹת לְמַעְלָה.' }),
+      h('div', { class: 'padb' }, grid, keys),
+      h('button', { class: 'btn next', text: '✓ חֲזָרָה לַתַּרְגִּיל', on: { click: close } }));
+    ovl = h('div', { class: 'ovl' }, card); document.body.appendChild(ovl);
+    pick(padKeep.sel && cells[padKeep.sel] ? padKeep.sel : (parts ? 'p0_' : 'r') + (cols - 1));
   }
 
   // ---------- a boy is spoken to as a boy: every text that reaches the screen passes through TrollLogic.forBoy ----------
@@ -4591,6 +4692,7 @@ var TrollModels = (function () {
   } else if (scr === 'who' || !profiles.cur) who();
   else { home(); syncNow(); presence.start(); }
   raceDebug();
+  if (/pad=1/.test(hash) && tv.round) openPad(tv.round.current()); // layout check of the scratch pad
   var jc = (/join=([A-Za-z0-9]{8})/.exec(hash) || [])[1]; // a link from another device
   if (jc && cloudOn()) {
     jc = jc.toUpperCase();
@@ -4599,7 +4701,7 @@ var TrollModels = (function () {
   }
   if (/fit/.test(hash)) setTimeout(function fitCheck(again) { // layout self-check: reports overflow to the test harness
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
-    var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl'), ovf = 0;
+    var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
       var r = x.getBoundingClientRect(); ovf = Math.max(ovf, x.scrollHeight - x.clientHeight, x.scrollWidth - x.clientWidth, r.bottom - window.innerHeight, -r.top);
       [].forEach.call(x.querySelectorAll('button,.rp,.run'), function (b) { var q = b.getBoundingClientRect(); if (q.width && (q.left < -1 || q.right > window.innerWidth + 1 || q.top < -1 || q.bottom > window.innerHeight + 1)) bad++; });

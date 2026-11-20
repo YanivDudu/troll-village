@@ -19,7 +19,7 @@ var SCREENS = ['home', 'topics', 'topics&ch', 'topics&g=3', 'topics&g=4&ch', 're
   // grade 5 challenge
   'region&g=4&t=num', 'region&g=4&t=add', 'round&g=4&t=add&l=16', 'round&g=4&t=frac&l=10', 'round&g=4&t=mul&l=12', 'round&g=4&t=num&l=14', 'hint&step=last&g=4&t=add&l=16', 'hint&step=last&g=4&t=sub&l=14', 'hint&step=last&g=4&t=mul&l=12', 'hint&step=last&g=4&t=div&l=12', 'hint&step=last&g=4&t=num&l=13', 'hint&step=last&g=4&t=num&l=14', 'hint&step=last&g=4&t=num&l=15', 'hint&step=last&g=4&t=frac&l=9', 'hint&step=last&g=4&t=frac&l=10', 'hint&step=last&g=4&t=frac&l=11', 'hint&step=last&g=4&t=miss&l=11'];
 // race: button on the home screen, pool, invitation bar, track, launch, results
-SCREENS = SCREENS.concat(['home&rbtn=1', 'home&pool=1', 'round&inv=1', 'topics&inv=1', 'round&race=1', 'round&race=1&say=1', 'round&g=1&t=num&l=1&race=1', 'hint&step=last&t=add&l=7&race=1', 'region&race=1', 'topics&race=1', 'round&race=1&launch=1', 'round&podium=1', 'round&podium=2', 'home&board=1', 'who']);
+SCREENS = SCREENS.concat(['home&rbtn=1', 'home&pool=1', 'round&inv=1', 'topics&inv=1', 'round&race=1', 'round&race=1&say=1', 'round&g=1&t=num&l=1&race=1', 'hint&step=last&t=add&l=7&race=1', 'region&race=1', 'topics&race=1', 'round&race=1&launch=1', 'round&podium=1', 'round&podium=2', 'home&board=1', 'who', 'round&t=add&l=7&pad=1', 'round&g=3&t=add&l=11&pad=1', 'round&g=3&t=mul&l=8&pad=1', 'round&g=4&t=mul&l=11&pad=1', 'round&t=add&l=7']);
 var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var want = SIZES.length * SCREENS.length, got = 0, fails = [];

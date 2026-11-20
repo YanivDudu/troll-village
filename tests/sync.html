@@ -66,6 +66,17 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     await open();
     await until(function () { return profs().list.length === 1 && profs().list[0].id === idA; }, 'B dropped the deleted player');
     check(true, 'a player deleted on one device disappears on the other');
+    // removal from this device only is a different thing: the player stays in the cloud and on the other device
+    var chipB = await until(function () { return q('.chip.who') || q('.pdel'); }, 'B is in the game');
+    if (!q('.pdel')) chipB.click();
+    (await until(function () { return q('.pdel'); }, 'who B')).click();
+    (await until(function () { return q('.sure .onlyhere'); }, 'two ways to delete')).click();
+    await until(function () { return profs().list.length === 0; }, 'removed from device B');
+    check((sync().hide || []).indexOf(idA) >= 0 && (sync().gone || []).indexOf(idA) < 0, 'device B only hides the player, it is not marked as deleted');
+    await open(); await wait(4000);
+    check(profs().list.length === 0, 'the player does not come back to device B with the next sync');
+    restore(A); await open(); await wait(4000);
+    check(profs().list.some(function (p) { return p.id === idA; }) && !!st(idA), 'the player is still on device A, with the progress');
     document.title = 'SYNC OK ' + code;
   } catch (e) { say(String(e)); document.title = 'SYNC FAIL ' + e.message; }
   restore(keep);
