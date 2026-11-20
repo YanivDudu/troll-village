@@ -701,6 +701,13 @@ body.night .bird,body.night .fly{display:none}
 body.night .mote{background:rgba(255,244,150,.9);box-shadow:0 0 12px #ffe45c}
 @media (max-height:520px){.street{bottom:clamp(40px,13vh,80px);height:clamp(44px,16vh,80px)}}
 @media (prefers-reduced-motion:reduce){.bird,.critter,.puff{display:none}}
+/* ---- the companion during an exercise: it looks at the question, jumps once, and never disappears on a phone ---- */
+.buddy .troll.cheer .tb{animation:jump .55s ease-in-out 1}
+.buddy .troll.cheer .hair{animation-duration:3s}
+.buddy .troll.cheer .armL,.buddy .troll.cheer .armR{animation-iteration-count:4}
+.buddy .troll .pup{animation:none;transform:translate(-3px,3px)}
+.buddy .troll.think .tb{animation:tilt 1.6s ease-in-out 1}
+@media (max-width:520px) and (min-height:521px){.qrow .buddy,.screen.vmode .buddy,.screen.packq .buddy,.screen.handson .buddy{display:block;position:absolute;top:4px;inset-inline-end:8px;width:66px;z-index:2}}
 </style>
 </head>
 <body>
@@ -2646,7 +2653,7 @@ var TrollLogic = (function () {
   }
 
   // The texts of the game speak to a girl. For a boy the same texts are shown with these words replaced.
-  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["אַלּוּפָה", "אַלּוּף"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְתוּכְלִי", "וְתוּכַל"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"]];
+  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְתוּכְלִי", "וְתוּכַל"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"], ["דִּיַּקְתְּ", "דִּיַּקְתָּ"], ["פָּתַרְתְּ", "פָּתַרְתָּ"], ["חָשַׁבְתְּ", "חָשַׁבְתָּ"], ["מָצָאת", "מָצָאתָ"], ["הִצְלַחְתְּ", "הִצְלַחְתָּ"], ["נִסִּית", "נִסִּיתָ"], ["וִתַּרְתְּ", "וִתַּרְתָּ"], ["תִּקַּנְתְּ", "תִּקַּנְתָּ"], ["הִתְעַקַּשְׁתְּ", "הִתְעַקַּשְׁתָּ"], ["אִתָּךְ", "אִתְּךָ"]];
   var MALE_MAP = {}, MALE_RE = new RegExp('(^|[^\u0590-\u05FF])(' + MALE.map(function (x) { MALE_MAP[x[0]] = x[1]; return x[0]; }).join('|') + ')(?![\u0590-\u05FF])', 'g');
   function forBoy(t) { return typeof t === 'string' ? t.replace(MALE_RE, function (m, pre, w) { return pre + MALE_MAP[w]; }) : t; }
 
@@ -3007,9 +3014,21 @@ var TrollModels = (function () {
   var GATE = { id: 'gate', world: 'שַׁעַר הָאֶתְגָּר', bld: 'castleSmallAlt' };
   var HAIR_REQ = [0, 0, 0, 5, 12, 20]; // stars needed for each hairstyle
   var ACC_NAMES = { none: 'בְּלִי אֲבִיזָר', bow: 'סֶרֶט', glasses: 'מִשְׁקָפַיִם', crown: 'כֶּתֶר', flower: 'פֶּרַח', hat: 'כּוֹבַע מְסִבָּה', sunglasses: 'מִשְׁקְפֵי שֶׁמֶשׁ', bowtie: 'עֲנִיבַת פַּרְפַּר', scarf: 'צָעִיף', headphones: 'אָזְנִיּוֹת', star: 'סִכַּת כּוֹכָב', butterfly: 'פַּרְפַּר', balloon: 'בָּלוֹן', wand: 'שַׁרְבִיט קְסָמִים', wings: 'כְּנָפַיִם', necklace: 'שַׁרְשֶׁרֶת' };
-  var ASK = ['כַּמָּה זֶה?', 'מָה הַתְּשׁוּבָה?', 'בּוֹאִי נַחְשֹׁב יַחַד', 'אַתְּ יְכוֹלָה!', 'מָה דַּעְתֵּךְ?'];
-  var PRAISE = ['מְעֻלֶּה!', 'כָּל הַכָּבוֹד!', 'וָואוּ!', 'אַלּוּפָה!', 'נָכוֹן מְאוֹד!', 'אֵיזֶה יֹפִי!', 'מַדְהִים!'];
-  var RETRY = ['כִּמְעַט! נְנַסֶּה שׁוּב', 'לֹא נוֹרָא, תִּסְתַּכְּלִי עַל הָרֶמֶז', 'בּוֹאִי נַחְשֹׁב יַחַד', 'עוֹד נִסָּיוֹן אֶחָד, אַתְּ בַּדֶּרֶךְ!'];
+  // What the companion says. Two voices (grades 1-2: warm; grades 3-4: short and dry), praise that says what the child did,
+  // and a bag for each list so that a line does not come back before all the others were said.
+  var ASK = [['כַּמָּה זֶה?', 'מָה הַתְּשׁוּבָה?', 'בּוֹאִי נַחְשֹׁב יַחַד', 'אַתְּ יְכוֹלָה!', 'מָה דַּעְתֵּךְ?', 'מָה יוֹצֵא?', 'נַחְשֹׁב רֶגַע', 'לְאַט לְאַט', 'אֵין מַה לְמַהֵר', 'אֲנִי אִתָּךְ'],
+    ['כַּמָּה זֶה?', 'מָה דַּעְתֵּךְ?', 'מָה יוֹצֵא?', 'הַבָּא בַּתּוֹר', 'קָדִימָה', 'נַחְשֹׁב רֶגַע', 'אֵין מַה לְמַהֵר', 'עוֹד אֶחָד']];
+  var PRAISE = [['נָכוֹן בַּנִּסָּיוֹן הָרִאשׁוֹן!', 'דִּיַּקְתְּ!', 'פָּתַרְתְּ לְבַד!', 'חָשַׁבְתְּ, מָצָאת!', 'יָפֶה פָּתַרְתְּ!', 'נָכוֹן מְאוֹד!', 'בְּדִיּוּק כָּכָה!', 'הִצְלַחְתְּ!', 'עוֹד תַּרְגִּיל פָּתוּר!', 'אֵיזֶה יֹפִי!'],
+    ['נָכוֹן.', 'מְדֻיָּק.', 'בְּדִיּוּק.', 'בַּנִּסָּיוֹן הָרִאשׁוֹן.', 'עוֹד אֶחָד פָּתוּר.', 'יָפֶה.', 'פָּתַרְתְּ לְבַד.', 'חָלָק.', 'כָּכָה עוֹשִׂים אֶת זֶה.', 'דִּיַּקְתְּ.']];
+  var AFTER = ['נִסִּית שׁוּב וְזֶה הִצְלִיחַ!', 'לֹא וִתַּרְתְּ!', 'טָעוּת וְאָז תִּקּוּן: כָּכָה לוֹמְדִים', 'עַכְשָׁו זֶה נָכוֹן!', 'תִּקַּנְתְּ לְבַד!', 'הִתְעַקַּשְׁתְּ, הִצְלַחְתְּ!']; // solved after a mistake
+  var RETRY = [['כִּמְעַט! נְנַסֶּה שׁוּב', 'לֹא נוֹרָא, תִּסְתַּכְּלִי עַל הָרֶמֶז', 'בּוֹאִי נַחְשֹׁב יַחַד', 'עוֹד נִסָּיוֹן אֶחָד, אַתְּ בַּדֶּרֶךְ!', 'עוֹד לֹא. נְנַסֶּה שׁוּב', 'נִבְדֹּק שׁוּב יַחַד', 'קָרוֹב! עוֹד נִסָּיוֹן', 'טָעוּת הִיא חֵלֶק מֵהַדֶּרֶךְ'],
+    ['עוֹד לֹא.', 'כִּמְעַט. עוֹד נִסָּיוֹן', 'נִבְדֹּק שׁוּב', 'לֹא זֶה. מָה עוֹד אֶפְשָׁר?', 'קָרוֹב.', 'טָעוּת הִיא חֵלֶק מֵהַדֶּרֶךְ', 'שָׁוֶה לִבְדֹּק שׁוּב', 'בּוֹאִי נַחְשֹׁב יַחַד']];
+  var BAGS = {};
+  function line(name, list) { // the next line from a shuffled bag
+    var bag = BAGS[name]; if (!bag || !bag.length) { bag = BAGS[name] = list.slice(); for (var i = bag.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = bag[i]; bag[i] = bag[j]; bag[j] = t; } }
+    return bag.pop();
+  }
+  function voice(lists, name) { var k = state.grade >= 3 ? 1 : 0; return line(name + k, lists[k]); }
 
   // Each player has their own saved progress on this device.
   var profiles = { cur: null, list: [] };
@@ -3880,6 +3899,7 @@ var TrollModels = (function () {
       el.appendChild(answers); el.appendChild(hintSlot);
 
       function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; restart(bubble, 'pop'); }
+      bud.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent); });
       function renderQ() {
         var q = round.current(), t = topicOf(q.topic);
         padShow();
@@ -3888,7 +3908,7 @@ var TrollModels = (function () {
           n.textContent = k < round.i ? (cfg.boss ? '🪵' : round.results[k] ? '⭐' : '🌸') : String(k + 1);
         });
         label.textContent = (cfg.race ? '🏁 ' + (round.i + 1) + ' / ' + round.qs.length + ' · ' : '') + (cfg.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][0] + ' ' + STAGES[cfg.stage][1] + ' · ' : '') + t.icon + ' ' + t.levels[q.level - 1].name + (q.review ? ' · 🔁 חֲזָרָה' : '');
-        mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : rnd(ASK));
+        mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : voice(ASK, 'ask'));
         helpB.classList.toggle('glow', cfg.stage === 0);
         var BOX = '<span class="box">?</span>';
         var body = q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : frx(q.text).replace('□', BOX).replace('◯', BOX);
@@ -4011,7 +4031,7 @@ var TrollModels = (function () {
             if (a.r === b.r) {
               a.el.classList.add('ok'); b.el.classList.add('ok'); a.el.disabled = b.el.disabled = true; sfx.pop();
               if (++done === q.pairs.length) onAnswer(b.el, 'ok', q);
-            } else { restart(a.el, 'shake'); restart(b.el, 'shake'); sfx.wrong(); round.miss(); mood('sad', rnd(RETRY)); }
+            } else { restart(a.el, 'shake'); restart(b.el, 'shake'); sfx.wrong(); round.miss(); mood('think', voice(RETRY, 'retry')); }
           }
           function side(list, col, isLeft) {
             list.forEach(function (o) {
@@ -4054,7 +4074,7 @@ var TrollModels = (function () {
           b.classList.add('right'); tv.solve = tv.flub = null;
           [].forEach.call(answers.children, function (x) { if (x !== b && !x.classList.contains('wrong')) x.classList.add('off'); });
           sfx.correct(combo); var c = center(b); burst(c[0], c[1], 12 + combo * 2);
-          mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + rnd(PRAISE) : rnd(PRAISE));
+          mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + voice(PRAISE, 'praise') : res.firstTry ? voice(PRAISE, 'praise') : line('after', AFTER));
           var hs = state.hists[q.topic]; hs.push(res.firstTry); state.hists[q.topic] = hs.slice(-5);
           state.coins += res.firstTry ? 2 : 1; state.xp += 1; // one experience point for every exercise that was solved
           tv.solvedAt = Date.now();
@@ -4065,7 +4085,7 @@ var TrollModels = (function () {
         } else {
           combo = 0;
           if (b.hasAttribute('data-v')) b.classList.add('wrong'); else restart(b, 'shake');
-          sfx.wrong(); mood('sad', rnd(RETRY));
+          sfx.wrong(); mood('think', voice(RETRY, 'retry'));
           later(function () { openExplain(q); }, 650);
         }
       }
@@ -5098,6 +5118,8 @@ var TrollModels = (function () {
     if (L.CODE_RE.test(jc) && jc !== sync.code) { unlink(); cloud(); joinCode(jc, function (t) { var m = cur.querySelector('.cmsg'); if (m) m.textContent = t; }, function () {}); }
   }
   if (/fit/.test(hash)) setTimeout(function fitCheck(again) { // layout self-check: reports overflow to the test harness
+    // measure the settled screen: an entrance animation caught half way (a card sliding in) is not an overflow
+    try { document.getAnimations().forEach(function (x) { try { var t = x.effect && x.effect.getTiming && x.effect.getTiming(); if (t && t.iterations !== Infinity) x.cancel(); } catch (e) {} }); cur.getBoundingClientRect(); } catch (e) {}
     var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
     // a button that cannot be tapped because something lies over it is as bad as a button off the screen
     if (!document.querySelector('.ovl,.rov')) [].forEach.call(cur.querySelectorAll('button'), function (b) {

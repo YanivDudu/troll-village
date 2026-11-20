@@ -28,6 +28,8 @@ var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var sky = /sky=(\d+)/.exec(location.hash);
 if (sky) SCREENS = SCREENS.filter(function (sc, i) { return !/hour=/.test(sc) && SCREENS.indexOf(sc) === i; }).map(function (sc) { return sc + '&hour=' + sky[1]; });
+var pick = /only=([^&]+)/.exec(location.hash); // fit.html#360x640&only=race -> just the screens whose name contains that text
+if (pick) SCREENS = SCREENS.filter(function (sc) { return sc.indexOf(decodeURIComponent(pick[1])) >= 0; });
 var small = 0, loops = 0;
 var want = SIZES.length * SCREENS.length, got = 0, fails = [];
 SIZES.forEach(function (s) {
