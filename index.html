@@ -4702,7 +4702,7 @@ var TrollModels = (function () {
   function answerInvite(raceId, yes) {
     hideInvite();
     rt.del('invites/' + myRid());
-    if (!raceId) return;
+    if (!raceId || (race && race.id === raceId)) return; // already in this race: nothing to answer
     if (yes && race) { if (race.host && race.st === 'wait') dropRace(true); else yes = false; } // yes to this race means giving up my own unanswered invitation
     rt.patch('races/' + raceId + '/p/' + myRid(), { ans: yes ? 'y' : 'n', t: SV }).then(function () {
       if (!yes || race) return;
@@ -4745,7 +4745,8 @@ var TrollModels = (function () {
     }
     if (race && race.on && race.t0) { drawTrack(); if (v.st === 'end' || L.raceDone(race.p, Date.now() - race.t0)) finish(v.st !== 'end'); }
   }
-  function racers() { return L.raceRank(race ? race.p : {}).filter(function (x) { return x.ans === 'y'; }); }
+  // Everybody who is written in the race is on the track. Whoever left, or stopped sending a sign of life, is shown in grey.
+  function racers() { return L.raceRank(race ? race.p : {}); }
   // 3, 2, 1, go: on every player's screen at the same moment, above whatever they were doing
   function launch(still) {
     clearTimeout(race.giveUp);
@@ -4847,7 +4848,7 @@ var TrollModels = (function () {
     // first of all the game is given back to the child, whatever happens while the results are drawn
     document.body.classList.remove('racing'); if (trackEl) { trackEl.remove(); trackEl = null; }
     closeExplain(); tv.hold = false;
-    var rid = myRid(), rank = L.raceRank(r.p).filter(function (x) { return x.ans === 'y'; }), mine = rank.filter(function (x) { return x.id === rid; })[0];
+    var rid = myRid(), rank = L.raceRank(r.p), mine = rank.filter(function (x) { return x.id === rid; })[0];
     var coins = !mine || mine.out ? 0 : mine.place === 1 ? RC.WIN_COINS : RC.PLAY_COINS;
     if (coins && state.lastRace !== r.id) { state.coins += coins; state.lastRace = r.id; save(); if (cur) bumpStars(cur); } else coins = 0;
     var row = h('div', { class: 'rrow' });
