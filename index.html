@@ -88,9 +88,9 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0}
 
 /* ---------- round ---------- */
 .path{display:flex;gap:clamp(4px,1.2vmin,12px);align-items:center;justify-content:center;flex:0 0 auto}
-.node{width:clamp(26px,5.4vmin,46px);height:clamp(26px,5.4vmin,46px);border-radius:50%;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(13px,2.6vmin,22px);color:#a79bc0;transition:transform .3s,background .3s}
-.node.done{background:#fff;animation:pop .5s}
-.node.cur{background:#ffd23f;color:#fff;transform:scale(1.25);box-shadow:0 0 0 6px rgba(255,210,63,.35);animation:pulse 1s ease-in-out infinite}
+.node{width:clamp(26px,5.4vmin,46px);height:clamp(26px,5.4vmin,46px);border-radius:50%;background:radial-gradient(circle at 36% 30%,#fff8e4,#e9d5a6 75%);box-shadow:inset 0 0 0 2px rgba(122,79,37,.4),0 2px 0 rgba(90,60,20,.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(13px,2.6vmin,22px);color:#8a6a3c;transition:transform .3s,background .3s}
+.node.done{background:radial-gradient(circle at 36% 30%,#fffdf6,#f6e9c8 75%);animation:pop .5s}
+.node.cur{background:#ffd23f;color:#fff;transform:scale(1.25);box-shadow:inset 0 0 0 2px rgba(122,79,37,.4),0 0 0 6px rgba(255,210,63,.35);animation:pulse 1s ease-in-out infinite}
 .qrow{display:flex;align-items:center;gap:clamp(8px,2vmin,24px);width:100%;max-width:920px;flex:0 0 auto}
 .buddy{width:clamp(100px,21vmin,190px);flex:0 0 auto}
 .qside{flex:1 1 auto;display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -386,23 +386,9 @@ body:not(.cansay) .sayb{display:none!important}
 .pbar{height:7px;border-radius:4px;background:#ecd9b5;overflow:hidden;margin:0 6px 2px}
 .pbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd23f,#ff9f1a);border-radius:4px}
 .rmsg{font-size:clamp(12px,2.2vmin,18px);padding:4px 16px;flex:0 0 auto;background:rgba(255,248,230,.95)}
-.clearings{display:grid;align-items:end;grid-template-columns:repeat(auto-fill,minmax(min(31%,170px),1fr));gap:clamp(4px,1.1vmin,10px);width:100%;max-width:1080px;flex:0 0 auto}
-.clr{background:rgba(255,250,235,.96);border:3px solid #b9783a;border-radius:16px;padding:4px 6px 6px;display:flex;flex-direction:column;gap:3px;min-width:0;box-shadow:0 4px 0 #8a5524,0 8px 10px rgba(0,0,0,.25);animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
-.cplot{display:flex;flex-direction:column;align-items:center;min-width:0}
-.cplot.far{filter:grayscale(.75);opacity:.9}
-.cbld{position:relative;height:clamp(28px,10.6vmin,112px);width:100%;display:flex;align-items:flex-end;justify-content:center;background:none;padding:0;filter:drop-shadow(0 5px 4px rgba(0,0,0,.4));transition:transform .15s}
-button.cbld:hover{transform:scale(1.06)}
-button.cbld:active{transform:scale(.94)}
-.cbld img{height:calc(var(--s,1)*100%);max-width:92%;object-fit:contain;display:block}
-.cnum{position:absolute;top:0;inset-inline-start:6%;width:clamp(20px,4vmin,30px);height:clamp(20px,4vmin,30px);border-radius:50%;background:#ff4f9a;color:#fff;font-weight:700;font-size:clamp(12px,2.2vmin,17px);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 #c92f74,0 0 0 2px #fff}
-.cbld.bossb .bi{font-size:clamp(26px,7vmin,60px);width:clamp(34px,9vmin,80px);line-height:1;display:block;text-align:center}
 .dif{display:flex;gap:2px;align-items:flex-end;direction:ltr;flex:0 0 auto;margin-inline-start:auto}
 .dif i{width:4px;border-radius:2px;background:#e6d8bf}
 .dif i.on{background:#ff7a3d}
-.clr{width:100%}
-.cname{display:flex;align-items:center;gap:5px;min-height:2.4em}
-.cname b{font-size:clamp(11px,1.9vmin,15px);line-height:1.15;text-align:start;min-width:0}
-.cname .grade{font-size:clamp(10px,1.6vmin,13px);padding:0 6px;flex:0 0 auto}
 .stg{display:flex;gap:4px}
 .sbtn{flex:1 1 0;min-width:0;border-radius:12px;background:#fff;padding:3px 1px;display:flex;flex-direction:column;align-items:center;box-shadow:0 3px 0 rgba(59,42,85,.2);min-height:clamp(36px,8vmin,60px);justify-content:center;transition:transform .12s}
 .sbtn:active{transform:translateY(3px)}
@@ -411,21 +397,59 @@ button.cbld:active{transform:scale(.94)}
 .sbtn .ss{font-size:clamp(11px,1.8vmin,14px);color:#f5a400;letter-spacing:-1px;direction:ltr;line-height:1.1}
 .sbtn.locked{background:#e9e1d3;opacity:.75}
 .sbtn.won{background:#fff6cf}
-.bossc{align-items:center;justify-content:center;text-align:center;background:linear-gradient(#eaf7ff,#cfe9ff);border-color:#3aa0ff;box-shadow:0 4px 0 #1f6fc9,0 8px 10px rgba(0,0,0,.25);font:inherit;color:inherit;cursor:pointer}
-.bossc b{font-size:clamp(12px,2vmin,16px)}
-.bossc small{font-size:clamp(10px,1.6vmin,13px);line-height:1.15}
-.bossc.ready{animation:pulse 1.2s ease-in-out infinite}
-.bossc.locked{filter:grayscale(.6)}
-.bossc.done{background:linear-gradient(#fff6d6,#ffe9a8);border-color:#ffb300;box-shadow:0 4px 0 #cf8a00}
 .pctl{display:flex;align-items:center;gap:8px;justify-content:center}
 .pctl .step{width:34px;height:30px;border-radius:15px;font-size:18px}
 .bigstars .star{font-size:clamp(46px,12vmin,110px)}
-@media (max-width:640px),(max-height:520px){
-  .sbtn .sl{display:none}.cname{min-height:0}.cname b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .clr{padding:3px 4px 4px;border-width:2px;border-radius:12px}.bossc small{display:none}.pstars{display:none}
-}
-@media (max-width:640px){.dif{display:none}.cbld{height:26px}.rmsg{padding:2px 12px;font-size:12px}.pctl{padding:2px 10px}.pctl .step{height:26px}}
-@media (max-height:520px){.clearings{grid-template-columns:repeat(5,1fr)}.cbld{height:30px}.sbtn{min-height:34px}.bigstars .star{font-size:44px}}
+@media (max-width:640px),(max-height:520px){.pstars{display:none}}
+@media (max-width:640px){.dif{display:none}.rmsg{padding:2px 12px;font-size:12px}.pctl{padding:2px 10px}.pctl .step{height:26px}}
+@media (max-height:520px){.bigstars .star{font-size:44px}}
+/* the topic screen is a treasure map: parchment, a dashed trail from right to left, one ink icon per house (Kenney Cartography Pack) */
+.screen.rmap{background:#ecd3a0 url(assets/map/parchment.jpg) center/cover no-repeat}
+body.dusk .screen.rmap{background-image:linear-gradient(rgba(255,140,60,.13),rgba(255,140,60,.13)),url(assets/map/parchment.jpg)}
+body.night .screen.rmap{background-image:linear-gradient(rgba(24,32,78,.3),rgba(24,32,78,.3)),url(assets/map/parchment.jpg)}
+.rmap .h2{color:#3b2a15;-webkit-text-stroke:0;text-shadow:none;background:rgba(255,250,235,.92);border-radius:999px;padding:2px 22px;font-size:clamp(20px,4.2vmin,38px);box-shadow:0 3px 0 rgba(90,60,20,.3);flex:0 0 auto}
+.mslot{width:100%;display:flex;justify-content:center;flex:0 0 auto}
+.btn.mgo{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:0 12px;min-height:56px;padding:5px 26px;max-width:100%;line-height:1.2}
+.mgo b{font-size:clamp(19px,3.4vmin,28px);white-space:nowrap}
+.mgo small{font-size:clamp(13px,2.3vmin,19px);font-weight:700}
+.mpanel{width:100%;max-width:600px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 6px;align-items:center;background:rgba(255,250,235,.97);border:3px solid #b9783a;border-radius:16px;padding:5px 8px 7px;box-shadow:0 4px 0 #8a5524,0 8px 10px rgba(0,0,0,.2)}
+.mphead{grid-column:1/3;display:flex;align-items:center;gap:8px;min-width:0}
+.mphead b{font-size:clamp(13px,2.3vmin,18px);line-height:1.15;min-width:0}
+.mpanel .stg{gap:8px;min-width:0}
+.mpanel .sbtn{min-height:54px;border:2px solid #e6d3ad}
+.mpanel .sbtn .sl{display:block;font-size:clamp(12px,2vmin,15px)}.mpanel .sbtn .ss{font-size:clamp(12px,2vmin,16px)}
+.mpanel .sbtn.now{border-color:#ff4f9a;box-shadow:0 0 0 3px #ff4f9a,0 3px 0 rgba(59,42,85,.2)}
+.mx{width:48px;height:48px;border-radius:50%;background:#f1e2c3;font-size:18px;font-weight:700;color:#5b4a3a;flex:0 0 auto}
+@media (max-height:520px){.mpanel{grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;max-width:760px;padding:3px 8px}.mphead{grid-column:auto}.mpanel .sbtn{min-height:48px;flex-direction:row;gap:5px}.btn.mgo{min-height:50px}}
+.tmap{position:relative;flex:1 1 0;min-height:0;width:100%;max-width:1240px;--s:1}
+.mdeco{position:absolute;width:calc(var(--z,1)*clamp(34px,9vmin,84px));transform:translate(-50%,-50%);opacity:.2;pointer-events:none;z-index:0}
+.mtrail{position:absolute;inset:0;pointer-events:none;z-index:1}
+.mtrail svg{display:block;overflow:visible}
+.mtrail path{fill:none;stroke:#3b2a15;stroke-width:3.5;stroke-dasharray:2 10;stroke-linecap:round;opacity:.5}
+.mtrail path.walked{stroke:#c8452e;stroke-width:4.5;stroke-dasharray:3 9;opacity:.95}
+.mnode{position:absolute;left:0;top:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:calc(2px*var(--s));background:none;padding:0;color:#3b2a15;min-height:48px}
+.mnode:active .mic{transform:scale(.92)}
+.mtop{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:calc(46px*var(--s));flex:0 0 auto}
+.mic{position:relative;width:calc(46px*var(--s));height:calc(46px*var(--s));flex:0 0 auto;display:flex;align-items:flex-end;justify-content:center;transition:transform .12s}
+.mic>img:first-child{width:calc(var(--k,1)*100%);height:calc(var(--k,1)*100%);object-fit:contain;display:block}
+.mflag{position:absolute;top:calc((1 - var(--k,1))*100% - 12%);inset-inline-start:calc((1 - var(--k,1))*50% - 4%);width:44%;height:44%}
+.mbud,.mhero{flex:0 0 auto;width:calc(34px*var(--s));height:calc(44px*var(--s));display:block;filter:drop-shadow(0 2px 2px rgba(60,40,10,.35))}
+.mhero{width:calc(28px*var(--s));height:calc(37px*var(--s))}
+.mbud svg,.mhero svg{width:100%;height:100%;display:block}
+.mlab{font-size:clamp(11px,calc(12.5px*var(--s)),20px);font-weight:700;line-height:1.18;background:rgba(255,250,235,.95);border-radius:10px;padding:1px 7px;max-width:100%;box-shadow:0 1px 0 rgba(90,60,20,.4);text-wrap:balance}
+.mpips{display:flex;gap:calc(3px*var(--s));padding:2px 5px;border-radius:999px;background:rgba(255,250,235,.9)}
+.mpips i{width:clamp(11px,calc(13px*var(--s)),18px);height:clamp(11px,calc(13px*var(--s)),18px);border-radius:50%;border:2px solid #3b2a15;background:#fffaf0}
+.mpips i.l{border-color:rgba(59,42,21,.35);background:#dccfb3}
+.mpips i.s1{background:linear-gradient(to top,#f5a400 36%,#fffaf0 36%)}
+.mpips i.s2{background:linear-gradient(to top,#f5a400 66%,#fffaf0 66%)}
+.mpips i.s3{background:#f5a400}
+.mpips i.now{box-shadow:0 0 0 3px rgba(255,79,154,.6)}
+.mnode.rec .mic:before{content:"";position:absolute;inset:-24%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,206,70,.95),rgba(255,206,70,0));z-index:-1}
+.mnode.rec .mlab{background:#ffd23f}
+.mnode.sel .mlab{box-shadow:0 0 0 3px #ff4f9a}
+.mnode.far{opacity:.5}
+.mnode.far .mic:after{content:"";position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.8),rgba(255,255,255,0))}
+.tmap .parb{position:absolute;bottom:0;inset-inline-start:0;margin:0;z-index:3}
 
 /* ---------- activity formats ---------- */
 .qhint{display:block;font-size:clamp(12px,2.2vmin,18px);color:#8e5cff;font-weight:700;line-height:1.25;white-space:normal}
@@ -3683,8 +3707,6 @@ var TrollModels = (function () {
 
   // ---------- world map: a village in the forest, one building per topic ----------
   var STAGES = [['🔍', 'גִּלּוּי'], ['✏️', 'תִּרְגּוּל'], ['🏆', 'אֶתְגָּר']];
-  // houses of a topic world, from a small hut to a castle: the further along, the harder
-  var REG_BLD = ['houseSmall1', 'houseSmallAlt1', 'houseSmall2', 'houseAlt1', 'house1', 'houseAlt2', 'house2', 'castleSmall'];
   function starStr(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n); }
   function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
   function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
@@ -3752,65 +3774,173 @@ var TrollModels = (function () {
     });
   }
 
-  // ---------- region: the clearings of one topic, three stages each, and the milestone missions ----------
+  // ---------- region: the treasure map of one topic. A trail from right to left, one ink icon per house (three stages
+  // each) and the bridge mission at its end. The positions are computed from the size of the map, for any number of houses ----------
+  var MAP_BLD = ['houseSmall', 'house', 'houseChimney', 'houseTall', 'tower', 'towerTall', 'towerWatch', 'castle', 'castleTall'];
+  var MAP_DECO = [['treePines', 6, 14, 1.1], ['rocksMountain', 52, 7, 1.2], ['lake', 30, 52, 1.5], ['treePine', 93, 46, 0.8], ['rocks', 16, 88, 1], ['treePines', 70, 93, 1], ['treePine', 44, 80, 0.7], ['rocksMountain', 84, 20, 0.9]];
   function region(topicId) {
     var t = topicOf(topicId);
     curSub = t.sub || 'math';
     setMusic('home');
     show(function (el) {
-      el.classList.add('map');
+      el.classList.add('map', 'rmap');
       el.appendChild(topBar(true, function () { topics(t.g !== state.grade); }));
-      el.style.backgroundImage = 'url(assets/forest' + (2 + L.TOPICS.indexOf(t) % 3) + '.jpg)';
       el.appendChild(h('h2', { class: 'h2', text: t.icon + ' ' + t.world }));
-      var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי שָׁלָב: גִּלּוּי, תִּרְגּוּל אוֹ אֶתְגָּר' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
+      var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי בַּיִת בַּמַּפָּה' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
       if (!state.intro[t.id]) { state.intro[t.id] = true; save(); }
-      var grid = h('div', { class: 'clearings' });
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
-      function bossCard(g) {
-        if (!L.bossLevels(t.id, g).length) return;
-        var done = L.bossDone(state, t.id, g), ready = L.bossReady(state, t.id, g), hero = resolve(L.trollFromId(L.heroId(t.id, g)));
-        var pic = done ? h('span', { class: 'bi', html: A.trollSVG(hero) }) : h('span', { class: 'bi', text: '🌉' });
-        var c = h('button', { class: 'clr bossc' + (done ? ' done' : ready ? ' ready' : ' locked'), 'data-boss': g },
-          h('b', { text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }),
-          h('small', { text: done ? 'נִצַּל וְעָבַר לָגוּר בַּכְּפָר!' : ready ? 'הַמְּשִׂימָה מוּכָנָה! בּוֹאִי נַצִּיל טְרוֹל' : 'נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁל כִּתָּה ' + GRADE_HE[g] }));
-        c.addEventListener('click', function () {
-          if (done) { sfx.giggle(); return; }
-          if (!ready) { restart(c, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
-          sfx.pop(); startRound(t.id, { boss: g });
-        });
-        grid.appendChild(h('div', { class: 'cplot' }, h('div', { class: 'cbld bossb' }, pic), c));
-      }
       var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, win = t.levels.slice(sp.lo - 1, sp.hi);
+      var real = win.length, pad = sandbox ? +((/[#&]nh=(\d+)/.exec(hash) || [])[1] || 0) : 0; // layout check: a map with that many houses
+      while (win.length < pad) win.push(win[real - 1]);
+      // the stops of the trail, in order: the houses, and the bridge mission that closes each grade
+      var items = [];
       win.forEach(function (d, i) {
-        var lv = sp.lo + i, pr = L.progOf(state, t.id, lv), far = lv > state.levels[t.id];
-        var n = win.length, dif = h('span', { class: 'dif', title: 'קֹשִׁי ' + (i + 1) + ' מִתּוֹךְ ' + n });
-        win.forEach(function (x, k) { dif.appendChild(h('i', { class: k <= i ? 'on' : '', style: 'height:' + (5 + k * 2) + 'px' })); });
-        var card = h('div', { class: 'clr' }, h('div', { class: 'cname' },
-          h('b', { text: d.name, title: d.name }), dif));
-        var row = h('div', { class: 'stg' });
+        items.push({ d: d, i: i, lv: sp.lo + i });
+        var next = win[i + 1];
+        if (!d.enr && d.g <= 4 && (!next || next.g !== d.g || next.enr) && L.bossLevels(t.id, d.g).length) items.push({ boss: d.g });
+      });
+      // The recommended step: the one the home button offers when it is on this map; otherwise (another topic is next, or this
+      // is a map of the next grade) the frontier of this map by the same order: newest open house, earlier unfinished houses, bridge.
+      function frontier() {
+        function first(lv) { var pr = L.progOf(state, t.id, lv); for (var k = 0; k < 3; k++) if (!(pr[k] >= 1)) return L.stageOpen(state, t.id, lv, k) ? { topic: t.id, level: lv, stage: k } : null; return null; }
+        var top = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] || 1)), lv, r = first(top);
+        for (lv = sp.lo; !r && lv < top; lv++) r = first(lv);
+        items.forEach(function (it) { if (!r && it.boss && L.bossReady(state, t.id, it.boss)) r = { topic: t.id, boss: it.boss }; });
+        return r;
+      }
+      var nx = t.g === state.grade ? L.nextStep(state) : null, rec = nx && !nx.challenge && nx.topic === t.id ? nx : frontier();
+      function buddyEl() { return h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(buddySpec()) }); }
+      function flagEl() { return h('img', { class: 'mflag', src: 'assets/map/flag.png', alt: '', draggable: 'false' }); }
+
+      var slot = h('div', { class: 'mslot' }), box = h('div', { class: 'tmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), openIt = null;
+      var parb = h('button', { class: 'parb', text: '⚙️ הוֹרִים', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, real); } } });
+      MAP_DECO.forEach(function (d) { box.appendChild(h('img', { class: 'mdeco', src: 'assets/map/' + d[0] + '.png', alt: '', draggable: 'false', style: 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3] })); });
+      box.appendChild(trail);
+
+      // under the title: the one big button (the recommended step), or the three stages of the house that was tapped
+      function drawSlot() {
+        slot.innerHTML = '';
+        items.forEach(function (it) { it.el.classList.toggle('sel', it === openIt); });
+        if (!openIt) {
+          if (!rec) return;
+          var fresh = !state.rounds && !state.stars && !state.last;
+          slot.appendChild(h('button', { class: 'btn mgo', 'data-next': t.id + (rec.boss ? '-boss' : '-' + rec.level + '-' + rec.stage), on: { click: function () {
+            sfx.pop(); startRound(t.id, rec.boss ? { boss: rec.boss } : { level: rec.level, stage: rec.stage });
+          } } }, h('b', { text: (fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים') + ' ◀' }),
+            h('small', { text: rec.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name + ', שָׁלָב ' + (rec.stage + 1) })));
+          return;
+        }
+        var d = openIt.d, lv = openIt.lv, pr = L.progOf(state, t.id, lv), n = win.length;
+        var dif = h('span', { class: 'dif', title: 'קֹשִׁי ' + (openIt.i + 1) + ' מִתּוֹךְ ' + n }), row = h('div', { class: 'stg' });
+        win.forEach(function (x, k) { dif.appendChild(h('i', { class: k <= openIt.i ? 'on' : '', style: 'height:' + (5 + k * 2) + 'px' })); });
         STAGES.forEach(function (sg, k) {
-          var open = L.stageOpen(state, t.id, lv, k);
-          var b = h('button', { class: 'sbtn' + (open ? '' : ' locked') + (pr[k] ? ' won' : ''), 'data-stage': lv + '-' + k, 'aria-label': sg[1] + ': ' + d.name },
+          var open = L.stageOpen(state, t.id, lv, k), now = !!rec && rec.level === lv && rec.stage === k;
+          var b = h('button', { class: 'sbtn' + (open ? '' : ' locked') + (pr[k] ? ' won' : '') + (now ? ' now' : ''), 'data-stage': lv + '-' + k, 'aria-label': sg[1] + ': ' + d.name },
             h('span', { class: 'si', text: open ? sg[0] : '🔒' }), h('span', { class: 'sl', text: sg[1] }), h('span', { class: 'ss', text: starStr(pr[k]) }));
           b.addEventListener('click', function () {
-            if (!open) { restart(b, 'shake'); sfx.wrong(); say(far ? 'הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו' : 'קֹדֶם מְסַיְּמִים אֶת הַשָּׁלָב שֶׁלְּפָנָיו'); return; }
+            if (!open) { restart(b, 'shake'); sfx.wrong(); say('קֹדֶם מְסַיְּמִים אֶת הַשָּׁלָב שֶׁלְּפָנָיו'); return; }
             sfx.pop(); startRound(t.id, { level: lv, stage: k });
           });
           row.appendChild(b);
         });
-        card.appendChild(row);
-        var bi = Math.min(REG_BLD.length - 1, Math.round(i * (REG_BLD.length - 1) / Math.max(1, n - 1)));
-        var house = h('button', { class: 'cbld', 'aria-label': d.name, style: '--s:' + (0.6 + 0.4 * i / Math.max(1, n - 1)).toFixed(2), on: { click: function () {
-          var k = 0; while (k < 2 && pr[k] >= 3) k++;            // the next stage worth playing
-          while (k > 0 && !L.stageOpen(state, t.id, lv, k)) k--;
-          row.children[k].click();
-        } } }, h('img', { src: 'assets/' + REG_BLD[bi] + '.png', alt: '', draggable: 'false' }), h('span', { class: 'cnum', text: String(i + 1) }));
-        grid.appendChild(h('div', { class: 'cplot' + (far ? ' far' : '') }, house, card));
-        var next = win[i + 1];
-        if (!d.enr && d.g <= 4 && (!next || next.g !== d.g || next.enr)) bossCard(d.g); // the bridge mission closes each grade
+        slot.appendChild(h('div', { class: 'mpanel' }, h('div', { class: 'mphead' }, h('b', { text: d.name }), dif), row,
+          h('button', { class: 'mx', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); openIt = null; drawSlot(); } } })));
+      }
+
+      items.forEach(function (it) {
+        var isRec, b;
+        if (it.boss) {
+          var g = it.boss, done = L.bossDone(state, t.id, g), ready = L.bossReady(state, t.id, g), hero = resolve(L.trollFromId(L.heroId(t.id, g)));
+          isRec = !!rec && rec.boss === g; it.reached = done || ready;
+          b = h('button', { class: 'mnode boss' + (done ? ' done' : ready ? ' ready' : ' far') + (isRec ? ' rec' : ''), 'data-boss': g },
+            h('span', { class: 'mtop' }, isRec ? buddyEl() : null,
+              h('span', { class: 'mic' }, h('img', { src: 'assets/map/bridgeRope.png', alt: '', draggable: 'false' }), done ? flagEl() : null),
+              done ? h('span', { class: 'mhero', 'aria-hidden': 'true', html: A.trollSVG(hero) }) : null),
+            h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }));
+          b.addEventListener('click', function () {
+            if (done) { sfx.giggle(); say(hero.name + ' נִצַּל וְעָבַר לָגוּר בַּכְּפָר!'); return; }
+            if (!ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
+            sfx.pop(); startRound(t.id, { boss: g });
+          });
+        } else {
+          var pr = L.progOf(state, t.id, it.lv), far = it.lv > state.levels[t.id], full = pr.every(function (x) { return x >= 1; }), n = win.length;
+          var bi = Math.min(MAP_BLD.length - 1, Math.round(it.i * (MAP_BLD.length - 1) / Math.max(1, Math.max(n, 5) - 1)));
+          var pips = h('span', { class: 'mpips', 'aria-hidden': 'true' });
+          isRec = !!rec && !rec.boss && rec.level === it.lv; it.reached = !far;
+          [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: (pr[k] >= 1 ? 's' + Math.min(3, pr[k]) : L.stageOpen(state, t.id, it.lv, k) ? 'o' : 'l') + (isRec && rec.stage === k ? ' now' : '') })); });
+          b = h('button', { class: 'mnode' + (far ? ' far' : full ? ' done' : ' open') + (isRec ? ' rec' : ''), 'data-house': it.lv },
+            h('span', { class: 'mtop' }, isRec ? buddyEl() : null,
+              h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, h('img', { src: 'assets/map/' + MAP_BLD[bi] + '.png', alt: '', draggable: 'false' }), full && !far ? flagEl() : null)),
+            h('span', { class: 'mlab', text: it.d.name }), far ? null : pips);
+          b.addEventListener('click', function () {
+            if (far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו'); return; }
+            sfx.pop(); openIt = openIt === it ? null : it; drawSlot();
+          });
+        }
+        it.el = b; box.appendChild(b);
       });
-      el.appendChild(msg); el.appendChild(grid);
-      el.appendChild(h('button', { class: 'parb', text: '⚙️ הוֹרִים', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, win.length); } } }));
+      box.appendChild(parb);
+      el.appendChild(msg); el.appendChild(slot); el.appendChild(box);
+      drawSlot();
+
+      // Where the stops stand. Rows that run from right to left like lines of text, each stop a little lower than the one
+      // before, so the trail zigzags down the map and ends at the far left; when the map is wide enough, one row that goes
+      // up and down. s is the size of the icons and labels: the biggest that leaves every label free.
+      function place(c, s) {
+        var W = box.clientWidth, H = box.clientHeight, N = items.length, one = c >= N, cw = W / c, off = (c - N % c) % c, xs = [], tops = [], hm = 0, ok = true, i;
+        box.style.setProperty('--s', s.toFixed(3));
+        for (i = 0; i < N; i++) xs.push(W - (((i + off) % c) + 0.5) * cw);
+        function widths(wide) {
+          items.forEach(function (it, i) { // a wide label reaches under its neighbours, but not out of the map and not into the corner of the parents' button
+            it.w = Math.max(40, (wide ? Math.max(cw, Math.min(cw * 1.9, 2 * Math.min(xs[i], W - xs[i] - (i % 2 ? parb.offsetWidth + 8 : 0)))) : cw) - 8); it.el.style.width = it.w + 'px';
+          });
+          hm = 0; items.forEach(function (it) { hm = Math.max(hm, it.el.offsetHeight); });
+        }
+        if (one) {
+          widths(true);
+          var amp = Math.min((H - hm) / 2, H * 0.3);
+          if (N > 1 && 2 * amp < hm + 8) { widths(false); amp = Math.min((H - hm) / 2, H * 0.3); ok = amp >= hm * 0.12; }
+          for (i = 0; i < N; i++) tops.push((H - hm) / 2 + (N > 1 ? (i % 2 ? amp : -amp) : 0));
+          ok = ok && hm <= H;
+        } else {
+          widths(false);
+          var step = (H - hm) / (N - 1);
+          ok = c * step >= hm + 8;
+          for (i = 0; i < N; i++) tops.push(i * step);
+        }
+        var pts = [], last = 0, pl = parb.offsetLeft, pt = parb.offsetTop;
+        items.forEach(function (it, i) {
+          var x0 = xs[i] - it.w / 2, m = it.el.querySelector('.mic'), mt = it.el.querySelector('.mtop');
+          it.el.style.left = x0.toFixed(1) + 'px'; it.el.style.top = tops[i].toFixed(1) + 'px';
+          pts.push([x0 + m.offsetLeft + m.offsetWidth / 2, tops[i] + m.offsetTop + m.offsetHeight * 0.6]);
+          if (it.reached) last = i;
+          if (mt.scrollWidth > it.w + 1) ok = false; // the icon and the troll beside it must fit in the width of the stop
+          if (x0 < pl + parb.offsetWidth + 6 && x0 + it.w > pl - 6 && tops[i] + it.el.offsetHeight > pt - 6 && tops[i] < pt + parb.offsetHeight + 6) ok = false; // the parents' button keeps its corner
+        });
+        function path(to) {
+          var dd = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1), k;
+          for (k = 1; k <= to; k++) {
+            var a = pts[k - 1], b = pts[k], f = (k % 2 ? 0.1 : -0.1); // a gentle bend, to one side and then to the other
+            dd += ' Q' + ((a[0] + b[0]) / 2 - (b[1] - a[1]) * f).toFixed(1) + ',' + ((a[1] + b[1]) / 2 + (b[0] - a[0]) * f).toFixed(1) + ' ' + b[0].toFixed(1) + ',' + b[1].toFixed(1);
+          }
+          return dd;
+        }
+        trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
+        return ok;
+      }
+      function layout() {
+        if (cur !== el) return;
+        var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false;
+        if (W < 60 || H < 60 || !N) return;
+        for (c = 2; c <= Math.ceil(N / 2); c++) cands.push([c, Math.min(1.9, W / (c * 104), c * H / (100 * (N - 1 + c))), 1]);
+        cands.push([N, Math.min(1.9, (W / N - 8) / 86, H / 135), 1.3]); // one row is preferred when it is nearly as big
+        cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
+        for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
+        if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
+      }
+      layout();
+      if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     });
   }
   // For parents: how many houses of the topic are open. Behind a small button, so that it is not among the child's stages.
@@ -5241,7 +5371,7 @@ var TrollModels = (function () {
   else if (scr === 'gift') gift();
   else if (scr === 'subjects') subjects();
   else if (scr === 'cloud') cloud();
-  else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); }
+  else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); if (/open=1/.test(hash)) { var on0 = cur.querySelector('.mnode.rec:not(.boss)') || cur.querySelector('.mnode.open,.mnode.done'); if (on0) on0.click(); } }
   else if (scr === 'bossend') endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g);
   else if (scr === 'end') {
     var lv0 = state.levels[ht], r0 = L.createRound(ht, state.levels, Math.random, 7);
@@ -5271,6 +5401,13 @@ var TrollModels = (function () {
       if (!top || top === b || b.contains(top) || top.contains(b) || top.closest('button')) return;
       var c = top.getBoundingClientRect(); // only a layer that covers most of the screen counts (a list that scrolls hides its own buttons on purpose)
       if (c.width > window.innerWidth * 0.6 && c.height > window.innerHeight * 0.6) bad++;
+    });
+    // the treasure map of a topic: no stop of the trail may touch another stop or the parents' button, leave the map, or cut its label
+    var tmap = cur.querySelector('.tmap'), stops = tmap ? [].slice.call(tmap.querySelectorAll('.mnode,.parb')) : [], tr = tmap && tmap.getBoundingClientRect();
+    stops.forEach(function (a, i) {
+      var r = a.getBoundingClientRect(), lab = a.querySelector('.mlab'), top = a.querySelector('.mtop');
+      if (r.left < tr.left - 1 || r.right > tr.right + 1 || r.top < tr.top - 1 || r.bottom > tr.bottom + 1 || (lab && lab.scrollWidth > lab.clientWidth + 1) || (top && top.scrollWidth > a.clientWidth + 1)) bad++;
+      stops.slice(i + 1).forEach(function (b) { var q = b.getBoundingClientRect(); if (r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1) bad++; });
     });
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results

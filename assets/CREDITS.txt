@@ -8,3 +8,5 @@ More forest backgrounds (forest2-4.jpg) and small houses: same sources as above 
 Music (snd/carefree.mp3, snd/wholesome.mp3, snd/easylemon.mp3, snd/race.mp3): "Carefree", "Wholesome", "Easy Lemon", "Monkeys Spinning Monkeys" by Kevin MacLeod (incompetech.com)
   Licensed under Creative Commons: By Attribution 4.0  https://creativecommons.org/licenses/by/4.0/  (re-encoded; "Wholesome" shortened)
 Sound effects (other snd/*.mp3): "Interface Sounds" and "Music Jingles" by Kenney (www.kenney.nl)  -  license: CC0
+Treasure map of a topic (map/*.png, map/parchment.jpg): "Cartography Pack" by Kenney (www.kenney.nl); the parchment texture re-encoded as JPEG
+  https://kenney.nl/assets/cartography-pack  -  license: CC0

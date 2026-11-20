@@ -36,7 +36,8 @@ async function toRound(x) { // first building, first house, discovery stage
   var first = await until(function () { return q(x, '.bld[data-t]') || q(x, '.bld[data-sub]'); }, 'map ' + x);
   if (first.hasAttribute('data-sub')) { q(x, '.bld[data-sub="math"]').click(); first = await until(function () { return q(x, '.bld[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
   first.click();
-  (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'region ' + x)).click();
+  (await until(function () { return q(x, '.mnode:not(.far):not(.boss)'); }, 'region ' + x)).click(); // a house of the map opens its three stages
+  (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'stages ' + x)).click();
   await until(function () { return F[x].contentWindow.__tv.round; }, 'round ' + x);
 }
 async function solve(x) { // one correct answer, the way the self-play test gives it
@@ -107,7 +108,7 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     all('A', '#podium .btn')[1].click();
     await until(function () { return q('A', '.bld[data-t]'); }, 'A, who finished the list, is on the map');
     q('A', '.bld[data-t]').click();
-    await until(function () { return q('A', '.sbtn'); }, 'and A can go into a building');
+    await until(function () { return q('A', '.mnode'); }, 'and A can go into a building');
     document.title = 'RACE1 OK';
 
     // 4: the host disappears during the race, the guest still finishes
