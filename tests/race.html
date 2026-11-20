@@ -59,13 +59,13 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     check(doc('B').body.classList.contains('invited') && !doc('B').getElementById('launch'), 'the bar does not replace the screen of B');
     bar.querySelector('.n').click();
     await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined');
-    check(row('A', NAME.B).classList.contains('off'), 'after a refusal the same child cannot be invited again right away');
+    check(!row('A', NAME.B).classList.contains('off'), 'after a refusal the same child can be invited again at once');
+    check(row('A', NAME.A) && row('A', NAME.A).classList.contains('self'), 'the player sees their own troll in the pool');
     check(!doc('A').getElementById('track') && !doc('A').getElementById('launch'), 'no race started');
     document.title = 'RACE2 OK';
 
     // 3: the guest does not answer
-    await enter('A', 2);
-    await invite('A', NAME.B);
+    await invite('A', NAME.B); // straight away, without reloading
     await until(function () { return doc('B').getElementById('invite'); }, 'B got the second invitation');
     await until(function () { return !doc('B').getElementById('invite'); }, 'the bar leaves by itself after five seconds', 80);
     await until(function () { return /הִצְטָרֵף/.test(q('A', '.pmsg').textContent); }, 'A is told nobody joined (no answer)');

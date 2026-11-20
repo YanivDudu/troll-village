@@ -558,6 +558,7 @@ body.invited #app,body.invited .ovl{bottom:var(--inv)}
 .prow b{font-size:clamp(12px,2.3vmin,18px);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prow small{font-size:clamp(10px,1.9vmin,14px);color:#8e5cff;font-weight:700}
 .prow.on{box-shadow:0 0 0 4px #ff4f9a}
+.prow.self{box-shadow:0 0 0 4px #ffd84d}
 .prow.off{opacity:.5}
 .prow .mk{position:absolute;top:-6px;left:-6px;font-size:18px}
 .pmsg{font-size:clamp(14px,2.6vmin,22px);padding:6px 18px;flex:0 0 auto}
@@ -2403,7 +2404,7 @@ var TrollLogic = (function () {
   }
 
   // ---- race between online players (the screens and the network are in the game script) ----
-  var RACE = { GOAL: 300, MAX_MS: 600000, INVITE_MS: 5000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 120000, MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
+  var RACE = { GOAL: 300, MAX_MS: 600000, INVITE_MS: 5000, BEAT_MS: 20000, STALE_MS: 45000, COOL_MS: 0, /* no rest after a refusal: the same child can be invited again at once */ MAXP: 4, WIN_COINS: 30, PLAY_COINS: 10 };
   // What a correct answer is worth. It depends on where the child stands, not on the material: the furthest house that is
   // open to them is worth the most, so a second grader and a fourth grader, or a new player and a veteran, race on equal terms.
   function racePoints(state, q, opts) {
@@ -4140,6 +4141,13 @@ var TrollModels = (function () {
         for (id in online) { p = person(id, online[id]); if (p && id !== mine && (raceDbg || now - p.t < RC.STALE_MS)) list.push(p); }
         list.sort(function (a, b) { return a.n < b.n ? -1 : a.n > b.n ? 1 : a.id < b.id ? -1 : 1; });
         grid.textContent = '';
+        var self = person(mine, me()); // the player sees their own troll first: "I am here too"
+        if (self) {
+          var sb = h('button', { class: 'prow self', html: trollOf(self) });
+          sb.appendChild(h('b', { text: self.n })); sb.appendChild(h('small', { text: 'אֲנִי כָּאן' })); sb.appendChild(h('span', { class: 'mk', text: '⭐' }));
+          sb.addEventListener('click', function () { sfx.giggle(); sb.firstChild.outerHTML = trollOf(self, 'cheer'); });
+          grid.appendChild(sb);
+        }
         list.slice(0, 40).forEach(function (p) {
           var asked = waiting && race.p[p.id], resting = (cool[p.id] || 0) > Date.now(), busy = !!p.r && !asked;
           var mark = asked ? (asked.ans === 'y' ? '✅' : asked.ans === 'n' ? '❌' : '⏳') : resting ? '🕒' : picked[p.id] ? '💌' : '';
