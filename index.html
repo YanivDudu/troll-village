@@ -4886,7 +4886,7 @@ var TrollModels = (function () {
   // ---- ranking: every public player, by experience points (one for every solved exercise), then by stars ----
   var boardT = 0;
   function pushBoard(force) {
-    if (!CLOUD.rt || !rtOn() || !profiles.cur || !isPub() || !state.owned.length) return;
+    if (!CLOUD.rt || !rtOn() || !profiles.cur || !isPub() || !state.owned.length || NS) return; // (the players of the automatic tests stay out of the ranking)
     if (!force && Date.now() - boardT < 30000) return;
     boardT = Date.now();
     var v = me(); v.xp = state.xp; v.st = state.stars; v.t = SV;
