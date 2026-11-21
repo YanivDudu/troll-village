@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- The calculation sheet (the 🧮 button of an exercise), driven through its real button, cells and keys: for every way of writing
+     (addition, subtraction with regrouping, multiplication, long division, splitting, decimals, squared paper) taps fill the
+     expected cells and the selection moves as on paper; erase, the sponge and its undo; what was written survives closing the
+     sheet and a wrong answer, and is gone at the next exercise; a real keyboard types the same; nothing is answered by the sheet.
+     Result in document.title: PAD OK n / PAD FAIL ...
+     Run: msedge --headless --disable-gpu --allow-file-access-from-files --virtual-time-budget=90000 --dump-dom tests/pad.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0;
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w; f.height = h; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen .answers'); if (s && f.contentWindow.__tv && f.contentWindow.__tv.round) res({ f: f, d: d, w: f.contentWindow }); else setTimeout(poll, 20); })();
+  });
+}
+// the exercise on the screen becomes the one we want to write about (the sheet reads the exercise when its button is tapped)
+function setQ(x, text, g, more) { var r = x.w.__tv.round, q = r.qs[r.i], k; q.text = text; q.key = text; q.fmt = 'choice'; q.g = g; q.rtl = false; delete q.pre; for (k in (more || {})) q[k] = more[k]; }
+function btn(x) { return x.d.querySelector('.screen:not(.out) .padbtn'); }
+function sheet(x) { return x.d.querySelector('.ovl .padc'); }
+function open(x) { btn(x).click(); return sheet(x); }
+function cells(x) { var o = {}; [].forEach.call(sheet(x).querySelectorAll('.pc'), function (b) { if (b.textContent) o[b.getAttribute('data-c')] = b.textContent; }); return o; }
+function sel(x) { var s = sheet(x).querySelector('.pc.on'); return s ? s.getAttribute('data-c') : null; }
+function row(x, prefix, n) { var c = cells(x), out = [], i; for (i = 0; i < n; i++) out.push(c[prefix + i] || '_'); return out.join(''); }
+function written(x) { var b = btn(x).querySelector('b'); return b ? b.textContent.trim() : ''; }
+// tokens separated by _ : @id taps a cell (the _ inside a name is written -), B erases, C is the sponge (or its undo), X closes and opens again, anything else is the key with that label
+function tap(x, tokens) {
+  tokens.split('_').forEach(function (t) {
+    var s = sheet(x), el;
+    if (t.charAt(0) === '@') el = s.querySelector('[data-c="' + t.slice(1).replace('-', '_') + '"]');
+    else if (t === 'B') el = s.querySelector('.pk.del');
+    else if (t === 'C') el = s.querySelector('.pk.clr');
+    else if (t === 'X') { s.querySelector('.padx').click(); open(x); return; }
+    else el = [].filter.call(s.querySelectorAll('.pk'), function (k) { return k.textContent === t; })[0];
+    if (!el) throw new Error('no such cell or key: ' + t);
+    el.click();
+  });
+}
+function press(x, key) { x.d.dispatchEvent(new x.w.KeyboardEvent('keydown', { key: key, bubbles: true, cancelable: true })); }
+function sorted(o) { var out = {}; Object.keys(o).sort().forEach(function (k) { out[k] = o[k]; }); return JSON.stringify(out); }
+function same(a, b) { return sorted(a) === sorted(b); }
+(async function () {
+  try {
+    for (var size of [[360, 640], [800, 380]]) {
+      var x = await frame('demo&s=round&g=4&t=add', size[0], size[1]), S = size.join('x') + ': ', c, r = x.w.__tv.round, at = r.i, L = x.w.TrollLogic;
+      // ---- addition: the result is written from the ones leftwards
+      setQ(x, '29,598 + 16,341 = ?', 4); check(!!open(x), S + 'addition: the button opens the sheet');
+      check(sheet(x).getAttribute('data-kind') === 'add' && sel(x) === 'r5', S + 'addition: the first cell is the ones of the result (' + sel(x) + ')');
+      tap(x, '9_3_9_5_4'); check(row(x, 'r', 6) === '_45939' && sel(x) === 'r0', S + 'addition: 9 3 9 5 4 fill the result from right to left (' + row(x, 'r', 6) + ', ' + sel(x) + ')');
+      sheet(x).querySelector('.padx').click(); check(!sheet(x) && written(x) === '45939', S + 'addition: after closing, the button keeps what was written (' + written(x) + ')');
+      // ---- three addends: a carried digit does not move the selection
+      setQ(x, '434 + 597 + 296 = ?', 4); open(x); tap(x, '7_@c2_1'); c = cells(x);
+      check(same(c, { r3: '7', c2: '1' }) && sel(x) === 'c2' && sheet(x).querySelectorAll('.padg .pd').length >= 9, S + 'three addends: 7 in the ones, the carried 1 stays selected (' + JSON.stringify(c) + ')');
+      tap(x, 'X'); check(same(cells(x), { r3: '7', c2: '1' }) && sel(x) === 'c2', S + 'three addends: closing and opening again keeps the cells and the selection');
+      // ---- subtraction: a regrouping cell holds two digits and crosses out the digit under it
+      setQ(x, '503 − 78 = ?', 3); open(x); check(sheet(x).getAttribute('data-kind') === 'sub' && sel(x) === 'r2', S + 'subtraction: opens on the ones of the result');
+      tap(x, '@g1_9_@g2_1_3_@g0_4_@r2_5_2_4'); c = cells(x);
+      check(same(c, { g0: '4', g1: '9', g2: '13', r0: '4', r1: '2', r2: '5' }), S + 'subtraction: 4, 9 and 13 above, 425 below (' + JSON.stringify(c) + ')');
+      check(sheet(x).querySelectorAll('.pd.x').length === 3, S + 'subtraction: the three digits that were regrouped are crossed out');
+      tap(x, '@g2_7'); check(cells(x).g2 === '7', S + 'subtraction: a third digit in a regrouping cell starts over');
+      tap(x, 'B_B'); check(!cells(x).g2 && sheet(x).querySelectorAll('.pd.x').length === 2 && sel(x) === 'g2', S + 'subtraction: erasing the small cell removes the line through the digit, and does not leave the cell');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '425', S + 'subtraction: the button shows 425');
+      // ---- multiplication: unchanged (the first row of partial products, leftwards)
+      setQ(x, '39 × 36 = ?', 4); open(x); check(sel(x) === 'p0_3', S + 'multiplication: opens on the ones of the first row');
+      tap(x, '4_3_2'); check(same(cells(x), { p0_3: '4', p0_2: '3', p0_1: '2' }) && sel(x) === 'p0_0', S + 'multiplication: 4 3 2 from right to left in the first row');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '', S + 'multiplication: no result written, so the button shows none');
+      // ---- long division: the quotient above the dividend from left to right, the divisor on the right, the remainder in words
+      setQ(x, '784 : 7 = ?', 4); open(x); check(sheet(x).getAttribute('data-kind') === 'div' && sel(x) === 'q0' && !!sheet(x).querySelector('.pbr') && !/:/.test(sheet(x).querySelector('.padg').textContent), S + 'long division: opens on the first digit of the quotient, with the bracket and without a ":" sign');
+      var qr = sheet(x).querySelector('[data-c=q0]').getBoundingClientRect(), dv = [].filter.call(sheet(x).querySelectorAll('.padg .pd'), function (e) { return /^\d$/.test(e.textContent); }).map(function (e) { return e.getBoundingClientRect(); });
+      check(dv.length === 4 && Math.abs(qr.left + qr.width / 2 - dv[0].left - dv[0].width / 2) < 2 && qr.bottom <= dv[0].top + 1 && dv[3].left > dv[2].right, S + 'long division: the quotient cell is above the first digit of the dividend, the divisor is to the right');
+      tap(x, '1_1_2_@s0-0_7_@m0_0'); c = cells(x);
+      check(same(c, { q0: '1', q1: '1', q2: '2', s0_0: '7', m0: '0' }), S + 'long division: 112 on top, 7 under the first digit, 0 in the remainder (' + JSON.stringify(c) + ')');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '112 שְׁאֵרִית 0', S + 'long division: the button shows the quotient and the remainder in words (' + written(x) + ')');
+      var br = btn(x).getBoundingClientRect(), scr = x.d.querySelector('.screen:not(.out)'), lv = btn(x).parentNode.getBoundingClientRect();
+      check(br.left >= 0 && br.right <= size[0] && scr.scrollHeight <= scr.clientHeight + 1 && br.top >= lv.top - 1 && br.bottom <= lv.bottom + 1, S + 'long division: the button with the long text stays on the screen and nothing scrolls (' + Math.round(br.left) + '..' + Math.round(br.right) + ', ' + Math.round(br.height) + ' high, screen ' + scr.scrollWidth + '/' + scr.clientWidth + ' ' + scr.scrollHeight + '/' + scr.clientHeight + ', row ' + Math.round(lv.top) + '..' + Math.round(lv.bottom) + ' button ' + Math.round(br.top) + '..' + Math.round(br.bottom) + ')');
+      setQ(x, 'מָה הַשְּׁאֵרִית בַּתַּרְגִּיל 83 : 6?', 4, { rtl: true }); open(x); check(sheet(x).getAttribute('data-kind') === 'div' && sheet(x).querySelectorAll('[data-c^=q]').length === 2 && !!sheet(x).querySelector('[data-c=m0]'), S + 'a remainder question gets the long division of its numbers');
+      sheet(x).querySelector('.padx').click();
+      // ---- grade 3: splitting, typed box after box
+      setQ(x, '42 : 3 = ?', 3); open(x); check(sheet(x).getAttribute('data-kind') === 'split' && sel(x) === 'x0', S + 'splitting: opens on the first part');
+      tap(x, '3_0_1_2'); check(same(cells(x), { x0: '3', x1: '0', y0: '1', y1: '2' }) && sel(x) === 'e0', S + 'splitting: 30 and 12, then on to the next row (' + sel(x) + ')');
+      sheet(x).querySelector('.padx').click();
+      // ---- decimals: the point stays in its column, a missing place can get a zero
+      setQ(x, '8.29 − 1.4 = ?', 5); open(x); check(sheet(x).getAttribute('data-kind') === 'dec' && sel(x) === 'r2', S + 'decimals: opens on the last place of the result');
+      tap(x, '9_8_6_@zb0_0'); c = cells(x);
+      check(same(c, { r0: '6', r1: '8', r2: '9', zb0: '0' }) && sel(x) === 'zb0', S + 'decimals: 6.89 and the added zero (' + JSON.stringify(c) + ')');
+      var pts = [].filter.call(sheet(x).querySelectorAll('.padg .pd'), function (e) { return e.textContent === '.'; }).map(function (e) { return Math.round(e.getBoundingClientRect().left); });
+      check(pts.length === 3 && pts[0] === pts[1] && pts[1] === pts[2], S + 'decimals: point under point, in both numbers and in the result');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '6.89', S + 'decimals: the button shows 6.89');
+      // ---- squared paper: left to right, signs, erase steps back, the sponge and its undo
+      setQ(x, '(4 + 8) × 6 − 14 = ?', 3); open(x); check(sheet(x).getAttribute('data-kind') === 'free' && sel(x) === 'f0_0' && sheet(x).querySelectorAll('.pk').length === 20 && /4 \+ 8/.test(sheet(x).querySelector('.padcap').textContent), S + 'squared paper: the exercise on top, twenty keys');
+      tap(x, '1_2_×_6_=_7_2_B_B_X'); c = cells(x);
+      check(same(c, { f0_0: '1', f0_1: '2', f0_2: '×', f0_3: '6', f0_4: '=' }) && sel(x) === 'f0_5', S + 'squared paper: 12 × 6 = stays, 72 was erased, the selection is kept after opening again (' + JSON.stringify(c) + ', ' + sel(x) + ')');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '✎', S + 'squared paper: the button shows only that something is written');
+      open(x); tap(x, 'C'); check(same(cells(x), {}) && sheet(x).querySelector('.pk.clr').textContent === '↩', S + 'the sponge empties the page and turns into an undo');
+      tap(x, 'C'); check(Object.keys(cells(x)).length === 5 && sheet(x).querySelector('.pk.clr').textContent !== '↩', S + 'the undo brings the page back');
+      tap(x, 'C_C_C'); check(same(cells(x), {}), S + 'sponge, undo, sponge: empty');
+      tap(x, '@f0-0_1_2_C_C_5'); c = cells(x);
+      check(same(c, { f0_0: '1', f0_1: '2', f0_2: '5' }) && sheet(x).querySelector('.pk.clr').textContent !== '↩', S + 'after the undo the next digit goes where the writing stopped (' + JSON.stringify(c) + ')');
+      tap(x, 'C_7'); check(same(cells(x), { f0_3: '7' }), S + 'a key after the sponge: the old page is gone for good'); tap(x, 'C'); check(same(cells(x), {}) , S + 'and the sponge works again');
+      // ---- a real keyboard
+      tap(x, '@f1-1'); press(x, '5'); press(x, '*'); press(x, '4'); press(x, ','); press(x, '/'); press(x, '-');
+      check(row(x, 'f1_', 8) === '_5×4.:−_', S + 'keyboard on squared paper: digits and signs (' + row(x, 'f1_', 8) + ')');
+      press(x, 'Backspace'); press(x, 'Backspace'); press(x, 'ArrowLeft'); press(x, 'ArrowLeft'); press(x, 'Delete'); press(x, 'ArrowDown'); press(x, '9'); press(x, 'ArrowUp'); press(x, 'ArrowUp');
+      c = cells(x); check(c.f1_1 === '5' && c.f1_2 === '×' && !c.f1_3 && c.f1_4 === '.' && !c.f1_5 && c.f2_3 === '9' && /^f0_/.test(sel(x)), S + 'keyboard: backspace, arrows and delete (' + JSON.stringify(c) + ', ' + sel(x) + ')');
+      press(x, 'Escape'); check(!sheet(x), S + 'keyboard: Escape closes the sheet');
+      press(x, '7'); press(x, 'Backspace'); open(x); check(same(cells(x), c), S + 'no key reaches the sheet after it is closed');
+      sheet(x).querySelector('.padx').click();
+      setQ(x, '29,598 + 16,341 = ?', 4); open(x); press(x, '5'); press(x, '+'); press(x, 'ArrowLeft'); press(x, 'ArrowUp'); press(x, 'ArrowUp'); press(x, '1'); press(x, 'Backspace'); press(x, 'Backspace');
+      check(same(cells(x), { r5: '5' }) && /^c/.test(sel(x)), S + 'keyboard on a column sheet: digits and arrows work, signs are ignored (' + JSON.stringify(cells(x)) + ', ' + sel(x) + ')');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '5', S + 'the button shows the 5');
+      // ---- paper only: nothing was answered, and the sheet is not offered where it should not be
+      check(r.i === at && r.results.length === at && x.d.querySelectorAll('.screen:not(.out) .answers [data-v]').length >= 2, S + 'all of this answered nothing: the same exercise, its answer buttons untouched');
+      // ---- a wrong answer keeps the sheet of the exercise; the next exercise gets a clean one
+      var q0 = r.current(); q0.answer = 45939; q0.options = [45939, 45940, 45929, 46939]; // (what the buttons show is older; only the values matter here)
+      var wrong = [].filter.call(x.d.querySelectorAll('.screen:not(.out) .answers [data-v]'), function (b) { return b.getAttribute('data-v') !== String(x.w.__tv.round.current().answer); })[0];
+      await wait(450); if (wrong) { wrong.click(); await wait(2500); }
+      if (x.d.querySelector('.ovl') && !sheet(x)) { var cl = x.d.querySelector('.ovl .icon, .ovl .btn'); if (cl) cl.click(); await wait(300); } // the explanation that follows a miss
+      if (r.i === at) { check(written(x) === '5', S + 'after a wrong answer the same exercise still shows what was written (' + written(x) + ')'); open(x); check(same(cells(x), { r5: '5' }), S + 'and its sheet is still there'); sheet(x).querySelector('.padx').click(); }
+      r.i = at + 1; setQ(x, '29,598 + 16,341 = ?', 4); // the same numbers come again as another exercise of the round
+      check(L.padKind(r.current()).kind === 'add', S + 'the next exercise has a sheet'); open(x);
+      check(same(cells(x), {}) && sel(x) === 'r5', S + 'the next exercise opens a clean sheet (' + JSON.stringify(cells(x)) + ')');
+      sheet(x).querySelector('.padx').click(); check(written(x) === '', S + 'and its button shows no number');
+      setQ(x, '6 × 7 = ?', 3); btn(x).click(); check(!sheet(x), S + 'a table fact opens no sheet');
+      setQ(x, '43 − 5 = ?', 1); btn(x).click(); check(!sheet(x), S + 'grade 1 gets no new sheet');
+      x.f.remove();
+    }
+  } catch (e) { fails.push('error ' + (e && e.stack || e)); }
+  document.title = fails.length ? 'PAD FAIL ' + fails.join(' | ') : 'PAD OK ' + checks;
+})();
+</script>

@@ -977,3 +977,115 @@ t('cloud: boy or girl changed on a player card travels (the newer card wins), pr
   assert.deepStrictEqual(m.list.map(p => p.id), [id, id2, 'p333333333']); assert.strictEqual(m.list[1].sex, 'm');
 });
 console.log('all ' + n + ' passed (players)');
+
+// ---- the calculation sheet: when it is offered (task "pad", docs/prompts/pad-spec.md) ----
+{
+  // every house of every arithmetic tile, as the game makes it, in every format it can take: which sheet (- = none)
+  const PAD = {
+    add2: 'choice:add', add4: 'choice:add use:add',
+    add5: 'choice:-|add tf:-|add cmp:-|add word:-|free lefteq:-|free', add6: 'choice:add tf:add cmp:add word:free lefteq:free', add7: 'choice:add tf:add cmp:add word:free lefteq:free use:add', add8: 'choice:add tf:add cmp:add',
+    sub6: 'choice:sub tf:sub cmp:sub word:free', sub7: 'choice:sub tf:sub cmp:sub word:free use:sub', sub8: 'choice:free tf:free cmp:free',
+    mul1: 'choice:-|mul', mul2: 'choice:-|mul', num4: 'choice:-|add tf:add cmp:add word:free lefteq:free', num6: 'choice:-|add|sub tf:add|sub cmp:add|sub', miss5: 'choice:free',
+    add9: 'choice:add tf:add cmp:add', add10: 'choice:add tf:add cmp:add', add11: 'choice:add tf:add cmp:add', sub9: 'choice:sub tf:sub cmp:sub', sub10: 'choice:sub tf:sub cmp:sub', sub11: 'choice:sub tf:sub cmp:sub',
+    mul4: 'choice:-|mul', mul5: 'choice:-|mul', mul6: 'choice:mul tf:mul cmp:mul', mul7: 'choice:mul tf:mul cmp:mul', mul8: 'choice:mul tf:mul cmp:mul',
+    div7: 'choice:free|split tf:free|split cmp:free|split', div8: 'choice:split tf:split cmp:split', num7: 'choice:-|add|sub tf:add|sub cmp:add|sub',
+    ord1: 'choice:free tf:free cmp:free', ord2: 'choice:free tf:free cmp:free', ord3: 'choice:free tf:free cmp:free', ord4: 'choice:free tf:free cmp:free', miss7: 'choice:free', miss8: 'choice:free',
+    num9: 'choice:-|add|sub tf:add|sub cmp:add|sub', add12: 'choice:add tf:add cmp:add', add13: 'choice:add tf:add cmp:add', sub12: 'choice:sub tf:sub cmp:sub', add14: 'choice:add tf:add cmp:add', sub13: 'cmp:free',
+    mul9: 'choice:mul tf:mul cmp:mul', mul10: 'choice:mul tf:mul cmp:mul', mul11: 'choice:mul tf:mul cmp:mul', div9: 'choice:div+rem', div10: 'choice:div tf:div cmp:div', div11: 'choice:div tf:div cmp:div',
+    num10: 'choice:free', num11: 'choice:-|free', num12: 'choice:free tf:free cmp:free', ord5: 'choice:free tf:free cmp:free', ord6: 'choice:free tf:free cmp:free', miss9: 'choice:free',
+    add15: 'choice:dec', add16: 'choice:dec', sub14: 'choice:dec', miss11: 'choice:free', frac10: 'cmp:free', frac11: 'choice:free', mul12: 'use:mul', div12: 'choice:div tf:div cmp:div', ord7: 'choice:free tf:free cmp:free'
+  };
+  const HANDS = ['line', 'build', 'array', 'pairs'], kindStr = k => k ? k.kind + (k.rem ? '+rem' : '') : '-';
+  const tiles = L.TOPICS.filter(tp => !tp.sub), seen = {}, samples = [];
+  let kinds = 0, sheets = 0, houses = 0; const byG = {}, housesWith = new Set();
+  t('the sheet: every house in every format gets exactly the sheet of the spec (154 kinds of 306)', () => {
+    for (const tp of tiles) tp.src.forEach((s, i) => {
+      const house = s[0] + s[1], per = {}; houses++;
+      const note = (f, q) => { const k = L.padKind(q); (per[f] = per[f] || new Set()).add(kindStr(k)); if (samples.length < 90000 && Math.random() < 0.25) samples.push(q); return k; };
+      for (let j = 0; j < 1500; j++) {
+        const q = L.makeQuestion(tp.id, i + 1, Math.random);
+        note(q.fmt, q);
+        if (q.fmt !== 'choice') continue; // an exercise that is born in a format is never turned into another one
+        for (const f of new Set(L.formatsFor(q, 0, true).concat(L.formatsFor(q, 1, true)))) {
+          const c = L.toFmt(q, f, Math.random, () => L.makeQuestion(tp.id, i + 1, Math.random));
+          if (c) note(f, c);
+        }
+      }
+      const want = {}; (PAD[house] || '').split(' ').filter(Boolean).forEach(x => { const p = x.split(':'); want[p[0]] = p[1]; });
+      for (const f of Object.keys(per)) {
+        const got = [...per[f]].sort().join('|'); kinds++;
+        assert.strictEqual(got, want[f] || '-', house + ' (grade ' + tp.g + ') as ' + f);
+        if (HANDS.includes(f)) assert.strictEqual(got, '-', house + ' ' + f);
+        if (got !== '-') { sheets++; byG[tp.g] = (byG[tp.g] || 0) + 1; housesWith.add(house); }
+      }
+      for (const f of Object.keys(want)) assert(per[f], house + ': the format ' + f + ' never came');
+      seen[house] = 1;
+    });
+    console.log('   sheet kinds: ' + sheets + ' of ' + kinds + ', houses ' + housesWith.size + ' of ' + houses + ', by grade ' + JSON.stringify(byG));
+    assert.strictEqual(kinds, 306); assert.strictEqual(sheets, 154); assert.strictEqual(houses, 98); assert.strictEqual(housesWith.size, 61);
+    assert.deepStrictEqual(byG, { 1: 3, 2: 42, 3: 52, 4: 44, 5: 13 });
+    Object.keys(PAD).forEach(hs => assert(seen[hs], 'no such house: ' + hs));
+  });
+  t('the sheet: nothing that had it loses it, grade 1 and the hands-on formats get nothing new, and the answer is never read', () => {
+    let old = 0;
+    for (const q of samples) {
+      const s = JSON.stringify(q), v = L.vertOf(q), k = L.padKind(q);
+      if (v) { old++; assert(k && (k.kind === 'add' || k.kind === 'mul') && k.key === v.key, s); assert.deepStrictEqual(Array.from(k.nums), [v.a, v.b], s); }
+      if (q.g === 1) assert.strictEqual(!!k, !!v, s);
+      if (HANDS.includes(q.fmt)) assert.strictEqual(k, null, s);
+      const c = Object.assign({}, q, { answer: q.answer === 'yes' ? 'no' : 987654, options: ['a', 'b', 'c', 'd'] });
+      assert.deepStrictEqual(JSON.parse(JSON.stringify(L.padKind(c))), JSON.parse(JSON.stringify(k)), s);
+    }
+    assert(old > 1000);
+    // the source lists (debug links make their exercises): the same holds there
+    for (const tp of L.SRC) for (let lv = 1; lv <= tp.levels.length; lv++) for (let i = 0; i < 200; i++) {
+      const q = L.makeQuestion(tp.id, lv, Math.random), v = L.vertOf(q), k = L.padKind(q);
+      if (v) assert(k && /^(add|mul)$/.test(k.kind), JSON.stringify(q));
+      if (q.g === 1) assert.strictEqual(!!k, !!v, JSON.stringify(q));
+    }
+  });
+  t('the sheet: the numbers it is laid out from are the numbers of the exercise', () => {
+    const OPS = { add: '+', sub: '−', mul: '×', div: ':', split: ':' };
+    let checked = 0;
+    for (const q of samples) {
+      const k = L.padKind(q); if (!k) continue;
+      if (k.kind === 'free') { assert.strictEqual(k.nums.length, 0); continue; }
+      const f = q.fmt, base = strip(f !== 'choice' && q.key.indexOf(f + '|') === 0 ? q.key.slice(f.length + 1) : q.text).replace(/,/g, '');
+      if (k.rem) { const m1 = /(\d+) : (\d+)\?$/.exec(base), m2 = /נכנס (\d+) בתוך (\d+)\?$/.exec(base); assert.deepStrictEqual(Array.from(k.nums), m1 ? [+m1[1], +m1[2]] : [+m2[2], +m2[1]], base); checked++; continue; }
+      const op = OPS[k.kind] || k.op; assert.strictEqual(k.op, op, base);
+      const mine = ev(Array.from(k.nums).join(' ' + op + ' ')), theirs = ev(base.replace(' = ?', ''));
+      assert(near(mine, theirs), base + ' / ' + JSON.stringify(k));
+      if (k.kind === 'dec') assert(Array.from(k.nums).every(x => typeof x === 'string')); else assert(Array.from(k.nums).every(x => typeof x === 'number'));
+      checked++;
+    }
+    assert(checked > 5000);
+  });
+  t('the sheet: the examples of the spec', () => {
+    const k = (text, g, fmt, key, rtl) => kindStr(L.padKind({ text, g, fmt: fmt || 'choice', key: key || text, rtl: !!rtl, answer: 1, options: [1, 2, 3, 4] }));
+    const rows = [
+      ['43 − 5 = ?', 2, 'sub'], ['11 − 7 = ?', 2, '-'], ['17 + 15 + 12 = ?', 2, 'add'], ['7 + 2 = ?', 2, '-'], ['5 + 6 = ?', 2, '-'],
+      ['39 × 36 = ?', 4, 'mul'], ['269 × 9 = ?', 4, 'mul'], ['6 × 7 = ?', 3, '-'], ['784 : 7 = ?', 4, 'div'], ['840 : 70 = ?', 4, 'div'], ['80 : 8 = ?', 3, '-'], ['70 : 10 = ?', 2, '-'],
+      ['42 : 3 = ?', 3, 'split'], ['2,700 : 3 = ?', 3, 'free'], ['8.29 − 1.4 = ?', 5, 'dec'], ['3 − 0.4 = ?', 5, 'dec'], ['6/10 − 2/10 = ?', 4, '-'], ['1/3 + 1/2 = ?', 5, 'free'],
+      ['(4 + 8) × 6 − 14 = ?', 3, 'free'], ['62 − 16 − 31 = ?', 2, 'free'], ['500 → 1,000 → ? → 2,000', 3, '-'],
+      ['□ + 38 = 83', 2, 'free'], ['□ − 19 = 15', 2, 'free'], ['5 × □ + 10 = 25', 3, 'free'], ['4 + □ = 11', 2, '-'], ['□ × 5 = 35', 2, '-'], ['100 : □ = 10', 2, '-'], ['□ : 10 = 6', 2, '-'],
+      ['2,263 + 215 ◯ 2,264 + 214', 4, 'free', 'cmp'], ['3/7 ◯ 1/3', 5, 'free', 'cmp'], ['2⁵ = ?', 4, 'free'], ['42 = 2 × 3 × □', 4, 'free'], ['0.84 + □ = 1', 5, 'free'],
+      ['16 − 9 = ?', 1, '-'], ['100 − 50 = ?', 1, '-'], ['17 + 1 = ?', 1, 'add'], ['10 × 7 = ?', 2, 'mul'], ['999,999 + 1 = ?', 4, 'add']
+    ];
+    rows.forEach(r => assert.strictEqual(k(r[0], r[1], r[3]), r[2], r[0] + ' (grade ' + r[1] + ')'));
+    assert.strictEqual(k('מָה הַשְּׁאֵרִית בַּתַּרְגִּיל 83 : 6?', 4, 'choice', null, true), 'div+rem');
+    assert.strictEqual(k('כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס 4 בְּתוֹךְ 50?', 4, 'choice', null, true), 'div+rem');
+    assert.deepStrictEqual(Array.from(L.padKind({ text: 'כַּמָּה פְּעָמִים שְׁלֵמוֹת נִכְנָס 4 בְּתוֹךְ 50?', g: 4, fmt: 'choice', key: 'x', rtl: true }).nums), [50, 4]);
+    assert.strictEqual(k('מָה הַשְּׁאֵרִית בַּתַּרְגִּיל 53 : 9?', 3, 'choice', null, true), '-');
+    assert.strictEqual(k('אֵיזֶה מִסְפָּר מִתְחַלֵּק בְּ-9?', 4, 'choice', null, true), 'free');
+    assert.strictEqual(k('אֵיזֶה מִסְפָּר הֲכִי גָּדוֹל?', 4, 'choice', null, true), '-');
+    // clones: a story and an equals sign on the left never show the operation; true or false and a comparison keep the columns
+    assert.strictEqual(k('story', 2, 'word', 'word|31 + 19 = ?', true), 'free'); assert.strictEqual(k('story', 2, 'word', 'word|5 + 6 = ?', true), '-'); assert.strictEqual(k('story', 2, 'word', 'word|6 × 7 = ?', true), '-');
+    assert.strictEqual(k('50 = □ + 19', 2, 'lefteq', 'lefteq|31 + 19 = ?'), 'free');
+    assert.strictEqual(k('31 + 19 = 50', 2, 'tf', 'tf|31 + 19 = ?'), 'add'); assert.strictEqual(k('31 + 19 ◯ 51', 2, 'cmp', 'cmp|31 + 19 = ?'), 'add'); assert.strictEqual(k('10 × 7 = 77', 2, 'tf', 'tf|10 × 7 = ?'), '-');
+    HANDS.forEach(f => assert.strictEqual(k('31 + 19 = ?', 2, f, f + '|31 + 19 = ?'), '-'));
+    assert.strictEqual(L.padKind(null), null);
+    assert.strictEqual(L.padKind({ text: '43 − 5 = ?', g: 2, fmt: 'choice', key: 'k', pack: true }), null); // a subject pack gets nothing new
+    assert.deepStrictEqual(Array.from(L.padKind({ text: '36 × 139 = 5,004', g: 4, fmt: 'tf', key: 'tf|36 × 139 = ?' }).nums), [139, 36]); // the longer number on top
+  });
+}
+console.log('all ' + n + ' passed (pad)');
