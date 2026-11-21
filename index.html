@@ -1395,6 +1395,7 @@ body.toy .ostrip .otile{background:#f3eefb;box-shadow:none}
    .up / .dn: there is more map above / below (set by an IntersectionObserver, never by a scroll handler). .side: a wide map, the arrows keep a lane at its side. */
 .mwrap{position:relative;flex:1 1 0;min-height:0;width:100%;max-width:1240px}
 .mscroll{position:absolute;inset:0;display:block}
+.mwrap.lay>.mscroll{overflow:hidden}
 .mscroll>.tmap{display:block;flex:none;width:100%;max-width:none;height:100%}
 .mwrap.scrl>.mscroll{inset:-12px -8px 0;padding:12px 8px 14px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:none}
 .mwrap.scrl>.mscroll::-webkit-scrollbar{display:none}
@@ -5083,9 +5084,9 @@ var TrollModels = (function () {
     function layout() {
       if (cur !== el) return;
       var keep = sc ? sc.scrollTop : 0;
-      if (sc) { box.style.height = ''; wrap.classList.remove('scrl', 'side'); F = null; parb = parbtn; }
+      if (sc) { box.style.height = ''; wrap.classList.remove('scrl', 'side'); wrap.classList.add('lay'); F = null; parb = parbtn; } // .lay: while the sizes are tried, nothing that sticks out may give the page a scrollbar (it would narrow the map and spoil the measuring)
       var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false, sfit = 0;
-      if (W < 60 || H < 60 || !N) return;
+      if (W < 60 || H < 60 || !N) { if (sc) wrap.classList.remove('lay'); return; }
       for (c = 2; c <= Math.ceil(N / 2); c++) cands.push([c, Math.min(1.9, W / (c * 104), c * H / (100 * (N - 1 + c))), 1]);
       cands.push([N, Math.min(1.9, (W / N - 8) / 86, H / 135), 1.3]); // one row is preferred when it is nearly as big
       cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
@@ -5101,7 +5102,7 @@ var TrollModels = (function () {
         if (sy) to(smax() * sy[1]); else if (!moved && !sel && rec) to(mid(rec)); else to(keep);
         if (sel) see(sel);
       }
-      if (sc) ends();
+      if (sc) { wrap.classList.remove('lay'); ends(); }
     }
     layout();
     if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(sc ? wrap : box); }
