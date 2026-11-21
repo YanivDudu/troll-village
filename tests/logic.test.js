@@ -671,4 +671,262 @@ t('next step: always forward, from the newest open house; a ready bridge; never 
   assert(L.stageOpen(s, 'g2add', 1, 2) && L.stageOpen(s, 'g2add', 3, 0) && !L.stageOpen(s, 'g2add', 3, 1) && !L.stageOpen(s, 'g2add', 4, 0));
   const before = JSON.stringify(s); L.nextStep(s); assert.strictEqual(JSON.stringify(s), before, 'pure');
 });
+// ---------- stage 6: what the companion remembers (state.mem), the friendship level, the travel journal ----------
+// a second copy of the logic with the subject packs loaded (geometry, Hebrew, English), for the counts of whole grades
+const ctxP = {}; vm.createContext(ctxP); ctxP.window = ctxP;
+for (const f of fs.readdirSync(path.join(__dirname, '..', 'packs')).filter(f => /^(geo|heb|eng)[1-5]\.js$/.test(f)).sort()) vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'packs', f), 'utf8'), ctxP);
+vm.runInContext(m[1] + ';this.L=TrollLogic;', ctxP);
+const LP = ctxP.L, TODAY = '2026-11-21', J6 = x => JSON.parse(JSON.stringify(x));
+const dago = k => new Date(Date.UTC(2026, 10, 21 - k)).toISOString().slice(0, 10); // the day k days before TODAY
+const houseOf = (Lx, s, id, lv) => { [0, 1, 2].forEach(k => { s = Lx.finishStage(s, id, lv, k, [true]).state; }); return s; };
+const tileDone = (Lx, s, id) => { Lx.TOPICS.find(x => x.id === id).levels.forEach((d, i) => { s = houseOf(Lx, s, id, i + 1); }); return s; };
+const keysOf = (s, day) => Array.from(L.memTriggers(s, day || TODAY)).map(x => x.key);
+const played = g => { const s = L.newState(g || 2); s.rounds = 4; s.stars = 2; return s; }; // not a new player, nothing finished
+t('memory: the optional field state.mem loads, is cleaned, survives a round trip and a sync, and never throws', () => {
+  // 1. missing: stays missing
+  assert.strictEqual(L.newState(2).mem, undefined); assert.strictEqual(L.newState(2).v, 4);
+  const plain = L.loadState(JSON.stringify(L.newState(2)));
+  assert.strictEqual(plain.mem, undefined); assert.strictEqual(plain.v, 4); assert(!('mem' in J6(plain)));
+  assert.deepStrictEqual(Array.from(L.memEv(plain)), []);
+  // 2. valid events are kept, everything else is dropped, extra keys are stripped, only the newest 12 stay
+  const good = [{ k: 'p', t: 'g2add', l: 3, d: dago(2) }, { k: 'h', t: 'g2add', l: 3, d: dago(2) }, { k: 'm', t: '', l: 0, d: dago(1) }, { k: 'b', t: 'g2add', l: 2, d: dago(1) }];
+  const bad = [null, 7, 'p', [], {}, { k: 'x', t: 'g2add', l: 1, d: TODAY }, { k: 'pp', t: 'g2add', l: 1, d: TODAY }, { k: 'p', t: 'g2add', l: 1, d: '21.11.2026' }, { k: 'p', t: 'g2add', l: 1 },
+    { k: 'p', t: 'nope', l: 1, d: TODAY }, { k: 'p', t: 'constructor', l: 1, d: TODAY }, { k: 'p', t: 'add', l: 1, d: TODAY }, { k: 'p', t: 'g2add', l: 0, d: TODAY }, { k: 'p', t: 'g2add', l: 99, d: TODAY },
+    { k: 'p', t: 'g2add', l: 1.5, d: TODAY }, { k: 'p', t: 'g2add', l: '1', d: TODAY }, { k: 'h', t: 'g2add', l: 99, d: TODAY }, { k: 'b', t: 'g2add', l: 5, d: TODAY }, { k: 'b', t: 'nope', l: 2, d: TODAY }, { k: 7, t: 'g2add', l: 1, d: TODAY }];
+  let o = J6(L.newState(2)); o.mem = { ev: bad.concat(good.map(e => Object.assign({ junk: 1, f: () => 1 }, e)), bad), more: 5 };
+  let s = L.loadState(JSON.stringify(o));
+  assert.deepStrictEqual(J6(s.mem), { ev: good });
+  o.mem = { ev: [{ k: 'm', t: 'nope', l: 9, d: TODAY, x: 1 }] }; assert.deepStrictEqual(J6(L.loadState(o).mem), { ev: [{ k: 'm', t: '', l: 0, d: TODAY }] }, 'm keeps only a real tile');
+  const many = []; for (let i = 0; i < 30; i++) many.push({ k: 'h', t: 'g2add', l: 1 + i % 3, d: dago(40 - i) });
+  o.mem = { ev: many }; s = L.loadState(JSON.stringify(o));
+  assert.strictEqual(L.MEM_MAX, 12); assert.strictEqual(s.mem.ev.length, 12); assert.deepStrictEqual(J6(s.mem.ev), many.slice(-12));
+  // garbage in the field (an old page, a broken save): nothing throws, nothing is said that needs a date
+  for (const junk of [null, 5, 'x', true, [], [1, 2], { ev: 'x' }, { ev: null }, { ev: {} }, { ev: [null, [], 'a', {}, { k: 'p' }] }]) {
+    o = J6(L.newState(2)); o.mem = junk; o.rounds = 3; o.stars = 2;
+    const g = L.loadState(JSON.stringify(o));
+    assert(g.mem === undefined || g.mem.ev.length === 0, JSON.stringify(junk));
+    const raw = L.newState(2); raw.rounds = 3; raw.stars = 2; raw.mem = junk; // not even normalised by loadState
+    assert.deepStrictEqual(Array.from(L.memEv(raw)), [], JSON.stringify(junk));
+    assert.deepStrictEqual(keysOf(raw), ['generic']);
+    assert.strictEqual(L.memFacts(raw, TODAY).gap, null); L.journal(raw); L.friend(raw); L.stageMemo(raw, 'g2add', 3, 1);
+    const a = L.memAdd(raw, 'p', 'g2add', 3, TODAY); assert.deepStrictEqual(J6(a.mem), { ev: [{ k: 'p', t: 'g2add', l: 3, d: TODAY }] });
+  }
+  assert.deepStrictEqual(Array.from(L.memEv(null)), []); assert.deepStrictEqual(Array.from(L.memEv(undefined)), []);
+  // 3. a state with mem, saved and loaded twice, is unchanged
+  o = J6(L.newState(2)); o.mem = { ev: good }; o.last = { t: 'g2add', l: 3 }; o.fx = { goal: L.ITEMS.find(x => x.price).id };
+  const one = L.loadState(JSON.stringify(o)), two = L.loadState(JSON.stringify(one));
+  assert.deepStrictEqual(J6(two), J6(one)); assert.deepStrictEqual(J6(two.mem), { ev: good });
+  // ... and through a sync: device A pushes its player (the saved text goes through loadState), device B has older progress and pulls it
+  const A = { list: [{ id: 'p111111111', name: 'a' }], gone: [], t: { p111111111: 9 } }, B = { list: A.list, gone: [], t: { p111111111: 4 } };
+  const up = L.mergeCloud(A, { list: A.list, gone: [], t: { p111111111: 4 } }); assert.deepStrictEqual(Array.from(up.push), ['p111111111']);
+  const cloud = { list: A.list, gone: [], t: { p111111111: 9 }, s: { p111111111: JSON.stringify(L.loadState(JSON.stringify(one))) } };
+  const down = L.mergeCloud(B, cloud); assert.deepStrictEqual(Array.from(down.pull), ['p111111111']);
+  const onB = L.loadState(cloud.s[down.pull[0]]);
+  assert.deepStrictEqual(J6(onB.mem), { ev: good }); assert.deepStrictEqual(J6(onB), J6(one));
+  // an older page drops the field (it copies only what it knows): the newer page then simply has no dates
+  const dropped = J6(one); delete dropped.mem; const back = L.loadState(JSON.stringify(dropped));
+  assert.strictEqual(back.mem, undefined); assert.strictEqual(L.memFacts(back, TODAY).gap, null); assert(keysOf(back).indexOf('lastTime') >= 0);
+  // 4. memAdd: the one writer. Pure; p and m are not repeated on the same day; h and b always add; at most 12
+  let a = played(2); const frozen = JSON.stringify(a);
+  let b = L.memAdd(a, 'p', 'g2add', 3, TODAY); assert.strictEqual(JSON.stringify(a), frozen, 'pure'); assert.strictEqual(a.mem, undefined);
+  assert.deepStrictEqual(J6(b.mem.ev), [{ k: 'p', t: 'g2add', l: 3, d: TODAY }]);
+  const c = L.memAdd(b, 'p', 'g2add', 3, TODAY); assert.strictEqual(c.mem.ev.length, 1, 'same house, same day'); assert.strictEqual(b.mem.ev.length, 1);
+  assert.strictEqual(L.memAdd(b, 'p', 'g2add', 4, TODAY).mem.ev.length, 2, 'another house'); assert.strictEqual(L.memAdd(b, 'p', 'g2sub', 3, TODAY).mem.ev.length, 2, 'another tile');
+  assert.strictEqual(L.memAdd(b, 'p', 'g2add', 3, '2026-11-22').mem.ev.length, 2, 'a new day adds');
+  let d = L.memAdd(b, 'm', 'mix', 0, TODAY); assert.deepStrictEqual(J6(d.mem.ev[1]), { k: 'm', t: '', l: 0, d: TODAY });
+  assert.strictEqual(L.memAdd(d, 'm', 'mix', 0, TODAY).mem.ev.length, 2); assert.strictEqual(L.memAdd(d, 'p', 'g2add', 3, TODAY).mem.ev.length, 2, 'the newest p is still that house');
+  d = L.memAdd(L.memAdd(d, 'h', 'g2add', 3, TODAY), 'h', 'g2add', 3, TODAY); assert.strictEqual(d.mem.ev.length, 4, 'h always adds');
+  d = L.memAdd(L.memAdd(d, 'b', 'g2add', 2, TODAY), 'b', 'g2add', 2, TODAY); assert.strictEqual(d.mem.ev.length, 6, 'b always adds');
+  for (const junk of [['x', 'g2add', 1, TODAY], ['p', 'nope', 1, TODAY], ['p', 'g2add', 99, TODAY], ['p', 'g2add', 1, 'soon'], ['p', 'g2add', undefined, TODAY], ['b', 'g2add', 7, TODAY]])
+    assert.strictEqual(L.memAdd(d, junk[0], junk[1], junk[2], junk[3]).mem.ev.length, 6, 'an invalid event is not written: ' + junk);
+  for (let i = 0; i < 20; i++) d = L.memAdd(d, 'h', 'g2add', 1 + i % 4, dago(-i));
+  assert.strictEqual(d.mem.ev.length, 12); assert.strictEqual(d.mem.ev[11].d, dago(-19)); assert.strictEqual(d.mem.ev[0].d, dago(-8), 'the oldest are dropped');
+  assert.deepStrictEqual(Object.keys(d.mem), ['ev']); d.mem.ev.forEach(e => assert.deepStrictEqual(Object.keys(e), ['k', 't', 'l', 'd']));
+});
+t('friendship: only houses and bridges count, it never goes down, and level 6 is within reach of every grade', () => {
+  // 5. thresholds
+  const F = Array.from(L.FRIEND); assert.strictEqual(F.length, 6); assert.strictEqual(F[0], 0);
+  let s = L.newState(2);
+  assert.deepStrictEqual(J6(L.journey(s)), { houses: 0, bridges: 0, points: 0 }); assert.deepStrictEqual(J6(L.friend(s)), { level: 1, points: 0, next: F[1], need: F[1] });
+  const slots = []; L.TOPICS.forEach(tp => tp.levels.forEach((d, i) => slots.push([tp.id, i + 1])));
+  const withHouses = k => { let x = L.newState(2); slots.slice(0, k).forEach(h => { x.prog[h[0]] = x.prog[h[0]].length ? x.prog[h[0]] : L.TOPICS.find(q => q.id === h[0]).levels.map(() => [0, 0, 0]); x.prog[h[0]][h[1] - 1] = [1, 2, 3]; }); return x; };
+  for (let lv = 2; lv <= 6; lv++) {
+    assert(F[lv - 1] > F[lv - 2]);
+    assert.strictEqual(L.friend(withHouses(F[lv - 1] - 1)).level, lv - 1, 'one point below level ' + lv);
+    const f = L.friend(withHouses(F[lv - 1])); assert.strictEqual(f.level, lv); assert.strictEqual(f.points, F[lv - 1]);
+    assert.strictEqual(f.next, lv < 6 ? F[lv] : null); assert.strictEqual(f.need, lv < 6 ? F[lv] - F[lv - 1] : 0);
+  }
+  assert.strictEqual(L.friend(withHouses(F[5] + 20)).level, 6);
+  s = withHouses(3); assert.strictEqual(L.friend(s).points, 3);
+  s.prog.g2add = [[1, 1, 0], [0, 3, 3], [3, 0, 3]]; const two = L.journey(s).houses; s.prog.g2add = [[1, 1, 1], [0, 3, 3]]; assert.strictEqual(L.journey(s).houses, two + 1, 'a house counts only with a star in all three stages');
+  s = withHouses(3); s.boss.g2add[2] = true; assert.deepStrictEqual(J6(L.journey(s)), { houses: 3, bridges: 1, points: 5 }, 'a bridge is worth two houses');
+  const base = JSON.stringify(L.friend(s));
+  const other = J6(s); Object.assign(other, { coins: 99999, xp: 5000, streak: 400, rounds: 900, stars: 3, lastDay: TODAY, lastGift: TODAY, owned: [1, 2, 3, 4, 5, 6, 7, 8, 9], items: L.ITEMS.map(x => x.id), buddy: 3 });
+  L.TOPICS.forEach(tp => { other.levels[tp.id] = tp.levels.length; });
+  assert.strictEqual(JSON.stringify(L.friend(other)), base, 'coins, experience, days, rounds, trolls, purchases and open houses do not count');
+  // 6. it never goes down: random stages and bridges; a change of grade leaves it as it is
+  const rnd = L.seeded(7); let p = L.newState(2), lastP = 0, lastL = 1;
+  for (let i = 0; i < 300; i++) {
+    const tp = L.TOPICS[Math.floor(rnd() * L.TOPICS.length)], lv = 1 + Math.floor(rnd() * tp.levels.length), res = [0, 1, 2, 3, 4, 5, 6].map(() => rnd() < 0.7);
+    if (rnd() < 0.06) p.boss[tp.id][tp.g <= 4 ? tp.g : 4] = true; else p = L.finishStage(p, tp.id, lv, Math.floor(rnd() * 3), res).state;
+    if (rnd() < 0.05) p = L.setGrade(p, 1 + Math.floor(rnd() * 4));
+    if (rnd() < 0.05) p = L.loadState(JSON.stringify(p));
+    const f = L.friend(p); assert(f.points >= lastP && f.level >= lastL, 'step ' + i); lastP = f.points; lastL = f.level;
+  }
+  assert(lastP > 10);
+  for (let g = 1; g <= 4; g++) assert.strictEqual(L.friend(L.setGrade(p, g)).points, lastP, 'grade ' + g);
+  // 7. a veteran: a save from before version 4 gets its level from what it holds, with no ceremony
+  const old = { v: 2, levels: { add: 3, mul: 5 }, prog: { add: [[3, 3, 3], [2, 2, 1], [1, 0, 0]], frac: [[2, 1, 0]] }, boss: { add: { 2: true } }, stars: 16, owned: [7] };
+  const vet = L.loadState(JSON.stringify(old)); let hs = 0, bs = 0;
+  L.TOPICS.forEach(tp => { (vet.prog[tp.id] || []).forEach(r => { if (r.every(x => x >= 1)) hs++; }); [1, 2, 3, 4].forEach(g => { if (vet.boss[tp.id][g] === true) bs++; }); });
+  assert.deepStrictEqual(J6(L.journey(vet)), { houses: 2, bridges: 1, points: 4 }); assert.strictEqual(hs + 2 * bs, 4); assert.strictEqual(L.friend(vet).level, 2);
+  assert.strictEqual(vet.mem, undefined); assert.deepStrictEqual(keysOf(vet).filter(k => /yesterday|sameDay|away|doneLast|hero/.test(k)), [], 'nothing dated is said to a veteran');
+  // 8. calibration against the real content: a change of the content forces a look at FRIEND
+  const want = { 1: [54, 13], 2: [61, 16], 3: [77, 21], 4: [78, 19] };
+  for (let g = 1; g <= 4; g++) {
+    let st = LP.newState(g), maths = LP.newState(g), least = 1e9;
+    for (const sub of LP.SUBS) {
+      let alone = LP.newState(g);
+      for (const id of LP.topicsFor(st, sub)) { st = tileDone(LP, st, id); st.boss[id][g] = true; alone = tileDone(LP, alone, id); alone.boss[id][g] = true; if (sub === 'math') { maths = tileDone(LP, maths, id); maths.boss[id][g] = true; } }
+      if (sub !== 'math') least = Math.min(least, LP.journey(alone).points);
+    }
+    const j = LP.journey(st); assert.deepStrictEqual([j.houses, j.bridges], want[g], 'houses and bridges of grade ' + g + ': ' + j.houses + ', ' + j.bridges);
+    assert.strictEqual(LP.friend(st).level, 6);
+    const mp = LP.journey(maths).points;
+    assert(mp + least >= F[5], 'grade ' + g + ': the maths of the grade plus its smallest other subject (' + mp + ' + ' + least + ') reaches level 6');
+    if (g === 1) { assert.strictEqual(mp, 22); assert.strictEqual(LP.friend(maths).level, 5, 'grade 1 maths alone is level 5'); assert.strictEqual(mp + least, 29); }
+  }
+});
+t('memory: what the companion may say in the camp (triggers, order, the first exercise, the journal)', () => {
+  const hi = L.TOPICS.find(x => x.id === 'g2add').levels.length, heroA = L.heroId('g2add', 2), item = L.ITEMS.find(x => x.price);
+  const ev = (s, list) => { list.forEach(e => { s = L.memAdd(s, e[0], e[1], e[2], dago(e[3])); }); return s; };
+  // 9. first: a new player hears the opening line and nothing else
+  assert.deepStrictEqual(keysOf(L.newState(2)), ['first']); assert.deepStrictEqual(keysOf(ev(L.newState(2), [['m', '', 0, 1]])), ['first']);
+  // hero: the newest event is a crossed bridge whose troll is in the camp
+  let s = tileDone(L, played(2), 'g2add'); s.boss.g2add[2] = true; s.owned = [5, heroA]; s.last = { t: 'g2add', l: hi };
+  let h1 = ev(s, [['p', 'g2add', hi, 0], ['b', 'g2add', 2, 0]]);
+  assert.strictEqual(keysOf(h1)[0], 'hero'); assert.strictEqual(L.memTriggers(h1, TODAY)[0].hero, heroA);
+  assert(keysOf(ev(h1, [['p', 'g2sub', 3, 0]])).indexOf('hero') < 0, 'not after something else was played');
+  const noHero = J6(h1); noHero.owned = [5]; assert(keysOf(noHero).indexOf('hero') < 0); const noFlag = J6(h1); noFlag.boss.g2add = {}; assert(keysOf(noFlag).indexOf('hero') < 0);
+  // bridgeReady, bridgeNear
+  s = tileDone(L, played(2), 'g2add'); s.last = { t: 'g2add', l: hi };
+  assert(L.nextStep(s).boss === 2); assert.strictEqual(keysOf(s)[0], 'bridgeReady');
+  const need = Array.from(L.bossLevels('g2add', 2)); assert(need.length >= 3);
+  let near = played(2); need.slice(0, -1).forEach(l => { near = houseOf(L, near, 'g2add', l); }); near.last = { t: 'g2add', l: need[need.length - 1] };
+  assert.strictEqual(L.nextStep(near).level, need[need.length - 1]); assert.strictEqual(keysOf(near)[0], 'bridgeNear'); assert.deepStrictEqual(J6(L.memTriggers(near, TODAY)[0].place), { t: 'g2add', l: need[need.length - 1] });
+  let far = played(2); need.slice(0, -2).forEach(l => { far = houseOf(L, far, 'g2add', l); }); far.last = { t: 'g2add', l: need[need.length - 2] };
+  assert(keysOf(far).indexOf('bridgeNear') < 0, 'two houses left');
+  // doneLast: a house was finished on the last day of play, and that day is not today
+  s = houseOf(L, played(2), 'g2add', 3); s.last = { t: 'g2add', l: 4 };
+  let dl = ev(s, [['p', 'g2add', 3, 1], ['h', 'g2add', 3, 1]]);
+  let tg = Array.from(L.memTriggers(dl, TODAY)).find(x => x.key === 'doneLast'); assert(tg && tg.yest === true && tg.place.l === 3);
+  tg = Array.from(L.memTriggers(dl, dago(-1))).find(x => x.key === 'doneLast'); assert(tg && tg.yest === false, 'two days ago: "last time"');
+  assert(keysOf(dl, dago(1)).indexOf('doneLast') < 0, 'the flag is from today');
+  assert(keysOf(ev(dl, [['p', 'g2add', 4, 0]])).indexOf('doneLast') < 0, 'played again since');
+  const undone = J6(dl); undone.prog.g2add[2] = [3, 3, 0]; assert(keysOf(undone).indexOf('doneLast') < 0, 'only what is still true in the save');
+  // goal: the coins are enough for the savings goal
+  s = ev(played(2), [['p', 'g2add', 3, 1]]); s.last = { t: 'g2add', l: 3 };
+  let g1 = L.setGoal(s, item.id); g1.coins = item.price;
+  tg = Array.from(L.memTriggers(g1, TODAY)).find(x => x.key === 'goal'); assert(tg && tg.item.id === item.id && tg.id === item.id);
+  g1.coins = item.price - 1; assert(keysOf(g1).indexOf('goal') < 0, 'short of coins');
+  const noFx = J6(s); noFx.coins = 99999; delete noFx.fx; assert(keysOf(noFx).indexOf('goal') < 0, 'no state.fx');
+  // the day lines: exactly one of them
+  const dayKey = (st, day) => keysOf(st, day).filter(k => /^(yesterday|sameDay|away|lastTime)$/.test(k)).join();
+  assert.strictEqual(dayKey(s, TODAY), 'yesterday'); assert.strictEqual(dayKey(s, dago(1)), 'sameDay'); assert.strictEqual(dayKey(s, dago(-1)), 'lastTime', 'two days');
+  assert.strictEqual(dayKey(s, dago(-2)), 'away', 'three days'); assert.strictEqual(dayKey(s, dago(-29)), 'away', 'thirty days');
+  assert.strictEqual(dayKey(ev(s, [['m', '', 0, 0]]), TODAY), 'lastTime', 'today only a mixed round: the house is from the time before');
+  const noMem = played(2); noMem.last = { t: 'g2add', l: 3 }; assert.deepStrictEqual(keysOf(noMem), ['lastTime', 'generic'], 'a veteran without mem');
+  assert.deepStrictEqual(keysOf(played(2)), ['generic'], 'no mem and no last');
+  const tomorrow = ev(s, [['h', 'g2add', 3, -1]]); tomorrow.prog.g2add = [[0, 0, 0], [0, 0, 0], [1, 1, 1]];
+  assert.deepStrictEqual(keysOf(tomorrow).filter(k => k !== 'generic' && k !== 'bridgeNear'), ['lastTime'], 'the clock moved back: nothing dated'); assert.strictEqual(L.memFacts(tomorrow, TODAY).gap, null);
+  assert.deepStrictEqual(keysOf(s, 'garbage').filter(k => /yesterday|sameDay|away|doneLast/.test(k)), []);
+  const all = keysOf(s); assert.strictEqual(all[all.length - 1], 'generic');
+  // 10. the order when several things are true: hero, bridgeReady, goal, the day line, the greetings
+  let o = tileDone(L, tileDone(L, played(2), 'g2add'), 'g2sub'); o.boss.g2add[2] = true; o.owned = [5, heroA]; o.last = { t: 'g2sub', l: L.TOPICS.find(x => x.id === 'g2sub').levels.length };
+  o = L.setGoal(o, item.id); o.coins = item.price + 5; o = ev(o, [['p', 'g2sub', o.last.l, 1], ['b', 'g2add', 2, 1]]);
+  assert.deepStrictEqual(keysOf(o), ['hero', 'bridgeReady', 'goal', 'yesterday', 'generic']);
+  // 11. the first exercise of a stage
+  s = played(2); s.prog.g2add = [[0, 0, 0], [0, 0, 0], [3, 1, 2], [3, 0, 0]];
+  assert.strictEqual(L.stageMemo(s, 'g2add', 3, 1), 'again'); assert.strictEqual(L.stageMemo(s, 'g2add', 3, 2), 'again');
+  assert.strictEqual(L.stageMemo(s, 'g2add', 3, 0), null, 'three stars: nothing to say'); assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null, 'never played');
+  s.hists.g2add = [true, true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), 'run5'); assert.strictEqual(L.stageMemo(s, 'g2add', 3, 1), 'again', 'again comes first');
+  s.hists.g2add = [true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null); s.hists.g2add = [true, true, false, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null);
+  // 12. the journal
+  let j = L.journal(L.newState(2));
+  assert.strictEqual(j.pages.length, 1); assert.deepStrictEqual(J6(j.pages[0].stamps), []); assert.deepStrictEqual(J6(j.pages[0].cards), []); assert(j.pages[0].next && j.pages[0].next.stage === 0); assert.deepStrictEqual(J6(j.recent), []);
+  s = houseOf(L, played(2), 'g2add', 3); s = L.finishStage(s, 'g2add', 4, 0, [true]).state; s = L.finishStage(s, 'g2add', 4, 1, [true]).state; s.last = { t: 'g2add', l: 4 };
+  j = L.journal(s); let pg = Array.from(j.pages).find(x => x.t === 'g2add');
+  assert.deepStrictEqual(J6(pg.stamps), [{ l: 3, stars: 9, d: '' }], 'one stamp; a house with two stages is not a stamp; no date without an event'); assert.deepStrictEqual(J6(pg.next), { level: 4, stage: 2 });
+  s.prog.g2add[2] = [1, 2, 3]; assert.strictEqual(Array.from(L.journal(s).pages).find(x => x.t === 'g2add').stamps[0].stars, 6);
+  s = ev(s, [['h', 'g2add', 3, 4], ['p', 'g2add', 4, 4]]);
+  assert.strictEqual(Array.from(L.journal(s).pages).find(x => x.t === 'g2add').stamps[0].d, dago(4)); assert.deepStrictEqual(J6(L.journal(s).recent), [{ k: 'h', t: 'g2add', l: 3, d: dago(4) }]);
+  s.boss.g2add[2] = true; s = ev(s, [['b', 'g2add', 2, 2]]); s.prog.g3mul = [[1, 1, 1]]; // a bridge, and a house in a tile of another grade
+  j = L.journal(s); pg = Array.from(j.pages).find(x => x.t === 'g2add');
+  assert.deepStrictEqual(J6(pg.cards), [{ g: 2, hero: heroA, d: dago(2) }]); assert.strictEqual(J6(j.recent)[0].k, 'b'); assert.strictEqual(j.recent[0].hero, heroA); assert.strictEqual(j.recent.length, 2);
+  assert(Array.from(j.pages).some(x => x.t === 'g3mul' && x.stamps.length === 1), 'a tile of another grade with progress has its page');
+  assert.strictEqual(Array.from(j.pages).filter(x => x.next).length, 1, 'only one open slot in the whole journal');
+  const ids = Array.from(j.pages).map(x => x.t); assert.strictEqual(new Set(ids).size, ids.length); assert(ids.indexOf('g2add') < ids.indexOf('g3mul'), 'the tiles of the grade come first');
+  assert.strictEqual(j.friend.level, L.friend(s).level); assert.deepStrictEqual(J6(j.journey), J6(L.journey(s)));
+  const fin = JSON.stringify(s); L.journal(s); L.memTriggers(s, TODAY); L.memFacts(s, TODAY); L.friend(s); assert.strictEqual(JSON.stringify(s), fin, 'pure');
+});
+t('memory: every line is vocalised, has no feminine form left for a boy, and says nothing about being away', () => {
+  const lines = [], M = L.MEMO, HEBW = /[א-ת][֑-ׇא-ת]*/g, bare = x => x.replace(/[֑-ׇ]/g, '');
+  Object.keys(M).forEach(k => { if (k === 'unlock') Object.keys(M.unlock).forEach(n => lines.push(M.unlock[n])); else { assert.strictEqual(M[k].length, 2, k + ': two voices'); Array.from(M[k]).forEach(v => { assert(v.length >= 1); Array.from(v).forEach(x => lines.push(x)); }); } });
+  assert(lines.length >= 120, 'lines: ' + lines.length);
+  const word = f => new RegExp('(^|[^֐-׿])' + f + '(?![֐-׿])');
+  lines.forEach(x => {
+    (x.replace(/\{[A-Z]\}/g, ' ').match(HEBW) || []).forEach(w => assert(/[֑-ׇ]/.test(w), 'no niqqud: ' + w + ' in ' + x));
+    const boy = L.forBoy(x);
+    Array.from(L.MALE).forEach(p => assert(!word(p[0]).test(boy), 'feminine form left for a boy: ' + p[0] + ' in ' + x));
+    if (/בּוֹאִי|שֶׁלָּךְ/.test(x)) assert.notStrictEqual(boy, x, x);
+    assert(!word('לָךְ').test(x) && !/הִתְגַּעְגַּעְ|חִכִּיתִי|אֵיפֹה הָיִי|סוֹף סוֹף/.test(x), x);
+    assert(!/התגעגע|חיכיתי|חכיתי|איפה היי|סוף סוף|מזמן|הרבה זמן|נעלמת|שכחת(?!י)|חזרת(?!י)|סוף־סוף/.test(bare(x)), 'about being away: ' + x);
+    assert(!/טָעֻיּוֹת|הֻשַּׂג|נִעְנוּעַ/.test(x), 'a word whose niqqud is not certain: ' + x);
+    assert(!/\{[^HPTIWNM]\}|\{[A-Z][^}]/.test(x), x);
+  });
+  // a child who comes back after days: warm, about the camp and the map, never about the days or the child
+  [0, 1].forEach(v => Array.from(M.away[v]).concat(Array.from(M.lastTime[v])).forEach(x => { assert(!/\d|יָמִים|יוֹם|זְמַן|מְחַכֶּה|חִכָּ/.test(x), 'away: ' + x); assert(!/{[WTINM]}/.test(x), x); }));
+  // slots: every line of a trigger comes out whole
+  const s = L.newState(2); s.rounds = 5; s.stars = 4; s.last = { t: 'g2add', l: 3 };
+  const item = L.ITEMS.find(x => x.price), heroA = L.heroId('g2add', 2), house = L.TOPICS.find(x => x.id === 'g2add').levels[2].name;
+  const trig = { yesterday: { place: s.last }, sameDay: { place: s.last, salt: 0 }, lastTime: { place: s.last }, away: { place: s.last }, doneLast: { place: s.last, yest: true }, hero: { hero: heroA }, bridgeReady: {}, bridgeNear: { place: s.last }, goal: { item: item } };
+  [2, 4].forEach(g => { s.grade = g; Object.keys(trig).forEach(k => {
+    const tg = Object.assign({ key: k }, trig[k]), day = /^(yesterday|sameDay|lastTime|away)$/.test(k);
+    const seen = new Set(); for (let d0 = 0; d0 < 14; d0++) Array.from(L.memLines(s, tg, dago(d0))).forEach(x => seen.add(x));
+    assert.strictEqual(seen.size, M[k][g >= 3 ? 1 : 0].length, k + ' grade ' + g + ': every variant is reachable');
+    assert.strictEqual(L.memLines(s, tg, TODAY).length, day ? 1 : M[k][0].length);
+    seen.forEach(x => assert(!/[{}]|undefined|null/.test(x), x));
+  }); });
+  s.grade = 2;
+  assert(Array.from(L.memLines(s, { key: 'hero', hero: heroA }, TODAY)).every(x => x.indexOf(L.trollFromId(heroA).name) >= 0));
+  assert(Array.from(L.memLines(s, { key: 'goal', item: item }, TODAY)).some(x => x.indexOf(item.name) >= 0));
+  assert(Array.from(L.memLines(s, { key: 'doneLast', place: s.last, yest: false }, TODAY)).some(x => x.indexOf('בַּפַּעַם הַקּוֹדֶמֶת') === 0));
+  assert.deepStrictEqual(Array.from(L.memLines(s, { key: 'generic' }, TODAY)), []); assert.deepStrictEqual(Array.from(L.memLines(s, { key: 'first' }, TODAY)), []); assert.deepStrictEqual(Array.from(L.memLines(s, { key: 'unlock' }, TODAY)), []);
+  // a line that needs a house it does not have is skipped (away without a place: one of the lines without a house)
+  for (let d0 = 0; d0 < 7; d0++) { const x = L.memLines(s, { key: 'away' }, dago(d0)); assert.strictEqual(x.length, 1); assert(!/undefined|[{}]/.test(x[0])); }
+  assert.deepStrictEqual(Array.from(L.memLines(s, { key: 'yesterday' }, TODAY)), [], 'no place: nothing to say');
+  // the place phrase: the house by its name; a name of more than 24 letters gives way to the region
+  const long = []; L.TOPICS.forEach(tp => tp.levels.forEach((d, i) => { if (bare(d.name).length > 24) long.push([tp, i + 1]); }));
+  assert(long.length >= 1);
+  const y0 = Array.from(M.yesterday[0]).findIndex(x => x === 'אֶתְמוֹל עָצַרְנוּ {P}. מַמְשִׁיכִים בַּדֶּרֶךְ!'); assert(y0 >= 0);
+  const dayFor = i => { for (let d0 = 0; d0 < 7; d0++) if ((L.dayNum(dago(d0)) % 7) === i) return dago(d0); };
+  assert.strictEqual(L.memLines(s, { key: 'yesterday', place: s.last }, dayFor(y0))[0], 'אֶתְמוֹל עָצַרְנוּ בַּבַּיִת "' + house + '". מַמְשִׁיכִים בַּדֶּרֶךְ!');
+  assert.strictEqual(L.memLines(s, { key: 'yesterday', place: { t: long[0][0].id, l: long[0][1] } }, dayFor(y0))[0], 'אֶתְמוֹל עָצַרְנוּ בָּאֵזוֹר "' + long[0][0].world + '". מַמְשִׁיכִים בַּדֶּרֶךְ!');
+  // 14. daily play: seven days in a row, seven different "yesterday" lines, in both voices; the same day gives the same line
+  [2, 4].forEach(g => { s.grade = g; const week = []; for (let d0 = 0; d0 < 7; d0++) week.push(L.memLines(s, { key: 'yesterday', place: s.last }, dago(d0))[0]);
+    assert.strictEqual(new Set(week).size, 7, 'grade ' + g); assert.strictEqual(L.memLines(s, { key: 'yesterday', place: s.last }, dago(3))[0], week[3]); });
+  s.grade = 2;
+  // the same day: the line moves on as the day goes on (salt = number of events), and the flag line needs a flag from today
+  const flagLine = M.sameDayFlag[0][0], sd = new Set(), sdf = new Set();
+  for (let k = 0; k < 14; k++) { sd.add(L.memLines(s, { key: 'sameDay', place: s.last, salt: k }, TODAY)[0]); sdf.add(L.memLines(s, { key: 'sameDay', place: s.last, salt: k, flag: true }, TODAY)[0]); }
+  assert.strictEqual(sd.size, 6); assert(!sd.has(flagLine)); assert.strictEqual(sdf.size, 7); assert(sdf.has(flagLine));
+  // the greetings of the camp grow with the friendship: jokes from level 3, the team from 5, the look back from 6
+  const withPts = (h, b) => { const x = L.newState(2); let n = 0; L.TOPICS.forEach(tp => { x.prog[tp.id] = tp.levels.map(() => (n++ < h ? [1, 1, 1] : [0, 0, 0])); }); let q = 0; L.TOPICS.forEach(tp => { if (q++ < b) x.boss[tp.id][2] = true; }); return x; };
+  const F = L.FRIEND;
+  assert.deepStrictEqual(Array.from(L.friendLines(withPts(F[2] - 1, 0))), []); assert.strictEqual(L.friendLines(withPts(F[2], 0)).length, 3); const g4 = withPts(F[2], 0); g4.grade = 4; assert.strictEqual(L.friendLines(g4).length, 4);
+  assert.strictEqual(L.friendLines(withPts(F[4], 0)).length, 5); assert(Array.from(L.friendLines(withPts(F[4], 0))).some(x => x.indexOf(String(F[4]) + ' דְּגָלִים') >= 0));
+  assert.strictEqual(L.friendLines(withPts(F[5], 0)).length, 6, 'without two bridges the line that counts them is not said');
+  const fl = Array.from(L.friendLines(withPts(F[5] - 4, 2))); assert.strictEqual(fl.length, 7); assert(fl.some(x => x.indexOf((F[5] - 4) + ' בָּתִּים וְ-2 גְּשָׁרִים') === 0)); fl.forEach(x => assert(!/[{}]|undefined/.test(x)));
+  assert.deepStrictEqual(Object.keys(M.unlock), ['2', '3', '4', '5', '6']);
+});
 console.log('all ' + n + ' passed (players)');

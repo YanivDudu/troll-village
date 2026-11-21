@@ -6,3 +6,4 @@ firebase-debug.log
 .firebase/
 .firebase-auth.json
 spike/
+.claude/

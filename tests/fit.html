@@ -46,6 +46,17 @@ SCREENS = SCREENS.concat(['dress', 'dress&tab=0', 'dress&tab=1', 'dress&tab=2', 
 SCREENS = SCREENS.concat(['home&goal=dragon', 'home&goal=ball', 'home&goal=dragon&rbtn=1', 'home&goal=ball&rbtn=1&many=1', 'home&g=1&goal=dragon&hour=21', 'home&g=4&goal=wings&boy=1', 'home&goal=ball&hour=18', 'home&wear=dragon', 'home&home=mid&goal=dragon',
   'end&stg=1&goal=dragon', 'end&stg=1&goal=ball', 'end&stg=1&stars=2&goal=ball&hour=21', 'end&hatch&goal=ball', 'end&hatch&goal=dragon&hour=21', 'end&egg&goal=ball&hour=18', 'bossend&goal=ball', 'bossend&goal=dragon&hour=21', 'mixend&hatch&goal=ball', 'mixend&hatch&goal=dragon&hour=18',
   'end&g=1&stg=1&stars=2&goal=ball', 'end&g=4&stg=1&goal=dragon&fx=spin.pfire', 'end&g=4&hatch&goal=ball&fx=flip.pgold&hour=21', 'end&stg=1&goal=ball&boy=1', 'end&stg=0&stars=1&goal=wings&wear=dragon', 'region&t=add&wear=dragon', 'topics&wear=dragon', 'subjects&wear=dragon']);
+// the companion remembers: every memory line of the camp (yesterday, the same day, after days away, last time, a finished house, a rescued troll, the bridge ready
+// and near, the savings goal), a long house name, a boy, grades 1 and 4, night; the heart of the friendship level, the journal as a book in the camp next to the pet
+// and every button of the row, a trick frozen in the middle; the first exercise of a stage that was played before; the end of a stage without a miss
+SCREENS = SCREENS.concat(['home&mem=yest', 'home&mem=same', 'home&mem=away', 'home&mem=last', 'home&mem=done', 'home&mem=hero', 'home&mem=bridge', 'home&mem=near', 'home&mem=goal&goal=dragon', 'home&g=4&mem=yest&boy=1', 'home&g=1&mem=away',
+  'home&g=4&t=g4exp&l=1&mem=yest', 'home&g=2&t=g2add&l=3&mem=yest', 'home&g=4&t=g4exp&l=1&mem=yest&fr=4', 'home&fr=6&many=1&rbtn=1&goal=ball', 'home&fr=6&many=1&rbtn=1&goal=ball&wear=dragon&mem=yest', 'home&fr=4&mem=yest&hour=21', 'home&g=1&fr=2&wear=dragon&mem=same&boy=1', 'home&fr=4&trick=wave', 'home&fr=6&trick=big&hour=18',
+  'round&t=add&mem=again&st=1', 'round&g=4&t=add&mem=again&st=2', 'end&stg=1&mem=clean', 'end&g=4&stg=2&mem=clean&hour=21',
+  // the friendship level rises at the end of a stage and of a bridge mission: the caption, with the egg waiting and hatched, with a savings goal
+  'end&lvup=1', 'end&lvup=1&hatch', 'end&home=new&lvup=2&hatch', 'end&g=4&lvup=1&hour=21', 'end&g=4&lvup=6&hatch&goal=ball', 'end&g=1&lvup=5&hatch&boy=1&hour=18', 'bossend&lvup=1', 'bossend&g=4&lvup=6&goal=dragon&hour=21',
+  // the travel journal: a new player, the page of the hearts (with and without dated moments), a region with stamps and a postcard, the last page, the biggest region, grades 1 and 4, a boy, dusk and night
+  'journal&home=new', 'journal&g=1&home=new', 'journal&g=4&home=new&hour=21', 'journal&home=mid', 'journal&fr=3', 'journal&fr=3&pg=1', 'journal&fr=4&mem=done', 'journal&fr=5&mem=hero', 'journal&fr=6', 'journal&fr=6&pg=1', 'journal&fr=6&pg=2', 'journal&fr=6&pg=last',
+  'journal&g=4&t=g4frac&fr=6', 'journal&g=4&t=g4frac&fr=6&pg=1', 'journal&g=4&t=g4exp&fr=6', 'journal&g=1&fr=5&pg=1&boy=1', 'journal&g=3&fr=6&pg=3', 'journal&fr=3&hour=18', 'journal&fr=6&pg=1&hour=21', 'journal&fr=6&pg=1&race=1']);
 var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var sky = /sky=(\d+)/.exec(location.hash);
@@ -71,7 +82,7 @@ addEventListener('message', function (e) {
   if (roll) { [].some.call(document.querySelectorAll('iframe'), function (f) { if (f.contentWindow !== e.source) return false; f.remove(); return true; }); open1(); }
   got++; small += d.sm || 0; loops += d.inf || 0;
   var bad = d.oh > 1 || d.ow > 1 || d.off > 0 || d.nav < 1 || d.ovf > 1 || (/hint/.test(d.id) && !d.card);
-  if (bad) fails.push(d.w + 'x' + d.h + ' ' + d.id.replace('#demo&fit&s=', '') + ' oh=' + d.oh + ' ow=' + d.ow + ' off=' + d.off + ' nav=' + d.nav + ' ovf=' + d.ovf + ' card=' + d.card);
+  if (bad) fails.push(d.w + 'x' + d.h + ' ' + d.id.replace('#demo&fit&s=', '') + ' oh=' + d.oh + ' ow=' + d.ow + ' off=' + d.off + ' nav=' + d.nav + ' ovf=' + d.ovf + ' card=' + d.card + (d.why ? ' why=' + d.why : ''));
   var tr = document.createElement('tr'); if (bad) tr.className = 'bad';
   tr.innerHTML = '<td>' + d.w + 'x' + d.h + '</td><td>' + d.id + '</td><td>overflow-y ' + d.oh + '</td><td>overflow-x ' + d.ow + '</td><td>off-screen buttons ' + d.off + '</td><td>nav buttons ' + d.nav + '</td>';
   document.getElementById('out').appendChild(tr);
