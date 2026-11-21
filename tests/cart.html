@@ -139,6 +139,7 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
       var tb = function () { return x.w.getComputedStyle(x.d.querySelector('.screen:not(.out) .buddy .troll .tb')); }, tvx = x.w.__tv, was = tvx.round.i;
       check(tb().animationName === 'idle', 'exercise' + fxh + ': while the child thinks the companion only breathes (' + tb().animationName + ')');
       var ok1 = [].slice.call(x.d.querySelectorAll('.screen:not(.out) [data-v]')).filter(function (a) { return a.getAttribute('data-v') === String(tvx.round.current().answer); })[0];
+      await wait(450); // answers ignore taps for the first 0.4 s after an exercise screen opens
       if (ok1) ok1.click(); else if (tvx.solve) tvx.solve();
       check(tb().animationName === (fxh ? 'mvSpin' : 'jump') && tb().animationIterationCount === '1', 'exercise' + fxh + ': after a correct answer: ' + tb().animationName + ', once');
       await wait(1700);

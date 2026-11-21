@@ -929,4 +929,51 @@ t('memory: every line is vocalised, has no feminine form left for a boy, and say
   const fl = Array.from(L.friendLines(withPts(F[5] - 4, 2))); assert.strictEqual(fl.length, 7); assert(fl.some(x => x.indexOf((F[5] - 4) + ' בָּתִּים וְ-2 גְּשָׁרִים') === 0)); fl.forEach(x => assert(!/[{}]|undefined/.test(x)));
   assert.deepStrictEqual(Object.keys(M.unlock), ['2', '3', '4', '5', '6']);
 });
+t('cloud: a save that lands while the cloud is being fetched cannot beat newer progress in the cloud', () => {
+  // syncNow copies the times before the request and merges against the copy; the live times may move meanwhile (touch)
+  const list = [{ id: 'p111111111', name: 'a' }], cloud = { list: list, gone: [], t: { p111111111: 700 } };
+  const live = { p111111111: 500 }, before = Object.assign({}, live);
+  live.p111111111 = 900; // the child tapped "continue" during the fetch: save() -> touch()
+  const m = L.mergeCloud({ list: list, gone: [], t: before }, cloud);
+  assert.deepStrictEqual(Array.from(m.pull), ['p111111111']); assert.deepStrictEqual(Array.from(m.push), []);
+  assert.deepStrictEqual(Array.from(L.mergeCloud({ list: list, gone: [], t: live }, cloud).push), ['p111111111'], 'the live times would have pushed the stale device');
+  // progress that was newer here before the fetch is still pushed
+  assert.deepStrictEqual(Array.from(L.mergeCloud({ list: list, gone: [], t: { p111111111: 800 } }, cloud).push), ['p111111111']);
+});
+t('cloud: boy or girl changed on a player card travels (the newer card wins), progress is still decided by its own times', () => {
+  const j = x => JSON.parse(JSON.stringify(x)), id = 'p111111111', id2 = 'p222222222';
+  // prof keeps a change time only when it is a real, positive number
+  assert.strictEqual(L.loadProfiles({ list: [{ id: id, name: 'a', sex: 'm', mt: 50 }] }).list[0].mt, 50);
+  ['x', -1, 0, NaN, null, '50', Infinity].forEach(v => assert(!('mt' in L.loadProfiles({ list: [{ id: id, name: 'a', mt: v }] }).list[0]), 'mt ' + v));
+  assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify({ cur: id, list: [{ id: id, name: 'a', sex: 'f' }] }))), { cur: id, list: [{ id: id, name: 'a', sex: 'f' }] }, 'a saved list without the field loads as before');
+  // this device changed the card: the cloud gets it, and the progress times decide nothing here
+  const cloud = { list: [{ id: id, name: 'a', sex: 'f' }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: { [id]: 7, [id2]: 7 } };
+  const mine = { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: { [id]: 3, [id2]: 7 } };
+  let m = j(L.mergeCloud(mine, cloud));
+  assert.deepStrictEqual(m.list, [{ id: id, name: 'a', sex: 'm', mt: 50 }, { id: id2, name: 'b', sex: 'f' }]);
+  assert(m.meta, 'the list is written to the cloud'); assert.deepStrictEqual(m.pull, [id], 'the progress of the cloud is newer and is still pulled'); assert.deepStrictEqual(m.push, []);
+  // the other device (old card, no time) pulls it and writes nothing
+  const cloud2 = { list: m.list, gone: [], t: cloud.t };
+  m = j(L.mergeCloud({ list: cloud.list, gone: [], t: cloud.t }, cloud2));
+  assert.strictEqual(m.list[0].sex, 'm'); assert.strictEqual(m.list[0].mt, 50); assert(!m.meta); assert.deepStrictEqual(m.pull.concat(m.push), []);
+  // an older change here loses to a newer one in the cloud; equal times: the cloud wins, as it always did
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'f', mt: 40 }], gone: [], t: {} }, { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [], t: {} }));
+  assert.strictEqual(m.list[0].sex, 'm'); assert(!m.meta);
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'f', mt: 50 }], gone: [], t: {} }, { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [], t: {} }));
+  assert.strictEqual(m.list[0].sex, 'm'); assert(!m.meta);
+  // old data on both sides (no time anywhere): the cloud wins and nothing is written
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm' }], gone: [], t: { [id]: 9 } }, { list: [{ id: id, name: 'a', sex: 'f' }], gone: [], t: { [id]: 9 } }));
+  assert.deepStrictEqual(m.list, [{ id: id, name: 'a', sex: 'f' }]); assert(!m.meta);
+  // an older page rewrote the list without the time: the device that made the change wins again and puts it back
+  m = j(L.mergeCloud(mine, { list: [{ id: id, name: 'a', sex: 'm' }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: cloud.t }));
+  assert.strictEqual(m.list[0].mt, 50); assert(m.meta);
+  // a deleted player stays deleted, whatever time the card carries, on either side
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: Date.now() }], gone: [], t: { [id]: Date.now() } }, { list: [{ id: id2, name: 'b' }], gone: [id], t: {} }));
+  assert.deepStrictEqual(m.list.map(p => p.id), [id2]); assert.deepStrictEqual(m.gone, [id]); assert.deepStrictEqual(m.push.concat(m.pull), []);
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [id], t: {} }, { list: [{ id: id, name: 'a', sex: 'f', mt: 90 }], gone: [], t: { [id]: 5 } }));
+  assert.deepStrictEqual(m.list, []); assert(m.meta);
+  // the order of the players stays the cloud's, a player that only this device has is added after them, at most 8
+  m = j(L.mergeCloud({ list: [{ id: 'p333333333', name: 'c' }, { id: id2, name: 'b', sex: 'm', mt: 9 }], gone: [], t: {} }, cloud));
+  assert.deepStrictEqual(m.list.map(p => p.id), [id, id2, 'p333333333']); assert.strictEqual(m.list[1].sex, 'm');
+});
 console.log('all ' + n + ' passed (players)');

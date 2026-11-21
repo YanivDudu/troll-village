@@ -42,7 +42,7 @@ async function toRound(x) { // first building, first house, discovery stage
 }
 async function solve(x) { // one correct answer, the way the self-play test gives it
   var tv = F[x].contentWindow.__tv, r = tv.round, cur = r.current(), i0 = r.i;
-  await wait(300);
+  await wait(500); // answers ignore taps for the first 0.4 s after an exercise screen opens
   var b = all(x, '.screen:not(.out) [data-v]').filter(function (e) { return e.getAttribute('data-v') === String(cur.answer); })[0];
   if (b) { b.click(); b.click(); } else if (tv.solve) tv.solve();
   await wait(1700);

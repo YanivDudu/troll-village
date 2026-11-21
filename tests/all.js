@@ -1,9 +1,12 @@
-// Runs every check once, in parallel. Usage: node tests/all.js [quick]
-//   quick: logic, packs, two layout sizes and three self-play rounds (for small changes)
-//   full (default): all eight layout sizes, self-play in every grade, the race and the cloud sync against the real database
+// Runs every check once, ONE browser at a time. Usage: node tests/all.js [quick]
+//   quick: logic, packs, three layout sizes (phone, low landscape, laptop), the phone at night, five self-play rounds, the reward and the cart
+//   full (default): all eight layout sizes, dusk and night, self-play in every grade, the race and the cloud sync against the real database
+// One browser at a time is the default: two headless browsers stall each other for minutes and spoil the measurements.
+// MAX=3 node tests/all.js runs three side by side on a strong, idle machine; only then is a failed check run once more, alone.
+// A check that fails with one browser at a time is a failure: it is not run again. A browser that returns no title is a failure too.
 const { spawn } = require('child_process'), fs = require('fs'), os = require('os'), path = require('path');
 const root = path.join(__dirname, '..'), EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
-const quick = process.argv[2] === 'quick', MAX = +process.env.MAX || Math.max(2, Math.min(4, Math.floor(os.cpus().length / 2))); // MAX=1 node tests/all.js quick: one browser at a time (a machine short of memory)
+const quick = process.argv[2] === 'quick', MAX = Math.max(1, Math.floor(+process.env.MAX) || 1);
 const page = 'file:///' + root.replace(/\\/g, '/').replace(/ /g, '%20');
 function run(cmd, args, ms) {
   return new Promise(res => {
@@ -16,13 +19,13 @@ function run(cmd, args, ms) {
 function edge(url, budget) { // every browser gets a profile of its own, so several can run side by side
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'troll-all-'));
   return run(EDGE, ['--headless', '--disable-gpu', '--allow-file-access-from-files', '--no-first-run', '--user-data-dir=' + dir, '--window-size=2000,1400', '--virtual-time-budget=' + budget, '--dump-dom', url], 900000)
-    .then(out => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} return (/<title>([^<]*)/.exec(out) || [0, out.slice(0, 80)])[1].replace(/&amp;/g, '&'); });
+    .then(out => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} const m = /<title>([^<]*)/.exec(out); return m ? m[1].replace(/&amp;/g, '&') : 'NO TITLE: the browser returned ' + (out === 'TIMEOUT' ? 'nothing in 15 minutes and was stopped' : out ? 'no page (' + out.slice(0, 80).replace(/\s+/g, ' ') + ')' : 'nothing') + '. This is a failure, not a pass'; });
 }
 const jobs = [];
 const job = (name, ok, fn) => jobs.push({ name, ok, fn });
 job('logic', /^all \d+ passed/m, () => run('node', ['tests/logic.test.js'], 120000).then(o => o.trim().split('\n').pop()));
 job('packs', /^PACKS OK/, () => run('node', ['tests/packs.test.js'], 300000).then(o => o.trim().split('\n').slice(0, 6).join(' | ')));
-(quick ? ['360x640', '800x380'] : ['360x640', '390x800', '800x380', '768x1024', '1024x768', '1280x620', '1366x650', '1920x950'])
+(quick ? ['360x640', '800x380', '1366x650'] : ['360x640', '390x800', '800x380', '768x1024', '1024x768', '1280x620', '1366x650', '1920x950'])
   .forEach(sz => job('fit ' + sz, /^FIT OK/, () => edge(page + '/tests/fit.html#' + sz, 40000)));
 // every screen again at dusk and at night: a sky layer once covered every button of the end screens, and the daytime run did not see it
 (quick ? ['360x640&sky=21'] : ['360x640&sky=18', '360x640&sky=21', '1366x650&sky=18', '1366x650&sky=21'])
@@ -49,11 +52,11 @@ if (!quick) {
   await Promise.all(Array.from({ length: MAX }, async () => {
     while (next < jobs.length) {
       const j = jobs[next++], r = await j.fn(), ok = j.ok.test(r);
-      if (!ok) again.push(j);
-      console.log((ok ? 'ok   ' : 'again ') + j.name + (ok ? '' : ' :: ' + r.slice(0, 120)) + '  (' + (++done) + '/' + jobs.length + ')');
+      if (!ok) { if (MAX > 1) again.push(j); else bad.push(j.name + ' :: ' + r); }
+      console.log((ok ? 'ok   ' : MAX > 1 ? 'again ' : 'FAIL ') + j.name + (ok ? '' : ' :: ' + r.slice(0, 120)) + '  (' + (++done) + '/' + jobs.length + ')');
     }
   }));
-  // a busy machine can spoil a measurement: whatever failed runs once more, alone
+  // several browsers side by side can spoil a measurement: whatever failed then runs once more, alone
   for (const j of again) { const r = await j.fn(), ok = j.ok.test(r); if (!ok) bad.push(j.name + ' :: ' + r); console.log((ok ? 'ok   ' : 'FAIL ') + j.name + ' (alone)' + (ok ? '' : ' :: ' + r)); }
   console.log((bad.length ? 'ALL FAIL ' + bad.length : 'ALL OK ' + jobs.length + ' checks') + ' in ' + Math.round((Date.now() - t0) / 1000) + ' s');
   process.exit(bad.length ? 1 : 0);

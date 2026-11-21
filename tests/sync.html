@@ -76,7 +76,44 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     check(JSON.parse(localStorage.getItem('trollVillage.snd') || '{}').mute !== true, 'sound off on device B did not switch the sound off on device A');
     check(true, 'device A got the progress made on device B, and the player added there');
     var idB = profs().list.filter(function (p) { return p.id !== idA; })[0].id;
-    q('.chip.who') && q('.chip.who').click(); // delete B1 on device A
+
+    // A save that lands while a sync is still fetching must not let this device push its older progress over the cloud.
+    // "Another device" is played by writing newer progress of A1 straight into the test family's own document.
+    var FURL = 'https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/families/' + uid + '?key=' + KEY;
+    function cloudDoc() { return fetch(FURL, { headers: { Authorization: 'Bearer ' + acct().it } }).then(function (r) { return r.json(); }).then(function (d) { return d.fields; }); }
+    await wait(2500); // the sync of the page load is over
+    var newer = JSON.parse((await cloudDoc())['s3_' + idA].stringValue), tNew = Date.now(), body = { fields: {} };
+    newer.coins += 777; body.fields['s3_' + idA] = { stringValue: JSON.stringify(newer) }; body.fields['t3_' + idA] = { stringValue: String(tNew) };
+    var put = await fetch(FURL + '&updateMask.fieldPaths=s3_' + idA + '&updateMask.fieldPaths=t3_' + idA, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + acct().it }, body: JSON.stringify(body) });
+    check(put.ok && sync().t[idA] < tNew, 'the cloud now holds newer progress than device A');
+    var W = f.contentWindow, realFetch = W.fetch, held = false, letGo, gate = new Promise(function (r) { letGo = r; });
+    W.fetch = function (u, o) { // the next read of the cloud waits until the test lets it go
+      if (!held && /firestore/.test(String(u)) && !(o && o.method)) { held = true; return gate.then(function () { return realFetch.call(W, u, o); }); }
+      return realFetch.call(W, u, o);
+    };
+    doc().dispatchEvent(new Event('visibilitychange')); // back to the tab: a sync starts
+    await until(function () { return held; }, 'the sync is fetching');
+    (await until(function () { return q('.nextb'); }, 'the big button of the home screen')).click(); // one tap: an exercise opens and the state is saved
+    await until(function () { return W.__tv.round && sync().t[idA] > tNew; }, 'a save landed during the fetch');
+    check(st(idA).coins !== newer.coins, 'the save of device A landed while the cloud was being fetched');
+    letGo();
+    await until(function () { return st(idA).coins === newer.coins; }, 'A took the newer progress although it saved during the fetch');
+    check(true, 'a save during the fetch does not beat the newer progress of the cloud');
+    await wait(6500); // the push that the save asked for has run by now
+    check(JSON.parse((await cloudDoc())['s3_' + idA].stringValue).coins === newer.coins && st(idA).coins === newer.coins, 'and the cloud was not overwritten by the older device');
+    await open();
+    await until(function () { return q('.chip.who'); }, 'home A again');
+    check(st(idA).coins === newer.coins, 'the newer progress is still there after a reload');
+
+    q('.chip.who') && q('.chip.who').click(); // boy or girl on the card of A1, then delete B1 on device A
+    var sexBtn = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pcard')[profs().list.findIndex(function (p) { return p.id === idA; })].querySelector('.psex'); }, 'who A (boy or girl button)');
+    function sexA() { return profs().list.filter(function (p) { return p.id === idA; })[0].sex; }
+    var sex0 = sexA(), sex1 = sex0 === 'f' ? 'm' : 'f', tA = sync().t[idA];
+    sexBtn.click();
+    await wait(4000); // the sync that the tap started is over
+    check(sexA() === sex1, 'boy or girl changed on the card is not undone by the sync');
+    check(JSON.parse((await cloudDoc()).list.stringValue).filter(function (p) { return p.id === idA; })[0].sex === sex1, 'and it reached the cloud');
+    check(sync().t[idA] === tA && JSON.parse((await cloudDoc())['s3_' + idA].stringValue).coins === newer.coins, 'the progress and its time did not change with it');
     var del = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pdel')[profs().list.findIndex(function (p) { return p.id === idB; })]; }, 'who A');
     del.click(); (await until(function () { return q('.sure .btn.b2'); }, 'confirm')).click();
     await wait(3000);
@@ -84,6 +121,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     await open();
     await until(function () { return profs().list.length === 1 && profs().list[0].id === idA; }, 'B dropped the deleted player');
     check(true, 'a player deleted on one device disappears on the other');
+    check(profs().list[0].sex === sex1, 'device B got the boy or girl change made on device A');
     // removal from this device only is a different thing: the player stays in the cloud and on the other device
     var chipB = await until(function () { return q('.chip.who') || q('.pdel'); }, 'B is in the game');
     if (!q('.pdel')) chipB.click();

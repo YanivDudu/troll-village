@@ -11,3 +11,5 @@ Sound effects (other snd/*.mp3): "Interface Sounds" and "Music Jingles" by Kenne
 Treasure map of a topic, world maps of the subjects, the four lands and the camp of the home screen (map/*.png, map/parchment.jpg): "Cartography Pack" by Kenney (www.kenney.nl); the parchment texture re-encoded as JPEG
   https://kenney.nl/assets/cartography-pack  -  license: CC0
 Chest of the end screens (map/chest.png): the same Cartography Pack by Kenney (CC0), cropped to the drawing; the gold, silver and bronze plate behind it is CSS
+Font (font/rubik-hebrew.woff2, font/rubik-latin.woff2): "Rubik" by The Rubik Project Authors, from Google Fonts (variable font, weights 400 to 800, Hebrew and Latin subsets)
+  https://fonts.google.com/specimen/Rubik  -  license: SIL Open Font License 1.1 (the text is in font/OFL.txt)
