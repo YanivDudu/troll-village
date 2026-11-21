@@ -5,6 +5,7 @@
      Usage: fit.html            -> all sizes, result in document.title + table
             fit.html#390x800    -> only that size (handy for screenshots)
             fit.html#390x800&sky=21 -> every screen at that hour (18 = dusk, 21 = night): a decorative sky layer must never cover a button
+            fit.html#390x800&skin=toy -> every screen in the skin "the toy island" (goes with sky= and only=)
      The title also reports, without failing: small = buttons under 48 px, loops = endless animations on exercise screens. -->
 <style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}td,th{padding:2px 8px;border:1px solid #777}.bad{background:#a00}</style>
 <div id="frames"></div><table id="out"></table>
@@ -63,6 +64,7 @@ var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var sky = /sky=(\d+)/.exec(location.hash);
 if (sky) SCREENS = SCREENS.filter(function (sc, i) { return !/hour=/.test(sc) && SCREENS.indexOf(sc) === i; }).map(function (sc) { return sc + '&hour=' + sky[1]; });
+var skin = /skin=([a-z]+)/.exec(location.hash); // fit.html#360x640&skin=toy -> every screen in that skin
 var pick = /only=([^&]+)/.exec(location.hash); // fit.html#360x640&only=race -> just the screens whose name contains that text
 if (pick) { var pats = decodeURIComponent(pick[1]).split(','); SCREENS = SCREENS.filter(function (sc) { return pats.some(function (p) { return sc.indexOf(p) >= 0; }); }); } // several texts: only=dress,gift
 var small = 0, loops = 0;
@@ -75,7 +77,7 @@ function open1() {
   var j = queue.shift(); if (!j) return;
   var f = document.createElement('iframe');
   f.width = j[0][0]; f.height = j[0][1];
-  f.src = '../index.html#demo&fit&s=' + j[1];
+  f.src = '../index.html#demo&fit&s=' + j[1] + (skin ? '&skin=' + skin[1] : '');
   document.getElementById('frames').appendChild(f);
 }
 for (var q0 = roll ? LIVE : want; q0 > 0; q0--) open1();

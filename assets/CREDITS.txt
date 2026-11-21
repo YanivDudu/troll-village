@@ -13,3 +13,7 @@ Treasure map of a topic, world maps of the subjects, the four lands and the camp
 Chest of the end screens (map/chest.png): the same Cartography Pack by Kenney (CC0), cropped to the drawing; the gold, silver and bronze plate behind it is CSS
 Font (font/rubik-hebrew.woff2, font/rubik-latin.woff2): "Rubik" by The Rubik Project Authors, from Google Fonts (variable font, weights 400 to 800, Hebrew and Latin subsets)
   https://fonts.google.com/specimen/Rubik  -  license: SIL Open Font License 1.1 (the text is in font/OFL.txt)
+The toy island skin (toy/*.png): "Fluent Emoji" 3D by Microsoft, trimmed to the object and resized (176 px; 256 px for the largest objects)
+  https://github.com/microsoft/fluentui-emoji  -  license: MIT (the text is in toy/LICENSE-fluent.txt)
+  Two files are compositions of Fluent pictures, nothing drawn: toy/bridge.png (the Rainbow as a whole arch on two "Desert island" islets),
+  toy/campfire.png ("Fire" on two "Wood" logs). The sky, the sea, the islands, the path, the haze and the shadows are CSS.

@@ -15,7 +15,7 @@ function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElem
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 function frame(hash, w, h, sel) {
   return new Promise(function (res) {
-    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash;
+    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash + (/skin=toy/.test(location.hash) ? '&skin=toy' : ''); // cart.html#skin=toy runs the same checks in the toy skin
     document.getElementById('frames').appendChild(f);
     (function poll() { var d = f.contentDocument, s = d && d.querySelector(sel || '.screen.cart .citem'); if (s) res({ f: f, d: d, w: f.contentWindow }); else setTimeout(poll, 20); })();
   });

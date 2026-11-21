@@ -1046,6 +1046,157 @@ button.stp.snext:active{transform:scale(.95)}
 @media (min-aspect-ratio:1/1){.jfirst{flex-direction:row;gap:clamp(14px,4vmin,44px)}.jrec{max-width:38%}}
 @media (min-width:640px) and (min-height:520px){.jrn .parr{width:56px;height:56px;flex-basis:56px;font-size:20px}}
 @media (max-height:520px){.jrn .h2{font-size:18px;padding:0 18px}.jtitle{flex-direction:row;gap:8px}.btn.jgo{min-height:50px;font-size:20px}}
+/* TOY-BEGIN ================= the skin "the toy island" (body.toy, chosen by &skin=toy; docs/prompts/reskin-spec.md) =================
+   Only colours, pictures and the ground: no size, grid or text is changed here. Every selector starts with body.toy, so the
+   parchment skin is untouched. Part 1: the world layer and the world screens (camp, lands, world map, map of a topic, end screens, journal). */
+body.toy{--ti:#3b2a55;--tp:#fff;--tc:#fff8e6;--te:#c9b9ea;--te2:#b9a6e6;--tsh:rgba(59,42,85,.18);--tgold:#ffd23f;--tpink:#ff4f9a;--tpip:#e4e0ee;--tpipon:#ffb300;--tpath:#fff1c4;--tbed:rgba(170,110,30,.6);--tdot:#ff8a3d;
+  --tmain:linear-gradient(#d6266f,#c2185f);--tmaine:#8f1148;--tnext:linear-gradient(#1f8a43,#1b8038);--tnexte:#125a27;
+  --hz:27%;--s0:#7fdcff;--s1:#c8f3ff;--w0:#27b4ea;--w1:#0b78c6;--g0:#c9f27a;--g1:#8fe05a;--g2:#5fcb49;--g3:#49b943;--sand:#f6d27a;--sand2:#dba94a;--veil:rgba(255,255,255,0);
+  --sky:linear-gradient(to bottom,var(--s0) 0,var(--s1) var(--hz),var(--w0) calc(var(--hz) + .4%),var(--w1) 100%);
+  /* the island: one recipe (grass lit from the top left, a rim of sand, its shadow on the water) */
+  --isle:radial-gradient(120% 90% at 30% 0,var(--g0) 0,var(--g1) 35%,var(--g2) 75%,var(--g3) 100%);
+  --isin:inset 0 10px 0 rgba(255,255,255,.35),inset 0 -12px 0 rgba(30,120,40,.25);
+  --rim:0 14px 0 var(--sand),0 26px 0 var(--sand2),0 34px 0 rgba(0,70,130,.35),0 50px 40px rgba(0,60,120,.3);
+  --rims:0 6px 0 var(--sand),0 11px 0 var(--sand2),0 15px 0 rgba(0,70,130,.35);
+  /* ONE shadow recipe: the hard edge under a picture, and the soft ellipse on the ground, a little to the right (the light is at the top left) */
+  --osh:drop-shadow(0 3px 0 rgba(0,0,0,.12));
+  --gsh:radial-gradient(closest-side,rgba(20,80,40,.42),rgba(20,80,40,.2) 55%,transparent) 100% 100%/86% 24% no-repeat;
+  --gsea:radial-gradient(closest-side,rgba(0,70,140,.3),transparent) 100% 100%/86% 24% no-repeat;
+  --gtr:radial-gradient(closest-side,rgba(20,80,40,.4),rgba(20,80,40,.18) 55%,transparent) 56% 100%/82% 11% no-repeat;
+  background:var(--w1)}
+@media (max-width:640px),(max-height:520px){body.toy{--isin:inset 0 6px 0 rgba(255,255,255,.35),inset 0 -8px 0 rgba(30,120,40,.25);--rim:0 8px 0 var(--sand),0 15px 0 var(--sand2),0 20px 0 rgba(0,70,130,.35),0 30px 24px rgba(0,60,120,.3)}}
+body.toy[data-k="calm"]{--hz:80%;--veil:rgba(255,255,255,.3)}
+body.toy[data-k="panel"]{--hz:70%;--veil:rgba(255,255,255,.18)}
+@media (orientation:landscape){body.toy[data-k="calm"]{--hz:74%}}
+body.toy.dusk{--g0:#d6e874;--g1:#9fd456;--g2:#6dbd49;--g3:#52a744;--sand:#f3c573;--sand2:#d29a46;--w0:#5f86c8;--w1:#2f5aa8;
+  --sky:linear-gradient(to bottom,#ff9a62 0,#ffc78a calc(var(--hz)*.6),#ffe9bf var(--hz),#f2a57c calc(var(--hz) + .4%),#5f86c8 calc(var(--hz) + 16%),#2f5aa8 100%)}
+body.toy.night{--s0:#141d4f;--s1:#2b3a80;--w0:#1d3f8f;--w1:#0c2260;--g0:#6fbf86;--g1:#4aa373;--g2:#368a63;--g3:#2a7557;--sand:#b9a77e;--sand2:#8f7c5a;--tbed:rgba(20,40,60,.5);--veil:rgba(20,28,80,0)}
+/* ---- the world layer: #bg, under every screen, never takes a tap ---- */
+body.toy #bg{background:var(--sky)}
+body.toy #bg::before{content:"";position:absolute;left:0;right:0;top:var(--hz);bottom:0;pointer-events:none;
+  background:radial-gradient(60px 16px at 20% 30%,rgba(255,255,255,.45),transparent 70%),radial-gradient(80px 18px at 78% 12%,rgba(255,255,255,.4),transparent 70%),radial-gradient(70px 16px at 55% 96%,rgba(255,255,255,.35),transparent 70%),radial-gradient(50px 12px at 8% 80%,rgba(255,255,255,.35),transparent 70%),radial-gradient(60px 14px at 94% 62%,rgba(255,255,255,.35),transparent 70%)}
+body.toy #bg::after{content:"";position:absolute;inset:0;pointer-events:none;background:var(--veil)}
+body.toy.night #bg::before{opacity:.35}
+body.toy .tsun{position:absolute;left:4%;top:9%;width:clamp(64px,13vmin,120px);height:auto;filter:var(--osh)}
+body.toy.dusk .tsun{top:calc(var(--hz) - 13%);filter:saturate(1.3) hue-rotate(-18deg) drop-shadow(0 0 18px rgba(255,150,60,.8))}
+body.toy .tcloud{position:absolute;left:62%;top:5%;width:clamp(70px,15vmin,150px);height:auto;filter:drop-shadow(0 3px 0 rgba(0,0,0,.08))}
+body.toy .tcloud.c2{left:24%;top:13%}
+body.toy.night .tcloud{opacity:.28}
+body.toy #bg .nsky{inset:0 0 auto 0;height:var(--hz)}
+body.toy #bg .isle{display:none;position:absolute;border-radius:46% 54% 44% 56%/16% 14% 12% 12%;background:var(--isle);box-shadow:var(--isin),var(--rim)}
+body.toy[data-k="calm"] #bg .isle{display:block;left:-10%;right:-10%;top:90%;bottom:-30%}
+body.toy[data-k="panel"] #bg .isle{display:block;left:-10%;right:-10%;top:86%;bottom:-30%}
+@media (orientation:landscape){body.toy[data-k="calm"] #bg .isle{left:-6%;right:-6%;top:84%}}
+@media (max-width:640px),(max-height:520px){body.toy .tcloud.c2{display:none}}
+/* ---- every world screen: no parchment; each screen is a layer of its own, so its island (z-index:-1) lies over the world and under its content ---- */
+body.toy .screen{z-index:0}
+body.toy .screen.rmap,body.toy .screen.map{background:none}
+body.toy img[src^="assets/toy/"]{object-fit:contain;object-position:50% 100%}
+body.toy .top .chip,body.toy .top .icon{box-shadow:0 4px 0 var(--te2)}
+body.toy .rmap .h2,body.toy .camp .title{color:var(--ti);background:var(--tp);box-shadow:0 4px 0 var(--te)}
+body.toy .rmsg,body.toy .map .note{background:#fff}
+/* ---- the map of a topic and the world map ---- */
+body.toy .tmap::before{content:"";position:absolute;inset:-6px -4px 16px;z-index:-1;pointer-events:none;border-radius:46% 54% 44% 56%/16% 14% 12% 12%;background:var(--isle);box-shadow:var(--isin),var(--rim)}
+@media (min-width:641px) and (min-height:521px){body.toy .tmap::before{inset:-10px -8px 30px}}
+body.toy .mdeco{left:50%;top:50%;opacity:1;transform:translate(-50%,-100%);height:auto;background:var(--gsh);padding-bottom:.4%;filter:var(--osh)}
+body.toy .mdeco.sea{left:9%;top:6%;z-index:-1;background:var(--gsea)}
+@media (max-width:640px),(max-height:520px){body.toy .tmap .mnode .mic>img:first-child{transform:scale(1.18);transform-origin:50% 100%}}
+body.toy.night .deco{filter:brightness(.72) saturate(.85)}
+@media (max-width:640px),(max-height:520px){body.toy .mdeco.dw{display:none}}
+body.toy .mtrail path{stroke:#fff;stroke-width:calc(7.5px*var(--s));stroke-dasharray:.1 calc(15px*var(--s));opacity:.92}
+body.toy .mtrail path.tbed{stroke:var(--tbed);stroke-width:calc(22px*var(--s));stroke-dasharray:none;opacity:1}
+body.toy .mtrail path.tmid{stroke:var(--tpath);stroke-width:calc(17px*var(--s));stroke-dasharray:none;opacity:1}
+body.toy .mtrail path.walked{stroke:var(--tdot);stroke-width:calc(7.5px*var(--s));stroke-dasharray:.1 calc(15px*var(--s));opacity:1}
+body.toy .mnode,body.toy .land{color:var(--ti)}
+body.toy .mic>img:first-child{background:var(--gsh);padding-bottom:5%;filter:var(--osh)}
+body.toy .mbud,body.toy .mhero{filter:var(--osh)}
+body.toy .mbud svg,body.toy .mhero svg,body.toy .cbud svg,body.toy .rt svg,body.toy .ehero svg,body.toy .emeet .reveal svg{background:var(--gtr)}
+body.toy .mlab{font-size:clamp(14px,calc(12.5px*var(--s)),20px);background:#fff;border-radius:12px;box-shadow:0 3px 0 var(--te)}
+body.toy .mpips{background:#fff;box-shadow:0 2px 0 var(--te)}
+body.toy .mpips i{border-color:rgba(59,42,85,.6);background:#fff}
+body.toy .mpips i.l{border-color:rgba(59,42,85,.3);background:var(--tpip)}
+body.toy .mpips i.s1{background:linear-gradient(to top,var(--tpipon) 36%,#fff 36%)}
+body.toy .mpips i.s2{background:linear-gradient(to top,var(--tpipon) 66%,#fff 66%)}
+body.toy .mpips i.s3{background:var(--tpipon)}
+body.toy .mnode.rec .mic:before{inset:-34%;background:radial-gradient(closest-side,rgba(255,246,150,1),rgba(255,226,92,.35) 55%,transparent)}
+body.toy .mnode.rec .mlab,body.toy .land.rec .mlab{background:var(--tgold)}
+body.toy .mnode.sel .mlab{box-shadow:0 0 0 3px var(--tpink),0 3px 0 var(--te)}
+/* locked: no parchment fog. The picture loses its colour, a haze of CSS lies over its foot, a lock stands on it */
+body.toy .mnode.far{opacity:1}
+body.toy .mnode.far .mic>img:first-child{filter:saturate(.45) brightness(1.03);opacity:.92}
+body.toy .mnode.far .mic:after{inset:38% -30% -10%;filter:blur(5px);opacity:.55;background:radial-gradient(closest-side,#fff,rgba(255,255,255,.72) 45%,transparent)}
+body.toy .mnode.far .mic:before{content:"";position:absolute;pointer-events:none;left:50%;top:42%;width:52%;height:52%;transform:translate(-50%,-50%);z-index:1;background:url(assets/ico/1f512.png) center/contain no-repeat}
+body.toy .mnode.far .mlab{color:#5d5670}
+body.toy .btn.mgo{background:var(--tmain);box-shadow:0 7px 0 var(--tmaine),0 12px 18px rgba(0,0,0,.22)}
+body.toy .mpanel{background:#fff;border-color:#fff;border-radius:18px;box-shadow:0 5px 0 rgba(59,42,85,.25),0 10px 14px rgba(0,0,0,.2)}
+body.toy .mpanel .sbtn{border-color:#e4e0ee}
+body.toy .mpanel .sbtn.locked{background:#ece8f3}
+body.toy .mpanel .sbtn.now{border-color:var(--tpink)}
+body.toy .mx{background:#f3eefb;color:var(--ti)}
+body.toy .tmap .parb{background:#fff;color:var(--ti);box-shadow:0 4px 0 var(--te2)}
+body.toy .pcard2 .ohead b.ptitle{color:var(--ti)}
+body.toy .ovl{background:rgba(30,20,60,.42)}
+/* ---- the four lands: each land is an islet ---- */
+body.toy .land,body.toy .land.rec{background:none;border-color:transparent}
+body.toy .land::before{content:"";position:absolute;inset:0 0 clamp(16px,3.4vmin,34px);z-index:-1;pointer-events:none;border-radius:48% 52% 46% 54%/26% 24% 20% 20%;background:var(--isle);box-shadow:var(--isin),var(--rim)}
+@media (orientation:landscape){body.toy .land::before{top:12%}}
+body.toy .land.rec .mic:before{background:radial-gradient(closest-side,rgba(255,246,150,1),rgba(255,226,92,.35) 55%,transparent)}
+body.toy .lstars{background:#fff}
+body.toy .land .pbar{background:var(--tpip)}
+/* ---- the camp ---- */
+body.toy .cstrip,body.toy .eframe{color:var(--ti);background:linear-gradient(var(--w0),var(--w1));border-color:#fff;border-radius:22px;box-shadow:inset 0 4px 0 #fff,inset 0 -4px 0 #fff,0 5px 0 var(--te),0 10px 14px rgba(0,0,0,.2)}
+body.toy .cstrip{isolation:isolate}
+body.toy .cstrip .tmap::before{inset:7% 0 15%;box-shadow:var(--isin),var(--rims)}
+body.toy .cground{position:relative}
+body.toy .cground::before{content:"";position:absolute;inset:46% 0 -12px;z-index:-1;pointer-events:none;border-radius:46% 54% 44% 56%/30% 28% 16% 16%;background:var(--isle);box-shadow:var(--isin),var(--rims)}
+body.toy .cbub{background:#fff;color:var(--ti);box-shadow:0 4px 0 var(--tsh)}
+body.toy .cbub:after{border-top-color:#fff}
+body.toy .cbud,body.toy .jbud{filter:var(--osh)}
+body.toy .rt svg,body.toy .ehero svg,body.toy .emeet .reveal svg{filter:var(--osh)}
+body.toy .ctent,body.toy .cfire img,body.toy .cjrn img,body.toy .jfire{background:var(--gsh);filter:var(--osh)}
+body.toy .camp .btn.big.nextb,body.toy .camp .btn.big.cgo,body.toy .btn.jgo{background:var(--tmain);border-color:transparent;box-shadow:0 6px 0 var(--tmaine),0 11px 14px rgba(0,0,0,.22)}
+body.toy .camp .nextb .npic{background:#fff}
+body.toy .camp .nextb .ngo{color:#c2185f}
+body.toy .camp .hrow .btn,body.toy .ebtns .btn{background:#fff;color:var(--ti);border-color:transparent;box-shadow:0 5px 0 var(--te2),0 8px 10px rgba(0,0,0,.15)}
+body.toy .camp .hrow .btn.wig{background:#ffe9a8}
+body.toy .folk{position:relative}
+body.toy .folk:not(:empty)::before{content:"";position:absolute;inset:38% 0 calc(-1*clamp(8px,2vmin,20px));z-index:-1;pointer-events:none;border-radius:50% 50% 0 0/46% 46% 0 0;background:var(--isle);box-shadow:inset 0 6px 0 rgba(255,255,255,.35)}
+body.toy .rt{color:var(--ti)}
+body.toy .rt b{background:#fff}
+body.toy .rt.rmore,body.toy .jrn .parr{background:#fff;color:var(--ti);border-color:transparent;box-shadow:0 4px 0 var(--te2)}
+body.toy .camp,body.toy .jrn,body.toy .endm{--jp:#fff;--ji:#3b2a55;--jb:#b9a6e6}
+body.toy .fheart,body.toy .cjrn .cl{box-shadow:0 2px 0 var(--te)}
+/* ---- the reward: end of a stage, of a mixed round, of a bridge mission ---- */
+body.toy .eframe{position:relative;z-index:0}
+body.toy .eframe::before{content:"";position:absolute;inset:10px 6px 24px;z-index:-1;pointer-events:none;border-radius:46% 54% 44% 56%/22% 20% 14% 14%;background:var(--isle);box-shadow:var(--isin),var(--rims)}
+body.toy .eframe .tmap::before{display:none}
+body.toy .eres{background:#fff;border-radius:999px;padding:0 16px;box-shadow:0 4px 0 var(--te)}
+body.toy .endm .star{color:#d9d3e6}
+body.toy .endm .star.on{color:#ffc61a}
+body.toy .echest{color:var(--ti)}
+body.toy .ebox{box-shadow:0 3px 0 var(--te2),inset 0 0 0 2px rgba(255,255,255,.7)}
+body.toy .ebox::after{content:"";position:absolute;inset-inline-end:-10%;bottom:-10%;width:42%;height:42%;pointer-events:none;background:center/contain no-repeat}
+body.toy .echest.gold .ebox{background:radial-gradient(circle at 35% 30%,#fff6c2,#ffc21f)}
+body.toy .echest.silver .ebox{background:radial-gradient(circle at 35% 30%,#fff,#b9c3d2)}
+body.toy .echest.bronze .ebox{background:radial-gradient(circle at 35% 30%,#ffd9b8,#e0915a)}
+body.toy .echest.gold .ebox::after{background-image:url(assets/ico/1f947.png)}
+body.toy .echest.silver .ebox::after{background-image:url(assets/ico/1f948.png)}
+body.toy .echest.bronze .ebox::after{background-image:url(assets/ico/1f949.png)}
+body.toy .echest b{background:none;box-shadow:none}
+body.toy .ebridge:before{border-top-color:#fff}
+body.toy .endm .banner{color:var(--ti);background:#fff;box-shadow:0 3px 0 var(--te)}
+body.toy .endm .banner.eggmsg{background:var(--tgold)}
+body.toy .endm .banner.chest.gold{background:#fff1b8}body.toy .endm .banner.chest.silver{background:#edf1f6}body.toy .endm .banner.chest.bronze{background:#fbe0cb}
+body.toy .endm .banner.efriend{background:#ffe3ee}
+body.toy .ebtns .btn.nxt{color:#fff;background:var(--tnext);box-shadow:0 6px 0 var(--tnexte),0 11px 14px rgba(0,0,0,.2)}
+/* ---- the travel journal: stamps and postcards on a cream page ---- */
+body.toy .jrh,body.toy .jinfo{box-shadow:0 4px 0 var(--te)}
+body.toy .jgridw{background:var(--tc);border-radius:22px;box-shadow:0 5px 0 var(--te),0 10px 14px rgba(0,0,0,.2)}
+body.toy .sdisc{background:#fff;box-shadow:0 2px 0 var(--te)}
+body.toy .snext .sdisc{background:rgba(255,255,255,.55);border-color:rgba(185,166,230,.7);box-shadow:none}
+body.toy .snext .sname{background:var(--tgold);box-shadow:0 2px 0 var(--te)}
+body.toy .jcard{background:#fff;box-shadow:0 3px 0 var(--te)}
+/* TOY-END */
 </style>
 </head>
 <body>
@@ -3626,13 +3777,14 @@ var TrollModels = (function () {
   var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
+  var TOY = !/[&#]skin=old/.test(hash); // the skin "the toy island" (body.toy). At the flip this becomes !/[&#]skin=old/.test(hash)
   var state, app = document.getElementById('app'), fx, cur = null, timers = [];
   var tv = window.__tv = { round: null, done: false };
   var GRADE_HE = ['', "א'", "ב'", "ג'", "ד'", "ה'"];
   var GUIDE = { id: 3, name: 'טְרוֹלִי', body: '#ff8fb1', hairColor: '#8e5cff', hair: 0, acc: 'flower', eyes: 1 };
   var SUBJ = { math: ['🔢', 'חֶשְׁבּוֹן', 'tower'], geo: ['📐', 'גֵּאוֹמֶטְרִיָּה', 'pyramid'], heb: ['📖', 'שָׂפָה', 'house2'], eng: ['🔤', 'אַנְגְּלִית', 'castleSmall'] };
   var curSub = 'math'; // the subject whose map is open
-  var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: '🌈', bld: 'pyramidMayan' };
+  var MIX = { id: 'mix', name: 'כָּל הַנּוֹשְׂאִים', world: 'מִקְדַּשׁ הַהַפְתָּעוֹת', icon: TOY ? '🎁' : '🌈', bld: 'pyramidMayan' };
   // building picture for each topic (assets/, see assets/CREDITS.txt)
   var GATE = { id: 'gate', world: 'שַׁעַר הָאֶתְגָּר', bld: 'castleSmallAlt' };
   var HAIR_REQ = [0, 0, 0, 5, 12, 20]; // stars needed for each hairstyle
@@ -3856,6 +4008,8 @@ var TrollModels = (function () {
   var ICO = {};
   '1f300 1f386 1f387 1f38a 1f43e 1f483 1f647 1f938 1f998 1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f5fa 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 2699 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
   var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
+  var TOY_ICO = { '1f309': '1f308' }; // toy: the bridge is a rainbow, so the mark of the bridge in a text is the rainbow
+  function icoSrc(cp) { return 'assets/ico/' + (TOY && TOY_ICO[cp] || cp) + '.png'; }
   function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
   function swapEmoji(node) {
     if (node.nodeType === 1) {
@@ -3872,7 +4026,7 @@ var TrollModels = (function () {
       if (!frag) frag = document.createDocumentFragment();
       if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
       var img = document.createElement('img');
-      img.className = 'ico'; img.src = 'assets/ico/' + cp + '.png'; img.alt = m[0]; img.draggable = false;
+      img.className = 'ico'; img.src = icoSrc(cp); img.alt = m[0]; img.draggable = false;
       frag.appendChild(img); last = m.index + m[0].length;
     }
     if (!frag) return;
@@ -4079,6 +4233,13 @@ var TrollModels = (function () {
   }
   function buildBg() {
     var bg = h('div', { id: 'bg' }), i;
+    var hr = +((/[&#]hour=(\d+)/.exec(hash) || [])[1] || new Date().getHours());
+    if (TOY) { // the toy island: sky and sea are CSS on #bg; a sun (at night a moon), two clouds and a strip of grass for the screens that are not maps. Nothing moves
+      document.body.classList.add('toy');
+      bg.appendChild(mapImg(hr >= 19 || hr < 6 ? ART.moon : ART.sun, 'tsun'));
+      bg.appendChild(mapImg(ART.cloud, 'tcloud')); bg.appendChild(mapImg(ART.cloud, 'tcloud c2'));
+      bg.appendChild(h('div', { class: 'isle' }));
+    } else {
     bg.appendChild(h('div', { class: 'sun' }));
     for (i = 0; i < 5; i++) bg.appendChild(h('div', { class: 'cloud', style: 'top:' + (6 + i * 9) + '%;opacity:' + (0.55 + (i % 3) * 0.17) + ';animation-duration:' + (46 + i * 13) + 's;animation-delay:-' + (i * 19) + 's' }));
     for (i = 0; i < 14; i++) bg.appendChild(h('div', { class: 'mote', style: 'left:' + Math.random() * 100 + '%;animation-duration:' + (9 + Math.random() * 10) + 's;animation-delay:-' + Math.random() * 18 + 's' }));
@@ -4086,10 +4247,10 @@ var TrollModels = (function () {
     bg.appendChild(h('div', { class: 'fly', text: '🦋', style: 'top:58%;animation-duration:36s;animation-delay:-14s' }));
     bg.insertAdjacentHTML('beforeend', '<svg class="hills" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="M0,14 Q20,0 42,12 T100,8 V30 H0Z" fill="#8fdc74"/><path d="M0,22 Q30,10 55,20 T100,16 V30 H0Z" fill="#6fc95a"/></svg>');
     for (i = 0; i < 3; i++) bg.appendChild(h('img', { class: 'bird', src: 'assets/ico/1f99c.png', alt: '', style: 'top:' + (12 + i * 11) + '%;animation-duration:' + (31 + i * 9) + 's;animation-delay:-' + (i * 13) + 's' }));
+    }
     var stars = h('div', { class: 'nsky' }); for (i = 0; i < 40; i++) stars.appendChild(h('i', { style: 'left:' + (i * 37 % 100) + '%;top:' + (i * 53 % 55) + '%;animation-delay:-' + (i % 7) * 0.6 + 's' })); bg.appendChild(stars);
     document.body.insertBefore(bg, app);
     // the sky follows the real clock: orange towards evening, dark blue with a moon, stars and an owl at night
-    var hr = +((/[&#]hour=(\d+)/.exec(hash) || [])[1] || new Date().getHours());
     document.body.classList.add(hr >= 19 || hr < 6 ? 'night' : hr >= 17 ? 'dusk' : 'day');
     // depth: far things move less than near things when the pointer (or the device) moves
     var pxy = [0, 0], praf = 0;
@@ -4109,6 +4270,7 @@ var TrollModels = (function () {
     var old = cur, el = h('div', { class: 'screen' });
     raceRound = false;
     cur = el; app.appendChild(el); build(el);
+    if (TOY) document.body.setAttribute('data-k', el.classList.contains('map') || el.classList.contains('camp') ? 'map' : el.classList.contains('rmap') ? 'panel' : 'calm'); // which ground the world layer shows
     if (!raceRound && race && race.on && race.t0 && !race.over) quitRace();
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
   }
@@ -4201,8 +4363,8 @@ var TrollModels = (function () {
       var book = h('button', { class: 'cjrn', 'aria-label': 'יוֹמַן הַמַּסָּע', on: { click: function () { sfx.tap(); journal(0); } } }, jart('book'), h('span', { class: 'cl', text: 'יוֹמָן' }));
       grid.appendChild(h('div', { class: 'campv' }, bubble,
         h('div', { class: 'cground' },
-          h('img', { class: 'ctent', src: 'assets/map/tent.png', alt: '', draggable: 'false' }), bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
-          h('span', { class: 'cfire', 'aria-hidden': 'true' }, h('img', { src: 'assets/map/campfire.png', alt: '', draggable: 'false' })), book)));
+          mapImg(ART.tent, 'ctent'), bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
+          h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)), book)));
 
       // the one big button, and the smaller choices
       if (nb) nb.classList.add('cgo');
@@ -4285,10 +4447,10 @@ var TrollModels = (function () {
     var t = nx.challenge ? null : topicOf(nx.topic), fresh = !state.rounds && !state.stars && !state.last;
     var pic = h('span', { class: 'npic' }), txt = h('span', { class: 'ntxt' });
     if (nx.challenge) {
-      pic.appendChild(mapImg('gate'));
+      pic.appendChild(mapImg(ART.gate));
       txt.appendChild(h('b', { text: GATE.world })); txt.appendChild(h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }));
     } else if (nx.boss) {
-      pic.appendChild(mapImg('bridgeRope'));
+      pic.appendChild(mapImg(ART.bridge));
       txt.appendChild(h('b', { text: 'מְשִׂימַת הַגֶּשֶׁר' })); txt.appendChild(h('small', { text: t.icon + ' ' + t.world }));
     } else {
       var pr = L.progOf(state, nx.topic, nx.level), pips = h('span', { class: 'pips', 'aria-hidden': 'true' });
@@ -4334,7 +4496,43 @@ var TrollModels = (function () {
   // one landmark for each region of the world map: by the kind of its building (a tower stays a tower), never twice on one map
   var WORLD_BLD = ['houses', 'mill', 'stable', 'waterWheel', 'houseViking', 'dock', 'mine', 'lighthouse', 'watchtower', 'pyramid', 'castleTall', 'tipi', 'well'];
   var WORLD_KIND = [[/^tower/, ['watchtower', 'lighthouse']], [/^pyramid/, ['pyramid', 'mine']], [/^castle/, ['castleTall']]];
+  // ONE table of pictures for both skins. Every picture of the world is asked for by its role (ART.gate, ART.bld[i]) and drawn by mapImg.
+  // Scenery of the toy skin: [file, kind, size, class]. The budget of a phone: one mountain, three trees, two small things, one boat; a wide screen
+  // gets the "dw" ones too. Scenery never decides where it stands: decoFit puts each piece on the first free place of its kind, or leaves it out.
+  var TOY_DECO = [['26f0', 'top', 2.3], ['1f332', 'side', 1.6], ['1f333', 'side', 1.6], ['1f334', 'side', 1.7], ['1f337', 'front', 1], ['1faa8', 'front', 1], ['26f5', 'sea', 1.5, 'sea'],
+    ['26f0', 'top', 1.8, 'dw'], ['1f332', 'side', 1.4, 'dw'], ['1f333', 'side', 1.5, 'dw'], ['1f337', 'front', 0.9, 'dw']];
+  var DECO_AT = { top: [[50, 15], [28, 15], [72, 15], [14, 16], [86, 16], [40, 18], [60, 18]], // places by kind, in % of the map: mountains at the top edge,
+    side: [[9, 26], [91, 50], [9, 80], [91, 24], [9, 52], [91, 80], [50, 42], [50, 68], [30, 58], [70, 34], [70, 72], [30, 32]], // trees along the sides first,
+    front: [[63, 98], [38, 98], [82, 98], [18, 98], [50, 98], [72, 91], [28, 91]] }; // flowers and rocks in the foreground
+  function decoFit(box, items) {
+    var W = box.clientWidth, H = box.clientHeight, pts = box.__pts || [], sc = parseFloat(box.style.getPropertyValue('--s')) || 1, taken = [], r = 13 * sc + 4, k, j, pb = box.querySelector('.parb');
+    function rect(e, p) { taken.push([e.offsetLeft - p, e.offsetTop - p, e.offsetLeft + e.offsetWidth + p, e.offsetTop + e.offsetHeight + p]); }
+    items.forEach(function (it) { [].forEach.call(it.el.children, function (c) { taken.push([it.el.offsetLeft + c.offsetLeft - 5, it.el.offsetTop + c.offsetTop - 5, it.el.offsetLeft + c.offsetLeft + c.offsetWidth + 5, it.el.offsetTop + c.offsetTop + c.offsetHeight + 5]); }); }); if (pb) rect(pb, 4); // the picture, the label and the pips of every stop
+    for (k = 1; k < pts.length; k++) for (j = 0; j <= 8; j++) { var x = pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * j / 8, y = pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * j / 8; taken.push([x - r, y - r, x + r, y + r]); }
+    [].forEach.call(box.querySelectorAll('.mdeco'), function (im) {
+      var at = DECO_AT[im.getAttribute('data-kind')], w = im.offsetWidth, hh = im.offsetHeight > 8 ? im.offsetHeight : w * 1.2;
+      if (!at || !w) return; // the boat keeps its corner of the sea; a piece for wide screens is not shown on a phone
+      var ok = at.some(function (p) {
+        var cx = p[0] / 100 * W, by = Math.max(p[1] / 100 * H, hh - 4), q = [cx - w / 2, by - hh, cx + w / 2, by];
+        if (q[0] < 2 || q[2] > W - 2 || q[1] < -4 || q[3] > H - 6) return false;
+        if (taken.some(function (t) { return q[0] < t[2] && t[0] < q[2] && q[1] < t[3] && t[1] < q[3]; })) return false;
+        im.style.left = cx.toFixed(0) + 'px'; im.style.top = by.toFixed(0) + 'px'; taken.push(q); return true;
+      });
+      im.style.visibility = ok ? '' : 'hidden';
+    });
+  }
+  var LMARK = {}; // toy: one landmark for each tile, the same idea keeps its picture from grade to grade (docs/prompts/reskin-spec.md, 2.3)
+  ('1f9ee:g1n,g2num,g3num;1f3b2:g1a;1f3a0:g1b;1f522:g1c;1f3d7:g2add,g3add;1f6dd:g2sub,g3sub;1f3a1:g2mul,g3mul,g4mul;26f2:g2div,g3div,g4div;1f50d:g2miss,g3miss;1f3aa:g3ord,g4ord;1f3e6:g4big;1f5ff:g4exp;1f355:g4frac,g5frac;1f3ea:g5dec;1f3ed:g5ops;' +
+    '1f3a7:eng1listen,eng3listen;1f9f8:eng2words;1f4ac:eng2talk,eng4talk,eng5gram;1f3b6:eng3sound,eng5sounds;1f524:eng3abc,eng4abc;1faa7:eng3read,eng4read,eng5read;1f9fa:eng4words,eng5words;' +
+    '1fa81:geo1poly,geo2poly,geo4poly,geo5quad;1f4cf:geo1len,geo2ruler;1f570:geo1clock,geo2clock,geo3time;1f5fa:geo1map;1f9ca:geo2solid;1f4d0:geo3angle,geo5angle;1f5fb:geo3tri,geo5area;1f9f1:geo3area,geo4area;1f4e6:geo3box,geo4box;1fa9e:geo4sym;' +
+    '1f58d:heb1ot;1f514:heb1nik;1f4da:heb1mil,heb2words,heb3words,heb4words;1f4dc:heb1mish,heb2sent,heb4sent,heb5sent;1f331:heb2root,heb3roots,heb4root,heb5roots;270f:heb2spell,heb3write,heb4spell;1f9e9:heb3gram,heb5verbs;1f4d6:heb3read,heb4read,heb5read;1f6cd:heb5words')
+    .split(';').forEach(function (r) { r = r.split(':'); r[1].split(',').forEach(function (id) { LMARK[id] = r[0]; }); });
+  var ART = TOY ? { dir: 'assets/toy/', bld: ['26fa', '1f6d6', '1f3e0', '1f3e1', '1f3d8', '1f3eb', '1f3ef', '1f3f0'], land: { math: '1f3f0', geo: '1f5fc', heb: '1f3e4', eng: '1f6a2' },
+      flag: '1f6a9', bridge: 'bridge', gate: '26e9', mix: '1f3db', chest: '1f4b0', tent: '26fa', fire: 'campfire', house: '1f3e0', book: '1f4d2', deco: TOY_DECO, mark: LMARK, spare: ['1f3e8', '1f3ec', '1f3df', '1f3a2'],
+      sun: '2600', moon: '1f319', cloud: '2601' }
+    : { dir: 'assets/map/', bld: MAP_BLD, land: LAND_BLD, flag: 'flag', bridge: 'bridgeRope', gate: 'gate', mix: 'ruins', chest: 'chest', tent: 'tent', fire: 'campfire', house: 'house', book: '📚', deco: MAP_DECO, mark: null };
   function worldIcons(list) {
+    if (ART.mark) return list.map(function (t, i) { return ART.mark[t.id] || ART.spare[i % ART.spare.length]; });
     var used = {};
     return list.map(function (t) {
       var pick = null;
@@ -4343,7 +4541,7 @@ var TrollModels = (function () {
       pick = pick || WORLD_BLD[0]; used[pick] = true; return pick;
     });
   }
-  function mapImg(name, cls) { return h('img', { class: cls || null, src: 'assets/map/' + name + '.png', alt: '', draggable: 'false' }); }
+  function mapImg(name, cls) { return h('img', { class: cls || null, src: ART.dir + name + '.png', alt: '', draggable: 'false' }); }
   function noPet(s) { var t = {}, k; for (k in s) t[k] = s[k]; t.petE = ''; return t; }
   // the companion on a map; the pet it has with it stands beside it, large enough to be seen
   function mapBuddy() {
@@ -4351,9 +4549,12 @@ var TrollModels = (function () {
     if (s.petE) b.appendChild(icoImg(s.petE, 'mpet'));
     return b;
   }
-  function mapFlag() { return mapImg('flag', 'mflag'); }
-  function mapDeco(box) { MAP_DECO.forEach(function (d) { var im = mapImg(d[0], 'mdeco'); im.setAttribute('style', 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3]); box.appendChild(im); }); }
-  function stopIco(i, n) { return MAP_BLD[Math.min(MAP_BLD.length - 1, Math.max(0, Math.round(i * (MAP_BLD.length - 1) / Math.max(1, Math.max(n, 5) - 1))))]; }
+  function mapFlag() { return mapImg(ART.flag, 'mflag'); }
+  function mapDeco(box) {
+    if (TOY) { if (!box.classList.contains('lands')) ART.deco.forEach(function (d) { var im = mapImg(d[0], 'mdeco deco' + (d[3] ? ' ' + d[3] : '')); im.setAttribute('data-kind', d[1]); im.setAttribute('style', '--z:' + d[2]); box.appendChild(im); }); return; }
+    MAP_DECO.forEach(function (d) { var im = mapImg(d[0], 'mdeco'); im.setAttribute('style', 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3]); box.appendChild(im); });
+  }
+  function stopIco(i, n) { var B = ART.bld; return B[Math.min(B.length - 1, Math.max(0, Math.round(i * (B.length - 1) / Math.max(1, Math.max(n, 5) - 1))))]; }
   // the stops of the trail of one topic, in order: the houses of the player's grade, and the bridge mission that closes each grade
   function trailItems(t) {
     var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, win = t.levels.slice(sp.lo - 1, sp.hi);
@@ -4377,7 +4578,7 @@ var TrollModels = (function () {
       isRec = !!rec && rec.boss === g; it.reached = done || ready; it.done = done; it.ready = ready; it.hero = hero;
       b = h(tag, { class: 'mnode boss' + (done ? ' done' : ready ? ' ready' : ' far') + (isRec ? ' rec' : ''), 'data-boss': g },
         h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
-          h('span', { class: 'mic' }, mapImg('bridgeRope'), done ? mapFlag() : null),
+          h('span', { class: 'mic' }, mapImg(ART.bridge), done ? mapFlag() : null),
           done ? h('span', { class: 'mhero', 'aria-hidden': 'true', html: A.trollSVG(hero) }) : null),
         bare ? null : h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }));
     } else {
@@ -4437,7 +4638,8 @@ var TrollModels = (function () {
         }
         return dd;
       }
-      trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
+      trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + (TOY ? '<path class="tbed" d="' + path(N - 1) + '"/><path class="tmid" d="' + path(N - 1) + '"/>' : '') + '<path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
+      if (TOY) box.__pts = pts;
       return ok;
     }
     function layout() {
@@ -4449,6 +4651,7 @@ var TrollModels = (function () {
       cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
       for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
       if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
+      if (TOY) decoFit(box, items);
     }
     layout();
     if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
@@ -4474,7 +4677,7 @@ var TrollModels = (function () {
         var got = 0, all = 0;
         L.topicsFor(state, x).forEach(function (id) { got += L.topicStars(state, id); all += topicOf(id).levels.length * 9; });
         grid.appendChild(h('button', { class: 'land' + (x === mark ? ' rec' : ''), 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: function () { sfx.pop(); curSub = x; topics(); } } },
-          h('span', { class: 'mtop' }, x === mark ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(LAND_BLD[x] || 'castle'))),
+          h('span', { class: 'mtop' }, x === mark ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ART.land[x] || ART.land.math))),
           h('span', { class: 'mlab', text: SUBJ[x][0] + ' ' + SUBJ[x][1] }),
           h('span', { class: 'lstars', text: '⭐ ' + got + ' / ' + all }),
           h('span', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' }))));
@@ -4528,14 +4731,14 @@ var TrollModels = (function () {
           function () { sfx.pop(); region(t.id); });
       });
       if (!ch) {
-        node('mixn', MIX.id, 'ruins', MIX.icon + ' ' + MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
-        node('gate' + (gopen ? ' open' : ' far'), GATE.id, 'gate', (gopen ? '🚀 ' : '🔒 ') + GATE.world, null, gopen, function (b) {
+        node('mixn', MIX.id, ART.mix, MIX.icon + ' ' + MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
+        node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, (gopen ? '🚀 ' : '🔒 ') + GATE.world, null, gopen, function (b) {
           if (gopen) { sfx.pop(); topics(true); return; }
           sfx.wrong(); restart(b, 'shake'); say('🔒 ' + GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
         });
       }
       el.appendChild(msg); el.appendChild(box);
-      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: Kenney.nl (מַפָּה, בָּתִּים, צְלִילִים), CraftPix.net (יַעַר). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
+      el.appendChild(h('div', { class: 'note', text: TOY ? 'אִיּוּרִים וְאַיְקוֹנִים: Fluent Emoji (Microsoft). צְלִילִים: Kenney.nl. מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' : 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: Kenney.nl (מַפָּה, בָּתִּים, צְלִילִים), CraftPix.net (יַעַר). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
       trailLayout(el, box, trail, items, null);
     });
   }
@@ -4646,9 +4849,9 @@ var TrollModels = (function () {
   // bridge. Only the one next step is shown as an open slot (a button that starts it); nothing locked or missing is drawn.
   // Nothing scrolls: the pages are cut to what fits, and two arrows turn them. All of it is read from L.journal(state). ----------
   // The pictures of the journal, the heart and the book: ONE lookup (a map image name, or an emoji that becomes a Fluent icon).
-  var JART = { flag: 'flag', bridge: 'bridgeRope', fire: 'campfire', house: 'house', book: '📚', heart: '💖', heartOff: '🤍', star: '⭐' };
+  var JART = { flag: ART.flag, bridge: ART.bridge, fire: ART.fire, house: ART.house, book: ART.book, heart: '💖', heartOff: '🤍', star: '⭐' };
   function jart(k, cls) { var v = JART[k] || k; return /^[A-Za-z0-9_-]+$/.test(v) ? mapImg(v, cls) : icoImg(v, cls); }
-  function tileIcon(t) { var list = L.TOPICS.filter(function (x) { return x.g === t.g && (x.sub || 'math') === (t.sub || 'math'); }); return worldIcons(list)[list.indexOf(t)] || WORLD_BLD[0]; }
+  function tileIcon(t) { var list = L.TOPICS.filter(function (x) { return x.g === t.g && (x.sub || 'math') === (t.sub || 'math'); }); return worldIcons(list)[list.indexOf(t)] || (TOY ? ART.spare[0] : WORLD_BLD[0]); }
   function houseIco(t, lv) { var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }; return stopIco(lv - sp.lo, sp.hi - sp.lo + 1); } // the icon this house has on the map of its topic
   function dayEl(d) { var m = /^\d{4}-(\d\d)-(\d\d)$/.exec(d || ''); return m ? h('span', { class: 'jd', dir: 'ltr', text: +m[2] + '.' + +m[1] }) : null; }
   function journal(pg, tile) {
@@ -5187,7 +5390,7 @@ var TrollModels = (function () {
     }
     el.appendChild(tb);
     var P = { res: h('div', { class: 'eres' }), frame: h('div', { class: 'eframe' }), caps: h('div', { class: 'banners ecaps' }), btns: h('div', { class: 'row ebtns ea', style: '--d:' + END_T.btns + 's' }) };
-    P.chest = h('div', { class: 'echest ea ' + o.tier, style: '--d:' + END_T.chest + 's', 'aria-hidden': 'true' }, h('span', { class: 'ebox' }, mapImg('chest')), h('b', { text: '+' + o.coins + ' 🪙' }));
+    P.chest = h('div', { class: 'echest ea ' + o.tier, style: '--d:' + END_T.chest + 's', 'aria-hidden': 'true' }, h('span', { class: 'ebox' }, mapImg(ART.chest)), h('b', { text: '+' + o.coins + ' 🪙' }));
     var bub = h('div', { class: 'cbub ebub', text: o.say });
     bub.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bub.textContent) speak(bub.textContent); });
     el.appendChild(h('div', { class: 'egrid' }, h('h2', { class: 'h2', text: o.title }), P.res, h('div', { class: 'epic' }, bub, P.frame), P.caps, P.btns));
@@ -5268,7 +5471,7 @@ var TrollModels = (function () {
       })(i);
       P.res.appendChild(stars); P.res.appendChild(P.chest);
       // the picture: the temple of the mixed round with the companion, and the egg of the round
-      P.frame.appendChild(h('div', { class: 'emix' }, h('span', { class: 'mtop' }, mapBuddy(), h('span', { class: 'mic' }, mapImg('ruins'))), h('span', { class: 'mlab', text: MIX.icon + ' ' + MIX.world })));
+      P.frame.appendChild(h('div', { class: 'emix' }, h('span', { class: 'mtop' }, mapBuddy(), h('span', { class: 'mic' }, mapImg(ART.mix))), h('span', { class: 'mlab', text: MIX.icon + ' ' + MIX.world })));
       var eg = eggSlot(troll, el, function () {
         ups.forEach(function (u) {
           P.caps.appendChild(h('div', { class: 'banner', text: '🎈 עָלִית רָמָה: ' + u.t.name + ', ' + u.lv.name + (u.newGrade ? " · 🎓 זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
@@ -5396,11 +5599,11 @@ var TrollModels = (function () {
         if (flagD) { f.classList.add('ea', 'eflag'); f.style.setProperty('--d', flagD + 's'); }
         return h('span', { class: 'enode ' + cls }, h('span', { class: 'mic' }, mapImg(ico), f), label ? h('span', { class: 'mlab', text: label }) : null);
       }
-      var D = END_T.map, far = nextT ? node('enext', icons[ix + 1], null, nextT.world) : t.g === state.grade ? node('enext', 'ruins', null, MIX.world) : null;
+      var D = END_T.map, far = nextT ? node('enext', icons[ix + 1], null, nextT.world) : t.g === state.grade ? node('enext', ART.mix, null, MIX.world) : null;
       P.frame.appendChild(h('div', { class: 'ebridge' },
-        node('ehouse', last && !last.boss ? stopIco(last.i, tr.win.length) : 'house', 0, null),
+        node('ehouse', last && !last.boss ? stopIco(last.i, tr.win.length) : ART.house, 0, null),
         h('span', { class: 'ecrew' }, mapBuddy(), h('span', { class: 'ehero ea', style: '--d:' + (D + 0.2) + 's', html: A.trollSVG(hero, { mood: 'cheer' }) }, h('span', { class: 'mlab', text: hero.name }))),
-        node('ebr', 'bridgeRope', D, null), far));
+        node('ebr', ART.bridge, D, null), far));
       P.frame.parentNode.classList.add('small');
       P.cap(CHEST.gold + ': 30+ 🪙', 'chest gold', END_T.chest);
       P.cap('הִצַּלְתְּ אֶת ' + hero.name + '! עַכְשָׁו ' + hero.name + ' בַּמַּחֲנֶה שֶׁלָּךְ', '', D + 0.2);
@@ -5582,7 +5785,7 @@ var TrollModels = (function () {
   var DOES = { look: ['👗', 'לְבוּשׁ לַטְּרוֹל'], pet: ['🐾', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['💫', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['✨', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
   function doesOf(it) { return DOES[it.slot] || DOES.look; }
   function tabOf(it) { for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === it.slot) return i; return 3; }
-  function icoImg(e, cls) { var cp = cpOf(e); return ICO[cp] ? h('img', { class: cls || 'ico', src: 'assets/ico/' + cp + '.png', alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
+  function icoImg(e, cls) { var cp = cpOf(e); return ICO[cp] ? h('img', { class: cls || 'ico', src: icoSrc(cp), alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
   // code-drawn pieces (accessories, hairstyles): the viewBox hugs the drawing, measured once the piece is in the page
   var PART_BOX = {};
   function fitPart(root) {
