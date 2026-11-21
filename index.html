@@ -819,6 +819,82 @@ body.night .cfire:before{inset:-100%;background:radial-gradient(closest-side,rgb
 }
 @media (max-height:520px){.camp .title{font-size:15px;line-height:1.3}.cbub{font-size:15px;padding:3px 12px}.camp .hrow .btn{min-height:48px}.camp .hrow .btn .ci{font-size:19px}.camp .hrow .btn{flex-direction:row;gap:5px}}
 @media (prefers-reduced-motion:reduce){body.night .cfire:before{animation:none}}
+/* ---------- the reward moment on the journey map: the end of a stage, of a mixed round and of a bridge mission.
+   The screen is built in its final state; every part marked .ea comes in after its delay (--d), from a "from" keyframe only,
+   so that a skipped or disabled animation (.fin, reduced motion, the layout check) leaves the complete picture. ---------- */
+.screen.endm{gap:clamp(4px,1.2vmin,12px)}
+.egrid{overflow-x:clip;flex:1 1 0;min-height:0;width:100%;max-width:720px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;grid-template-areas:"title" "res" "pic" "caps" "btns";gap:clamp(6px,1.4vmin,13px);justify-items:center;align-items:center}
+.endm .h2{grid-area:title}
+.endm .ea{animation:eaIn .4s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d,0s)}
+@keyframes eaIn{from{opacity:0;transform:scale(.4)}}
+.eres{grid-area:res;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px clamp(10px,3vmin,28px);max-width:100%}
+.endm .star{opacity:1;color:#cbb88f;animation:eaStar .45s cubic-bezier(.2,1.6,.4,1) both;animation-delay:var(--d,0s)}
+.endm .star.on{color:#ffc61a}
+.endm .bigstars .star{font-size:clamp(38px,8vmin,72px)}
+.endm .stars:not(.bigstars) .star{font-size:clamp(22px,4.4vmin,40px)}
+@keyframes eaStar{from{opacity:0;transform:scale(0) rotate(-90deg)}}
+.echest{display:flex;align-items:center;gap:8px;direction:ltr;font-weight:700;color:#3b2a15;font-size:clamp(18px,3.2vmin,28px)}
+.endm .echest.ea{animation-name:eaChest;animation-duration:.5s}
+@keyframes eaChest{from{opacity:0;transform:scale(.3) rotate(-14deg)}60%{opacity:1;transform:scale(1.18) rotate(5deg)}}
+.ebox{position:relative;width:clamp(48px,10vmin,84px);aspect-ratio:1;flex:0 0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(90,60,20,.4),inset 0 0 0 2px rgba(59,42,21,.35)}
+.ebox img{position:relative;width:72%;height:72%;display:block}
+.ebox:before{content:"";position:absolute;inset:-45%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,120,.95),rgba(255,226,120,0));opacity:0;pointer-events:none;animation:eaGlow .9s ease-out both;animation-delay:var(--d,0s)}
+@keyframes eaGlow{from{opacity:0;transform:scale(.3)}35%{opacity:1}to{opacity:0;transform:scale(1.25)}}
+.echest.gold .ebox{background:radial-gradient(circle at 35% 30%,#fff6c4,#f5b400)}
+.echest.silver .ebox{background:radial-gradient(circle at 35% 30%,#fff,#b4bfcd)}
+.echest.bronze .ebox{background:radial-gradient(circle at 35% 30%,#ffe2c6,#cd7f3f)}
+.echest b{background:rgba(255,250,235,.95);border-radius:999px;padding:1px 12px;box-shadow:0 2px 0 rgba(90,60,20,.3);white-space:nowrap}
+.epic{grid-area:pic;width:100%;height:100%;min-height:0;max-height:430px;display:flex;flex-direction:column;align-items:center;gap:9px}
+.ebub{cursor:pointer}
+.eframe{flex:1 1 0;min-height:0;width:100%;display:flex;align-items:stretch;gap:6px;padding:4px 8px;color:#3b2a15;background:linear-gradient(rgba(255,251,238,.78),rgba(248,232,196,.78));border:0 solid #9a6a3a;border-inline-width:10px;border-radius:12px;box-shadow:0 4px 0 rgba(90,60,20,.35),inset 0 0 22px rgba(120,80,30,.28);--s:1.25}
+.eframe .tmap{flex:1 1 0;min-width:0;width:auto;max-width:none}
+.eframe .mnode{min-height:0}
+.endm .elift{animation-name:eaLift;animation-duration:.6s;animation-timing-function:ease-out}
+@keyframes eaLift{from{opacity:.5}}
+.efog{position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(255,255,255,0));opacity:0;pointer-events:none;animation:eaFog .6s ease-out both;animation-delay:var(--d,0s)}
+@keyframes eaFog{from{opacity:1}}
+.endm .eflag{animation-name:eaFlag}
+@keyframes eaFlag{from{opacity:0;transform:translateY(-150%)}}
+.endm .ewalk{animation-name:eaWalk;animation-duration:.6s;animation-timing-function:ease-in-out}
+@keyframes eaWalk{from{transform:translate(var(--dx,0),var(--dy,0))}}
+.emeet{flex:0 0 clamp(84px,30%,210px);min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.emeet .egg{width:auto;height:auto;max-width:78%;max-height:92%;flex:0 1 auto;min-height:0}
+.emeet .reveal{flex:1 1 0;min-height:0;width:100%}
+.emeet .reveal svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 3px rgba(60,40,10,.35))}
+.emeet .mlab,.ecrew .mlab,.enode .mlab,.emix .mlab{flex:0 0 auto;font-size:clamp(13px,2.4vmin,19px);text-align:center}
+.emix{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.emix .mtop{height:calc(46px*var(--s))}
+.emix{--s:2}
+.epic.small{max-height:clamp(250px,80vmin,400px)}
+.ebridge{flex:1 1 0;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"house bridge next" "crew crew crew";align-content:center;justify-items:center;align-items:start;gap:4px;--s:1.5}
+.ebridge:before{content:"";grid-row:1;grid-column:1/-1;align-self:start;width:72%;margin-top:calc(36px*var(--s));border-top:4px dashed #c8452e;opacity:.9}
+.enode{position:relative;min-width:0;max-width:100%;display:flex;flex-direction:column;align-items:center;gap:3px}
+.enode.ehouse{grid-area:house}.enode.enext{grid-area:next}
+.enode.ebr{grid-area:bridge;margin-top:calc(-20px*var(--s))}
+.enode.ebr .mic{width:calc(66px*var(--s));height:calc(66px*var(--s))}
+.enode.ebr .mflag{top:30%;inset-inline-start:4%;width:34%;height:34%}
+.ecrew{grid-area:crew;display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.ehero{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ehero svg{display:block;height:clamp(76px,30vmin,200px);width:auto;aspect-ratio:200/262;filter:drop-shadow(0 3px 3px rgba(60,40,10,.35))}
+.endm .ehero.ea{animation-name:eaCross;animation-duration:.7s;animation-timing-function:ease-out}
+@keyframes eaCross{from{opacity:.2;transform:translateX(-150%)}}
+.ecrew .mbud{width:clamp(38px,11vmin,90px);height:auto;aspect-ratio:34/44}
+.ecaps{grid-area:caps;max-width:100%;gap:6px}
+.endm .banner{font-size:clamp(13px,2.3vmin,19px);padding:3px 14px;color:#3b2a15;background:rgba(255,250,235,.96);box-shadow:0 2px 0 rgba(90,60,20,.3);text-wrap:balance}
+.endm .banner.eggmsg{background:#ffd23f}
+.endm .banner.chest.gold{background:#fff1b8}.endm .banner.chest.silver{background:#edf1f6}.endm .banner.chest.bronze{background:#fbe0cb}
+.ebtns{grid-area:btns;width:100%;max-width:560px;gap:9px 8px}
+.ebtns .btn{flex:1 1 auto;min-height:50px;padding:4px 14px;font-size:clamp(15px,2.5vmin,20px);line-height:1.2;background:#fffaf0;color:#3b2a15;text-shadow:none;border:2px solid #b9783a;border-radius:14px;box-shadow:0 4px 0 #8a5524,0 7px 10px rgba(60,30,10,.2)}
+.ebtns .btn.nxt{flex:1 1 100%;min-height:58px;font-size:clamp(20px,3.6vmin,30px);color:#fff;background:linear-gradient(#c44a33,#a93522);border-color:#7c2416;border-radius:20px;box-shadow:0 6px 0 #7c2416,0 11px 14px rgba(60,30,10,.3);text-shadow:0 2px 0 rgba(0,0,0,.15)}
+.endm.fin .ea,.endm.fin .star,.endm.fin .ebox:before,.endm.fin .efog{animation:none!important}
+.screen.endm.hatched .stars{display:flex}
+.screen.endm.hatched .h2{display:block}
+@media (min-width:640px) and (min-height:521px){.eframe{--s:1.7}.emix{--s:2.6}.ebridge{--s:1.9}}
+@media (orientation:landscape) and (min-width:700px){
+  .egrid{max-width:1180px;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto auto minmax(0,1fr);grid-template-areas:"title title" "pic ." "pic res" "pic caps" "pic btns" "pic .";column-gap:clamp(10px,2.4vw,34px);row-gap:clamp(6px,2.4vmin,22px)}
+  .epic{max-height:520px}
+}
+@media (max-height:520px){.endm .h2{font-size:18px;padding:0 18px}.endm .bigstars .star{font-size:36px}.ebub{font-size:15px;padding:3px 12px}.ebtns .btn{min-height:48px}.ebtns .btn.nxt{min-height:50px;font-size:20px}.epic{gap:8px}.ehero svg{height:21vmin}.ebridge{--s:1.2}.endm .egrid{row-gap:5px}}
 </style>
 </head>
 <body>
@@ -3936,6 +4012,7 @@ var TrollModels = (function () {
     layout();
     if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    return layout;
   }
 
   // ---------- subjects: arithmetic, geometry, Hebrew, English. Four lands on the parchment; each has a map of its own for
@@ -4085,7 +4162,7 @@ var TrollModels = (function () {
       items.forEach(function (it) {
         var b = stopEl('button', t, it, win.length, rec);
         if (it.boss) b.addEventListener('click', function () {
-          if (it.done) { sfx.giggle(); say(it.hero.name + ' נִצַּל וְעָבַר לָגוּר בַּכְּפָר!'); return; }
+          if (it.done) { sfx.giggle(); say(it.hero.name + ' נִצַּל וְעָבַר לָגוּר בַּמַּחֲנֶה!'); return; }
           if (!it.ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
           sfx.pop(); startRound(t.id, { boss: it.boss });
         });
@@ -4510,72 +4587,116 @@ var TrollModels = (function () {
       '<circle cx="42" cy="58" r="10" fill="' + t.hairColor + '"/><circle cx="80" cy="92" r="13" fill="' + t.body + '"/><circle cx="48" cy="114" r="8" fill="' + t.hairColor + '"/><circle cx="76" cy="46" r="6" fill="' + t.body + '"/>' +
       '<path class="crack" d="M16,80 l14,-11 l13,13 l14,-15 l13,13 l14,-11 l16,11" fill="none" stroke="#a9772c" stroke-width="4" stroke-linejoin="round"/></svg>';
   }
-  function endRound(round) {
-    var st = round.stars(), ups = [], seen = {};
-    state.rounds++;
-    state = L.updateStreak(state, L.todayStr());
-    var troll = L.rollTroll(state.owned, Math.random), rw = L.roundReward(st), item = null;
-    state.owned.push(troll.id); state.coins += rw.coins;
-    if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; // the first troll becomes the companion
-    save(); // saved before the reveal, so closing early never loses the prizes
-    tv.round = null;
-    show(function (el) {
-      el.appendChild(topBar(true));
-      el.appendChild(h('h2', { class: 'h2', text: st >= 9 ? 'מֻשְׁלָם!' : st >= 6 ? 'כָּל הַכָּבוֹד!' : 'יָפֶה מְאוֹד, סִיַּמְתְּ!' }));
-      var stars = h('div', { class: 'stars' });
-      for (var i = 0; i < round.qs.length; i++) (function (k) {
-        stars.appendChild(h('span', { class: 'star' + (k < st ? ' on' : ''), text: '★', style: 'animation-delay:' + (0.3 + k * 0.14) + 's' }));
-        if (k < st) later(function () { sfx.star(k); }, 300 + k * 140);
-      })(i);
-      var msg = h('div', { class: 'banner', text: 'קִבַּלְתְּ בֵּיצַת הַפְתָּעָה! הַקִּישִׁי עָלֶיהָ', style: 'animation-delay:1.7s' });
-      var stage = h('div', { class: 'stage', html: eggSVG(troll) }), egg = stage.firstChild, btns = h('div', { class: 'row' }), extra = h('div', { class: 'banners' }), hatched = false;
-      egg.addEventListener('click', function () {
-        if (hatched) return;
-        hatched = true; egg.classList.add('hatching'); sfx.hatch();
-        later(function () {
-          el.classList.add('hatched');
-          stage.innerHTML = '<div class="reveal">' + A.trollSVG(troll, { mood: 'cheer' }) + '</div>';
-          var c = center(stage); burst(c[0], c[1], 18); confetti(90); sfx.win();
-          msg.style.animationDelay = '0s'; msg.textContent = 'הַכִּירִי אֶת ' + troll.name + '!'; restart(msg, 'pop');
-          if (item) {
-            var show1 = {}, k; for (k in troll) show1[k] = troll[k]; show1.acc = item;
-            extra.appendChild(h('div', { class: 'banner prize', style: 'animation-delay:.9s' },
-              h('span', { class: 'pz', html: A.trollSVG(show1) }), '🎁 זָכִית בַּאֲבִיזָר חָדָשׁ: ' + ACC_NAMES[item] + '!'));
-            later(function () { sfx.item(); }, 1500);
-          }
-          extra.appendChild(h('div', { class: 'banner chest ' + rw.tier, style: 'animation-delay:.9s', text: CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙' }));
-          later(function () { sfx.item(); bumpStars(el); }, 1500);
-          ups.forEach(function (u, n) {
-            extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:' + (1.3 + n * 0.3) + 's', text: '🎈 עָלִית רָמָה ב' + u.t.name + ': ' + u.lv.name + (u.newGrade ? " · 🎓 זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
-          });
-          if (ups.length) later(function () { sfx.levelup(); }, 2300);
-          btns.appendChild(btn('עוֹד סִבּוּב', '', function () { startRound(round.topic); }));
-          btns.appendChild(btn('נוֹשֵׂא אַחַר', 'b3', function () { topics(); }));
-          btns.appendChild(btn('🛍️ לַחֲנוּת', 'b2', function () { dress(null, 4); }));
-          tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
-        }, 700);
-      });
-      el.appendChild(stars); el.appendChild(msg); el.appendChild(stage); el.appendChild(extra); el.appendChild(btns);
-    });
+  // ---------- the reward moment, seen on the journey map: the end of a stage, of a mixed round and of a bridge mission.
+  // The order is always: the result (stars), the chest and its coins, the change on the map, the buttons. The screen is
+  // built in its final state and the parts come in one after the other (CSS, class .ea); nothing can be tapped for the
+  // first 0.9 s, after that a tap anywhere skips to the final state. Amounts and rules are those of the logic block. ----------
+  var ENDL = { // what the companion says about what has just happened: [grades 1-2, grades 3-4]
+    s3: [['שְׁלוֹשָׁה כּוֹכָבִים בַּשָּׁלָב הַזֶּה!', 'כָּל הַכּוֹכָבִים שֶׁל הַשָּׁלָב הַזֶּה!'], ['שְׁלוֹשָׁה כּוֹכָבִים.', 'כָּל הַכּוֹכָבִים שֶׁל הַשָּׁלָב.']],
+    s2: [['שְׁנֵי כּוֹכָבִים בַּשָּׁלָב הַזֶּה', 'הַשָּׁלָב נִגְמַר, עִם שְׁנֵי כּוֹכָבִים'], ['שְׁנֵי כּוֹכָבִים.', 'שָׁלָב גָּמוּר, שְׁנֵי כּוֹכָבִים.']],
+    s1: [['הַשָּׁלָב נִגְמַר, וְיֵשׁ כּוֹכָב', 'כּוֹכָב אֶחָד, וּמַמְשִׁיכִים בַּדֶּרֶךְ'], ['שָׁלָב גָּמוּר.', 'כּוֹכָב אֶחָד. אֶפְשָׁר לְנַסּוֹת שׁוּב.']],
+    left1: [['עוֹד שָׁלָב אֶחָד וְהַבַּיִת שָׁלֵם', 'נִשְׁאַר שָׁלָב אֶחָד בַּבַּיִת הַזֶּה'], ['עוֹד שָׁלָב אֶחָד וְהַבַּיִת שָׁלֵם.', 'נִשְׁאַר שָׁלָב אֶחָד.']],
+    done: [['הַבַּיִת הַזֶּה שָׁלֵם, וְיֵשׁ עָלָיו דֶּגֶל!', 'דֶּגֶל עַל הַבַּיִת!'], ['הַבַּיִת שָׁלֵם.', 'דֶּגֶל עַל הַבַּיִת.']],
+    opened: [['הַבַּיִת הַבָּא נִפְתַּח!', 'יֵשׁ בַּיִת חָדָשׁ עַל הַמַּפָּה!'], ['הַבַּיִת הַבָּא נִפְתַּח.', 'בַּיִת חָדָשׁ עַל הַמַּפָּה.']],
+    bridge: [['כָּל הַבָּתִּים שְׁלֵמִים. הַגֶּשֶׁר מְחַכֶּה!', 'עַכְשָׁו אֶפְשָׁר לְהַגִּיעַ לַגֶּשֶׁר!'], ['כָּל הַבָּתִּים שְׁלֵמִים. הַגֶּשֶׁר מְחַכֶּה.', 'הַדֶּרֶךְ לַגֶּשֶׁר פְּתוּחָה.']],
+    boss: [['חָצִינוּ אֶת הַגֶּשֶׁר!', 'יֵשׁ חָבֵר חָדָשׁ בַּמַּחֲנֶה!'], ['חָצִינוּ אֶת הַגֶּשֶׁר.', 'עוֹד חָבֵר בַּמַּחֲנֶה.']]
+  };
+  function endLine(key) { return voice(ENDL[key], 'end-' + key); }
+  var END_T = { chest: 0.7, map: 1.5, btns: 2.2, block: 900, all: 2400 };
+  // o: back (function), title, tier and coins of the chest, gained (stars added to the counter), say (the companion's line)
+  function endParts(el, o) {
+    el.classList.add('rmap', 'endm');
+    var tb = topBar(true, o.back), coin = tb.querySelector('.coinchip'), starc = tb.querySelector('.starchip');
+    if (!reduced) { // the counters start from before the prize; they go up when the coins land (or at the skip)
+      coin.setAttribute('data-n', state.coins - o.coins); coin.textContent = '🪙 ' + (state.coins - o.coins);
+      if (o.gained) { starc.setAttribute('data-n', state.stars - o.gained); starc.textContent = '⭐ ' + (state.stars - o.gained); }
+    }
+    el.appendChild(tb);
+    var P = { res: h('div', { class: 'eres' }), frame: h('div', { class: 'eframe' }), caps: h('div', { class: 'banners ecaps' }), btns: h('div', { class: 'row ebtns ea', style: '--d:' + END_T.btns + 's' }) };
+    P.chest = h('div', { class: 'echest ea ' + o.tier, style: '--d:' + END_T.chest + 's', 'aria-hidden': 'true' }, h('span', { class: 'ebox' }, mapImg('chest')), h('b', { text: '+' + o.coins + ' 🪙' }));
+    var bub = h('div', { class: 'cbub ebub', text: o.say });
+    bub.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bub.textContent) speak(bub.textContent); });
+    el.appendChild(h('div', { class: 'egrid' }, h('h2', { class: 'h2', text: o.title }), P.res, h('div', { class: 'epic' }, bub, P.frame), P.caps, P.btns));
+    var t0 = Date.now(), fin = false, end = null;
+    function finish() { if (fin) return; fin = true; el.classList.add('fin'); bumpStars(el); if (end) end(); }
+    P.at = function (ms, f) { later(function () { if (!fin && cur === el) f(); }, ms); }; // a step of the show: dropped when the show was skipped
+    P.cap = function (text, cls, d) { var b = h('div', { class: 'banner ea ' + (cls || ''), style: '--d:' + d + 's', text: text }); P.caps.appendChild(b); return b; };
+    P.start = function (onEnd) {
+      end = onEnd;
+      el.addEventListener('click', function (e) { // before the end of the show: no button works; after the first 0.9 s a tap skips to the end
+        if (fin || (e.target.closest && e.target.closest('.top'))) return;
+        e.stopPropagation(); e.preventDefault();
+        if (Date.now() - t0 >= END_T.block) finish();
+      }, true);
+      tv.skip = finish;
+      if (reduced) { finish(); return; }
+      P.at(END_T.chest * 1000, function () { sfx.item(); });
+      [0, 1, 2].forEach(function (k) { P.at(END_T.chest * 1000 + 150 + k * 110, function () { flyStar(P.chest.firstChild, coin, function () { if (!k && cur === el) bumpStars(el); }, '🪙'); }); });
+      later(finish, END_T.all);
+    };
+    return P;
   }
-
-  // ---------- end of a stage, end of a milestone mission ----------
-  function hatcher(troll, el, done) {
-    var msg = h('div', { class: 'banner', text: 'קִבַּלְתְּ בֵּיצַת הַפְתָּעָה! הַקִּישִׁי עָלֶיהָ', style: 'animation-delay:1.3s' });
-    var stage = h('div', { class: 'stage', html: eggSVG(troll) }), egg = stage.firstChild, hatched = false;
+  // the egg in the picture: a tap hatches it, and the new troll stands there, large, with its name
+  function eggSlot(troll, el, done) {
+    var msg = h('div', { class: 'banner ea eggmsg', style: '--d:' + (END_T.map + 0.5) + 's', text: 'קִבַּלְתְּ בֵּיצַת הַפְתָּעָה! הַקִּישִׁי עָלֶיהָ' });
+    var slot = h('div', { class: 'emeet ea', style: '--d:' + (END_T.map + 0.5) + 's', html: eggSVG(troll) }), egg = slot.firstChild, hatched = false;
     egg.addEventListener('click', function () {
       if (hatched) return;
       hatched = true; egg.classList.add('hatching'); sfx.hatch();
       later(function () {
         el.classList.add('hatched');
-        stage.innerHTML = '<div class="reveal">' + A.trollSVG(resolve(troll), { mood: 'cheer' }) + '</div>';
-        var c = center(stage); burst(c[0], c[1], 18); confetti(90); sfx.win();
-        msg.style.animationDelay = '0s'; msg.textContent = 'הַכִּירִי אֶת ' + troll.name + '!'; restart(msg, 'pop');
+        slot.innerHTML = '<div class="reveal">' + A.trollSVG(resolve(troll), { mood: 'cheer' }) + '</div>';
+        slot.appendChild(h('span', { class: 'mlab', text: troll.name }));
+        var c = center(slot); burst(c[0], c[1], 18); confetti(90); sfx.win();
+        msg.classList.remove('ea'); msg.textContent = 'הַכִּירִי אֶת ' + troll.name + '!'; restart(msg, 'pop');
         done();
       }, 700);
     });
-    return [msg, stage];
+    return { msg: msg, slot: slot };
   }
+  // the words on the button of the next step (the same step as the big button of the camp)
+  function stepText(nx) {
+    return nx.challenge ? '🚀 ' + GATE.world : nx.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).icon + ' ' + topicOf(nx.topic).world : nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀';
+  }
+  function endRound(round) {
+    var st = round.stars(), ups = [];
+    state.rounds++;
+    state = L.updateStreak(state, L.todayStr());
+    var troll = L.rollTroll(state.owned, Math.random), rw = L.roundReward(st);
+    state.owned.push(troll.id); state.coins += rw.coins;
+    if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; // the first troll becomes the companion
+    save(); // saved before the reveal, so closing early never loses the prizes
+    tv.round = null;
+    var nx = L.nextStep(state);
+    show(function (el) {
+      var P = endParts(el, { back: function () { topics(); }, title: st >= 9 ? 'מֻשְׁלָם!' : st >= 6 ? 'כָּל הַכָּבוֹד!' : 'יָפֶה מְאוֹד, סִיַּמְתְּ!', tier: rw.tier, coins: rw.coins,
+        say: st + ' מִתּוֹךְ ' + round.qs.length + ' בַּנִּסָּיוֹן הָרִאשׁוֹן' + (state.grade >= 3 ? '.' : '') });
+      var stars = h('div', { class: 'stars' });
+      for (var i = 0; i < round.qs.length; i++) (function (k) {
+        stars.appendChild(h('span', { class: 'star' + (k < st ? ' on' : ''), text: '★', style: '--d:' + (0.1 + k * 0.05).toFixed(2) + 's' }));
+        if (k < st) P.at(100 + k * 50, function () { sfx.star(k); });
+      })(i);
+      P.res.appendChild(stars); P.res.appendChild(P.chest);
+      // the picture: the temple of the mixed round with the companion, and the egg of the round
+      P.frame.appendChild(h('div', { class: 'emix' }, h('span', { class: 'mtop' }, mapBuddy(), h('span', { class: 'mic' }, mapImg('ruins'))), h('span', { class: 'mlab', text: MIX.icon + ' ' + MIX.world })));
+      var eg = eggSlot(troll, el, function () {
+        ups.forEach(function (u) {
+          P.caps.appendChild(h('div', { class: 'banner', text: '🎈 עָלִית רָמָה ב' + u.t.name + ': ' + u.lv.name + (u.newGrade ? " · 🎓 זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
+        });
+        if (ups.length) later(function () { sfx.levelup(); }, 600);
+        if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
+        P.btns.appendChild(btn(nx ? '↻ עוֹד סִבּוּב' : 'עוֹד סִבּוּב', nx ? '' : 'nxt', function () { startRound(round.topic); }));
+        P.btns.appendChild(btn('לַמַּפָּה', '', function () { topics(); }));
+        P.btns.appendChild(btn('🛍️ לַחֲנוּת', '', function () { dress(null, 4); }));
+        tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
+      });
+      P.caps.appendChild(eg.msg); P.frame.appendChild(eg.slot); P.frame.parentNode.classList.add('small');
+      P.cap(CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙', 'chest ' + rw.tier, END_T.chest);
+      P.start(null);
+    });
+  }
+
+  // ---------- end of a stage, end of a milestone mission ----------
   function endStage(round, topicId, cfg) {
     var t = topicOf(topicId), first = state.rounds === 0; // the very first finished stage also hatches an egg
     var r = L.finishStage(state, topicId, cfg.level, cfg.stage, round.results), rw = L.stageReward(r.stars);
@@ -4585,53 +4706,113 @@ var TrollModels = (function () {
     if (troll) { state.owned.push(troll.id); if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; }
     save(); tv.round = null;
     var bossG = readyBoss(topicId);
+    var nx = t.g === state.grade ? L.nextStep(state) : null; // the same step the home button offers; a tile of the challenge map keeps its own order
     show(function (el) {
       var back = function () { region(topicId); };
-      el.appendChild(topBar(true, back));
-      el.appendChild(h('h2', { class: 'h2', text: r.stars === 3 ? 'מֻשְׁלָם!' : r.stars === 2 ? 'כָּל הַכָּבוֹד!' : 'יָפֶה מְאוֹד, סִיַּמְתְּ!' }));
-      var big = h('div', { class: 'stars bigstars' }), extra = h('div', { class: 'banners' }), btns = h('div', { class: 'row' });
+      var left = L.progOf(state, topicId, cfg.level).filter(function (x) { return !(x >= 1); }).length; // stages of this house without a star
+      var P = endParts(el, { back: back, title: r.stars === 3 ? 'מֻשְׁלָם!' : r.stars === 2 ? 'כָּל הַכָּבוֹד!' : 'יָפֶה מְאוֹד, סִיַּמְתְּ!', tier: rw.tier, coins: rw.coins, gained: r.gained,
+        say: endLine(bossG ? 'bridge' : r.opened ? 'opened' : r.clearingDone ? 'done' : left === 1 ? 'left1' : 's' + r.stars) });
+      var big = h('div', { class: 'stars bigstars' });
       [0, 1, 2].forEach(function (k) {
-        big.appendChild(h('span', { class: 'star' + (k < r.stars ? ' on' : ''), text: '★', style: 'animation-delay:' + (0.3 + k * 0.35) + 's' }));
-        if (k < r.stars) later(function () { sfx.star(k * 2 + 2); }, 300 + k * 350);
+        big.appendChild(h('span', { class: 'star' + (k < r.stars ? ' on' : ''), text: '★', style: '--d:' + (0.1 + k * 0.2).toFixed(1) + 's' }));
+        if (k < r.stars) P.at(100 + k * 200, function () { sfx.star(k * 2 + 2); });
       });
-      extra.appendChild(h('div', { class: 'banner chest ' + rw.tier, style: 'animation-delay:1.4s', text: CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙' }));
-      if (r.opened) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:1.7s', text: '🏠 נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name }));
-      if (bossG) extra.appendChild(h('div', { class: 'banner', style: 'animation-delay:2s', text: '🌉 מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!' }));
-      var nx = t.g === state.grade ? L.nextStep(state) : null; // the same step the home button offers; a tile of the challenge map keeps its own order
+      P.res.appendChild(big); P.res.appendChild(P.chest);
+
+      // the picture: the stretch of the trail around the house that was played, as it is now. The pip of the stage holds
+      // the stars, a finished house has its flag, a house that opened is out of the fog and the companion stands beside it.
+      var tr = trailItems(t), all = tr.items, k = 0, i;
+      for (i = 0; i < all.length; i++) if (!all[i].boss && all[i].lv === cfg.level) { k = i; break; }
+      var items = all.slice(Math.max(0, Math.min(k - 1, all.length - 3))).slice(0, 3);
+      var rec = nx && !nx.challenge && nx.topic === topicId ? nx : null;
+      if (rec && !items.some(function (it) { return rec.boss ? it.boss === rec.boss : !it.boss && it.lv === rec.level; })) rec = null;
+      if (!rec) rec = r.opened ? { level: r.opened, stage: 0 } : { level: cfg.level, stage: -1 };
+      var box = h('div', { class: 'tmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), played = null, D = END_T.map;
+      box.appendChild(trail);
+      items.forEach(function (it) {
+        it.el = stopEl('span', t, it, tr.win.length, rec); box.appendChild(it.el);
+        if (it.boss) return;
+        if (it.lv === cfg.level) {
+          played = it;
+          var pip = it.el.querySelectorAll('.mpips i')[cfg.stage], fl = it.el.querySelector('.mflag');
+          if (pip) { pip.classList.add('ea'); pip.style.setProperty('--d', D + 's'); }
+          if (fl && r.clearingDone) { fl.classList.add('ea', 'eflag'); fl.style.setProperty('--d', (D + 0.15) + 's'); }
+        }
+        if (r.opened && it.lv === r.opened) { // the fog lifts
+          it.el.classList.add('ea', 'elift'); it.el.style.setProperty('--d', (D + 0.25) + 's');
+          it.el.querySelector('.mic').appendChild(h('i', { class: 'efog', style: '--d:' + (D + 0.25) + 's' }));
+        }
+      });
+      P.frame.appendChild(box);
+
+      P.cap(CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙', 'chest ' + rw.tier, END_T.chest);
+      if (r.opened) P.cap('🏠 נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name, '', D + 0.25);
+      if (bossG) P.cap('🌉 מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!', '', D + 0.4);
+      if (r.opened) P.at((D + 0.25) * 1000, function () { sfx.levelup(); });
       function buttons() {
-        if (nx) btns.appendChild(btn(nx.challenge ? '🚀 ' + GATE.world : nx.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).icon + ' ' + topicOf(nx.topic).world : nx.topic === topicId && nx.level === cfg.level ? 'הַשָּׁלָב הַבָּא ◀' : nx.topic === topicId && nx.level === r.opened ? 'לַבַּיִת הַבָּא ◀' : nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀', 'nxt', function () { goStep(nx); }));
+        if (nx) P.btns.appendChild(btn(nx.challenge || nx.boss ? stepText(nx) : nx.topic === topicId && nx.level === cfg.level ? 'הַשָּׁלָב הַבָּא ◀' : nx.topic === topicId && nx.level === r.opened ? 'לַבַּיִת הַבָּא ◀' : stepText(nx), 'nxt', function () { goStep(nx); }));
         else if (t.g === state.grade) { /* nothing left in the grade and no challenge map */ }
-        else if (bossG) btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', '', function () { startRound(topicId, { boss: bossG }); }));
-        else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', '', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
-        else if (r.opened) btns.appendChild(btn('לַבַּיִת הַבָּא ◀', '', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
-        if (r.stars < 3) btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', 'b3', function () { startRound(topicId, cfg); }));
-        btns.appendChild(btn('לַמַּפָּה', 'b2', back));
+        else if (bossG) P.btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', 'nxt', function () { startRound(topicId, { boss: bossG }); }));
+        else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) P.btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
+        else if (r.opened) P.btns.appendChild(btn('לַבַּיִת הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
+        if (r.stars < 3) P.btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
+        P.btns.appendChild(btn('לַמַּפָּה', P.btns.firstChild ? '' : 'nxt', back));
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll;
       }
-      el.appendChild(big);
-      if (troll) hatcher(troll, el, buttons).forEach(function (x) { el.appendChild(x); }); else buttons();
-      el.appendChild(extra); el.appendChild(btns);
-      later(function () { bumpStars(el); }, 1500);
+      var relay = null; // the buttons that come after the egg take room from the picture: the trail is laid out again at once
+      if (troll) { var eg = eggSlot(troll, el, function () { buttons(); if (relay) relay(); }); P.caps.insertBefore(eg.msg, P.caps.firstChild); P.frame.appendChild(eg.slot); } else buttons();
+      relay = trailLayout(el, box, trail, items, null);
+      // the companion walks from the house that was played to the stop where it stands now
+      var bud = box.querySelector('.mbud'), stop = bud && bud.closest('.mnode');
+      if (bud && played && stop !== played.el) {
+        var m = played.el.querySelector('.mic');
+        bud.classList.add('ea', 'ewalk'); bud.style.setProperty('--d', (D + 0.25) + 's');
+        bud.style.setProperty('--dx', (played.el.offsetLeft + m.offsetLeft + m.offsetWidth / 2 - stop.offsetLeft - bud.offsetLeft - bud.offsetWidth / 2).toFixed(0) + 'px');
+        bud.style.setProperty('--dy', (played.el.offsetTop + m.offsetTop - stop.offsetTop - bud.offsetTop).toFixed(0) + 'px');
+      }
+      P.start(null);
     });
   }
   function endBoss(round, topicId, g) {
-    var hero = resolve(L.trollFromId(L.heroId(topicId, g)));
+    var hero = resolve(L.trollFromId(L.heroId(topicId, g))), t = topicOf(topicId);
     state.boss[topicId][g] = true;
     if (state.owned.indexOf(hero.id) < 0) state.owned.push(hero.id);
     if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0];
     state.coins += 30; state.rounds++;
     state = L.updateStreak(state, L.todayStr());
     save(); tv.round = null;
+    var nx = t.g === state.grade ? L.nextStep(state) : null;
     show(function (el) {
-      el.appendChild(topBar(true, function () { region(topicId); }));
-      el.appendChild(h('h2', { class: 'h2', text: 'הַגֶּשֶׁר מוּכָן!' }));
-      el.appendChild(h('div', { class: 'banner', text: 'הִצַּלְתְּ אֶת ' + hero.name + '! מֵעַכְשָׁו הוּא גָּר בַּכְּפָר שֶׁלָּךְ' }));
-      var stage = h('div', { class: 'stage', html: '<div class="reveal">' + A.trollSVG(hero, { mood: 'cheer' }) + '</div>' });
-      el.appendChild(stage);
-      el.appendChild(h('div', { class: 'banners' }, h('div', { class: 'banner chest gold', style: 'animation-delay:.9s', text: CHEST.gold + ': 30+ 🪙' })));
-      el.appendChild(h('div', { class: 'row' }, btn('לַכְּפָר שֶׁלִּי', '', home), btn('לַמַּפָּה', 'b2', function () { region(topicId); })));
-      later(function () { var c = center(stage); burst(c[0], c[1], 20); confetti(120); sfx.win(); bumpStars(el); fireworks(6); }, 500);
+      var back = function () { region(topicId); };
+      var P = endParts(el, { back: back, title: 'הַגֶּשֶׁר מוּכָן!', tier: 'gold', coins: 30, say: endLine('boss') });
+      P.res.appendChild(P.chest);
+      // the picture: the last house of this region, the bridge with its flag, the landmark of the next region of the world
+      // map on the far side; the rescued troll has crossed and stands on the near side with the companion
+      var tr = trailItems(t), last = null;
+      tr.items.forEach(function (it, i) { if (it.boss === g && i > 0) last = tr.items[i - 1]; });
+      var sub = t.sub || 'math', mine = t.g === state.grade ? L.topicsFor(state, sub) : L.challengeFor(state, sub);
+      var shown = L.TOPICS.filter(function (x) { return mine.indexOf(x.id) >= 0; }), icons = worldIcons(shown), ix = shown.indexOf(t), nextT = ix >= 0 ? shown[ix + 1] : null;
+      function node(cls, ico, flagD, label) { // flagD: a flag that is planted after that many seconds
+        var f = flagD == null ? null : mapFlag();
+        if (flagD) { f.classList.add('ea', 'eflag'); f.style.setProperty('--d', flagD + 's'); }
+        return h('span', { class: 'enode ' + cls }, h('span', { class: 'mic' }, mapImg(ico), f), label ? h('span', { class: 'mlab', text: label }) : null);
+      }
+      var D = END_T.map, far = nextT ? node('enext', icons[ix + 1], null, nextT.world) : t.g === state.grade ? node('enext', 'ruins', null, MIX.world) : null;
+      P.frame.appendChild(h('div', { class: 'ebridge' },
+        node('ehouse', last && !last.boss ? stopIco(last.i, tr.win.length) : 'house', 0, null),
+        h('span', { class: 'ecrew' }, mapBuddy(), h('span', { class: 'ehero ea', style: '--d:' + (D + 0.2) + 's', html: A.trollSVG(hero, { mood: 'cheer' }) }, h('span', { class: 'mlab', text: hero.name }))),
+        node('ebr', 'bridgeRope', D, null), far));
+      P.frame.parentNode.classList.add('small');
+      P.cap(CHEST.gold + ': 30+ 🪙', 'chest gold', END_T.chest);
+      P.cap('הִצַּלְתְּ אֶת ' + hero.name + '! מֵעַכְשָׁו הוּא גָּר בַּמַּחֲנֶה שֶׁלָּךְ', '', D + 0.2);
+      if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
+      P.btns.appendChild(btn('לַמַּחֲנֶה שֶׁלִּי', nx ? '' : 'nxt', home));
+      P.btns.appendChild(btn('לַמַּפָּה', '', back));
+      var feast = false;
+      function party() { if (feast || cur !== el) return; feast = true; var c = center(P.frame); burst(c[0], c[1], 20); confetti(120); sfx.win(); fireworks(6); }
+      P.at((D + 0.2) * 1000, party);
       tv.done = true; tv.hero = hero.name;
+      P.start(party);
     });
   }
 
@@ -5533,13 +5714,23 @@ var TrollModels = (function () {
   else if (scr === 'subjects') subjects();
   else if (scr === 'cloud') cloud();
   else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); if (/open=1/.test(hash)) { var on0 = cur.querySelector('.mnode.rec:not(.boss)') || cur.querySelector('.mnode.open,.mnode.done'); if (on0) on0.click(); } }
-  else if (scr === 'bossend') endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g);
+  else if (scr === 'bossend') { endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g); if (!/show=1/.test(hash)) tv.skip(); if (/then=home/.test(hash)) home(); } // then=home: the camp right after a rescue
   else if (scr === 'end') {
     var lv0 = state.levels[ht], r0 = L.createRound(ht, state.levels, Math.random, 7);
-    while (!r0.done()) { r0.answer(r0.current().answer); r0.next(); }
-    if (/hatch/.test(hash)) { state = L.finishStage(state, ht, lv0, 0, [true]).state; state = L.finishStage(state, ht, lv0, 1, [true]).state; }
-    endStage(r0, ht, { level: lv0, stage: 2 });
-    if (/hatch/.test(hash)) cur.querySelector('.egg').dispatchEvent(new Event('click'));
+    if (/[#&]fin=1/.test(hash)) { var tl0 = topicOf(ht), sp0 = L.span(tl0, state.grade) || { lo: 1, hi: tl0.levels.length }; state.levels[ht] = lv0 = sp0.hi; state.prog[ht] = tl0.levels.map(function (x, i) { return i + 1 < lv0 ? [3, 3, 3] : [0, 0, 0]; }); } // debug: the last house of the topic
+    // debug: &egg (a finished house, the egg not tapped yet), &hatch (the egg tapped), &stg=0|1|2 (the stage that ends), &stars=1|2
+    var hegg = /[#&](hatch|egg)/.test(hash), hstg = +((/[#&]stg=(\d)/.exec(hash) || [])[1] || 2), hmiss = { 1: 3, 2: 2 }[(/[#&]stars=(\d)/.exec(hash) || [])[1]] || 0;
+    while (!r0.done()) { if (hmiss-- > 0) r0.answer('no'); r0.answer(r0.current().answer); r0.next(); }
+    if (hegg) { state = L.finishStage(state, ht, lv0, 0, [true]).state; state = L.finishStage(state, ht, lv0, 1, [true]).state; }
+    else if (hhome !== 'new') { state.rounds = state.rounds || 5; if (hstg > 0) state = L.finishStage(state, ht, lv0, hstg - 1, [true]).state; }
+    endStage(r0, ht, { level: lv0, stage: hstg });
+    if (!/show=1/.test(hash)) tv.skip();
+    if (/[#&]hatch/.test(hash)) cur.querySelector('.egg').dispatchEvent(new Event('click'));
+  } else if (scr === 'mixend') {
+    var rm = L.createRound('mix', state.levels, Math.random, 10, null, null, 1, state.grade, L.topicsFor(state, curSub)), mmiss = /[#&]stars=/.test(hash) ? 4 : 0;
+    while (!rm.done()) { if (mmiss-- > 0) rm.answer('no'); rm.answer(rm.current().answer); rm.next(); }
+    endRound(rm); if (!/show=1/.test(hash)) tv.skip();
+    if (/[#&]hatch/.test(hash)) cur.querySelector('.egg').dispatchEvent(new Event('click'));
   } else if (scr === 'who' || !profiles.cur) who();
   else { home(); syncNow(); presence.start(); }
   raceDebug();

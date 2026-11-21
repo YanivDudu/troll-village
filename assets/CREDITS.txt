@@ -10,3 +10,4 @@ Music (snd/carefree.mp3, snd/wholesome.mp3, snd/easylemon.mp3, snd/race.mp3): "C
 Sound effects (other snd/*.mp3): "Interface Sounds" and "Music Jingles" by Kenney (www.kenney.nl)  -  license: CC0
 Treasure map of a topic, world maps of the subjects, the four lands and the camp of the home screen (map/*.png, map/parchment.jpg): "Cartography Pack" by Kenney (www.kenney.nl); the parchment texture re-encoded as JPEG
   https://kenney.nl/assets/cartography-pack  -  license: CC0
+Chest of the end screens (map/chest.png): the same Cartography Pack by Kenney (CC0), cropped to the drawing; the gold, silver and bronze plate behind it is CSS

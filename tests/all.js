@@ -3,7 +3,7 @@
 //   full (default): all eight layout sizes, self-play in every grade, the race and the cloud sync against the real database
 const { spawn } = require('child_process'), fs = require('fs'), os = require('os'), path = require('path');
 const root = path.join(__dirname, '..'), EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
-const quick = process.argv[2] === 'quick', MAX = Math.max(2, Math.min(4, Math.floor(os.cpus().length / 2)));
+const quick = process.argv[2] === 'quick', MAX = +process.env.MAX || Math.max(2, Math.min(4, Math.floor(os.cpus().length / 2))); // MAX=1 node tests/all.js quick: one browser at a time (a machine short of memory)
 const page = 'file:///' + root.replace(/\\/g, '/').replace(/ /g, '%20');
 function run(cmd, args, ms) {
   return new Promise(res => {
@@ -34,6 +34,8 @@ job('packs', /^PACKS OK/, () => run('node', ['tests/packs.test.js'], 300000).the
     'auto&g=3&t=geo3area&l=4&st=2', 'auto&g=3&t=heb3read&l=2&st=1', 'auto&g=3&t=eng3read&l=3&st=1', 'auto&g=4&t=geo4box&l=3&st=2', 'auto&g=4&t=heb4root&l=4&st=1', 'auto&g=4&t=eng4talk&l=3&st=1',
     'auto&g=4&t=geo5area&l=5&st=2', 'auto&g=4&t=heb5verbs&l=4&st=1', 'auto&g=4&t=eng5gram&l=6&st=1'])
   .forEach(h => job('play ' + h.replace('auto&', ''), /^DONE/, () => edge(page + '/index.html#' + h, 150000).then(t => t.slice(0, 40))));
+// the reward moment of the end screens: blocked for the first 0.9 s, one tap skips to the final state, the buttons work, the egg hatches
+job('reward', /^REWARD OK/, () => edge(page + '/tests/reward.html', 60000));
 if (!quick) {
   job('race (real database)', /^RACE OK/, () => run('node', ['tests/run-page.js', 'tests/race.html', '290'], 320000).then(o => o.split('\n')[0]));
   job('sync (real database)', /^SYNC OK/, () => run('node', ['tests/run-page.js', 'tests/sync.html', '240'], 270000).then(o => o.split('\n')[0]));

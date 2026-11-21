@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- The reward moment of the end screens (end of a stage, of a mixed round, of a bridge mission):
+     nothing can be tapped during the first 0.9 s, after that one tap skips to the final state, and then the buttons work;
+     left alone, the show ends by itself. Result in document.title: REWARD OK n / REWARD FAIL ...
+     Run: msedge --headless --disable-gpu --allow-file-access-from-files --virtual-time-budget=40000 --dump-dom tests/reward.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0;
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = 390; f.height = 800; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen.endm'); if (s) res({ f: f, d: d, s: s }); else setTimeout(poll, 20); })();
+  });
+}
+function num(x) { return +(/\d+/.exec(x.d.querySelector('.coinchip').textContent) || [0])[0]; }
+function tappable(x, b) { var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
+async function one(hash, coins) {
+  // tapped: blocked at first, then one tap skips, then the button of the next step starts an exercise
+  var x = await frame(hash + '&show=1'), nxt = x.d.querySelector('.ebtns .nxt'), before = num(x);
+  check(!!nxt, hash + ': a primary button');
+  check(x.d.querySelectorAll('.ebtns .nxt').length === 1, hash + ': exactly one primary button');
+  nxt.click();
+  check(x.d.querySelector('.screen.endm') === x.s && !x.s.classList.contains('fin'), hash + ': a tap in the first moment does nothing');
+  await wait(1000);
+  x.s.querySelector('.eframe').click();
+  check(x.s.classList.contains('fin'), hash + ': a tap after one second skips to the final state');
+  check(num(x) === before + coins, hash + ': the coin counter went up by ' + coins + ' (' + before + ' -> ' + num(x) + ')');
+  check(tappable(x, nxt), hash + ': the primary button is on top');
+  nxt.click(); await wait(600);
+  check(!!x.d.querySelector('.answers,.qrow') || !x.d.querySelector('.screen.endm:not(.out)'), hash + ': the primary button leads on');
+  x.f.remove();
+  // left alone: the show ends by itself with the same final state
+  var y = await frame(hash + '&show=1');
+  check(!y.s.classList.contains('fin'), hash + ': the show runs at first');
+  await wait(3200);
+  check(y.s.classList.contains('fin') && num(y) === before + coins, hash + ': the show ends by itself');
+  [].forEach.call(y.d.querySelectorAll('.ebtns .btn'), function (b) { check(tappable(y, b), hash + ': button on top: ' + b.textContent); });
+  y.f.remove();
+}
+async function egg(hash) { // an egg: tap it after the show, the new troll stands there with its name, then the buttons come
+  var x = await frame(hash + '&show=1');
+  await wait(3200);
+  var e = x.d.querySelector('.emeet .egg');
+  check(!!e && !x.d.querySelector('.ebtns .btn'), hash + ': an egg, and no buttons before it is tapped');
+  e.dispatchEvent(new Event('click')); await wait(1200);
+  check(!!x.d.querySelector('.emeet .reveal svg') && !!x.d.querySelector('.emeet .mlab').textContent, hash + ': the new troll with its name');
+  check(x.d.querySelectorAll('.ebtns .nxt').length === 1, hash + ': one primary button after the egg');
+  x.f.remove();
+}
+(async function () {
+  try {
+    await one('demo&s=end&stg=1&stars=2&hour=21', 14);
+    await one('demo&s=end&stg=0&stars=1&hour=18', 8);
+    await one('demo&s=end&stg=0&g=4&hour=10', 22);
+    await one('demo&s=bossend&hour=21', 30);
+    await one('demo&s=bossend&g=1&boy=1&hour=10', 30);
+    await egg('demo&s=end&egg&hour=21');
+    await egg('demo&s=mixend&g=1&hour=21');
+    await egg('demo&s=end&home=new&stg=0&g=1&hour=10');
+  } catch (e) { fails.push('error ' + e.message); }
+  document.title = fails.length ? 'REWARD FAIL ' + fails.join(' | ') : 'REWARD OK ' + checks;
+})();
+</script>
