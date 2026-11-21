@@ -3135,6 +3135,7 @@ var TrollLogic = (function () {
     if (p.sex === 'f' || p.sex === 'm') o.sex = p.sex;
     if (p.loc === true) o.loc = true;
     if (typeof p.mt === 'number' && isFinite(p.mt) && p.mt > 0) o.mt = p.mt; // optional: when the card (boy or girl) was last changed by hand; older pages drop it
+    if (typeof p.mn === 'number' && isFinite(p.mn) && p.mn >= 1 && Math.floor(p.mn) === p.mn) o.mn = p.mn; // optional: the running number of the card, +1 with every change by hand
     return o;
   }
   function loadProfiles(raw) {
@@ -3159,29 +3160,55 @@ var TrollLogic = (function () {
     return { cur: p.cur === id ? null : p.cur, list: p.list.filter(function (x) { return x.id !== id; }) };
   }
   // ---- the same village on several devices ----
-  // A village code links devices. Each side is { list, gone, t }: players, deleted player ids, and the time each
-  // player's progress last changed. The newer progress of each player wins; a deleted player stays deleted.
-  // The card of a player (name, boy or girl) is the cloud's, unless this device changed it later (mt, a card without it counts as 0).
+  // A village code or a family account links devices. Every player has a running number: each saved change on a device
+  // raises it by one, the server never changes it. At a sync the device reads the cloud copy and compares: the higher
+  // number is the newer copy and overwrites the other one; equal numbers: the later time; equal again: the cloud.
+  // Two states are never merged. A deleted player stays deleted, whatever the numbers say.
+  // The card of a player (name, boy or girl) has a small number of its own (mn; then the time mt; then the cloud's).
   var CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', CODE_RE = /^[A-HJ-NP-Z2-9]{8}$/;
   function newCode(rnd) { var s = ''; while (s.length < 8) s += CODE_CHARS[Math.floor(rnd() * CODE_CHARS.length)]; return s; }
-  function mergeCloud(a, b) {
-    var first = !b; b = b || { list: [], gone: [], t: {} };
-    var out = { list: [], gone: [], t: {}, pull: [], push: [], meta: first }, gone = {}, seen = {};
-    (b.gone || []).concat(a.gone || []).forEach(function (id) { if (!gone[id]) { gone[id] = true; out.gone.push(id); } });
+  // The first number of a player that has none yet (progress saved before the numbers existed): the more advanced copy gets the higher one.
+  function revSeed(state) { var x = function (v) { v = Math.floor(+v); return isFinite(v) && v > 0 ? v : 0; }; return 1 + x(state && state.xp) + x(state && state.rounds); }
+  // The number of a cloud copy. r3 is "<n>:<t>" and counts only when its t is the t3 written with it; an older page
+  // writes the state and t3 and leaves r3 behind: that copy is newer than the number r3 remembers.
+  function cloudNum(r3, t3, state) {
+    var m = /^(\d+):(\d+)$/.exec(typeof r3 === 'string' ? r3 : '');
+    if (!m || +m[1] < 1) return revSeed(state); // a number below 1 is no number: the copy counts as unnumbered
+    return +m[2] === +t3 ? +m[1] : Math.max(+m[1] + 1, revSeed(state));
+  }
+  // Which document a device is linked to: every family account has the code 'acct', so the account itself is part of it.
+  function linkKey(code, uid) { return code === 'acct' ? 'acct:' + (uid || '') : String(code || ''); }
+  function stampOf(r3, t3) { return (r3 || '') + '|' + t3; } // the identity of a cloud copy: it changes with every write by any page
+  // a = this device { list, gone, hide, n:{id: number}, t:{id: ms}, b:{id: stamp of the cloud copy last pulled or pushed}, d:{id: saved since then}, has:{id: local progress exists} }
+  // c = the cloud    { list, gone, n:{id}, t:{id}, st:{id: stamp}, has:{id} }, or null when there is no document yet
+  // -> { list, gone, pull:[ids], push:[ids], n:{id: the number to hold after a pull, or to write with a push}, meta: list or gone must be written }
+  function mergeCloud(a, c) {
+    var first = !c; c = c || { list: [], gone: [] };
+    var out = { list: [], gone: [], pull: [], push: [], n: {}, meta: first }, gone = {}, seen = {}, hid = {};
+    (c.gone || []).concat(a.gone || []).forEach(function (id) { if (!gone[id]) { gone[id] = true; out.gone.push(id); } });
     out.gone = out.gone.slice(-60);
+    (a.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only: neither pulled nor pushed
     var mine = {}; (a.list || []).forEach(function (p) { if (!mine[p.id]) mine[p.id] = p; });
-    (b.list || []).concat(a.list || []).forEach(function (p) {
+    var cn = function (p) { return +p.mn || 0; };
+    (c.list || []).concat(a.list || []).forEach(function (p) {
       if (seen[p.id] || gone[p.id] || out.list.length >= 8) return;
-      if (mine[p.id] && (+mine[p.id].mt || 0) > (+p.mt || 0)) p = mine[p.id];
+      var q = mine[p.id];
+      if (q && (cn(q) > cn(p) || (cn(q) === cn(p) && (+q.mt || 0) > (+p.mt || 0)))) p = q;
       seen[p.id] = true; out.list.push(prof(p, out.list.length + 1));
     });
+    var num = function (o, id) { var v = +(o || {})[id]; return isFinite(v) && v > 0 ? v : 0; };
     out.list.forEach(function (p) {
-      var ta = +(a.t || {})[p.id] || 0, tb = +(b.t || {})[p.id] || 0;
-      if (tb > ta) out.pull.push(p.id); else if (ta > tb) out.push.push(p.id);
-      out.t[p.id] = Math.max(ta, tb);
+      var id = p.id, hasA = !!(a.has || {})[id], hasC = !!(c.has || {})[id];
+      if (hid[id] || (!hasA && !hasC)) return;
+      var an = num(a.n, id), at = num(a.t, id), bn = num(c.n, id), bt = num(c.t, id);
+      if (!hasA) { out.pull.push(id); out.n[id] = bn; return; } // a new device, or one whose storage was cleared: it only pulls
+      if (!hasC) { out.push.push(id); out.n[id] = an || 1; return; }
+      var base = (a.b || {})[id], same = !!base && base === (c.st || {})[id];
+      if (same ? !!(a.d || {})[id] : an > bn || (an === bn && at > bt)) { out.push.push(id); out.n[id] = Math.max(an, bn + 1); }
+      else if (!same) { out.pull.push(id); out.n[id] = bn; }
     });
-    if (JSON.stringify(out.list) !== JSON.stringify((b.list || []).map(function (p, i) { return prof(p, i + 1); })) ||
-        out.gone.slice().sort().join() !== (b.gone || []).slice().sort().join()) out.meta = true;
+    if (JSON.stringify(out.list) !== JSON.stringify((c.list || []).map(function (p, i) { return prof(p, i + 1); })) ||
+        out.gone.slice().sort().join() !== (c.gone || []).slice().sort().join()) out.meta = true;
     return out;
   }
   function trollFromId(id) {
@@ -3623,7 +3650,7 @@ var TrollLogic = (function () {
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
-    newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
+    newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, linkKey: linkKey, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
@@ -4103,15 +4130,29 @@ var TrollModels = (function () {
 
   // ---- the same village on several devices (Firestore document per village code, see TrollLogic.mergeCloud) ----
   var CLOUD = { pid: 'troll-math', key: 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0' }, SKEY = 'trollVillage.sync';
-  var sync = { code: '', t: {}, gone: [], hide: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
+  // sync: t = the time of the last change of each player (the last tie-break, and what older pages compare), b = the stamp of the
+  // cloud copy this device last pulled or pushed, d = saved since then, gone = deleted everywhere, hide = removed from this device only
+  var sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
   function cloudOn() { return !!(CLOUD.pid && !sandbox && window.fetch); }
   function saveSync() { if (sync.code) lsSet(SKEY, JSON.stringify(sync)); else lsDel(SKEY); }
+  function syncOf(o) { var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }; return { code: o.code, t: obj(o.t), b: obj(o.b), d: obj(o.d), gone: Array.isArray(o.gone) ? o.gone : [], hide: Array.isArray(o.hide) ? o.hide.filter(function (x) { return /^p\d+$/.test(x); }) : [] }; }
   function loadSync() {
-    try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code) || (o.code === 'acct' && auth)) sync = { code: o.code, t: o.t || {}, gone: Array.isArray(o.gone) ? o.gone : [], hide: Array.isArray(o.hide) ? o.hide.filter(function (x) { return /^p\d+$/.test(x); }) : [] }; } catch (e) {}
+    try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code) || (o.code === 'acct' && auth)) sync = syncOf(o); } catch (e) {}
   }
+  // Another tab of this device may have saved meanwhile: what is stored is read again before it is changed.
+  function syncFresh() { try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (sync.code && o.code === sync.code) sync = syncOf(o); } catch (e) {} }
+  // The running number of every player of this device: +1 with every saved change, also when the device is not linked.
+  // It has its own key, so it survives signing out. A player without one yet gets it from the progress (L.revSeed).
+  var RKEY = 'trollVillage.rev';
+  function revAll() { try { var o = JSON.parse(lsGet(RKEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+  function revSave(all) { lsSet(RKEY, JSON.stringify(all)); }
+  function revOf(id, all) { var n = +all[id]; if (isFinite(n) && n >= 1) return Math.floor(n); var raw = rawOf(id); return raw ? L.revSeed(L.loadState(raw)) : 0; }
+  function revDrop(id) { var all = revAll(); if (id in all) { delete all[id]; revSave(all); } }
   function touch(id) {
+    var all = revAll(); all[id] = (revOf(id, all) || 1) + 1; revSave(all);
     if (!sync.code) return;
-    sync.t[id] = Math.max(Date.now(), (+sync.t[id] || 0) + 1); saveSync();
+    syncFresh();
+    sync.t[id] = Math.max(Date.now(), (+sync.t[id] || 0) + 1); sync.d[id] = 1; saveSync();
     clearTimeout(pushTimer); pushTimer = setTimeout(syncNow, 4000);
   }
   function rndId() { return 'p' + (100000000 + Math.floor(Math.random() * 900000000)); }
@@ -4169,42 +4210,96 @@ var TrollModels = (function () {
   function cloudGet(code) { // resolves to null when the village does not exist yet
     return cloudReq(code, cloudUrl(code), {}).then(function (r) { if (r.status === 404) return null; if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (doc) {
       if (!doc) return null;
-      var f = doc.fields || {}, out = { list: [], gone: [], t: {}, s: {} }, k;
+      // s = the saved state of each player, t = its time, n = its running number, st = its stamp, has = there is progress;
+      // ut = when the document last changed (the guard of the write), keys = every field of the document
+      var f = doc.fields || {}, out = { list: [], gone: [], t: {}, s: {}, n: {}, st: {}, has: {}, ut: typeof doc.updateTime === 'string' ? doc.updateTime : '', keys: Object.keys(f) }, k, r3 = {};
       function str(k) { return f[k] && typeof f[k].stringValue === 'string' ? f[k].stringValue : ''; }
       try { out.list = L.loadProfiles({ list: JSON.parse(str('list') || '[]') }).list; } catch (e) {}
       try { out.gone = JSON.parse(str('gone') || '[]').filter(function (x) { return /^p\d+$/.test(x); }); } catch (e) {}
       for (k in f) if (/^s_p\d+$/.test(k) && str(k) && +str('t_' + k.slice(2)) > 0) { out.s[k.slice(2)] = str(k); out.t[k.slice(2)] = +str('t_' + k.slice(2)); }
       for (k in f) if (/^s2_p\d+$/.test(k) && str(k) && +str('t2_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t2_' + k.slice(3)); } // version 3 wins over the old fields
-      for (k in f) if (/^s3_p\d+$/.test(k) && str(k) && +str('t3_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t3_' + k.slice(3)); } // and version 4 over both
+      for (k in f) if (/^s3_p\d+$/.test(k) && str(k) && +str('t3_' + k.slice(3)) > 0) { out.s[k.slice(3)] = str(k); out.t[k.slice(3)] = +str('t3_' + k.slice(3)); r3[k.slice(3)] = str('r3_' + k.slice(3)); } // and version 4 over both; only it has a number
+      for (k in out.s) { out.has[k] = true; out.n[k] = L.cloudNum(r3[k] || '', out.t[k], L.loadState(out.s[k])); out.st[k] = L.stampOf(r3[k] || '', out.t[k]); }
       return out;
     });
   }
-  function cloudPut(code, fields, keep) {
-    var url = cloudUrl(code), body = { fields: {} }, k;
+  // One PATCH. fields are written, del are deleted (in the mask, without a value). The write goes through only when the
+  // document is still the one that was read (ut), or still does not exist: otherwise nothing is written and the error has .conflict
+  function cloudPut(code, fields, keep, ut, del) {
+    var url = cloudUrl(code) + (ut ? '&currentDocument.updateTime=' + encodeURIComponent(ut) : '&currentDocument.exists=false'), body = { fields: {} }, k;
     for (k in fields) { url += '&updateMask.fieldPaths=' + k; body.fields[k] = { stringValue: fields[k] }; }
-    return cloudReq(code, url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: !!keep }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); });
+    (del || []).forEach(function (k) { if (!(k in fields)) url += '&updateMask.fieldPaths=' + k; });
+    return cloudReq(code, url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: !!keep }).then(function (r) {
+      if (!r.ok) { var e = new Error('http ' + r.status); e.conflict = r.status === 400 || r.status === 409 || r.status === 412; throw e; }
+    });
   }
-  // Pulls what is newer in the cloud, pushes what is newer here. done(ok, changed)
+  // Reads the cloud, compares the running number of every player (L.mergeCloud) and overwrites the lower side: pulls what is
+  // newer in the cloud, pushes what is newer here. Nothing is merged. done(ok, changed)
+  function linkNow() { return L.linkKey(sync.code, auth && auth.uid); }
   function syncNow(done, keep) {
     if (typeof done !== 'function') done = function () {};
     if (!sync.code || !cloudOn()) { done(false); return; }
     if (syncBusy) { syncAgain = true; done(false); return; }
     syncBusy = true; clearTimeout(pushTimer);
-    var changed = false, t0 = Object.assign({}, sync.t); // the times as they are before the request: a save that lands while the cloud is being read must not beat newer progress there
-    cloudGet(sync.code).then(function (rem) {
-      var hid = {}; (sync.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only
-      var before = JSON.stringify(profiles.list), m = L.mergeCloud({ list: profiles.list, gone: sync.gone, t: t0 }, rem), f = {};
-      m.pull.forEach(function (id) { if (hid[id]) return; lsSet(DKEY + id, rem.s[id]); sync.t[id] = rem.t[id]; if (id === profiles.cur) changed = true; });
-      m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); lsDel(DKEY_OLD2 + id); delete sync.t[id]; });
-      var alive = m.list.some(function (p) { return p.id === profiles.cur && !hid[p.id]; });
-      profiles = { cur: alive ? profiles.cur : null, list: m.list.filter(function (p) { return !hid[p.id]; }) };
-      if (JSON.stringify(profiles.list) !== before) changed = true;
-      sync.gone = m.gone; saveProfiles(); saveSync();
-      if (changed && profiles.cur) refresh();
-      m.push.forEach(function (id) { var raw = rawOf(id); if (raw) { f['s3_' + id] = JSON.stringify(L.loadState(raw)); f['t3_' + id] = String(sync.t[id]); } });
-      if (m.meta) { f.list = JSON.stringify(m.list); f.gone = JSON.stringify(m.gone); }
-      return Object.keys(f).length ? cloudPut(sync.code, f, keep) : null;
-    }).then(function () { fin(true); }, function () { fin(false); });
+    var changed = false, tries = 0, code = sync.code, link = linkNow();
+    function linked() { return sync.code === code && linkNow() === link; } // still the same village or the same family account as when the sync started
+    function attempt() {
+      var sent = {};
+      cloudGet(code).then(function (rem) {
+        if (!linked()) throw new Error('unlinked'); // signed out, or signed in to another account, while the cloud was being read
+        // decided with what is stored now, not with what it was before the request: a save may have landed meanwhile
+        syncFresh();
+        var revs = revAll(), a = { list: profiles.list, gone: sync.gone, hide: sync.hide, n: {}, t: sync.t, b: sync.b, d: sync.d, has: {} };
+        profiles.list.forEach(function (p) { if (rawOf(p.id)) { a.has[p.id] = true; a.n[p.id] = revOf(p.id, revs); } });
+        var hid = {}; (sync.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only
+        var before = JSON.stringify(profiles.list), m = L.mergeCloud(a, rem), f = {}, del = [], now = Date.now();
+        m.pull.forEach(function (id) {
+          var raw = rawOf(id);
+          if (!raw || JSON.stringify(L.loadState(raw)) !== rem.s[id]) { lsSet(DKEY + id, rem.s[id]); if (id === profiles.cur) changed = true; } // the same progress is not written again
+          revs[id] = m.n[id]; sync.b[id] = rem.st[id]; sync.t[id] = rem.t[id]; delete sync.d[id];
+        });
+        m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); lsDel(DKEY_OLD2 + id); delete sync.t[id]; delete sync.b[id]; delete sync.d[id]; delete revs[id]; });
+        var alive = m.list.some(function (p) { return p.id === profiles.cur && !hid[p.id]; });
+        var list = m.list.filter(function (p) { return !hid[p.id]; });
+        profiles.cur = alive ? profiles.cur : null;
+        if (JSON.stringify(list) !== before) { profiles.list = list; changed = true; } // an unchanged list keeps its cards: the buttons of the who screen hold them
+        sync.gone = m.gone; saveProfiles();
+        if (changed && profiles.cur) refresh();
+        m.push.forEach(function (id) {
+          var raw = rawOf(id); if (!raw) return; // a player without progress on this device is never written
+          var t = Math.max(now, (rem && +rem.t[id] || 0) + 1, +sync.t[id] || 0), n = m.n[id]; // the time of a write always grows: older pages compare it
+          f['s3_' + id] = JSON.stringify(L.loadState(raw)); f['t3_' + id] = String(t); f['r3_' + id] = n + ':' + t;
+          revs[id] = n; sent[id] = { n: n, t: t };
+        });
+        revSave(revs); saveSync();
+        if (m.meta) { f.list = JSON.stringify(m.list); f.gone = JSON.stringify(m.gone); }
+        if (!Object.keys(f).length) return null;
+        // the rules allow 40 fields: what is left of deleted players goes, and if that is not enough the fields of older versions
+        var keys = rem ? rem.keys : [], dead = {}, left = {};
+        m.gone.forEach(function (id) { dead[id] = true; });
+        keys.forEach(function (k) { var x = /^(?:s|t|s2|t2|s3|t3|r3)_(p\d+)$/.exec(k); if (x && dead[x[1]]) del.push(k); else left[k] = true; });
+        for (var k in f) left[k] = true;
+        if (Object.keys(left).length > 40) Object.keys(left).forEach(function (k) { var x = /^(?:s|t|s2|t2)_(p\d+)$/.exec(k); if (x && left['s3_' + x[1]] && !(k in f)) { del.push(k); delete left[k]; } });
+        return cloudPut(code, f, keep, rem ? rem.ut : '', del);
+      }).then(function () {
+        if (!linked()) { fin(false); return; }
+        syncFresh();
+        var revs = revAll(), again = false, id;
+        for (id in sent) {
+          sync.b[id] = L.stampOf(sent[id].n + ':' + sent[id].t, sent[id].t);
+          if (+revs[id] === sent[id].n) { sync.t[id] = sent[id].t; delete sync.d[id]; }
+          else again = true; // a save landed while the write was on its way: the player stays dirty and is pushed again
+        }
+        saveSync();
+        if (again) syncAgain = true;
+        fin(true);
+      }, function (e) {
+        // somebody else wrote between the read and the write: nothing was written here. Read again and decide again.
+        if (e && e.conflict && ++tries < 3 && linked()) setTimeout(attempt, 300 + Math.floor(Math.random() * 500));
+        else fin(false);
+      });
+    }
+    attempt();
     function fin(ok) {
       syncBusy = false;
       if (changed) { if (here === 'who' || (here === 'home' && !profiles.cur)) who(); else if (here === 'home') home(); }
@@ -4218,20 +4313,21 @@ var TrollModels = (function () {
     if (presence) presence.stop();
     profiles.list.forEach(function (p) {
       if (p.id.length < 9) {
-        var id = rndId(), raw = rawOf(p.id);
+        var id = rndId(), raw = rawOf(p.id), revs = revAll();
         if (raw) lsSet(DKEY + id, raw);
+        if (revs[p.id]) { revs[id] = revs[p.id]; delete revs[p.id]; revSave(revs); } // the number moves with the player
         lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id);
         if (profiles.cur === p.id) profiles.cur = id;
         p.id = id;
       }
     });
     var oldT = keepT ? sync.t : {};
-    sync = { code: code, t: {}, gone: [], hide: [] };
+    sync = { code: code, t: {}, b: {}, d: {}, gone: [], hide: [] };
     profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = +oldT[p.id] || Date.now(); });
     saveProfiles(); saveSync();
     if (presence && profiles.cur) presence.start();
   }
-  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, gone: [], hide: [] }; saveSync(); }
+  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }; saveSync(); }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
   function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
@@ -5908,7 +6004,7 @@ var TrollModels = (function () {
           h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
           h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' + (p.loc ? ' · 🏠' : '') })));
         card.appendChild(h('button', { class: 'psex', text: p.sex === 'm' ? '👦' : p.sex === 'f' ? '👧' : '👧👦', 'aria-label': 'בֵּן אוֹ בַּת: ' + p.name, on: { click: function () {
-          sfx.tap(); p.sex = p.sex === 'f' ? 'm' : 'f'; p.mt = Date.now(); saveProfiles(); if (sync.code) syncNow(); who(false);
+          sfx.tap(); p.sex = p.sex === 'f' ? 'm' : 'f'; p.mt = Date.now(); p.mn = (p.mn || 0) + 1; saveProfiles(); if (sync.code) syncNow(); who(false);
         } } }));
         card.appendChild(h('button', { class: 'pgrade', text: 'כִּתָּה ' + GRADE_HE[st.grade], 'aria-label': 'הַחְלָפַת כִּתָּה שֶׁל ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
@@ -5929,8 +6025,8 @@ var TrollModels = (function () {
             var gone = ridOf(p.id);
             if (p.id === profiles.cur) { if (race) quitRace(); presence.stop(); }
             if (server && gone && !p.loc) { rt.del('board/' + gone); rt.del('online/' + gone); }
-            profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles();
-            if (sync.code) { if (server) sync.gone.push(p.id); else sync.hide.push(p.id); delete sync.t[p.id]; saveSync(); if (server) syncNow(); }
+            profiles = L.removeProfile(profiles, p.id); lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id); saveProfiles(); revDrop(p.id);
+            if (sync.code) { if (server) sync.gone.push(p.id); else sync.hide.push(p.id); delete sync.t[p.id]; delete sync.b[p.id]; delete sync.d[p.id]; saveSync(); if (server) syncNow(); }
             load(); who(server ? undefined : false);
           }
           card.appendChild(h('div', { class: 'sure sure3' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),

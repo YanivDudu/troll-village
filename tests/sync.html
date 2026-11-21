@@ -1,15 +1,61 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>running</title>
-<!-- End-to-end check of the family account (e-mail sign-in) against the real cloud. Needs http (python -m http.server 8765 in the project root),
-     then open http://localhost:8765/tests/sync.html . Plays two devices by swapping localStorage. Expects title "SYNC OK". -->
+<!-- End-to-end check of the family account (e-mail sign-in) and of the sync by a running number, against the real cloud.
+     Run: node tests/run-page.js tests/sync.html 300   (or python -m http.server 8765 in the project root, then open
+     http://localhost:8765/tests/sync.html). Plays two devices by swapping localStorage; "another device" is also played by
+     writing straight into the test family's own document. Expects title "SYNC OK".
+     The test makes one throw-away account and reads and writes only that account's own document (families/<its uid>); its
+     players are local players, so nothing of them goes to the ranking. The account is deleted at the end, also after a
+     failure or when the time runs out. -->
 <iframe id="f" width="420" height="760"></iframe><pre id="log"></pre>
 <script>
 var f = document.getElementById('f'), log = document.getElementById('log');
+var T0 = Date.now(), LIMIT = 265000, dead = false; // the runner stops the browser at 300 s: the test gives up before that and cleans up
+function alive() { if (dead || Date.now() - T0 > LIMIT) throw new Error('timeout: the whole test took too long'); }
 function say(t) { log.textContent += t + '\n'; }
-function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 150) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
-function open(hash) { return new Promise(function (r) { f.onload = function () { r(); }; f.src = 'about:blank'; setTimeout(function () { f.src = '../index.html?' + Date.now() + (hash || ''); }, 50); }); }
+function wait(ms) { alive(); return new Promise(function (r) { setTimeout(r, ms); }); }
+function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { alive(); } catch (e) { no(e); return; } try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 150) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
+function defer() { var d = {}; d.promise = new Promise(function (r) { d.go = r; }); return d; }
+// Every request of the game page to Firestore goes through here: the test sees it, can hold it, or can cut the network.
+var net = { log: [], page: { inflight: 0 }, offline: false, holdGet: null, holdPatch: null };
+function hook(W) {
+  var real = W.fetch, me = net.page = { inflight: 0 }; W.__spied = true; // requests of a page that was closed never end: every page counts its own
+  W.fetch = function (u, o) {
+    if (!/firestore\.googleapis\.com/.test(String(u))) return real.call(W, u, o);
+    if (net.offline) return Promise.reject(new TypeError('offline (test)'));
+    var patch = !!(o && o.method === 'PATCH'), e = { patch: patch, url: String(u), status: 0, done: false, held: false }, gate = patch ? net.holdPatch : net.holdGet;
+    if (patch) net.holdPatch = null; else net.holdGet = null;
+    me.inflight++; net.log.push(e); e.held = !!gate;
+    return Promise.resolve(gate && gate.promise).then(function () { return real.call(W, u, o); }).then(function (r) {
+      e.status = r.status; e.done = true; me.inflight--;
+      if (!r.ok) r.clone().json().then(function (j) { e.err = j && j.error && j.error.status; }, function () {});
+      return r;
+    }, function (x) { e.done = true; me.inflight--; throw x; });
+  };
+}
+// Opens the game. The watcher is put in before the script of the page runs, so the sync of the page load is seen too.
+function open(hash) {
+  alive();
+  return new Promise(function (r, no) {
+    f.onload = null; f.src = 'about:blank';
+    setTimeout(function () {
+      var ch = new MessageChannel(), on = true, hooked = false, late = false;
+      function tryHook() { try { var W = f.contentWindow; if (W && /index\.html$/.test(W.location.pathname) && !W.__spied) { late = W.__tv !== undefined; hook(W); hooked = true; } } catch (e) {} }
+      f.onload = function () { on = false; if (!hooked) tryHook(); if (late || !hooked) no(new Error('the test could not watch the first request of the page')); else r(); };
+      ch.port1.onmessage = function () { if (!on || hooked) return; tryHook(); if (!hooked) ch.port2.postMessage(0); };
+      f.src = '../index.html?' + Date.now() + (hash || ''); ch.port2.postMessage(0);
+    }, 50);
+  });
+}
+function idle(from) { // a sync that started after request number `from` is over (a retry after a refused write waits up to 0.8 s)
+  var quiet = 0;
+  return until(function () { var got = net.log.slice(from).some(function (e) { return !e.patch && e.done; }); quiet = got && net.page.inflight === 0 ? quiet + 1 : 0; return quiet >= 10; }, 'the sync is over');
+}
+async function openS(hash) { var i = net.log.length; await open(hash); await idle(i); } // a linked device: the page and its first sync
+function vis() { doc().dispatchEvent(new Event('visibilitychange')); } // back to the tab: a sync starts
+async function syncT() { var i = net.log.length; vis(); await idle(i); }
+function patches(from) { return net.log.slice(from).filter(function (e) { return e.patch; }); }
 function doc() { return f.contentDocument; }
 function q(sel) { return doc().querySelector('.screen:not(.out) ' + sel); }
 function snap() { var o = {}; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^trollVillage/.test(k)) o[k] = localStorage.getItem(k); } return o; }
@@ -17,136 +63,290 @@ function restore(o) { Object.keys(snap()).forEach(function (k) { localStorage.re
 function sync() { return JSON.parse(localStorage.getItem('trollVillage.sync') || '{}'); }
 function profs() { return JSON.parse(localStorage.getItem('trollVillage.profiles') || '{"list":[]}'); }
 function st(id) { return JSON.parse(localStorage.getItem('trollVillage.r.' + id)); }
+function rev(id) { return +JSON.parse(localStorage.getItem('trollVillage.rev') || '{}')[id] || 0; } // the running number of a player on this device
+function tweak(id, add) { var s = st(id); s.coins += add; localStorage.setItem('trollVillage.r.' + id, JSON.stringify(s)); } // only while the page is closed
+async function close() { f.onload = null; f.src = 'about:blank'; await wait(120); } // the page of a device is closed before its storage is touched
+async function device(o) { await close(); restore(o); } // another device: its page cannot write into the storage of the next one
 function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
-(async function () {
-  var keep = snap(); // the developer's own players on localhost are put back at the end
-  try {
-    restore({});
-    var KEY = 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0', mail = 'zz-test-' + Date.now() + '@example.com', pw = 'pw' + Date.now();
-    function acct() { return JSON.parse(localStorage.getItem('trollVillage.auth') || 'null'); }
-    async function form(emailV, passV, btnSel) {
-      (await until(function () { return q('.cloudb'); }, 'account button')).click();
-      (await until(function () { return q('.amail'); }, 'sign-in form')).value = emailV; q('.apass').value = passV; q(btnSel).click();
-    }
-    await open(); // device A: a new player, then a new family account
+var KEY = 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0', mail = 'zz-test-' + Date.now() + '@example.com', pw = 'pw' + Date.now(), uid = '', tok = '';
+var IDT = 'https://identitytoolkit.googleapis.com/v1/accounts:';
+function post(url, body) { return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+// The test family's own document, and nothing else.
+function furl() { if (!/^[A-Za-z0-9]{10,}$/.test(uid)) throw new Error('no test account'); return 'https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/families/' + uid + '?key=' + KEY; }
+function cloudRaw() { return fetch(furl(), { headers: { Authorization: 'Bearer ' + tok } }).then(function (r) { return r.json(); }); }
+function cloudDoc() { return cloudRaw().then(function (d) { var o = {}; for (var k in d.fields || {}) o[k] = d.fields[k].stringValue; return o; }); }
+function cloudPatch(fields, del, more) { // "another device" writes: fields are set, del are deleted
+  var url = furl() + (more || ''), body = { fields: {} };
+  for (var k in fields) { url += '&updateMask.fieldPaths=' + k; body.fields[k] = { stringValue: String(fields[k]) }; }
+  (del || []).forEach(function (k) { url += '&updateMask.fieldPaths=' + k; });
+  return fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: JSON.stringify(body) });
+}
+function r3(c, id) { var m = /^(\d+):(\d+)$/.exec(c['r3_' + id] || ''); return m ? { n: +m[1], t: +m[2] } : null; }
+function numbered(c, id) { var r = r3(c, id); return !!r && String(r.t) === c['t3_' + id]; }
+
+async function run() {
+  await device({});
+  function acct() { return JSON.parse(localStorage.getItem('trollVillage.auth') || 'null'); }
+  async function form(emailV, passV, btnSel) {
+    (await until(function () { return q('.cloudb'); }, 'account button')).click();
+    (await until(function () { return q('.amail'); }, 'sign-in form')).value = emailV; q('.apass').value = passV; q(btnSel).click();
+  }
+  async function newPlayer(name, grade) { // a local player: not shown to other families, nothing goes to the ranking
     var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
-    inp.value = 'A1'; q('.pnew .gbtn[data-g="2"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .btn').click();
-    await until(function () { return q('.chip.who'); }, 'home A');
-    q('.chip.who').click();
-    await form(mail, 'short', '.signup');
-    await until(function () { return /6/.test(q('.cmsg').textContent); }, 'a short password is refused with an explanation');
-    q('.apass').value = pw; q('.signup').click();
-    await until(function () { return q('.cacct') && acct(); }, 'signed up');
-    var code = 'acct', idA = profs().list[0].id, A = snap(), uid = acct().uid;
-    check(q('.cacct').textContent === mail && sync().code === 'acct', 'device A made a family account and is signed in');
-    check(idA.length >= 9, 'player id is device-independent');
-    var doc1 = await fetch('https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/families/' + uid + '?key=' + KEY);
-    check(doc1.status === 403 || doc1.status === 401, 'without signing in nobody can read the family (' + doc1.status + ')');
+    inp.value = name; q('.pnew .gbtn[data-g="' + grade + '"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .vrow .gbtn[data-v="loc"]').click(); q('.pnew .btn').click();
+    await until(function () { return q('.chip.who'); }, 'home of ' + name);
+  }
+  // one real saved change on the device: the big button of the home screen opens an exercise, and the state is saved
+  async function save1(id) { var r0 = rev(id); (await until(function () { return q('.nextb'); }, 'the big button of the home screen')).click(); await until(function () { return rev(id) > r0; }, 'a save raised the number'); return rev(id); }
 
-    restore({}); // device B: its own player first, then signs in to the same account
-    await open();
-    inp = await until(function () { return q('.pnew .pname'); }, 'who screen B');
-    inp.value = 'B1'; q('.pnew .gbtn[data-g="4"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .btn').click();
-    await until(function () { return q('.chip.who'); }, 'home B');
-    q('.chip.who').click();
-    await form(mail, 'wrong-password', '.signin');
-    await until(function () { return /נְכוֹנִים/.test(q('.cmsg').textContent); }, 'a wrong password is refused');
-    check(!acct() && profs().list.length === 1, 'and nothing was linked');
-    q('.apass').value = pw; q('.signin').click();
-    await until(function () { return profs().list.length === 2 && sync().code === 'acct'; }, 'B signed in');
-    check(profs().list.some(function (p) { return p.id === idA && p.name === 'A1'; }), 'device B sees the player of device A');
-    check(st(idA).owned.join() === JSON.parse(A['trollVillage.r.' + idA]).owned.join(), 'with the same trolls');
-    await open(); // B plays as A1: any saved change counts as progress
-    var chip = await until(function () { return q('.chip.who'); }, 'home on B');
-    chip.click();
-    var cards = await until(function () { var c = doc().querySelectorAll('.screen:not(.out) .pcard .go'); return c.length === 2 && c; }, 'two players on B');
-    cards[profs().list.findIndex(function (p) { return p.id === idA; })].click();
-    var mute = await until(function () { return profs().cur === idA && q('.top .chips:last-child .icon:last-child'); }, 'home as A1 on B');
-    var coins0 = st(idA).coins; mute.click(); // sound off: a setting of device B, it must not travel to device A
-    (await until(function () { return q('.btn.b3.wig'); }, 'daily gift')).click(); // the daily gift: progress that must travel
-    var chest = await until(function () { return q('button.gift') || q('.chestb,.egg,.gbox'); }, 'gift screen'); chest.click(); chest.dispatchEvent(new Event('click'));
-    await until(function () { return st(idA).coins > coins0; }, 'the gift was opened');
-    var coins1 = st(idA).coins;
-    await wait(6500); // the push waits 4 seconds after the last change
-    var B = snap();
+  await open(); // device A: a new player, then a new family account
+  await newPlayer('A1', 2);
+  q('.chip.who').click();
+  await form(mail, 'short', '.signup');
+  await until(function () { return /6/.test(q('.cmsg').textContent); }, 'a short password is refused with an explanation');
+  q('.apass').value = pw; q('.signup').click();
+  await until(function () { return q('.cacct') && acct(); }, 'signed up');
+  uid = acct().uid; tok = acct().it;
+  var idA = profs().list[0].id, A = snap();
+  check(q('.cacct').textContent === mail && sync().code === 'acct', 'device A made a family account and is signed in');
+  check(idA.length >= 9 && profs().list[0].loc === true, 'player id is device-independent, the test player is a local one');
+  var doc1 = await fetch(furl());
+  check(doc1.status === 403 || doc1.status === 401, 'without signing in nobody can read the family (' + doc1.status + ')');
+  var c = await cloudDoc();
+  check(numbered(c, idA) && r3(c, idA).n === rev(idA) && sync().b[idA] === c['r3_' + idA] + '|' + c['t3_' + idA] && !sync().d[idA], 'the first upload carries the running number of the player (' + c['r3_' + idA] + '), and the device remembers that copy');
+  check(patches(0).length === 1 && /currentDocument\.exists=false/.test(patches(0)[0].url) && patches(0)[0].status === 200, 'a new document is written with the guard "does not exist yet"');
 
-    restore(A); // back on device A
-    await open();
-    await until(function () { return profs().list.length === 2 && st(idA).coins === coins1; }, 'A received the change and the second player');
-    check(JSON.parse(localStorage.getItem('trollVillage.snd') || '{}').mute !== true, 'sound off on device B did not switch the sound off on device A');
-    check(true, 'device A got the progress made on device B, and the player added there');
-    var idB = profs().list.filter(function (p) { return p.id !== idA; })[0].id;
+  await device({}); // device B: its own player first, then signs in to the same account
+  await open();
+  await newPlayer('B1', 4);
+  q('.chip.who').click();
+  await form(mail, 'wrong-password', '.signin');
+  await until(function () { return /נְכוֹנִים/.test(q('.cmsg').textContent); }, 'a wrong password is refused');
+  check(!acct() && profs().list.length === 1, 'and nothing was linked');
+  var i0 = net.log.length;
+  q('.apass').value = pw; q('.signin').click();
+  await until(function () { return profs().list.length === 2 && sync().code === 'acct'; }, 'B signed in');
+  await idle(i0);
+  check(profs().list.some(function (p) { return p.id === idA && p.name === 'A1'; }), 'device B sees the player of device A');
+  check(st(idA).owned.join() === JSON.parse(A['trollVillage.r.' + idA]).owned.join(), 'with the same trolls');
+  check(patches(i0).length === 1 && /currentDocument\.updateTime=/.test(patches(i0)[0].url) && patches(i0)[0].status === 200, 'a write to an existing document carries the guard "still as it was read"');
+  await openS(); // B plays as A1: any saved change counts as progress
+  var chip = await until(function () { return q('.chip.who'); }, 'home on B');
+  chip.click();
+  var cards = await until(function () { var c = doc().querySelectorAll('.screen:not(.out) .pcard .go'); return c.length === 2 && c; }, 'two players on B');
+  cards[profs().list.findIndex(function (p) { return p.id === idA; })].click();
+  var mute = await until(function () { return profs().cur === idA && q('.top .chips:last-child .icon:last-child'); }, 'home as A1 on B');
+  var coins0 = st(idA).coins; mute.click(); // sound off: a setting of device B, it must not travel to device A
+  (await until(function () { return q('.btn.b3.wig'); }, 'daily gift')).click(); // the daily gift: progress that must travel
+  var chest = await until(function () { return q('button.gift') || q('.chestb,.egg,.gbox'); }, 'gift screen'); chest.click(); chest.dispatchEvent(new Event('click'));
+  await until(function () { return st(idA).coins > coins0; }, 'the gift was opened');
+  var coins1 = st(idA).coins;
+  await syncT(); // (the page would push by itself 4 seconds after the last change)
+  var B = snap();
 
-    // A save that lands while a sync is still fetching must not let this device push its older progress over the cloud.
-    // "Another device" is played by writing newer progress of A1 straight into the test family's own document.
-    var FURL = 'https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/families/' + uid + '?key=' + KEY;
-    function cloudDoc() { return fetch(FURL, { headers: { Authorization: 'Bearer ' + acct().it } }).then(function (r) { return r.json(); }).then(function (d) { return d.fields; }); }
-    await wait(2500); // the sync of the page load is over
-    var newer = JSON.parse((await cloudDoc())['s3_' + idA].stringValue), tNew = Date.now(), body = { fields: {} };
-    newer.coins += 777; body.fields['s3_' + idA] = { stringValue: JSON.stringify(newer) }; body.fields['t3_' + idA] = { stringValue: String(tNew) };
-    var put = await fetch(FURL + '&updateMask.fieldPaths=s3_' + idA + '&updateMask.fieldPaths=t3_' + idA, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + acct().it }, body: JSON.stringify(body) });
-    check(put.ok && sync().t[idA] < tNew, 'the cloud now holds newer progress than device A');
-    var W = f.contentWindow, realFetch = W.fetch, held = false, letGo, gate = new Promise(function (r) { letGo = r; });
-    W.fetch = function (u, o) { // the next read of the cloud waits until the test lets it go
-      if (!held && /firestore/.test(String(u)) && !(o && o.method)) { held = true; return gate.then(function () { return realFetch.call(W, u, o); }); }
-      return realFetch.call(W, u, o);
-    };
-    doc().dispatchEvent(new Event('visibilitychange')); // back to the tab: a sync starts
-    await until(function () { return held; }, 'the sync is fetching');
-    (await until(function () { return q('.nextb'); }, 'the big button of the home screen')).click(); // one tap: an exercise opens and the state is saved
-    await until(function () { return W.__tv.round && sync().t[idA] > tNew; }, 'a save landed during the fetch');
-    check(st(idA).coins !== newer.coins, 'the save of device A landed while the cloud was being fetched');
-    letGo();
-    await until(function () { return st(idA).coins === newer.coins; }, 'A took the newer progress although it saved during the fetch');
-    check(true, 'a save during the fetch does not beat the newer progress of the cloud');
-    await wait(6500); // the push that the save asked for has run by now
-    check(JSON.parse((await cloudDoc())['s3_' + idA].stringValue).coins === newer.coins && st(idA).coins === newer.coins, 'and the cloud was not overwritten by the older device');
-    await open();
-    await until(function () { return q('.chip.who'); }, 'home A again');
-    check(st(idA).coins === newer.coins, 'the newer progress is still there after a reload');
+  await device(A); // back on device A
+  await openS();
+  await until(function () { return profs().list.length === 2 && st(idA).coins === coins1; }, 'A received the change and the second player');
+  check(JSON.parse(localStorage.getItem('trollVillage.snd') || '{}').mute !== true, 'sound off on device B did not switch the sound off on device A');
+  check(true, 'device A got the progress made on device B, and the player added there');
+  var idB = profs().list.filter(function (p) { return p.id !== idA; })[0].id;
 
-    q('.chip.who') && q('.chip.who').click(); // boy or girl on the card of A1, then delete B1 on device A
-    var sexBtn = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pcard')[profs().list.findIndex(function (p) { return p.id === idA; })].querySelector('.psex'); }, 'who A (boy or girl button)');
-    function sexA() { return profs().list.filter(function (p) { return p.id === idA; })[0].sex; }
-    var sex0 = sexA(), sex1 = sex0 === 'f' ? 'm' : 'f', tA = sync().t[idA];
-    sexBtn.click();
-    await wait(4000); // the sync that the tap started is over
-    check(sexA() === sex1, 'boy or girl changed on the card is not undone by the sync');
-    check(JSON.parse((await cloudDoc()).list.stringValue).filter(function (p) { return p.id === idA; })[0].sex === sex1, 'and it reached the cloud');
-    check(sync().t[idA] === tA && JSON.parse((await cloudDoc())['s3_' + idA].stringValue).coins === newer.coins, 'the progress and its time did not change with it');
-    var del = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pdel')[profs().list.findIndex(function (p) { return p.id === idB; })]; }, 'who A');
-    del.click(); (await until(function () { return q('.sure .btn.b2'); }, 'confirm')).click();
-    await wait(3000);
-    restore(B);
-    await open();
-    await until(function () { return profs().list.length === 1 && profs().list[0].id === idA; }, 'B dropped the deleted player');
-    check(true, 'a player deleted on one device disappears on the other');
-    check(profs().list[0].sex === sex1, 'device B got the boy or girl change made on device A');
-    // removal from this device only is a different thing: the player stays in the cloud and on the other device
-    var chipB = await until(function () { return q('.chip.who') || q('.pdel'); }, 'B is in the game');
-    if (!q('.pdel')) chipB.click();
-    (await until(function () { return q('.pdel'); }, 'who B')).click();
-    (await until(function () { return q('.sure .onlyhere'); }, 'two ways to delete')).click();
-    await until(function () { return profs().list.length === 0; }, 'removed from device B');
-    check((sync().hide || []).indexOf(idA) >= 0 && (sync().gone || []).indexOf(idA) < 0, 'device B only hides the player, it is not marked as deleted');
-    await open(); await wait(4000);
-    check(profs().list.length === 0, 'the player does not come back to device B with the next sync');
-    restore(A); await open(); await wait(4000);
-    check(profs().list.some(function (p) { return p.id === idA; }) && !!st(idA), 'the player is still on device A, with the progress');
-    // signing out keeps the players on the device and stops the sync
-    restore(A); await open();
-    var chipA = await until(function () { return q('.chip.who') || q('.cloudb'); }, 'A again');
-    if (!q('.cloudb')) chipA.click();
-    (await until(function () { return q('.cloudb'); }, 'account button A')).click();
-    (await until(function () { return q('.signout'); }, 'signed-in screen')).click();
-    await until(function () { return q('.amail'); }, 'signed out');
-    check(!acct() && !sync().code && profs().list.length >= 1, 'signed out: the players stay on the device');
-    document.title = 'SYNC OK ' + code;
-    restore(A); // the test account is deleted again
-    try { var tk = await (await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: mail, password: pw, returnSecureToken: true }) })).json();
-      await fetch('https://identitytoolkit.googleapis.com/v1/accounts:delete?key=' + KEY, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: tk.idToken }) }); } catch (e) {}
-  } catch (e) { say(String(e)); document.title = 'SYNC FAIL ' + e.message; }
-  restore(keep);
+  // ---- what the server answers to a write whose guard no longer holds (asked once, directly, on the test document) ----
+  var raw0 = await cloudRaw();
+  check((await cloudPatch({ probe: '1' })).ok, 'the document changed (a probe field)');
+  var stale = await cloudPatch({}, ['probe'], '&currentDocument.updateTime=' + encodeURIComponent(raw0.updateTime)), staleJ = await stale.json();
+  var PRE = stale.status;
+  check([400, 409, 412].indexOf(PRE) >= 0 && 'probe' in (await cloudDoc()), 'a write guarded by an old updateTime is refused and writes nothing: HTTP ' + PRE + ' ' + (staleJ.error && staleJ.error.status));
+  var exists = await cloudPatch({}, ['probe'], '&currentDocument.exists=false');
+  check([400, 409, 412].indexOf(exists.status) >= 0, 'a write guarded by "does not exist yet" is refused on an existing document: HTTP ' + exists.status + ' ' + ((await exists.json()).error || {}).status);
+  check((await cloudPatch({}, ['probe'])).ok && !('probe' in (await cloudDoc())), 'the probe field is gone again');
+
+  // ---- 1. a stale device cannot push over a higher number, although it saved later by the clock ----
+  c = await cloudDoc();
+  var N = r3(c, idA).n, newer = JSON.parse(c['s3_' + idA]), tNew = Date.now();
+  check(rev(idA) === N, 'device A holds the number of the cloud copy (' + N + ')');
+  newer.coins += 777;
+  var f1 = {}; f1['s3_' + idA] = JSON.stringify(newer); f1['t3_' + idA] = tNew; f1['r3_' + idA] = (N + 5) + ':' + tNew;
+  check((await cloudPatch(f1)).ok, 'another device wrote number ' + (N + 5));
+  var gate = net.holdGet = defer(); i0 = net.log.length;
+  vis();
+  await until(function () { return net.log.slice(i0).some(function (e) { return e.held; }); }, 'the sync is fetching');
+  await save1(idA);
+  check(rev(idA) === N + 1 && st(idA).coins !== newer.coins && sync().t[idA] > tNew && sync().d[idA] === 1, 'a save of device A landed while the cloud was being fetched: number ' + (N + 1) + ', with a later time than the cloud copy');
+  gate.go();
+  await idle(i0);
+  check(st(idA).coins === newer.coins && rev(idA) === N + 5 && !sync().d[idA], 'stale push blocked: device A took the copy with the higher number (' + (N + 5) + ') and lost its own save');
+  await syncT();
+  c = await cloudDoc();
+  check(c['r3_' + idA] === (N + 5) + ':' + tNew && c['s3_' + idA] === f1['s3_' + idA] && !patches(i0).some(function (e) { return e.url.indexOf('s3_' + idA) >= 0; }), 'and the cloud copy was not written by the stale device');
+
+  // ---- 2. a wrong clock decides nothing ----
+  await openS();
+  check(st(idA).coins === newer.coins, 'the newer progress is still there after a reload');
+  var s2 = JSON.parse(c['s3_' + idA]); s2.coins += 11;
+  var f2 = {}; f2['s3_' + idA] = JSON.stringify(s2); f2['t3_' + idA] = 1; f2['r3_' + idA] = (N + 15) + ':1';
+  check((await cloudPatch(f2)).ok, 'another device with a clock in the year 1970 wrote number ' + (N + 15));
+  await syncT();
+  check(st(idA).coins === s2.coins && rev(idA) === N + 15, 'wrong clock ignored: the higher number is pulled although its time is 56 years old');
+  var far = Date.now() + 365 * 864e5, s2b = JSON.parse(f2['s3_' + idA]); s2b.coins += 5;
+  var f2b = {}; f2b['s3_' + idA] = JSON.stringify(s2b); f2b['t3_' + idA] = far; f2b['r3_' + idA] = '2:' + far;
+  check((await cloudPatch(f2b)).ok, 'a copy with a low number (2) and a clock one year ahead was written');
+  await syncT();
+  c = await cloudDoc();
+  check(st(idA).coins === s2.coins && JSON.parse(c['s3_' + idA]).coins === s2.coins && r3(c, idA).n === N + 15 && numbered(c, idA) && +c['t3_' + idA] > far, 'wrong clock ignored: the lower number is not pulled, the device (number ' + (N + 15) + ') wrote its copy back, with a time after the one it replaced');
+
+  // ---- 3. two devices play without a network from the same base: the higher number wins, the other play is lost ----
+  A = snap();
+  await device(B); await openS();
+  var base = rev(idA);
+  check(base === N + 15 && st(idA).coins === s2.coins, 'device B is on the same base as device A (number ' + base + ')');
+  await close(); net.offline = true;
+  tweak(idA, 5); await open(); var nB = await save1(idA), coinsB = st(idA).coins; B = snap();
+  await device(A);
+  tweak(idA, 30); var nA = 0;
+  for (var k = 0; k < 3; k++) { await open(); nA = await save1(idA); }
+  var coinsA = st(idA).coins; A = snap();
+  check(nB > base && nA > nB && coinsA !== coinsB, 'without a network device B saved ' + (nB - base) + ' time(s) (number ' + nB + '), device A ' + (nA - base) + ' times (number ' + nA + ')');
+  net.offline = false;
+  await device(B); await openS(); c = await cloudDoc();
+  check(r3(c, idA).n === nB && JSON.parse(c['s3_' + idA]).coins === coinsB, 'device B came back first and its play reached the cloud');
+  B = snap();
+  await device(A); await openS(); c = await cloudDoc();
+  check(r3(c, idA).n === nA && numbered(c, idA) && JSON.parse(c['s3_' + idA]).coins === coinsA && st(idA).coins === coinsA, 'device A, with the higher number, overwrote it');
+  A = snap();
+  await device(B); await openS();
+  check(st(idA).coins === coinsA && rev(idA) === nA, 'concurrent offline play: the higher number wins on both devices; LOST: the play of device B since the base (its ' + (nB - base) + ' save(s), 5 coins). Nothing is merged');
+  B = snap();
+
+  // ---- 4. the first sync after the update: a document with times only, a device without numbers ----
+  await device(A);
+  check((await cloudPatch({}, ['r3_' + idA, 'r3_' + idB])).ok, 'the numbers were removed from the document (as before the update)');
+  var c4 = await cloudDoc(), sy = sync(), loc4 = st(idA);
+  check(!('r3_' + idA in c4) && !('r3_' + idB in c4), 'the document has only states and times');
+  localStorage.removeItem('trollVillage.rev'); delete sy.b; delete sy.d; localStorage.setItem('trollVillage.sync', JSON.stringify(sy));
+  delete B['trollVillage.rev']; var syB = JSON.parse(B['trollVillage.sync']); delete syB.b; delete syB.d; B['trollVillage.sync'] = JSON.stringify(syB); // device B is from before the update too: a device that kept a higher number than a document that lost its numbers would write over it
+  i0 = net.log.length;
+  await openS();
+  c = await cloudDoc();
+  var seed = 1 + loc4.xp + loc4.rounds;
+  check(patches(i0).length === 0 && c['s3_' + idA] === c4['s3_' + idA] && c['t3_' + idA] === c4['t3_' + idA] && c['s3_' + idB] === c4['s3_' + idB] && !('r3_' + idA in c), 'migration: the first sync wrote nothing to the cloud');
+  check(st(idA).coins === loc4.coins && st(idA).xp === loc4.xp && st(idA).rounds === loc4.rounds && st(idA).owned.join() === loc4.owned.join() && JSON.stringify(st(idB)) === c4['s3_' + idB], 'migration: no progress changed on the device');
+  check(rev(idA) === seed && sync().b[idA] === '|' + c['t3_' + idA], 'migration: the number was seeded from the progress (1 + ' + loc4.xp + ' points + ' + loc4.rounds + ' rounds = ' + seed + ') and the copy of the cloud is remembered');
+  var n4 = await save1(idA); await syncT(); c = await cloudDoc();
+  check(n4 === seed + 1 && numbered(c, idA) && r3(c, idA).n === n4, 'migration: the next save wrote a valid number (' + c['r3_' + idA] + ')');
+
+  // ---- 5. a write of an older cached page (state and time, no number) is noticed ----
+  var s5 = JSON.parse(c['s3_' + idA]), t5 = +c['t3_' + idA] + 1000, oldR3 = c['r3_' + idA]; s5.coins += 777;
+  var f5 = {}; f5['s3_' + idA] = JSON.stringify(s5); f5['t3_' + idA] = t5;
+  check((await cloudPatch(f5)).ok && (await cloudDoc())['r3_' + idA] === oldR3, 'an older page wrote the state and a newer time, and left the number behind');
+  await syncT();
+  check(st(idA).coins === s5.coins && rev(idA) === n4 + 1 && sync().b[idA] === oldR3 + '|' + t5, 'old-page write detected: the device pulled it and counts it as number ' + (n4 + 1));
+  await openS(); var n5 = await save1(idA); await syncT(); c = await cloudDoc();
+  check(n5 === n4 + 2 && numbered(c, idA) && r3(c, idA).n === n5 && JSON.parse(c['s3_' + idA]).coins === s5.coins, 'and the next push writes a number that belongs to its time again (' + c['r3_' + idA] + ')');
+
+  // ---- 6. a device whose storage was cleared pulls, and writes nothing ----
+  await close(); A = snap(); // the page of device A is closed first: an exercise that is open may still save and push
+  var before6 = await cloudRaw(), again6; // a page that closes pushes what it has not sent yet (keepalive): wait until the document rests
+  for (var w = 0; w < 6; w++) { await wait(1500); again6 = await cloudRaw(); if (again6.updateTime === before6.updateTime) break; before6 = again6; }
+  restore({}); i0 = net.log.length;
+  await open();
+  await form(mail, pw, '.signin');
+  await until(function () { return profs().list.length === 2 && sync().code === 'acct'; }, 'signed in on the cleared device');
+  await idle(i0);
+  var after6 = await cloudRaw();
+  check(localStorage.getItem('trollVillage.r.' + idA) === before6.fields['s3_' + idA].stringValue && localStorage.getItem('trollVillage.r.' + idB) === before6.fields['s3_' + idB].stringValue, 'storage cleared: the players and their progress came back from the cloud');
+  check(rev(idA) === n5, 'storage cleared: the device holds the number of the cloud copy (' + rev(idA) + ', expected ' + n5 + ')');
+  check(patches(i0).length === 0, 'storage cleared: nothing was pushed (' + patches(i0).map(function (e) { return e.url.replace(/^[^&]*/, ''); }).join(' ') + ')');
+  var diff6 = Object.keys(after6.fields).concat(Object.keys(before6.fields)).filter(function (k) { return JSON.stringify(after6.fields[k]) !== JSON.stringify(before6.fields[k]); }); // (the order of the fields in the answer is not fixed)
+  check(after6.updateTime === before6.updateTime && !diff6.length && Object.keys(after6.fields).length === Object.keys(before6.fields).length, 'storage cleared: the cloud copy is byte-identical before and after (changed: ' + diff6.join(' ') + '; ' + before6.updateTime + ' -> ' + after6.updateTime + ')');
+
+  // ---- 7. somebody else writes between the read and the write of this device ----
+  await device(A); await openS();
+  c = await cloudDoc();
+  var sB = JSON.parse(c['s3_' + idB]), tB = Math.max(Date.now(), +c['t3_' + idB] + 1), nB7 = (r3(c, idB) ? r3(c, idB).n : 1 + sB.xp + sB.rounds) + 1; sB.coins += 333;
+  var f7 = {}; f7['s3_' + idB] = JSON.stringify(sB); f7['t3_' + idB] = tB; f7['r3_' + idB] = nB7 + ':' + tB;
+  var gate7 = net.holdPatch = defer(); i0 = net.log.length;
+  var n7 = await save1(idA); vis();
+  await until(function () { return patches(i0).some(function (e) { return e.held; }); }, 'the write of device A is on its way');
+  check((await cloudPatch(f7)).ok, 'meanwhile another device wrote the other player');
+  gate7.go();
+  await until(function () { return patches(i0).filter(function (e) { return e.done; }).length >= 2; }, 'the write was tried again');
+  await idle(i0);
+  var p7 = patches(i0); c = await cloudDoc();
+  check(p7[0].status === PRE && p7[0].err === (staleJ.error && staleJ.error.status), 'precondition: the first write was refused with HTTP ' + p7[0].status + ' ' + p7[0].err);
+  check(p7.length === 2 && p7[1].status === 200 && r3(c, idA).n === n7 && numbered(c, idA) && !sync().d[idA], 'precondition: device A read again and its second write went through (number ' + n7 + ')');
+  check(c['s3_' + idB] === f7['s3_' + idB] && c['r3_' + idB] === f7['r3_' + idB] && st(idB).coins === sB.coins, 'precondition: nothing of the other write was lost, and device A pulled it');
+
+  // ---- the card of a player, the two kinds of deletion, signing out ----
+  await openS();
+  var coins8 = st(idA).coins;
+  (await until(function () { return q('.chip.who'); }, 'home A again')).click(); // boy or girl on the card of A1, then delete B1 on device A
+  var sexBtn = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pcard')[profs().list.findIndex(function (p) { return p.id === idA; })].querySelector('.psex'); }, 'who A (boy or girl button)');
+  function cardA(list) { return list.filter(function (p) { return p.id === idA; })[0]; }
+  var sex0 = cardA(profs().list).sex, sex1 = sex0 === 'f' ? 'm' : 'f', tA = sync().t[idA], nA8 = rev(idA);
+  await wait(1500); i0 = net.log.length; // the sync of the who screen is over: the button must still work after it
+  sexBtn.click();
+  await idle(i0);
+  check(cardA(profs().list).sex === sex1 && cardA(profs().list).mn === 1, 'boy or girl changed on the card is not undone by the sync, the card got its own number');
+  c = await cloudDoc();
+  check(cardA(JSON.parse(c.list)).sex === sex1 && cardA(JSON.parse(c.list)).mn === 1, 'and it reached the cloud');
+  check(sync().t[idA] === tA && rev(idA) === nA8 && r3(c, idA).n === nA8 && JSON.parse(c['s3_' + idA]).coins === coins8, 'the progress, its time and its number did not change with it');
+  var del = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pdel')[profs().list.findIndex(function (p) { return p.id === idB; })]; }, 'who A');
+  i0 = net.log.length;
+  del.click(); (await until(function () { return q('.sure .btn.b2'); }, 'confirm')).click();
+  await idle(i0);
+  c = await cloudDoc();
+  check(JSON.parse(c.gone).indexOf(idB) >= 0 && !('s3_' + idB in c) && !('t3_' + idB in c) && !('r3_' + idB in c) && !rev(idB), 'deleted from everywhere: the player is marked as deleted and its fields left the document');
+  A = snap();
+  await device(B); tweak(idB, 1); var sb = sync(); sb.d = sb.d || {}; sb.d[idB] = 1; localStorage.setItem('trollVillage.sync', JSON.stringify(sb)); // device B even has an unsent change of that player
+  await openS();
+  await until(function () { return profs().list.length === 1 && profs().list[0].id === idA; }, 'B dropped the deleted player');
+  c = await cloudDoc();
+  check(!localStorage.getItem('trollVillage.r.' + idB) && !('s3_' + idB in c), 'a player deleted on one device disappears on the other, even with an unsent change there, and is not written back');
+  check(profs().list[0].sex === sex1, 'device B got the boy or girl change made on device A');
+  // removal from this device only is a different thing: the player stays in the cloud and on the other device
+  var chipB = await until(function () { return q('.chip.who') || q('.pdel'); }, 'B is in the game');
+  if (!q('.pdel')) chipB.click();
+  (await until(function () { return q('.pdel'); }, 'who B')).click();
+  (await until(function () { return q('.sure .onlyhere'); }, 'two ways to delete')).click();
+  await until(function () { return profs().list.length === 0; }, 'removed from device B');
+  check((sync().hide || []).indexOf(idA) >= 0 && (sync().gone || []).indexOf(idA) < 0, 'device B only hides the player, it is not marked as deleted');
+  await openS();
+  check(profs().list.length === 0 && !localStorage.getItem('trollVillage.r.' + idA), 'the player does not come back to device B with the next sync');
+  await device(A); await openS();
+  c = await cloudDoc();
+  check(profs().list.some(function (p) { return p.id === idA; }) && st(idA).coins === coins8 && JSON.parse(c['s3_' + idA]).coins === coins8, 'the player is still on device A and in the cloud, with the progress');
+  // signing out keeps the players on the device and stops the sync
+  var chipA = await until(function () { return q('.chip.who') || q('.cloudb'); }, 'A again');
+  if (!q('.cloudb')) chipA.click();
+  (await until(function () { return q('.cloudb'); }, 'account button A')).click();
+  (await until(function () { return q('.signout'); }, 'signed-in screen')).click();
+  await until(function () { return q('.amail'); }, 'signed out');
+  check(!acct() && !sync().code && profs().list.length >= 1 && rev(idA) === nA8, 'signed out: the players stay on the device, with their numbers');
+}
+(async function () {
+  var keep = snap(), title; // the developer's own players on localhost are put back at the end
+  try {
+    await Promise.race([run(), new Promise(function (ok, no) { setTimeout(function () { no(new Error('timeout: the whole test took too long')); }, LIMIT); })]);
+    title = 'SYNC OK';
+  } catch (e) { say(String(e)); title = 'SYNC FAIL ' + e.message; }
+  finally {
+    // Always: the game page is closed, the test document is emptied, the test account is deleted, the storage is put back.
+    dead = true; f.onload = null; f.src = 'about:blank';
+    try {
+      var tk = await (await post(IDT + 'signInWithPassword?key=' + KEY, { email: mail, password: pw, returnSecureToken: true })).json();
+      if (tk.idToken) {
+        uid = tk.localId; tok = tk.idToken;
+        try { var keys = Object.keys(await cloudDoc()); if (keys.length) await cloudPatch({}, keys); } catch (e) {} // the rules allow no delete of the document itself: it stays, empty
+        var gone = await post(IDT + 'delete?key=' + KEY, { idToken: tk.idToken });
+        say((gone.ok ? 'ok' : 'NOT DONE') + ' the test account was deleted (http ' + gone.status + ')');
+        if (!gone.ok && title === 'SYNC OK') title = 'SYNC FAIL the test account was not deleted';
+      } else say('no test account to delete (' + ((tk.error && tk.error.message) || '?') + ')');
+    } catch (e) { say('cleanup: ' + e); if (title === 'SYNC OK') title = 'SYNC FAIL cleanup ' + e.message; }
+    restore(keep);
+  }
+  say('took ' + Math.round((Date.now() - T0) / 1000) + ' s');
+  document.title = title;
   fetch('/__report', { method: 'POST', body: document.title + String.fromCharCode(10) + log.textContent }).catch(function () {}); // for node tests/run-page.js
 })();
 </script>
