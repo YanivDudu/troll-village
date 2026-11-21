@@ -1275,6 +1275,79 @@ body.toy .rp.win .pl{background:#ffb300}
 /* a landscape phone with the race track or the invitation bar: the map of a topic with nine houses has no room for labels of 14 px */
 @media (max-height:420px){body.toy.racing .screen>.tmap .mlab,body.toy.invited .screen>.tmap .mlab{font-size:clamp(12px,calc(12.5px*var(--s)),20px)}}
 /* RESKIN-2B-END */
+/* RESKIN-2A-BEGIN ===== the toy island, part 2a: the screens where the child plays and practises (the exercise, the explanation window)
+   and the base components (buttons, round icon buttons, chips, the overlay card). Colours, shadows and the calm ground only: no size changes.
+   The base components are written with :where(body.toy), so they weigh no more than the rules they replace and any screen's own rule still wins. */
+/* ---- base components, once ---- */
+:where(body.toy) .chip{box-shadow:0 4px 0 var(--te2)}
+:where(body.toy) .icon{background:#fff;box-shadow:0 4px 0 var(--te2)}
+:where(body.toy) .btn{background:var(--tmain);box-shadow:0 7px 0 var(--tmaine),0 12px 18px rgba(0,0,0,.22);text-shadow:0 2px 0 rgba(0,0,0,.18)}
+:where(body.toy) .btn.b2{background:#fff;color:var(--ti);text-shadow:none;box-shadow:inset 0 0 0 2px var(--te),0 6px 0 var(--te2),0 10px 14px rgba(0,0,0,.16)}
+:where(body.toy) .btn.b3{background:linear-gradient(#ffd23f,#ffb300);color:var(--ti);text-shadow:none;box-shadow:0 7px 0 #c98600,0 12px 18px rgba(0,0,0,.2)}
+:where(body.toy) .btn.check{background:linear-gradient(#1c8440,#1b8038);box-shadow:0 7px 0 var(--tnexte),0 12px 18px rgba(0,0,0,.2)}
+:where(body.toy) .bubble{border-radius:24px;box-shadow:0 6px 0 var(--tsh)}
+:where(body.toy) .banner{box-shadow:0 4px 0 var(--te)}
+:where(body.toy) .note{background:#fff}
+:where(body.toy) .h2,:where(body.toy) .title{color:var(--ti);-webkit-text-stroke:0;text-shadow:none;background:#fff;border-radius:999px;padding:0 .45em;box-shadow:0 4px 0 var(--te)}
+:where(body.toy) .step{background:#ece6fa;color:var(--ti)}
+:where(body.toy) .ovl .card{box-shadow:0 6px 0 var(--te),0 20px 44px rgba(0,0,0,.32)}
+:where(body.toy) .ohead b,:where(body.toy) .stepno{color:var(--ti)}
+:where(body.toy) .oq{background:#f3eefb}
+body.toy .ohead .icon,body.toy .orow .icon{background:#fff;box-shadow:inset 0 0 0 2px var(--te),0 3px 0 var(--te2)}
+body.toy .stepbox .pips i{border-color:var(--te2);background:#fff}
+body.toy .stepbox .pips i.on{background:var(--tpipon);border-color:#c98600}
+body.toy .say,body.toy .hint .cap{background:var(--tc);color:var(--ti)}
+body.toy .hint{background:#fff;box-shadow:0 6px 0 var(--tsh)}
+/* ---- the calm ground of the exercise: sun and one cloud only on a wide screen, under the top bar and away from the card; stars stand still;
+   scenery only in the bottom corners, on the strip of grass (2 pieces on a tall phone, 4 on a wide screen, none on a short one) ---- */
+body.toy[data-k="calm"]:has(.answers) .tsun,body.toy[data-k="calm"]:has(.answers) .tcloud{display:none}
+body.toy[data-k="calm"]:has(.answers) #bg .nsky i{animation:none}
+body.toy .tdeco{display:none;position:absolute;bottom:2vh;height:9vh;width:auto;background:var(--gsh);filter:var(--osh)}
+body.toy .tdeco.d0{left:3%}body.toy .tdeco.d1{right:3%}
+body.toy .tdeco.d2{left:14%;height:4.5vh;bottom:1.5vh}body.toy .tdeco.d3{right:14%;height:4vh;bottom:1.5vh}
+body.toy.night .tdeco{filter:brightness(.72) saturate(.85)}
+@media (min-height:700px){body.toy[data-k="calm"]:has(.answers) .tdeco.d0,body.toy[data-k="calm"]:has(.answers) .tdeco.d1{display:block}}
+@media (min-width:1000px) and (min-height:521px){body.toy[data-k="calm"]:has(.answers) .tdeco{display:block;height:11vh;bottom:3vh}body.toy[data-k="calm"]:has(.answers) .tdeco.d2{height:5vh;bottom:2vh}body.toy[data-k="calm"]:has(.answers) .tdeco.d3{height:4.5vh;bottom:2vh}}
+@media (min-width:1200px) and (min-height:521px){body.toy[data-k="calm"]:has(.answers) .tsun{display:block;left:2.5%;top:16%}body.toy[data-k="calm"]:has(.answers) .tcloud:not(.c2){display:block;left:87%;top:17%}}
+/* ---- the exercise: stepping stones, chips, the card, the answers ---- */
+body.toy .node,body.toy .node.done{background:#fff;color:var(--ti);box-shadow:0 3px 0 var(--te2)}
+body.toy .node.cur{background:var(--tgold);color:var(--ti);box-shadow:0 0 0 4px #fff,0 4px 0 4px var(--te2)}
+body.toy .helpb{background:var(--tc);color:var(--ti);box-shadow:0 4px 0 var(--te2)}
+body.toy .helpb.glow{background:var(--tgold)}
+body.toy .qcard{border-radius:30px;box-shadow:0 8px 0 var(--tsh);color:var(--ti)}
+body.toy .screen.packq .qcard{border-radius:22px}
+body.toy .qcard .box{border-color:#d6266f;color:#d6266f}
+body.toy .vq .vans{color:#d6266f}
+body.toy .qhint,body.toy .bname{color:#6337cf}
+body.toy .qpre{color:#1b8038}
+body.toy .qsay{background:#fff;box-shadow:inset 0 0 0 3px var(--te),0 5px 0 var(--te2)}
+body.toy .ans{text-shadow:0 2px 0 rgba(0,0,0,.2)}
+body.toy .ans.c0{background:#d6266f;box-shadow:inset 0 3px 0 rgba(255,255,255,.22),0 8px 0 #8f1148}
+body.toy .ans.c1{background:#1976c8;box-shadow:inset 0 3px 0 rgba(255,255,255,.22),0 8px 0 #0f4f8f}
+body.toy .ans.c2{background:#b25e00;box-shadow:inset 0 3px 0 rgba(255,255,255,.22),0 8px 0 #7a3f00}
+body.toy .ans.c3{background:#7a4ae0;box-shadow:inset 0 3px 0 rgba(255,255,255,.22),0 8px 0 #4f2ba6}
+body.toy .ans.right{background:#1b8038;box-shadow:inset 0 3px 0 rgba(255,255,255,.22),0 8px 0 #125a27}
+body.toy .ans.pic{background:#fff;color:var(--ti);text-shadow:none}
+body.toy .ans.pic.c0{box-shadow:inset 0 0 0 5px #d6266f,0 8px 0 #8f1148}body.toy .ans.pic.c1{box-shadow:inset 0 0 0 5px #1976c8,0 8px 0 #0f4f8f}
+body.toy .ans.pic.c2{box-shadow:inset 0 0 0 5px #b25e00,0 8px 0 #7a3f00}body.toy .ans.pic.c3{box-shadow:inset 0 0 0 5px #7a4ae0,0 8px 0 #4f2ba6}
+body.toy .ans.pic.right{background:#dff5e4;box-shadow:inset 0 0 0 5px #1b8038,0 8px 0 #125a27}
+body.toy .nline{box-shadow:0 6px 0 var(--tsh)}
+body.toy .tick.start i{background:#7a4ae0;border-color:#4f2ba6}
+body.toy .tick.start span{color:#4f2ba6}
+body.toy .tick span{color:#5d5670}
+body.toy .tick.right i{background:#1f9a46;border-color:#125a27}
+body.toy .bview,body.toy .agrid{background:#fff;box-shadow:0 5px 0 var(--tsh)}
+body.toy .bcol{box-shadow:0 4px 0 var(--te2)}
+body.toy .alab{box-shadow:0 3px 0 var(--te)}
+body.toy .acell.on{background:#1976c8}
+body.toy .pbtn,body.toy .otile{color:var(--ti);box-shadow:0 4px 0 var(--te2)}
+body.toy .pbtn.val{background:#ffe9a8}
+body.toy .pbtn.sel{box-shadow:0 0 0 4px #d6266f}
+body.toy .pbtn.ok{background:#bfecc9;color:var(--ti);opacity:1;box-shadow:inset 0 0 0 3px #1b8038}
+body.toy .ostrip{background:#fff;border-color:var(--te2)}
+body.toy .ostrip.right{border-color:#1b8038;background:#dff5e4}
+body.toy .ostrip .otile{background:#f3eefb;box-shadow:none}
+/* RESKIN-2A-END */
 </style>
 </head>
 <body>
@@ -4317,6 +4390,7 @@ var TrollModels = (function () {
       bg.appendChild(mapImg(hr >= 19 || hr < 6 ? ART.moon : ART.sun, 'tsun'));
       bg.appendChild(mapImg(ART.cloud, 'tcloud')); bg.appendChild(mapImg(ART.cloud, 'tcloud c2'));
       bg.appendChild(h('div', { class: 'isle' }));
+      [2, 3, 4, 5].forEach(function (k, i) { bg.appendChild(mapImg(ART.deco[k][0], 'tdeco d' + i)); }); // reskin 2a: a tree, a palm, a flower and a rock for the bottom corners of the calm ground (CSS decides how many are seen)
     } else {
     bg.appendChild(h('div', { class: 'sun' }));
     for (i = 0; i < 5; i++) bg.appendChild(h('div', { class: 'cloud', style: 'top:' + (6 + i * 9) + '%;opacity:' + (0.55 + (i % 3) * 0.17) + ';animation-duration:' + (46 + i * 13) + 's;animation-delay:-' + (i * 19) + 's' }));
