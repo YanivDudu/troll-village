@@ -68,7 +68,7 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     check(L.priceOf({ items: ['none', 'bow'] }, 'unicorn') === 90 && L.priceOf({ items: L.ITEMS.map(function (it) { return it.id; }) }, 'unicorn') === 90, 'the price of an item does not depend on how many items are owned');
     c = find(x, 'unicorn'); var uni = c.querySelector('.cpr').textContent;
     c = find(x, 'dragon'); before = coins(x);
-    check(/100/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f409') && !!c.querySelector('.cdo img'), 'the card shows the item itself, its price and the icon of what it does');
+    check(/100/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f409') && !!c.querySelector('.cdo svg.ic'), 'the card shows the item itself, its price and the icon of what it does');
     c.click();
     check(hasPic(q(x, '.cprev'), '1f409') && coins(x) === before && c.classList.contains('pick'), 'a tap tries the item on the troll, and nothing is paid yet');
     b = qa(x, '.cbtn'); check(b.length === 1 && /100/.test(b[0].textContent), 'one button: buy, with the price');

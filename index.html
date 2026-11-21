@@ -1575,6 +1575,131 @@ body.toy .qcard{border-radius:var(--r-l);box-shadow:var(--e2);color:var(--ink)}
   body.toy .screen>.path[style*="none"]~.lvrow{min-height:60px;padding-inline-end:54px}
 }
 /* DS-END */
+/* DS-SHOP-BEGIN ===== task "ds-shop": the cart, the daily gift, who plays and a new player, the family account, the parents panel, the ranking, the race
+   (pool, invitation bar, launch, track, results) on the design system. Colours, radii, shadows and icons only: sizes, grids and timing are the old ones.
+   Three colours are added here because the system has no metals: --m-gold, --m-silver, --m-bronze (medals of the ranking, places of the results). */
+body.toy{--m-gold:#e79b00;--m-silver:#717c93;--m-bronze:#b3622d;--here-tint:#fff3c9}
+/* ---- the cart: ONE panel for the troll, the cards stand on the world; "chosen now" is the accent, the one action is the primary button ---- */
+body.toy .cstage{background:var(--surface);border-color:var(--surface);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .cname{background:var(--surface-2);box-shadow:none;border-radius:var(--r-s)}
+body.toy .cart .parr{display:grid;place-items:center;padding:0;background:var(--surface);color:var(--ink);border-color:transparent;box-shadow:var(--e1);transition:transform var(--d-fast) var(--ease)}
+body.toy .cart .parr[disabled]{opacity:1;background:var(--locked-surface);color:var(--locked);box-shadow:none}
+body.toy .cths .cnt{background:var(--surface-2);box-shadow:none;border-radius:var(--r-s)}
+body.toy .cth{background:var(--surface-2);border-radius:var(--r-s)}
+body.toy .cth.on{background:var(--surface);border-color:var(--primary);box-shadow:none}
+body.toy .cacts .btn{background:var(--surface);color:var(--ink);border-color:transparent;border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .cacts .btn.is{background:var(--surface-2);box-shadow:none}
+body.toy .cacts .btn.is .ic-heart{color:var(--heart)}
+body.toy .ctab{background:var(--surface);color:var(--ink);border-color:transparent;border-radius:var(--r-m);box-shadow:var(--e1);transition:transform var(--d-fast) var(--ease)}
+body.toy .ctab.on{background:var(--accent);color:var(--ink);border-color:transparent;box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+.ctab .ti{display:grid;place-items:center;height:clamp(25px,4.1vmin,34px);line-height:1}
+.ctab .ti .ic{width:clamp(22px,3.6vmin,28px);height:clamp(22px,3.6vmin,28px)}
+/* the two colour tabs: a swatch in the colour the troll has now (hair: a tuft, body: round) */
+.tsw{display:block;width:clamp(16px,2.8vmin,22px);height:clamp(16px,2.8vmin,22px);box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(46,35,80,.6)}
+.tsw.sw-body{border-radius:50%;background:var(--swb,#f58ac0)}
+.tsw.sw-hair{border-radius:0 55% 55% 55%;transform:rotate(45deg) translate(1px,1px);background:var(--swh,#ff7a3d)}
+body.toy .citem{background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);transition:transform var(--d-fast) var(--ease)}
+body.toy .citem.worn{background:var(--here-tint);border-color:var(--accent)}
+body.toy .citem.pick{border-color:var(--primary);box-shadow:0 0 0 3px rgba(194,24,91,.22),var(--e1)}
+body.toy .cpic .sw{box-shadow:inset 0 -5px 0 rgba(0,0,0,.15),0 0 0 3px #fff,0 2px 0 3px var(--line)}
+body.toy .cdo{background:var(--surface-2);color:var(--ink-2);box-shadow:none}
+body.toy .cgl{background:var(--accent);color:var(--ink);box-shadow:none}
+.cdo .ic,.cgl .ic{width:64%;height:64%}
+body.toy .cpr.cant{color:var(--locked-ink)}
+body.toy .cpr.own{color:var(--success)}
+body.toy .kmsg,body.toy .cpg{background:rgba(255,255,255,.88);box-shadow:none;border-radius:var(--r-s)}
+body.toy .cbtn{background:var(--primary);color:#fff;border-color:transparent;border-radius:var(--r-m);box-shadow:0 4px 0 var(--primary-edge),0 10px 20px rgba(138,15,64,.28)}
+body.toy .cbtn.koff{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+body.toy .cbtn.kgoal{background:var(--accent);color:var(--ink);box-shadow:0 4px 0 var(--accent-edge),0 10px 20px rgba(46,35,80,.16)}
+/* ---- the daily gift ---- */
+body.toy .gframe{border-radius:var(--r-l);box-shadow:inset 0 4px 0 #fff,inset 0 -4px 0 #fff,var(--e2)}
+body.toy .gitem{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--e1)}
+/* ---- who plays and a new player ---- */
+body.toy .pcard,body.toy .cpanel{background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .pcard .go{color:var(--ink)}
+body.toy .pcard small{opacity:1;color:var(--ink-2)}
+body.toy .pgrade,body.toy .psex{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s);font:inherit;font-weight:var(--w-bold);font-size:13px}
+body.toy .psex{padding:0 10px}
+body.toy .psex.ask{background:var(--accent);font-size:12px;padding:0 6px}
+body.toy .pdel{display:grid;place-items:center;padding:0;background:var(--surface-2);color:var(--ink-2)}
+body.toy .sure{background:var(--surface)}
+body.toy .sure .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp1)}
+body.toy .pnew>b{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp1)}
+body.toy .pname{background:var(--surface);color:var(--ink);border-color:var(--edge);border-radius:var(--r-m)}
+body.toy .pname:focus{outline:none;border-color:var(--ink)}
+body.toy .gask{color:var(--ink-2)}body.toy .gask.need{color:var(--primary)}
+body.toy .gbtn{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s);transition:transform var(--d-fast) var(--ease)}
+body.toy .gbtn.on{background:var(--accent);color:var(--ink);border-color:var(--accent-edge)}
+body.toy .gbtn.wide{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp1);border-radius:var(--r-s)}
+body.toy .sxrow .gbtn{font-size:15px}
+@media (min-height:760px){body.toy .pnew .gbtn{height:44px}body.toy .pnew .gbtn.wide{height:40px}}
+body.toy .cloudb{background:rgba(255,255,255,.88);color:var(--ink);border-radius:var(--r-full);box-shadow:none;min-height:48px;display:inline-flex;align-items:center;gap:var(--sp2);max-width:100%}
+/* ---- the family account ---- */
+body.toy .cpanel{box-shadow:var(--e3)}
+body.toy .gbtnin{background:var(--surface);color:var(--ink);border-color:var(--line);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .cpanel .cor,body.toy .cpanel .ctext{color:var(--ink-2)}
+body.toy .cacct{background:var(--surface-2);border-radius:var(--r-s)}
+body.toy .cmsg,body.toy .clink{color:var(--ink)}
+body.toy .cmsg:not(:empty){background:var(--surface-2);border-radius:var(--r-s);padding:0 var(--sp3)}
+/* ---- the parents panel of a topic ---- */
+body.toy .pcard2 .pctl .step{display:grid;place-items:center;padding:0;background:var(--surface-2);color:var(--ink);box-shadow:var(--e1)}
+body.toy .pcard2 .pctl .step:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+body.toy .pnote{color:var(--ink-2)}
+/* ---- the ranking: medals in the three metals ---- */
+body.toy .brow{background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .brow.me{background:var(--here-tint);box-shadow:inset 0 0 0 3px var(--accent),var(--e1)}
+body.toy .brow small,body.toy .prow small,body.toy .rp small{color:var(--ink-2)}
+.brow .bp{display:grid;place-items:center}
+.brow .bp.m1{color:var(--m-gold,#e79b00)}.brow .bp.m2{color:var(--m-silver,#717c93)}.brow .bp.m3{color:var(--m-bronze,#b3622d)}
+/* ---- the pool of the race ---- */
+body.toy .prow{color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .prow.on{box-shadow:0 0 0 4px var(--primary),var(--e1)}
+body.toy .prow.self{box-shadow:0 0 0 4px var(--accent),var(--e1)}
+body.toy .prow.off{opacity:1;background:var(--locked-surface);color:var(--locked-ink);box-shadow:none}
+body.toy .prow.off svg.troll{opacity:.55}
+.prow .mk{top:-8px;left:-8px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#2e2350;box-shadow:0 2px 0 rgba(46,35,80,.25)}
+.prow .mk .ic{width:16px;height:16px;color:inherit}
+body.toy .prow .mk{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+body.toy .prow.self .mk{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge)}
+body.toy .prow .mk-check{background:var(--success);color:#fff;box-shadow:0 2px 0 var(--success-edge)}
+body.toy .prow .mk-mail{background:var(--primary);color:#fff;box-shadow:0 2px 0 var(--primary-edge)}
+body.toy .prow .mk-close,body.toy .prow .mk-clock{background:var(--surface);color:var(--locked-ink)}
+body.toy .pgo{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2)}
+body.toy .pgo[disabled]{filter:none;opacity:1}
+/* ---- the invitation bar ---- */
+body.toy #invite{background:var(--surface);color:var(--ink);box-shadow:0 -2px 0 var(--edge),0 -8px 20px rgba(46,35,80,.16)}
+body.toy #invite .it{display:inline-flex;align-items:center;gap:var(--sp1)}
+body.toy #invite .it .ic{width:1.15em;height:1.15em;flex:0 0 auto}
+body.toy #invite button{border-radius:var(--r-m)}
+body.toy #invite .y{background:var(--success);color:#fff;box-shadow:0 3px 0 var(--success-edge)}
+body.toy #invite .n{background:var(--surface-2);color:var(--ink);box-shadow:0 3px 0 var(--edge)}
+body.toy #invite .bar{background:var(--primary)}
+/* ---- the track: the strip of grass stays (it is the world); the things on it are chips of the system ---- */
+body.toy #track{color:var(--ink)}
+body.toy #track .tx{display:grid;place-items:center;padding:0;background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+body.toy #track .tx .ic,body.toy #track .flag .ic{width:16px;height:16px}
+body.toy #track .flag{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--surface);color:var(--ink)}
+body.toy #track .tclock{background:var(--surface);border-radius:var(--r-s);box-shadow:0 0 0 3px var(--surface);font-variant-numeric:tabular-nums}
+body.toy #track .ask{background:var(--surface);border-radius:var(--r-m)}
+body.toy #track .ask button{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s)}
+body.toy #track .ask .y{background:var(--primary);color:#fff}
+body.toy .run b{background:var(--surface);color:var(--ink)}
+body.toy .run.me b{background:var(--accent)}
+body.toy .run .plus{display:grid;place-items:center;width:18px;height:18px;padding:0;border-radius:50%;background:var(--success);color:#fff}
+body.toy .run .plus .ic{width:12px;height:12px}
+/* ---- the launch and the results: cards on a dimmed screen, the title in white ---- */
+body.toy .rov{background:rgba(46,35,80,.6);color:var(--ink)}
+body.toy #podium .h2{color:#fff;background:none;box-shadow:none;padding:0;text-shadow:0 2px 0 rgba(12,34,96,.6)}
+body.toy .rov .big{color:var(--ink);background:var(--surface);box-shadow:var(--e3)}
+body.toy .rp{border-radius:var(--r-m);box-shadow:var(--e2)}
+body.toy .rp.me{box-shadow:0 0 0 4px var(--accent),var(--e2)}
+.rp .pl{width:32px;height:32px;min-width:0;padding:0;border-radius:50%;font-size:15px;box-shadow:0 0 0 2px #fff}
+.rp .pl .ic{width:18px;height:18px}
+body.toy .rp .pl{background:var(--ink-2);color:#fff}
+body.toy .rp .pl.p1{background:var(--m-gold);color:var(--ink)}body.toy .rp .pl.p2{background:var(--m-silver)}body.toy .rp .pl.p3{background:var(--m-bronze)}
+body.toy #podium .banner{display:inline-flex;align-items:center;gap:var(--sp1)}
+body.toy .rov .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2)}
+/* DS-SHOP-END */
 </style>
 </head>
 <body>
@@ -5571,16 +5696,16 @@ var TrollModels = (function () {
     function draw() { count.textContent = 'בָּתִּים פְּתוּחִים ' + (state.levels[t.id] - sp.lo + 1) + '/' + n; }
     function close() { closeExplain(); if (state.levels[t.id] !== from) region(t.id); }
     function step(sym, d, label) {
-      return h('button', { class: 'step', text: sym, 'aria-label': label, on: { click: function () {
+      return h('button', { class: 'step', 'aria-label': label, on: { click: function () {
         var nl = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] + d));
         if (nl === state.levels[t.id]) return;
         state.levels[t.id] = nl; save(); sfx.tap(); draw();
-      } } });
+      } } }, icon(sym));
     }
     draw();
     ovl = h('div', { class: 'ovl', on: { click: function (e) { if (e.target === ovl) close(); } } }, h('div', { class: 'card pcard2' },
-      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: 'לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } })),
-      h('div', { class: 'pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('−', -1, 'לִסְגֹּר בַּיִת')),
+      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: 'לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } }, icon('close'))),
+      h('div', { class: 'pctl' }, step('plus', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('minus', -1, 'לִסְגֹּר בַּיִת')),
       h('div', { class: 'pnote', text: 'בַּיִת נִפְתָּח מֵעַצְמוֹ אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו. כָּאן אֶפְשָׁר לִפְתֹּחַ אוֹ לִסְגֹּר בָּתִּים בַּיָּד; הַכּוֹכָבִים נִשְׁמָרִים.' })));
     document.body.appendChild(ovl);
   }
@@ -5722,11 +5847,11 @@ var TrollModels = (function () {
           stage.innerHTML = '';
           stage.appendChild(h('div', { class: 'reveal gbud' + (it && it.slot === 'move' ? ' mv-' + item : ''), html: A.trollSVG(s, { mood: 'cheer' }) }));
           // the item itself, large, with its name and the icon of what it does
-          if (it) { stage.appendChild(h('div', { class: 'gitem reveal' }, h('span', { class: 'cdo', 'aria-hidden': 'true' }, icoImg(doesOf(it)[0])), h('span', { class: 'cpic' }, itemPic(it)), h('span', { class: 'cnm', text: it.name }))); fitPart(stage); }
+          if (it) { stage.appendChild(h('div', { class: 'gitem reveal' }, h('span', { class: 'cdo', 'aria-hidden': 'true' }, icon(doesOf(it)[0], 's')), h('span', { class: 'cpic' }, itemPic(it)), h('span', { class: 'cnm', text: it.name }))); fitPart(stage); }
           var c = center(stage); burst(c[0], c[1], 16); if (it && it.slot === 'party') partyFx(item, c[0], c[1]); else confetti(70); sfx.win();
           msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (it ? ' וְהַפְתָּעָה: ' + it.name + '!' : '!'); restart(msg, 'pop'); bumpStars(el);
           btns.appendChild(btn('יֹפִי!', 'nxt', home));
-          if (it && state.owned.length) btns.appendChild(btn('🛒 לָעֲגָלָה', '', function () { dress(null, tabOf(it), item); }));
+          if (it && state.owned.length) { var cb = btn('', 'b2', function () { dress(null, tabOf(it), item); }); cb.appendChild(icon('cart', 't')); cb.appendChild(document.createTextNode(' לָעֲגָלָה')); btns.appendChild(cb); }
         }, 700);
       });
       el.appendChild(h('div', { class: 'ggrid' }, msg, stage, btns));
@@ -6384,8 +6509,8 @@ var TrollModels = (function () {
         var card = h('div', { class: 'pcard', style: 'animation-delay:' + (i * 0.07) + 's' });
         card.appendChild(h('button', { class: 'go', 'aria-label': 'לְשַׂחֵק בְּתוֹר ' + p.name, on: { click: function () { enter(p.id); } } },
           h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
-          h('small', { text: '⭐ ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים' + (p.loc ? ' · 🏠' : '') })));
-        card.appendChild(h('button', { class: 'psex', text: p.sex === 'm' ? '👦' : p.sex === 'f' ? '👧' : '👧👦', 'aria-label': 'בֵּן אוֹ בַּת: ' + p.name, on: { click: function () {
+          h('small', {}, icon('star', 't'), ' ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים', p.loc ? ' · ' : null, p.loc ? icon('device', 't') : null)));
+        card.appendChild(h('button', { class: 'psex' + (p.sex ? '' : ' ask'), text: p.sex === 'm' ? 'בֵּן' : p.sex === 'f' ? 'בַּת' : 'בַּת / בֵּן', 'aria-label': 'בֵּן אוֹ בַּת: ' + p.name, on: { click: function () {
           sfx.tap(); p.sex = p.sex === 'f' ? 'm' : 'f'; p.mt = Date.now(); p.mn = (p.mn || 0) + 1; saveProfiles(); if (sync.code) syncNow(); who(false);
         } } }));
         card.appendChild(h('button', { class: 'pgrade', text: 'כִּתָּה ' + GRADE_HE[st.grade], 'aria-label': 'הַחְלָפַת כִּתָּה שֶׁל ' + p.name, on: { click: function () {
@@ -6398,7 +6523,7 @@ var TrollModels = (function () {
           }));
           card.appendChild(box);
         } } }));
-        card.appendChild(h('button', { class: 'pdel', text: '🗑', 'aria-label': 'מְחִיקַת ' + p.name, on: { click: function () {
+        card.appendChild(h('button', { class: 'pdel', 'aria-label': 'מְחִיקַת ' + p.name, on: { click: function () {
           if (card.querySelector('.sure')) return;
           sfx.tap();
           // Two very different things. From this device only: the player stays in the cloud (the village code, the ranking) and on
@@ -6412,10 +6537,10 @@ var TrollModels = (function () {
             load(); who(server ? undefined : false);
           }
           card.appendChild(h('div', { class: 'sure sure3' }, h('b', { text: 'לִמְחֹק אֶת ' + p.name + '?' }),
-            h('button', { class: 'btn b3 onlyhere', text: '📱 רַק מֵהַמַּכְשִׁיר הַזֶּה', on: { click: function () { drop(false); } } }),
-            h('button', { class: 'btn b2', text: '☁️ מְחִיקָה מִכָּל מָקוֹם', on: { click: function () { drop(true); } } }),
+            h('button', { class: 'btn b2 onlyhere', on: { click: function () { drop(false); } } }, icon('device', 't'), ' רַק מֵהַמַּכְשִׁיר הַזֶּה'),
+            h('button', { class: 'btn b2', on: { click: function () { drop(true); } } }, icon('cloud', 't'), ' מְחִיקָה מִכָּל מָקוֹם'),
             h('button', { class: 'btn', text: 'לֹא', on: { click: function () { who(); } } })));
-        } } }));
+        } } }, icon('trash', 'm')));
         grid.appendChild(card);
       });
       if (profiles.list.length < 8) {
@@ -6426,13 +6551,13 @@ var TrollModels = (function () {
         function pair(cls, opts, pickV) { // two buttons, one of them chosen
           var row = h('div', { class: 'grow ' + cls });
           opts.forEach(function (o) {
-            var b = h('button', { class: 'gbtn wide' + (o[2] ? ' on' : ''), text: o[1], 'data-v': o[0], on: { click: function () { sfx.tap(); [].forEach.call(row.children, function (x) { x.classList.remove('on'); }); b.classList.add('on'); pickV(o[0]); } } });
+            var b = h('button', { class: 'gbtn wide' + (o[2] ? ' on' : ''), 'data-v': o[0], on: { click: function () { sfx.tap(); [].forEach.call(row.children, function (x) { x.classList.remove('on'); }); b.classList.add('on'); pickV(o[0]); } } }, o[3] ? icon(o[3], 's') : null, o[1]);
             row.appendChild(b);
           });
           return row;
         }
-        var srow = pair('sxrow', [['f', '👧 בַּת'], ['m', '👦 בֵּן']], function (v) { newSex = v; });
-        var vrow = pair('vrow', [['pub', '🌍 גָּלוּי', true], ['loc', '🏠 מְקוֹמִי']], function (v) { newLoc = v === 'loc'; });
+        var srow = pair('sxrow', [['f', 'בַּת'], ['m', 'בֵּן']], function (v) { newSex = v; });
+        var vrow = pair('vrow', [['pub', 'גָּלוּי', true, 'globe'], ['loc', 'מְקוֹמִי', false, 'device']], function (v) { newLoc = v === 'loc'; });
         var add = function () {
           if (!newG) { gmsg.classList.add('need'); restart(grow, 'shake'); sfx.wrong(); return; }
           if (!newSex) { restart(srow, 'shake'); sfx.wrong(); return; }
@@ -6441,10 +6566,10 @@ var TrollModels = (function () {
           enter(profiles.cur); save(); if (sync.code) syncNow();
         };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
-        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', { text: '＋ שַׂחְקָן חָדָשׁ' }), inp, gmsg, grow, srow, vrow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
+        grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', {}, icon('plus', 's'), ' שַׂחְקָן חָדָשׁ'), inp, gmsg, grow, srow, vrow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
       el.appendChild(grid);
-      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', text: auth ? '☁️ מְחֻבָּרִים · ' + auth.email : '☁️ חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר', on: { click: function () { sfx.tap(); cloud(); } } }));
+      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', on: { click: function () { sfx.tap(); cloud(); } } }, icon(auth ? 'cloud-ok' : 'cloud', 't'), auth ? ' מְחֻבָּרִים · ' + auth.email : ' חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר'));
       else el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
     });
     here = 'who';
@@ -6464,7 +6589,7 @@ var TrollModels = (function () {
         p.appendChild(h('div', { class: 'cacct', dir: 'ltr', text: auth.email }));
         p.appendChild(h('div', { class: 'ctext', text: 'נִכְנָסִים עִם אוֹתוֹ מֵיְל וְסִיסְמָה בְּמַכְשִׁיר אַחֵר, וְכָל הַשַּׂחְקָנִים וְהַהִתְקַדְּמוּת מוֹפִיעִים גַּם שָׁם.' }));
         p.appendChild(h('div', { class: 'crow' },
-          btn('🔄 סִנְכְּרוּן', '', function () { say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say('הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); }),
+          h('button', { class: 'btn', on: { click: function () { sfx.tap(); say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say('הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); } } }, icon('sync', 't'), ' סִנְכְּרוּן'),
           btn('יְצִיאָה מֵהַחֶשְׁבּוֹן', 'b2 signout', function () { auth = null; saveAuth(); unlink(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); })));
       } else {
         var mail = h('input', { class: 'pname amail', type: 'email', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
@@ -6522,9 +6647,16 @@ var TrollModels = (function () {
   // tries it at once on the troll and offers ONE button: buy, wear or take off; an item that costs more than the child has can
   // be marked as the one savings goal. Nothing scrolls: the grid holds the cards that fit and two arrows page it, and the
   // trolls are paged the same way. state.fx (optional) holds the equipped move and celebration and the goal.
-  var TABS = [['hair', 'תִּסְרֹקֶת', '✂️'], ['hairColor', 'צֶבַע שֵׂעָר', '🎨'], ['body', 'צֶבַע גּוּף', '🖌️'], ['acc', 'אֲבִיזָרִים', '👑'], ['hat', 'כּוֹבָעִים', '🎩'], ['face', 'מִשְׁקָפַיִם', '🕶️'], ['hand', 'בַּיָּד', '🎈'], ['pet', 'חַיּוֹת מַחְמָד', '🐶'], ['move', 'תְּנוּעוֹת', '💫'], ['party', 'חֲגִיגוֹת', '✨']];
+  // (task "ds-shop") the picture of a tab is an icon of the family (Phosphor Fill, added here); the two colour tabs show a swatch in the colour the troll has now (sw-hair, sw-body: CSS shapes)
+  ICONS.scissors = 'M236.52,187.09l-143-97.87a36,36,0,1,0-14.38,17.27l21.39,21.69L79.15,149.54l0,0a35.91,35.91,0,1,0,14.38,17.27l26.91-18.41L170,198.64a32.26,32.26,0,0,0,22.7,9.37,31.52,31.52,0,0,0,4.11-.27l.28,0,36.27-6.11a8,8,0,0,0,3.19-14.5Zm-162.38-97A20,20,0,1,1,80,76,20,20,0,0,1,74.14,90.13Zm0,104A20,20,0,1,1,80,180,20,20,0,0,1,74.14,194.15Zm61-101.5L169.94,57.4a32.19,32.19,0,0,1,26.84-9.14l.28,0,36,6.07a8.21,8.21,0,0,1,6.09,4.42,8,8,0,0,1-2.67,10.12l-69.93,47.85a4,4,0,0,1-4.51,0l-26.31-18A4,4,0,0,1,135.18,92.65Z';
+  ICONS.hat = 'M216,120a8,8,0,0,0-6.78,3.76A179.9,179.9,0,0,1,195.41,143l-1.63-8.57v0L178.32,53.07a16,16,0,0,0-25.72-9.55l-.13.1L128,64,103.53,43.62l-.13-.1a16,16,0,0,0-25.72,9.53L62.23,134.38v0L60.59,143a179.27,179.27,0,0,1-13.81-19.25A8,8,0,0,0,40,120a40,40,0,0,0,0,80H216a40,40,0,0,0,0-80ZM76.68,144H179.31l2.54,13.35a113.28,113.28,0,0,1-27.35,19C139.1,183.77,128.06,184,128,184c-.33,0-25.49-.4-53.86-26.6Z';
+  ICONS.glasses = 'M200,40a8,8,0,0,0,0,16,16,16,0,0,1,16,16v56H40V72A16,16,0,0,1,56,56a8,8,0,0,0,0-16A32,32,0,0,0,24,72v92a44,44,0,0,0,88,0V144h32v20a44,44,0,0,0,88,0V72A32,32,0,0,0,200,40ZM91.22,179.22a8,8,0,0,1-11.31,0L58.34,157.66a8,8,0,0,1,11.32-11.32l21.56,21.57A8,8,0,0,1,91.22,179.22Zm120,0a8,8,0,0,1-11.31,0l-21.57-21.56a8,8,0,0,1,11.32-11.32l21.56,21.57A8,8,0,0,1,211.22,179.22Z';
+  ICONS.balloon = 'M128,16a88.1,88.1,0,0,0-88,88c0,23.43,9.4,49.42,25.13,69.5,12.08,15.41,26.5,26,41.91,31.09L96.65,228.85A8,8,0,0,0,104,240h48a8,8,0,0,0,7.35-11.15L149,204.59c15.4-5.07,29.83-15.68,41.91-31.09C206.6,153.42,216,127.43,216,104A88.1,88.1,0,0,0,128,16Zm49.32,87.89A8.52,8.52,0,0,1,176,104a8,8,0,0,1-7.88-6.68,41.29,41.29,0,0,0-33.43-33.43,8,8,0,1,1,2.64-15.78,57.5,57.5,0,0,1,46.57,46.57A8,8,0,0,1,177.32,103.89Z';
+  ICONS.move = 'M100,36a28,28,0,1,1,28,28A28,28,0,0,1,100,36ZM227.6,92.57A15.7,15.7,0,0,0,212,80H44a16,16,0,0,0-6.7,30.53l.06,0,53.89,23.73-21.92,83.3a16,16,0,0,0,7.9,20.91A15.83,15.83,0,0,0,84,240a16,16,0,0,0,14.44-9.06L128,180l29.58,51a16,16,0,0,0,29.07-13.35l-21.92-83.3,54-23.76A15.7,15.7,0,0,0,227.6,92.57Z';
+  ICONS.confetti = 'M111.49,52.63a15.8,15.8,0,0,0-26,5.77L33,202.78A15.83,15.83,0,0,0,47.76,224a16,16,0,0,0,5.46-1l144.37-52.5a15.8,15.8,0,0,0,5.78-26ZM65.14,161.13l19.2-52.79,63.32,63.32-52.8,19.2ZM160,72a37.8,37.8,0,0,1,3.84-15.58C169.14,45.83,179.14,40,192,40c6.7,0,11-2.29,13.65-7.21A22,22,0,0,0,208,23.94,8,8,0,0,1,224,24c0,12.86-8.52,32-32,32-6.7,0-11,2.29-13.65,7.21A22,22,0,0,0,176,72.06,8,8,0,0,1,160,72ZM136,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm101.66,82.34a8,8,0,1,1-11.32,11.31l-16-16a8,8,0,0,1,11.32-11.32Zm4.87-42.75-24,8a8,8,0,0,1-5.06-15.18l24-8a8,8,0,0,1,5.06,15.18Z';
+  var TABS = [['hair', 'תִּסְרֹקֶת', 'scissors'], ['hairColor', 'צֶבַע שֵׂעָר', 'sw-hair'], ['body', 'צֶבַע גּוּף', 'sw-body'], ['acc', 'אֲבִיזָרִים', 'crown'], ['hat', 'כּוֹבָעִים', 'hat'], ['face', 'מִשְׁקָפַיִם', 'glasses'], ['hand', 'בַּיָּד', 'balloon'], ['pet', 'חַיּוֹת מַחְמָד', 'paw'], ['move', 'תְּנוּעוֹת', 'move'], ['party', 'חֲגִיגוֹת', 'confetti']];
   // what an item does: the small icon on its card, and the line under the cards when it is tapped
-  var DOES = { look: ['👗', 'לְבוּשׁ לַטְּרוֹל'], pet: ['🐾', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['💫', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['✨', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
+  var DOES = { look: ['dress', 'לְבוּשׁ לַטְּרוֹל'], pet: ['paw', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['move', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['confetti', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
   function doesOf(it) { return DOES[it.slot] || DOES.look; }
   function tabOf(it) { for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === it.slot) return i; return 3; }
   function icoImg(e, cls) { var cp = cpOf(e); if (!cls && TOY && IC_OF[cp]) return icon(IC_OF[cp], 't'); return ICO[cp] ? h('img', { class: cls || 'ico', src: icoSrc(cp), alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
@@ -6567,15 +6699,16 @@ var TrollModels = (function () {
       var prev = h('div', { class: 'cprev' }), nameEl = h('span', { class: 'cname' }), ths = h('div', { class: 'cths' });
       var tabs = h('div', { class: 'ctabs' }), gridw = h('div', { class: 'cgridw' }), grid = h('div', { class: 'cgridc' }), msg = h('div', { class: 'kmsg' }), pgEl = h('span', { class: 'cpg' }), act = h('div', { class: 'cact' });
       gridw.appendChild(grid);
-      function arrow(t, label, fn) { return h('button', { class: 'parr', text: t, 'aria-label': label, on: { click: function () { sfx.tap(); fn(); } } }); }
+      function arrow(t, label, fn) { return h('button', { class: 'parr', 'aria-label': label, on: { click: function () { sfx.tap(); fn(); } } }, icon(t)); }
       function owns(it) { return state.items.indexOf(it.id) >= 0 || (it.slot === 'acc' && base.acc === it.id); }
       function isFx(key) { return key === 'move' || key === 'party'; }
       function wornVal(key) { if (isFx(key)) return L.fxOf(state, key); var v = specOf(id)[key]; return v == null ? '' : v; }
       function cur1() { var s = specOf(id); if (pick && !isFx(pick.key)) { s[pick.key] = pick.val; resolve(s); } return s; }
-      function say(text) { msg.textContent = text || ''; }
+      function say(text, ic) { msg.textContent = ''; if (ic) msg.appendChild(icon(ic, 't')); msg.appendChild(document.createTextNode((ic ? ' ' : '') + (text || ''))); } // ic: an icon before the line
       var prevT = 0;
       function drawPrev(celebrate, move) {
         var s = cur1(); nameEl.textContent = s.name; clearTimeout(prevT);
+        tabs.style.setProperty('--swh', s.hairColor); tabs.style.setProperty('--swb', s.body); // the two colour tabs follow the troll
         prev.className = 'cprev' + (move ? ' mv-' + move : '');
         prev.innerHTML = A.trollSVG(s, { mood: celebrate || move ? 'cheer' : 'happy' });
         if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 12); }
@@ -6613,24 +6746,24 @@ var TrollModels = (function () {
         if (o.lock) { say('צָרִיךְ עוֹד ' + o.lock + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ'); return; }
         if (!it) { say(note || o.name); return; }
         var does = doesOf(it), fxk = isFx(o.key) || o.key === 'pet', cost = L.priceOf(state, it.id), gl = L.goalOf(state);
-        function one(text, cls, fn) { act.appendChild(h('button', { class: 'btn cbtn ' + cls, text: text, on: { click: fn } })); }
+        function one(text, cls, fn, ic, coin) { act.appendChild(h('button', { class: 'btn cbtn ' + cls, on: { click: fn } }, ic ? icon(ic, 't') : null, (ic ? ' ' : '') + text + (coin ? ' ' : ''), coin ? icon('coin', 't') : null)); } // ic: an icon before the words; coin: the coin after the price
         if (owns(it)) {
-          say(note || does[0] + ' ' + does[1]);
+          if (note) say(note); else say(does[1], does[0]);
           if (wornVal(o.key) === o.val) one(fxk ? 'לְבַטֵּל' : 'לְהוֹרִיד', 'koff', function () { sfx.tap(); put(o.key, o.key === 'acc' ? 'none' : ''); pick = null; drawPrev(false); drawGrid(); drawAct(); });
           else one(fxk ? 'לִבְחֹר' : 'לִלְבֹּשׁ', 'kgo', function () { sfx.pop(); put(o.key, o.val); show1(o, true); drawGrid(); drawAct(it.name); drawThumbs(); });
         } else if (cost <= state.coins) {
-          say(note || does[0] + ' ' + does[1]);
-          one('לִקְנוֹת · ' + cost + ' 🪙', 'kgo kbuy', function () {
+          if (note) say(note); else say(does[1], does[0]);
+          one('לִקְנוֹת · ' + cost, 'kgo kbuy', function () {
             var r = L.buy(state, it.id); if (!r.ok) return;
             state = r.state; put(o.key, o.val); sfx.item(); confetti(50); bumpStars(el);
             show1(o, true); drawGrid(); drawAct('קָנִית: ' + it.name + '!'); drawThumbs();
-          });
+          }, '', true);
         } else if (gl && gl.id === it.id) {
-          say('הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' 🪙');
+          say('הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' '); msg.appendChild(icon('coin', 't'));
           one('לְבַטֵּל אֶת הַיַּעַד', 'koff', function () { sfx.tap(); state = L.setGoal(state, ''); save(); drawGrid(); drawAct(); });
         } else {
-          say('חֲסֵרִים עוֹד ' + (cost - state.coins) + ' 🪙');
-          one('🎯 אֲנִי חוֹסֶכֶת לָזֶה', 'kgoal', function () { sfx.pop(); state = L.setGoal(state, it.id); save(); drawGrid(); drawAct(); });
+          say('חֲסֵרִים עוֹד ' + (cost - state.coins) + ' '); msg.appendChild(icon('coin', 't'));
+          one('אֲנִי חוֹסֶכֶת לָזֶה', 'kgoal', function () { sfx.pop(); state = L.setGoal(state, it.id); save(); drawGrid(); drawAct(); }, 'target');
         }
       }
       function markPick() { [].forEach.call(grid.children, function (b) { b.classList.toggle('pick', !!pick && b.getAttribute('data-v') === String(pick.val)); }); }
@@ -6638,13 +6771,13 @@ var TrollModels = (function () {
         var it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, worn = wornVal(o.key) === o.val, gl = L.goalOf(state);
         var b = h('button', { class: 'citem' + (worn ? ' worn' : '') + (same(o) ? ' pick' : '') + (o.name ? '' : ' bare'), 'aria-label': o.name || o.label || '', 'data-v': String(o.val) });
         b.appendChild(h('span', { class: 'cpic' }, o.pic));
-        if (it) b.appendChild(h('span', { class: 'cdo', 'aria-hidden': 'true' }, icoImg(doesOf(it)[0])));
-        if (it && gl && gl.id === it.id) b.appendChild(h('span', { class: 'cgl', 'aria-label': 'הַיַּעַד שֶׁלִּי' }, icoImg('🎯')));
+        if (it) b.appendChild(h('span', { class: 'cdo', 'aria-hidden': 'true' }, icon(doesOf(it)[0], 's')));
+        if (it && gl && gl.id === it.id) b.appendChild(h('span', { class: 'cgl', 'aria-label': 'הַיַּעַד שֶׁלִּי' }, icon('target', 's')));
         if (o.name) b.appendChild(h('span', { class: 'cnm', text: o.name }));
-        if (o.lock) b.appendChild(h('span', { class: 'cpr cant', text: '⭐ ' + o.req }));
-        else if (it && !own) b.appendChild(h('span', { class: 'cpr' + (cost > state.coins ? ' cant' : '') }, h('b', { text: String(cost) }), ' 🪙'));
-        else if (it && it.price) b.appendChild(h('span', { class: 'cpr own', text: '✓ שֶׁלִּי' }));
-        else if (worn) b.appendChild(h('span', { class: 'cpr own', text: '✓' }));
+        if (o.lock) b.appendChild(h('span', { class: 'cpr cant' }, icon('star', 't'), ' ' + o.req));
+        else if (it && !own) b.appendChild(h('span', { class: 'cpr' + (cost > state.coins ? ' cant' : '') }, h('b', { text: String(cost) }), ' ', icon('coin', 't')));
+        else if (it && it.price) b.appendChild(h('span', { class: 'cpr own' }, icon('check', 't'), ' שֶׁלִּי'));
+        else if (worn) b.appendChild(h('span', { class: 'cpr own' }, icon('check', 't')));
         b.addEventListener('click', function () {
           if (!it && !o.lock) { // a colour, a hairstyle, "without": free, so it is simply put on
             sfx.pop(); put(o.key, o.val); pick = null; drawPrev(true); drawGrid(); drawAct(o.name); drawThumbs(); return;
@@ -6654,7 +6787,7 @@ var TrollModels = (function () {
         return b;
       }
       // the cards never scroll: as many as fit, and the arrows turn the page
-      var prevB = arrow('▶', 'הַדַּף הַקּוֹדֵם', function () { page--; drawGrid(); }), nextB = arrow('◀', 'הַדַּף הַבָּא', function () { page++; drawGrid(); });
+      var prevB = arrow('caret-right', 'הַדַּף הַקּוֹדֵם', function () { page--; drawGrid(); }), nextB = arrow('caret-left', 'הַדַּף הַבָּא', function () { page++; drawGrid(); });
       function measure() {
         var W = gridw.clientWidth, H = gridw.clientHeight, vm = Math.min(window.innerWidth, window.innerHeight) / 100;
         var mw = Math.max(98, Math.min(170, 19 * vm)), mh = Math.max(76, Math.min(160, 17 * vm)), rows = Math.max(1, Math.floor((H + 8) / (mh + 8)));
@@ -6694,7 +6827,7 @@ var TrollModels = (function () {
         sfx.item(); confetti(30); drawPrev(true); drawGrid(); drawAct('תִּלְבֹּשֶׁת הַפְתָּעָה!'); drawThumbs();
       }
       TABS.forEach(function (t, n) {
-        var b = h('button', { class: 'ctab' + (n === tab ? ' on' : ''), 'aria-label': t[1] }, h('span', { class: 'ti', text: t[2] }), h('span', { class: 'tl', text: t[1] }));
+        var b = h('button', { class: 'ctab' + (n === tab ? ' on' : ''), 'aria-label': t[1] }, h('span', { class: 'ti' }, /^sw-/.test(t[2]) ? h('i', { class: 'tsw ' + t[2] }) : icon(t[2])), h('span', { class: 'tl', text: t[1] }));
         b.addEventListener('click', function () {
           sfx.tap(); tab = n; pick = null; page = 0;
           [].forEach.call(tabs.children, function (x, m) { x.classList.toggle('on', m === n); });
@@ -6703,12 +6836,12 @@ var TrollModels = (function () {
         tabs.appendChild(b);
       });
       var pickB = h('button', { class: 'btn pick' });
-      function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הַמְּלַוֶּה שֶׁלִּי' : '🤍 שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'; pickB.classList.toggle('is', is); }
+      function drawPick() { var is = buddyId() === id; pickB.textContent = ''; pickB.appendChild(icon(is ? 'heart' : 'heart-off', 't')); pickB.appendChild(document.createTextNode(is ? ' הַמְּלַוֶּה שֶׁלִּי' : ' שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי')); pickB.classList.toggle('is', is); }
       pickB.addEventListener('click', function () { state.buddy = id; save(); sfx.giggle(); drawPick(); drawPrev(true); });
       drawPick();
       // the trolls: the thumbnails that fit, paged by the two arrows; when there is no room for three, the arrows step from troll to troll
-      var tPrev = arrow('▶', 'הַטְּרוֹלִים הַקּוֹדְמִים', function () { if (tper) { tpage--; drawThumbs(); } else go(idx - 1); });
-      var tNext = arrow('◀', 'הַטְּרוֹלִים הַבָּאִים', function () { if (tper) { tpage++; drawThumbs(); } else go(idx + 1); });
+      var tPrev = arrow('caret-right', 'הַטְּרוֹלִים הַקּוֹדְמִים', function () { if (tper) { tpage--; drawThumbs(); } else go(idx - 1); });
+      var tNext = arrow('caret-left', 'הַטְּרוֹלִים הַבָּאִים', function () { if (tper) { tpage++; drawThumbs(); } else go(idx + 1); });
       function drawThumbs() {
         if (ids.length < 2) return;
         var n = Math.floor((ths.clientWidth + 8) / 56);
@@ -6734,7 +6867,7 @@ var TrollModels = (function () {
         h('div', { class: 'cstage' + (ids.length > 1 ? '' : ' solo') },
           h('div', { class: 'chead' }, h('b', { class: 'ctitle', text: 'הָעֲגָלָה' }), nameEl), prev,
           ids.length > 1 ? h('div', { class: 'cpickr' }, tPrev, ths, tNext) : null,
-          h('div', { class: 'cacts' }, pickB, h('button', { class: 'btn pick', text: '🎲 הַפְתָּעָה!', on: { click: surprise } }))),
+          h('div', { class: 'cacts' }, pickB, h('button', { class: 'btn pick', on: { click: surprise } }, icon('shuffle', 't'), ' הַפְתָּעָה!'))),
         h('div', { class: 'kpanel' }, tabs, gridw, h('div', { class: 'cmsgr' }, msg, pgEl), h('div', { class: 'cfoot' }, prevB, act, nextB))));
       if (sel) options().forEach(function (o) { if (o.item && o.item.id === sel) pick = o; }); // opened on one item (the savings goal, a gift)
       drawPrev(false); drawGrid(); drawAct(); drawThumbs();
@@ -7173,7 +7306,7 @@ var TrollModels = (function () {
       el.appendChild(topBar(true, home));
       el.appendChild(h('h2', { class: 'h2', text: 'מֵרוֹץ הַטְּרוֹלִים' }));
       msg = h('div', { class: 'banner pmsg' }); grid = h('div', { class: 'plist' });
-      go = h('button', { class: 'btn pgo', text: '📨 הַזְמָנָה לַמֵּרוֹץ' });
+      go = h('button', { class: 'btn pgo' }, icon('mail', 't'), ' הַזְמָנָה לַמֵּרוֹץ');
       go.addEventListener('click', function () {
         var ids = Object.keys(picked).filter(function (id) { return person(id, online[id]); });
         if (!ids.length || race) return;
@@ -7188,16 +7321,16 @@ var TrollModels = (function () {
         var self = person(mine, me()); // the player sees their own troll first: "I am here too"
         if (self) {
           var sb = h('button', { class: 'prow self', html: trollOf(self) });
-          sb.appendChild(h('b', { text: self.n })); sb.appendChild(h('small', { text: 'אֲנִי כָּאן' })); sb.appendChild(h('span', { class: 'mk', text: '⭐' }));
+          sb.appendChild(h('b', { text: self.n })); sb.appendChild(h('small', { text: 'אֲנִי כָּאן' })); sb.appendChild(h('span', { class: 'mk' }, icon('star', 's')));
           sb.addEventListener('click', function () { sfx.giggle(); sb.firstChild.outerHTML = trollOf(self, 'cheer'); });
           grid.appendChild(sb);
         }
         list.slice(0, 40).forEach(function (p) {
           var asked = waiting && race.p[p.id], resting = (cool[p.id] || 0) > Date.now(), busy = !!p.r && !asked;
-          var mark = asked ? (asked.ans === 'y' ? '✅' : asked.ans === 'n' ? '❌' : '⏳') : resting ? '🕒' : picked[p.id] ? '💌' : '';
+          var mark = asked ? (asked.ans === 'y' ? 'check' : asked.ans === 'n' ? 'close' : 'hourglass') : resting ? 'clock' : picked[p.id] ? 'mail' : '';
           var b = h('button', { class: 'prow' + (picked[p.id] ? ' on' : '') + (busy || resting ? ' off' : ''), 'data-rid': p.id, html: trollOf(p) });
           b.appendChild(h('b', { text: p.n })); b.appendChild(h('small', { text: busy ? 'בְּמֵרוֹץ' : 'כִּתָּה ' + GRADE_HE[p.g] }));
-          if (mark) b.appendChild(h('span', { class: 'mk', text: mark }));
+          if (mark) b.appendChild(h('span', { class: 'mk mk-' + mark }, icon(mark, 's')));
           b.addEventListener('click', function () {
             if (waiting || busy || resting) { restart(b, 'shake'); sfx.wrong(); return; }
             if (picked[p.id]) delete picked[p.id]; else if (Object.keys(picked).length < RC.MAXP - 1) picked[p.id] = true; else { restart(b, 'shake'); sfx.wrong(); return; }
@@ -7300,7 +7433,7 @@ var TrollModels = (function () {
     function answer(yes) { answerInvite(raceId, yes); }
     invEl = h('div', { id: 'invite', class: ms ? '' : 'still', 'data-fit': '1' },
       h('span', { style: 'display:contents', html: trollOf(from) }),
-      h('span', { class: 'it', text: '🏁 ' + from.n + ': בּוֹאוּ לְמֵרוֹץ!' }),
+      h('span', { class: 'it' }, icon('flag', 't'), ' ' + from.n + ': בּוֹאוּ לְמֵרוֹץ!'),
       h('button', { class: 'y', text: 'כֵּן!', on: { click: function () { sfx.pop(); answer(true); } } }),
       h('button', { class: 'n', text: 'לֹא', on: { click: function () { sfx.tap(); answer(false); } } }),
       h('i', { class: 'bar' }));
@@ -7353,8 +7486,8 @@ var TrollModels = (function () {
   function startTrack() {
     if (trackEl) trackEl.remove();
     var lane = h('div', { class: 'lane' }), clock = h('span', { class: 'tclock', text: '0:00' }), ask = null;
-    var x = h('button', { class: 'tx', text: '✕', 'aria-label': 'יְצִיאָה מֵהַמֵּרוֹץ' });
-    lane.appendChild(h('span', { class: 'flag', text: '🏁' }));
+    var x = h('button', { class: 'tx', 'aria-label': 'יְצִיאָה מֵהַמֵּרוֹץ' }, icon('close', 's'));
+    lane.appendChild(h('span', { class: 'flag' }, icon('flag', 'm')));
     trackEl = h('div', { id: 'track', 'data-fit': '1' }, x, clock, lane);
     x.addEventListener('click', function () {
       if (ask) return; sfx.tap();
@@ -7405,7 +7538,7 @@ var TrollModels = (function () {
     if (!race.fake) rt.patch('races/' + race.id + '/p/' + rid, up).catch(function () {});
     race.lastBeat = Date.now(); drawTrack();
     var r = trackEl && trackEl.runs[rid];
-    if (r) { var pl = h('span', { class: 'plus', text: '✓' }); r.appendChild(pl); setTimeout(function () { pl.remove(); }, 1100); }
+    if (r) { var pl = h('span', { class: 'plus' }, icon('check', 's')); r.appendChild(pl); setTimeout(function () { pl.remove(); }, 1100); }
     if (L.raceDone(race.p, Date.now() - race.t0)) finish(true);
   }
   function quitRace(keep) {
@@ -7439,18 +7572,18 @@ var TrollModels = (function () {
     rank.forEach(function (p, i) {
       var c = h('div', { class: 'rp' + (p.place === 1 ? ' win' : '') + (p.id === rid ? ' me' : '') + (p.out ? ' gone' : ''), 'data-rid': p.id, style: 'animation-delay:' + (0.2 + i * 0.25) + 's', html: trollOf(p, p.place === 1 ? 'cheer' : 'happy') });
       c.appendChild(h('b', { text: p.n })); c.appendChild(h('small', { text: p.pts + ' נְקֻדּוֹת' }));
-      c.appendChild(h('span', { class: 'pl', text: p.place === 1 ? '👑' : String(p.place) }));
+      c.appendChild(p.place === 1 ? h('span', { class: 'pl p1' }, icon('crown', 'm')) : h('span', { class: 'pl p' + p.place, text: String(p.place) }));
       row.appendChild(c);
     });
     var won = mine && mine.place === 1 && !mine.out;
     var ov = h('div', { class: 'rov', id: 'podium', 'data-fit': '1' },
       h('h2', { class: 'h2', text: won ? 'נִצַּחְתְּ בַּמֵּרוֹץ!' : 'הַמֵּרוֹץ נִגְמַר!' }), row,
-      coins ? h('div', { class: 'banner', text: '+' + coins + ' 🪙' }) : null);
+      coins ? h('div', { class: 'banner' }, h('b', { class: 'num', text: '+' + coins }), ' ', icon('coin', 't')) : null);
     function close() { ov.remove(); tv.hold = false; }
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
     var others = rank.filter(function (p) { return p.id !== rid; });
     ov.appendChild(h('div', { class: 'row' },
-      rtOn() || raceDbg ? btn('🔁 מֵרוֹץ חוֹזֵר', '', function () { close(); pool(others); }) : null,
+      rtOn() || raceDbg ? h('button', { class: 'btn', on: { click: function () { sfx.tap(); close(); pool(others); } } }, icon('repeat', 't'), ' מֵרוֹץ חוֹזֵר') : null,
       btn('חֲזָרָה', 'b2', close)));
     document.body.appendChild(ov);
     sfx.win(); confetti(won ? 140 : 60); if (won) fireworks(7);
@@ -7483,8 +7616,8 @@ var TrollModels = (function () {
         list.textContent = '';
         rows.slice(0, 100).forEach(function (p, i) {
           var r = h('div', { class: 'brow' + (p.id === mine ? ' me' : '') },
-            h('b', { class: 'bp', text: i < 3 ? ['🥇', '🥈', '🥉'][i] : String(i + 1) }), h('span', { class: 'bt', html: trollOf(p) }), h('span', { class: 'bn', text: p.n }),
-            h('small', { text: 'כִּתָּה ' + GRADE_HE[p.g] }), h('span', { class: 'bx', text: '⚡ ' + p.xp }), h('span', { class: 'bs', text: '⭐ ' + p.st }));
+            i < 3 ? h('b', { class: 'bp m' + (i + 1), 'aria-label': 'מָקוֹם ' + (i + 1) }, icon('medal')) : h('b', { class: 'bp', text: String(i + 1) }), h('span', { class: 'bt', html: trollOf(p) }), h('span', { class: 'bn', text: p.n }),
+            h('small', { text: 'כִּתָּה ' + GRADE_HE[p.g] }), h('span', { class: 'bx' }, icon('energy', 't'), ' ' + p.xp), h('span', { class: 'bs' }, icon('star', 't'), ' ' + p.st));
           if (p.id === mine) own = r;
           list.appendChild(r);
         });
