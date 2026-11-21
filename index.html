@@ -1568,12 +1568,6 @@ body.toy .qcard{border-radius:var(--r-l);box-shadow:var(--e2);color:var(--ink)}
 .ds-stone{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.7);color:var(--ink-2);font-size:var(--t-cap);font-weight:var(--w-bold);line-height:1}
 .ds-stone.now{width:32px;height:32px;margin:-4px 0;background:var(--accent);color:var(--ink);box-shadow:0 2px 0 var(--accent-edge)}
 .ds-stone.done{background:var(--success);color:#fff}.ds-stone.done .ic{width:14px;height:14px}
-/* ---- until the exercise screen is converted: on a phone the companion stood in the corner where the counters are now; it stands beside the progress row ---- */
-@media (max-width:520px) and (min-height:521px){
-  body.toy .qrow .buddy,body.toy .screen.vmode .buddy,body.toy .screen.packq .buddy,body.toy .screen.handson .buddy{top:58px;width:46px}
-  body.toy .screen>.path{min-height:54px;padding-inline-end:54px}
-  body.toy .screen>.path[style*="none"]~.lvrow{min-height:60px;padding-inline-end:54px}
-}
 /* DS-END */
 /* DS-SHOP-BEGIN ===== task "ds-shop": the cart, the daily gift, who plays and a new player, the family account, the parents panel, the ranking, the race
    (pool, invitation bar, launch, track, results) on the design system. Colours, radii, shadows and icons only: sizes, grids and timing are the old ones.
@@ -1700,6 +1694,188 @@ body.toy .rp .pl.p1{background:var(--m-gold);color:var(--ink)}body.toy .rp .pl.p
 body.toy #podium .banner{display:inline-flex;align-items:center;gap:var(--sp1)}
 body.toy .rov .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2)}
 /* DS-SHOP-END */
+/* XR-BEGIN ================= task "exercise screen": the approved arrangement of the exercise (direction A, spike/polish/a-system/round.html), the
+   explanation window and the calculation sheet in the design system. Everything here starts with body.toy; the screen of an exercise carries .xr.
+   From the top: the bar · the stones of the round (.path; inside the row of the bar from 800 px wide) · the companion with what it says (.crow)
+   · ONE card (.qcard: .qcap = the stage and the house as quiet text + the read-aloud button, then the question) · the answers · the helpers (.tools).
+   .snug (set by roomFit when the exercise is taller than its room): the companion stands beside the stones and what it says is not shown.
+   A screen at most 520 px high (a phone on its side) cannot hold that column: the companion stands beside the card without its bubble, the
+   helpers stand in a column at the other side of the card, the stage label is not shown, the read-aloud button is in the corner of the card.
+   Nothing moves here while the child thinks: the stones, the "?" box and the answers stand still. */
+body.toy .screen.xr{--k:1;--xw:720px;--xg:var(--sp2);--xp:var(--sp2);--xb:52px;gap:var(--xg);padding:var(--xp)}
+/* ---- the stones of the round ---- */
+body.toy .screen.xr>.path{gap:var(--sp2);min-height:32px;flex:0 0 auto;direction:rtl}
+body.toy .screen.xr .node{width:24px;height:24px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.78);color:var(--ink);font-size:var(--t-cap);font-weight:var(--w-bold);font-style:normal;line-height:1;box-shadow:none;animation:none;transform:none;transition:none}
+body.toy .screen.xr .node.now{width:32px;height:32px;margin:-4px 0;background:var(--accent);color:var(--ink);box-shadow:0 2px 0 var(--accent-edge)}
+body.toy .screen.xr .node.done{background:var(--success);color:#fff}
+body.toy .screen.xr .node.done .ic{width:14px;height:14px;color:#fff}
+body.toy .screen.xr .node.done.log{background:rgba(255,255,255,.78)}
+body.toy .screen.xr .node .ico{width:16px;height:16px;vertical-align:0}
+/* ---- the companion and what it says, above the card ---- */
+body.toy .screen.xr .crow{display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:var(--sp3);width:100%;max-width:var(--xw);min-height:0;flex:0 0 auto}
+body.toy .screen.xr .buddy{display:block;position:static;inset:auto;z-index:auto;width:var(--xb);flex:none}
+body.toy .screen.xr .bubble{display:block;position:relative;flex:0 1 auto;min-width:0;padding:var(--sp2) var(--sp4);background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);font-size:var(--t-body);line-height:var(--lh-body);font-weight:var(--w-bold);text-wrap:balance}
+body.toy .screen.xr .bubble::after{content:"";position:absolute;right:-5px;top:50%;width:14px;height:14px;margin-top:-7px;background:inherit;border-radius:3px;transform:rotate(45deg)}
+body.toy .screen.xr .bubble.good{background:var(--success);color:#fff;box-shadow:0 2px 0 var(--success-edge),0 4px 10px rgba(46,35,80,.12)}
+body.toy .screen.xr .bubble:empty{visibility:hidden}
+/* ---- the card ---- */
+body.toy .screen.xr .qslot{width:100%;max-width:var(--xw);min-width:0;flex:0 0 auto}
+body.toy .screen.xr .qcard{position:relative;padding:var(--sp2) var(--sp3) var(--sp3);background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e2);font-size:clamp(36px,8vmin,60px);font-weight:var(--w-black);line-height:1.15}
+body.toy .screen.xr .qcard.med{font-size:clamp(26px,6.5vmin,48px)}
+body.toy .screen.xr .qcard.txt{font-size:clamp(20px,4.6vmin,32px);font-weight:var(--w-bold);line-height:1.25}
+body.toy .screen.xr.handson .qcard{font-size:clamp(20px,5vmin,40px)}
+body.toy .screen.xr.packq .qcard{font-size:clamp(17px,4vmin,30px);white-space:normal;font-weight:var(--w-bold);line-height:1.2}
+body.toy .screen.xr .qcard.vcard{font-size:clamp(30px,min(10vmin,6.4vh),52px)}
+body.toy .screen.xr .qcap{display:flex;align-items:center;justify-content:space-between;gap:var(--sp2);min-height:48px;margin:0 0 calc(-1*var(--sp1));font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-reg);color:var(--ink-2);white-space:normal;text-align:start;letter-spacing:0}
+body.toy .screen.xr .qcap b{color:var(--ink);font-weight:var(--w-bold)}
+body.toy .screen.xr .qlab{flex:1 1 auto;min-width:0}
+body.toy .screen.xr .qread{flex:none;width:48px;height:48px;margin-inline-end:calc(-1*var(--sp1));padding:0;display:grid;place-items:center;border-radius:var(--r-full);background:var(--surface-2);color:var(--ink);transition:transform var(--d-fast) var(--ease)}
+body.toy .screen.xr .qread:active{transform:scale(.94)}
+body.toy:not(.cansay) .screen.xr .qcap{min-height:0;margin-bottom:var(--sp1)}
+body.toy .screen.xr .qhint{font-size:clamp(14px,2.2vmin,18px);line-height:var(--lh-cap);font-weight:var(--w-bold);color:var(--ink-2)}
+body.toy .screen.xr .qpre{color:var(--success)}
+body.toy .screen.xr .qcard .box{border:4px dashed var(--primary);border-radius:var(--r-s);color:var(--primary);animation:none}
+body.toy .screen.xr .qcard .box.ok{border-color:transparent;color:var(--success)}
+body.toy .screen.xr .vq{font-size:1em;line-height:1.12}
+body.toy .screen.xr .vq .vl{background:var(--ink)}
+body.toy .screen.xr .vq .vans{color:var(--primary)}
+body.toy .screen.xr .vq .vans.ok{color:var(--success)}
+body.toy .screen.xr .qcard.vcard .qpre{font-size:clamp(16px,.42em,24px)}
+body.toy .screen.xr .qsvg svg{max-height:calc(clamp(84px,22vh,210px)*var(--k))}
+body.toy .screen.xr.packq .qsvg svg{max-height:calc(clamp(80px,23vh,210px)*var(--k))}
+body.toy .screen.xr .qsay{width:clamp(56px,13vmin,80px);height:clamp(56px,13vmin,80px);display:inline-grid;place-items:center;padding:0;background:var(--surface);color:var(--ink);border-radius:var(--r-full);box-shadow:inset 0 0 0 2px var(--line),var(--e1)}
+/* ---- the answers: four colours, one shape (the colours are the system's .ans.c0 .. .c3) ---- */
+body.toy .screen.xr .answers{max-width:var(--xw);gap:var(--sp2) var(--sp3)}
+body.toy .screen.xr .ans{min-height:clamp(64px,10vmin,88px);padding:0 var(--sp2);display:flex;align-items:center;justify-content:center;gap:var(--sp2);border-radius:var(--r-m);font-size:clamp(26px,5vmin,40px);line-height:1.2;font-weight:var(--w-black)}
+body.toy .screen.xr .ans .ic{width:28px;height:28px}
+body.toy .screen.xr .answers.f-tf .ans{font-size:var(--t-h2)}
+body.toy .screen.xr .ans.off{opacity:.38}
+body.toy .screen.xr.packq{--xw:920px}
+body.toy .screen.xr.packq .ans{min-height:60px;padding:var(--sp1) var(--sp2);font-size:clamp(16px,4.2vmin,26px);font-weight:var(--w-bold);line-height:1.2}
+body.toy .screen.xr .ans.pic svg{max-height:clamp(44px,11vh,96px)}
+/* the number line, the cubes, the array, the pairs, the tiles to put in order: the system's surfaces, edges and colours */
+body.toy .screen.xr .nline{background:var(--surface);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .screen.xr .nline:before{background:var(--ink)}
+body.toy .screen.xr .tick i{border-color:var(--ink);background:var(--surface)}
+body.toy .screen.xr .tick.major i{background:var(--surface-2)}
+body.toy .screen.xr .tick span{color:var(--ink-2)}
+body.toy .screen.xr .tick.major span{color:var(--ink)}
+body.toy .screen.xr .tick.start i{background:var(--ans-3);border-color:var(--ans-3e)}
+body.toy .screen.xr .tick.start span{color:var(--ans-3e)}
+body.toy .screen.xr .tick.right i{background:var(--success);border-color:var(--success-edge);box-shadow:0 0 0 4px rgba(27,127,59,.25)}
+body.toy .screen.xr .tick.wrong i{background:var(--locked-surface);border-color:var(--locked)}
+body.toy .screen.xr .bview,body.toy .screen.xr .agrid{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .screen.xr .bcol{background:var(--surface);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .screen.xr .bcol .step{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s)}
+body.toy .screen.xr .bname{color:var(--ink-2)}
+body.toy .screen.xr .alab{background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1)}
+body.toy .screen.xr .acell{background:var(--line)}
+@media (min-height:521px){body.toy .screen.xr .acell{width:calc(clamp(14px,3.5vmin,27px)*var(--k));height:calc(clamp(14px,3.5vmin,27px)*var(--k))}}
+body.toy .screen.xr .acell.on{background:var(--ans-1)}
+body.toy .screen.xr .answers .btn.check{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:60px;padding:0 var(--sp5);font-size:var(--t-lead);border-radius:var(--r-m)}
+body.toy .screen.xr .pbtn{background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);font-weight:var(--w-bold)}
+@media (min-height:521px){body.toy .screen.xr .pbtn,body.toy .screen.xr .otile{min-height:48px}body.toy .screen.xr .f-pairs,body.toy .screen.xr .pcol{gap:var(--sp2)}body.toy .screen.xr .bcol .step{width:48px;height:40px}}
+body.toy .screen.xr .pbtn.val{background:#fff3c9}
+body.toy .screen.xr .pbtn.sel{box-shadow:0 0 0 4px var(--primary)}
+body.toy .screen.xr .pbtn.ok{background:#dff5e4;color:var(--ink);opacity:1;box-shadow:inset 0 0 0 3px var(--success)}
+body.toy .screen.xr .ostrip{background:var(--surface);border:3px dashed var(--edge);border-radius:var(--r-m)}
+body.toy .screen.xr .ostrip.right{border-style:solid;border-color:var(--success);background:#dff5e4}
+body.toy .screen.xr .otile{background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1);font-weight:var(--w-bold)}
+body.toy .screen.xr .ostrip .otile{background:var(--surface-2);box-shadow:none}
+/* ---- the two helpers, under the answers ---- */
+body.toy .screen.xr .tools{display:flex;justify-content:center;align-items:center;gap:var(--sp2);width:100%;max-width:var(--xw);flex:0 0 auto}
+body.toy .screen.xr .helpb{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:48px;padding:0 var(--sp3);font-size:var(--t-body);line-height:var(--lh-cap);font-weight:var(--w-bold);white-space:nowrap}
+body.toy .screen.xr .helpb:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+body.toy .screen.xr .padbtn .pt{display:inline}
+body.toy .screen.xr .padbtn .pt:empty{display:none}
+/* ---- sizes: a phone that stands, a tablet and a computer ---- */
+@media (min-width:380px) and (min-height:740px){body.toy .screen.xr{--xb:64px}}
+@media (min-width:600px) and (min-height:521px){body.toy .screen.xr{--xg:var(--sp3);--xp:var(--sp3);--xb:64px}}
+@media (min-width:800px) and (min-height:640px){body.toy .screen.xr{--xb:84px}}
+@media (min-width:1600px) and (min-height:850px){body.toy .screen.xr{--xw:880px;--xb:100px}body.toy .screen.xr.packq{--xw:1040px}}
+@media (min-width:800px){body.toy .screen.xr>.path{position:absolute;top:var(--xp);left:50%;transform:translateX(-50%);height:48px;min-height:0;pointer-events:none}}
+/* the companion gives way (see roomFit): beside the stones on a phone, beside the column on a wide screen, a small row in a race on a phone */
+body.toy .screen.xr.snug{--xb:40px}
+body.toy .screen.xr.snug .bubble{font-size:var(--t-cap);line-height:var(--lh-cap);padding:var(--sp1) var(--sp3)}
+@media (max-width:799px) and (min-height:521px){
+  body.toy .screen.xr.snug:not(.xrace) .crow{position:absolute;top:calc(var(--xp) + 48px + var(--xg));right:var(--xp);width:auto}
+  body.toy .screen.xr.snug:not(.xrace) .bubble{display:none}
+  body.toy .screen.xr.snug>.path{min-height:52px;padding-right:48px;gap:6px}
+  body.toy .screen.xr.snug .node{width:20px;height:20px;font-size:12px}
+  body.toy .screen.xr.snug .node.now{width:28px;height:28px}
+}
+@media (min-width:1000px) and (min-height:521px){
+  body.toy .screen.xr.snug{--xb:56px}
+  body.toy .screen.xr.snug.packq{--xb:40px}
+  body.toy .screen.xr.snug .crow{position:absolute;top:calc(var(--xp) + 48px + var(--xg));right:max(var(--xp),calc(50% - var(--xw)/2 - var(--xb) - var(--sp3)));width:auto}
+  body.toy .screen.xr.snug .bubble{display:none}
+}
+/* ---- a screen at most 520 px high (a phone on its side) ---- */
+@media (max-height:520px){
+  body.toy .screen.xr{--xb:56px;--xg:6px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto auto;grid-template-areas:"top top top" "bud card tools" "ans ans ans";align-content:start;align-items:center;justify-items:stretch;column-gap:var(--sp2)}
+  body.toy .screen.xr>.top{grid-area:top}
+  body.toy .screen.xr .crow{display:contents}
+  body.toy .screen.xr .bubble{display:none}
+  body.toy .screen.xr .buddy{grid-area:bud}
+  body.toy .screen.xr .qslot{grid-area:card;max-width:none}
+  body.toy .screen.xr .answers{grid-area:ans;max-width:none}
+  body.toy .screen.xr .tools{grid-area:tools;flex-direction:column;align-items:stretch;width:auto;max-width:none}
+  body.toy .screen.xr .helpb{font-size:var(--t-cap)}
+  body.toy .screen.xr .qcard{padding:var(--sp2) var(--sp3)}
+  body.toy.cansay .screen.xr .qcard{padding-left:52px;padding-right:52px}
+  body.toy.cansay .screen.xr .qcard{min-height:56px}
+  body.toy .screen.xr .qcap{position:absolute;left:var(--sp1);top:var(--sp1);min-height:0;margin:0}
+  body.toy .screen.xr .qlab{display:none}
+  body.toy .screen.xr .qread{margin:0}
+  body.toy .screen.xr .ans{min-height:52px;font-size:clamp(22px,7vmin,30px)}
+  body.toy .screen.xr.packq .ans{min-height:48px;font-size:clamp(15px,4.2vmin,20px)}
+  body.toy .screen.xr .answers .btn.check{min-height:48px}
+}
+@media (max-height:520px) and (max-width:799px){
+  body.toy .screen.xr>.path{position:absolute;top:var(--xp);left:50%;transform:translateX(-50%);height:48px;min-height:0;gap:var(--sp1);pointer-events:none}
+  body.toy .screen.xr .node{width:12px;height:12px;font-size:0}
+  body.toy .screen.xr .node.now{width:24px;height:24px;margin:0;font-size:12px}
+  body.toy .screen.xr .node .ic,body.toy .screen.xr .node .ico{display:none}
+}
+/* ---- the explanation window: the system's panel, round buttons, pips; the drawings of the steps keep their colours ---- */
+body.toy .ovl .card{gap:var(--sp2);padding:var(--sp3)}
+body.toy .ohead{gap:var(--sp2)}
+body.toy .ohead b{font-size:var(--t-body);line-height:var(--lh-cap);font-weight:var(--w-bold);color:var(--ink)}
+body.toy .oq{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s);font-weight:var(--w-bold)}
+body.toy .ohead .icon,body.toy .orow .icon{width:48px;height:48px;display:grid;place-items:center;padding:0;background:var(--surface-2);color:var(--ink);border-radius:var(--r-full);box-shadow:none}
+body.toy .ovl .say{background:var(--surface-2);color:var(--ink);border-radius:var(--r-m);font-weight:var(--w-bold)}
+body.toy .orow{gap:var(--sp2)}
+body.toy .orow .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:56px;padding:0 var(--sp5);font-size:var(--t-lead);border-radius:var(--r-m)}
+body.toy .stepbox{gap:var(--sp1)}
+body.toy .stepno{font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold);color:var(--ink-2)}
+body.toy .stepbox .pips{gap:var(--sp1);padding:0}
+body.toy .stepbox .pips i{width:12px;height:12px;border:0;background:var(--surface);box-shadow:inset 0 0 0 2px rgba(46,35,80,.55)}
+body.toy .stepbox .pips i.on{background:#f2a900;border:0}
+@media (max-height:520px){body.toy .ovl .card{gap:var(--sp1);padding:6px var(--sp3)}body.toy .orow .btn{min-height:48px}body.toy .ohead .icon,body.toy .orow .icon{width:44px;height:44px}}
+/* ---- the calculation sheet: the system's panel; cells to write in are sunken, the selected one has the primary ring; keys are the tool button ---- */
+body.toy .padc{background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e3);font-weight:var(--w-bold)}
+body.toy .padh b{display:inline-flex;align-items:center;gap:var(--sp2);color:var(--ink);font-weight:var(--w-bold)}
+body.toy .padx{display:grid;place-items:center;background:var(--surface-2);color:var(--ink);border-radius:var(--r-full);box-shadow:none}
+body.toy .padc .padtip{color:var(--ink-2);font-weight:var(--w-reg)}
+body.toy .padcap{background:var(--surface-2);color:var(--ink);border-radius:var(--r-s);box-shadow:none}
+body.toy .padc .pd.ps,body.toy .padc .pd.plab{color:var(--ink-2)}
+body.toy .padc .pd.x{color:var(--locked)}
+body.toy .padc .pd.x,body.toy .padc .pc.x{text-decoration-color:var(--primary)}
+body.toy .padc .pc{background:var(--surface-2);border-color:var(--edge);color:var(--ink)}
+body.toy .padc .pc.car{background:var(--surface);border-color:var(--edge);color:var(--primary)}
+body.toy .padc .pc.zc{background:var(--surface);border-color:var(--line);color:var(--locked-ink)}
+body.toy .padc .pc.rem{background:#fff3c9;border-color:var(--accent-edge)}
+body.toy .padc .pc.on{border-style:solid;border-color:var(--primary);box-shadow:0 0 0 3px rgba(194,24,91,.25)}
+body.toy .padc .pl,body.toy .padc .pbr{background:var(--ink)}
+body.toy .padc .padf{background:var(--surface);border-color:var(--edge);border-radius:var(--r-s)}
+body.toy .padc .pc.fc{background:transparent;box-shadow:inset -1px -1px 0 var(--line)}
+body.toy .padc .pc.fc.on{background:var(--surface-2);box-shadow:inset 0 0 0 3px var(--primary)}
+body.toy .padc .pk{display:grid;place-items:center;background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:inset 0 0 0 2px var(--line),0 3px 0 var(--edge);font-weight:var(--w-bold)}
+body.toy .padc .pk:active{transform:var(--press);box-shadow:inset 0 0 0 2px var(--line),0 1px 0 var(--edge)}
+body.toy .padc .pk.sg,body.toy .padc .pk.del,body.toy .padc .pk.clr{background:var(--surface-2);box-shadow:0 3px 0 var(--edge)}
+body.toy .padc .pk .pkt{position:absolute;width:0;height:0;overflow:hidden;font-size:0}
+body.toy .padback{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);background:var(--success);color:#fff;border-radius:var(--r-m);box-shadow:0 4px 0 var(--success-edge),0 10px 20px rgba(17,84,38,.25);font-weight:var(--w-bold)}
+/* XR-END */
 </style>
 </head>
 <body>
@@ -5912,7 +6088,7 @@ var TrollModels = (function () {
     } catch (e) {}
   }
   function autoSay() { return false; } // nothing is read out by itself, in any grade: the child taps the speaker
-  function sayBtn(get, cls) { return h('button', { class: 'sayb ' + (cls || ''), text: '🔊', 'aria-label': 'הַקְרָאָה', on: { click: function () { speak(get()); } } }); }
+  function sayBtn(get, cls) { return h('button', { class: 'sayb ' + (cls || ''), 'aria-label': 'הַקְרָאָה', on: { click: function () { speak(get()); } } }, icon('say')); }
   var ovl = null;
   function closeExplain() { if (ovl) { ovl.remove(); ovl = null; hush(); } }
   function openExplain(q) {
@@ -6007,49 +6183,71 @@ var TrollModels = (function () {
     show(function (el) {
       if (cfg.race) raceRound = true; // leaving this screen while the race runs means leaving the race
       el.appendChild(topBar(true, backTo));
-      var nodes = [], path = h('div', { class: 'path' }), i;
-      if (cfg.race) path.style.display = 'none'; // the track at the bottom shows the progress
-      for (i = 0; i < round.qs.length; i++) { nodes.push(h('div', { class: 'node' })); path.appendChild(nodes[i]); }
-      var label = h('div', { class: 'chip lv' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div');
-      var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
-      var helpB = h('button', { class: 'helpb', text: '💡 אֵיךְ פּוֹתְרִים?', on: { click: function () { sfx.tap(); openExplain(round.current()); } } });
+      // task "exercise screen" (the approved arrangement): the stones of the round, the companion with what it says ABOVE the card, ONE card
+      // (the stage and the house as quiet text and the read-aloud button inside it, then the question), the answers, and under them the two helpers
+      el.classList.add('xr');
+      var nodes = [], path = h('div', { class: 'path ds-stones' }), i;
+      if (cfg.race) { path.style.display = 'none'; el.classList.add('xrace'); } // the track at the bottom shows the progress
+      for (i = 0; i < round.qs.length; i++) { nodes.push(h('i', { class: 'node ds-stone' })); path.appendChild(nodes[i]); }
+      var label = h('span', { class: 'lv qlab' }), bud = h('div', { class: 'buddy' }), bubble = h('div', { class: 'bubble' }), qslot = h('div', { class: 'qslot' });
+      var answers = h('div', { class: 'answers' });
+      var helpB = h('button', { class: 'helpb', on: { click: function () { sfx.tap(); openExplain(round.current()); } } }, icon('hint'), h('span', { text: 'אֵיךְ פּוֹתְרִים?' }));
       var padB = h('button', { class: 'helpb padbtn', 'aria-label': 'חִשּׁוּב בִּמְאֻנָּךְ', on: { click: function () { sfx.tap(); openPad(round.current(), padShow); } } });
       function padShow() { // the button appears for every exercise that needs written working (L.padKind), and keeps the result the child wrote
         var q = round.current(), sum = padSum(q), lab = padLabel(q);
         padB.style.display = lab ? '' : 'none';
         padB.setAttribute('aria-label', /דַּף/.test(lab) ? 'דַּף חִשּׁוּב' : 'חִשּׁוּב בִּמְאֻנָּךְ');
-        padB.textContent = '🧮'; padB.appendChild(h('span', { class: 'pt', text: sum ? '' : lab })); if (sum) padB.appendChild(h('b', { text: ' ' + sum }));
+        padB.textContent = ''; padB.appendChild(icon('sheet')); padB.appendChild(h('span', { class: 'pt', text: sum ? '' : lab })); if (sum) padB.appendChild(h('b', { text: ' ' + sum }));
       }
       function sayQ() { var q = round.current(); return q ? (ASKS[q.fmt] ? ASKS[q.fmt] + '. ' : '') + (q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : q.text) : ''; }
-      el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, sayBtn(sayQ, 'helpb'), padB, helpB));
-      el.appendChild(h('div', { class: 'qrow' }, bud, h('div', { class: 'qside' }, bubble, qslot)));
-      el.appendChild(answers); el.appendChild(hintSlot);
+      var readB = sayBtn(sayQ, 'qread'), qcap = h('div', { class: 'qcap', dir: 'rtl' }, label, readB);
+      el.appendChild(path); el.appendChild(h('div', { class: 'qrow crow' }, bud, bubble));
+      el.appendChild(qslot); el.appendChild(answers); el.appendChild(h('div', { class: 'tools' }, helpB, padB));
+      // Nothing scrolls and nothing is cut: when an exercise is taller than the room it has (a sum in columns under a solved example, a drawing with
+      // long answers, a race track or an invitation bar under the screen), first the companion row gives way (.snug: the companion stands beside the
+      // stones and what it says is not shown), then the type of the card gets smaller, step by step, down to 60% of its size.
+      function roomFit() {
+        var card = qslot.firstChild; if (!card || cur !== el) return;
+        el.classList.remove('snug'); el.style.removeProperty('--k'); card.style.fontSize = ''; fit(card);
+        if (el.scrollHeight <= el.clientHeight + 1) return;
+        el.classList.add('snug'); card.style.fontSize = ''; fit(card);
+        var fs = parseFloat(getComputedStyle(card).fontSize) || 40, k = 1; // --k also scales a drawing in the card and the dots of an array
+        while (el.scrollHeight > el.clientHeight + 1 && k > 0.61) { k -= 0.04; card.style.fontSize = Math.max(13, fs * k) + 'px'; el.style.setProperty('--k', k.toFixed(2)); }
+      }
+      var onSize = function () { if (cur !== el) { window.removeEventListener('resize', onSize); return; } roomFit(); };
+      window.addEventListener('resize', onSize);
 
       var mvId = L.fxOf(state, 'move'); if (mvId) bud.classList.add('mv-' + mvId); // one shot, only in the "cheer" mood: never while the child is thinking
-      function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; restart(bubble, 'pop'); }
+      function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; bubble.classList.toggle('good', m === 'cheer'); restart(bubble, 'pop'); }
       bud.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent); });
       function renderQ() {
         var q = round.current(), t = topicOf(q.topic);
         tv.hint = false; // set when the explanation is opened for this exercise (see praise)
         padShow();
         nodes.forEach(function (n, k) {
-          n.className = 'node' + (k < round.i ? ' done' : k === round.i ? ' cur' : '');
-          n.textContent = k < round.i ? (cfg.boss ? '🪵' : round.results[k] ? '⭐' : '🌸') : String(k + 1);
+          n.className = 'node ds-stone' + (k < round.i ? ' done' + (cfg.boss ? ' log' : '') : k === round.i ? ' cur now' : '');
+          n.textContent = k < round.i ? (cfg.boss ? '🪵' : '') : String(k + 1); // a solved exercise: a star when it was right at the first try, a tick otherwise (a log of the bridge in a mission)
+          if (k < round.i && !cfg.boss) n.appendChild(icon(round.results[k] ? 'star' : 'check', 's'));
         });
-        label.textContent = (cfg.race ? '🏁 ' + (round.i + 1) + ' / ' + round.qs.length + ' · ' : '') + (cfg.boss ? 'מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][1] + ' · ' : '') + t.levels[q.level - 1].name + (q.review ? ' · חֲזָרָה' : '');
+        var lhead = cfg.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : cfg.stage != null ? STAGES[cfg.stage][1] : '';
+        label.textContent = '';
+        if (cfg.race) { label.appendChild(icon('flag', 't')); label.appendChild(document.createTextNode(' ' + (round.i + 1) + ' / ' + round.qs.length + ' · ')); }
+        if (lhead) { label.appendChild(h('b', { text: lhead })); label.appendChild(document.createTextNode(' · ')); }
+        label.appendChild(document.createTextNode(t.levels[q.level - 1].name + (q.review ? ' · חֲזָרָה' : '')));
         mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : memo && round.i === 0 ? voice(L.MEMO[memo], 'memo-' + memo) : voice(ASK, 'ask'));
         if (memo && round.i === 0) bubble.setAttribute('data-mem', memo); else bubble.removeAttribute('data-mem');
         helpB.classList.toggle('glow', cfg.stage === 0);
         var BOX = '<span class="box">?</span>';
         var body = q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : frx(q.text).replace('□', BOX).replace('◯', BOX);
         var card = h('div', { class: 'qcard' + (q.rtl || q.fmt === 'pairs' ? ' txt' : q.text.length > 13 ? ' med' : ''), dir: q.rtl ? 'rtl' : 'ltr' });
+        card.appendChild(qcap);
         if (ASKS[q.fmt]) card.appendChild(h('small', { class: 'qhint', dir: 'rtl', text: ASKS[q.fmt] }));
         if (q.pre) card.appendChild(h('span', { class: 'qpre', text: q.pre + '  ✔' }));
         if (q.pic) card.appendChild(h('span', { class: 'qpic', text: q.pic + ' ' }));
         if (q.svg) card.appendChild(h('span', { class: 'qsvg', html: q.svg }));
         if (q.say) {
           var srow = h('div', { class: 'qsrow', dir: 'ltr' }); // the spoken English on a line of its own, above the Hebrew question
-          if (canEn() || /say=1/.test(hash)) srow.appendChild(h('button', { class: 'qsay', text: '🔊', 'aria-label': 'לִשְׁמֹעַ שׁוּב', on: { click: function () { speakEn(q.say.text); } } }));
+          if (canEn() || /say=1/.test(hash)) srow.appendChild(h('button', { class: 'qsay', 'aria-label': 'לִשְׁמֹעַ שׁוּב', on: { click: function () { speakEn(q.say.text); } } }, icon('sound', 'xl')));
           if (q.say.show || !canEn()) srow.appendChild(h('span', { class: 'qen', text: q.say.text }));
           card.appendChild(srow);
         }
@@ -6058,14 +6256,15 @@ var TrollModels = (function () {
           card.classList.add('vcard');
           card.appendChild(h('span', { class: 'vq', dir: 'ltr' }, h('span', { class: 'vr', text: L.fmt(pv.a) }), h('span', { class: 'vr' }, h('i', { text: pv.op }), L.fmt(pv.b)), h('span', { class: 'vl' }), h('span', { class: 'vr vans', text: '?' })));
         } else if (body) card.appendChild(h('span', { class: 'qtext', html: body }));
-        qslot.innerHTML = ''; qslot.appendChild(card); fit(card);
-        if (document.fonts && document.fonts.status === 'loading') document.fonts.ready.then(function () { if (card.parentNode === qslot) { card.style.fontSize = ''; fit(card); } }); // the web font arrived after the card was fitted: fit again
+        qslot.innerHTML = ''; qslot.appendChild(card);
+        if (document.fonts && document.fonts.status === 'loading') document.fonts.ready.then(function () { if (card.parentNode === qslot) roomFit(); }); // the web font arrived after the card was fitted: fit again
         el.classList.toggle('packq', !!q.pack);
         el.classList.toggle('vmode', !!tall); // the exercise stands in columns and is tall: the troll and its bubble give way on small screens
         el.classList.toggle('handson', q.fmt === 'array' || q.fmt === 'pairs' || q.fmt === 'build' || q.fmt === 'order');
-        hintSlot.innerHTML = ''; answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
+        answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
         tv.solve = tv.flub = null;
         (WIDGET[q.fmt] || WIDGET.choice)(q);
+        roomFit();
         if (autoSay()) speak(sayQ()); else hush();
         if (q.say) later(function () { speakEn(q.say.text); }, 450);
       }
@@ -6129,7 +6328,7 @@ var TrollModels = (function () {
               h('span', { class: 'bname', text: L.fmt(p) }), nums[p],
               h('button', { class: 'step', text: '−', 'aria-label': 'לְהוֹרִיד ' + p, on: { click: function () { bump(-1); } } })));
           });
-          var ok = h('button', { class: 'btn check', text: 'בְּדִיקָה ✔' });
+          var ok = h('button', { class: 'btn check', 'data-ui': '', text: 'בְּדִיקָה ✔' });
           ok.addEventListener('click', function () { onAnswer(ok, total(), q); });
           answers.appendChild(view); answers.appendChild(ctl); answers.appendChild(ok);
           tv.solve = function () { places.forEach(function (p) { cnt[p] = Math.floor(q.answer / p) % 10; }); draw(); ok.click(); };
@@ -6144,7 +6343,7 @@ var TrollModels = (function () {
             e.addEventListener('click', function () { sel = [r, c]; sfx.tap(); draw(); });
             cells.push({ el: e, r: r, c: c }); grid.appendChild(e);
           })(r, c);
-          var ok = h('button', { class: 'btn check', text: 'בְּדִיקָה ✔' });
+          var ok = h('button', { class: 'btn check', 'data-ui': '', text: 'בְּדִיקָה ✔' });
           ok.addEventListener('click', function () {
             var good = (sel[0] === q.a && sel[1] === q.b) || (sel[0] === q.b && sel[1] === q.a);
             onAnswer(ok, good ? 'ok' : sel[0] + 'x' + sel[1], q);
@@ -6204,6 +6403,10 @@ var TrollModels = (function () {
         if (res.correct) {
           combo = res.firstTry ? combo + 1 : 0;
           b.classList.add('right'); tv.solve = tv.flub = null;
+          // the moment of a right answer, as approved: a tick on the answer, and the answer itself in green where the card asked for it
+          if (b.classList.contains('ans') && !b.classList.contains('pic') && !/[✔✘]/.test(b.textContent)) b.appendChild(icon('check'));
+          var gap = qslot.querySelector('.vans,.box');
+          if (gap && b.hasAttribute('data-v') && v === q.answer && (typeof v === 'number' || /^[<>=]$/.test(v))) { gap.textContent = typeof v === 'number' ? L.fmt(v) : v; gap.classList.add('ok'); }
           [].forEach.call(answers.children, function (x) { if (x !== b && !x.classList.contains('wrong')) x.classList.add('off'); });
           sfx.correct(combo); var c = center(b); burst(c[0], c[1], 12 + combo * 2);
           mood('cheer', combo >= 3 ? combo + ' בְּרֶצֶף! ' + praise() : res.firstTry ? praise() : line('after', AFTER));
@@ -7043,7 +7246,7 @@ var TrollModels = (function () {
       for (id in strikes) show(id);
       sel = null; pick(keep.sel && cells[keep.sel] ? keep.sel : lay.first);
     }
-    function undoKey() { clr.textContent = keep.undo ? '↩' : '🧽'; clr.setAttribute('aria-label', keep.undo ? 'בִּטּוּל הַנִּקּוּי' : 'נִקּוּי הַדַּף'); }
+    function undoKey() { pkIcon(clr, keep.undo ? 'undo' : 'eraser', keep.undo ? '↩' : '🧽'); clr.setAttribute('aria-label', keep.undo ? 'בִּטּוּל הַנִּקּוּי' : 'נִקּוּי הַדַּף'); }
     function fresh() { if (keep.undo) { keep.undo = null; undoKey(); } } // the first key after a clearing: the cleared page cannot come back any more
     function type(d) {
       if (!sel) return;
@@ -7098,8 +7301,9 @@ var TrollModels = (function () {
     var keys = h('div', { class: 'padk' }), clr;
     function key(t, f, cls, aria) { var b = h('button', { class: 'pk' + (cls ? ' ' + cls : ''), text: t, on: { click: function () { sfx.tap(); f(); } } }); if (aria) b.setAttribute('aria-label', aria); keys.appendChild(b); return b; }
     ('1234567890' + (free ? '+−×:=().' : '')).split('').forEach(function (d) { key(d, function () { type(d); }, /\d/.test(d) ? '' : 'sg'); });
-    key('⌫', back, 'del', 'מְחִיקָה'); clr = key('🧽', clear, 'clr', 'נִקּוּי הַדַּף'); undoKey();
-    var tip = h('div', { class: 'padtip', text: lay.tip }), backB = h('button', { class: 'padback', text: '✓ חֲזָרָה לַתַּרְגִּיל', on: { click: close } });
+    function pkIcon(b, name, t) { b.textContent = ''; b.appendChild(icon(name)); b.appendChild(h('span', { class: 'pkt', text: t })); }
+    pkIcon(key('⌫', back, 'del', 'מְחִיקָה'), 'backspace', '⌫'); clr = key('🧽', clear, 'clr', 'נִקּוּי הַדַּף'); undoKey();
+    var tip = h('div', { class: 'padtip', text: lay.tip }), backB = h('button', { class: 'padback', on: { click: close } }, icon('check', 'm'), h('span', { text: 'חֲזָרָה לַתַּרְגִּיל' }));
     var cap = free ? h('div', { class: 'padcap', dir: q.rtl ? 'rtl' : 'ltr', html: (q.pic ? q.pic + ' ' : '') + frx(q.text) }) : null;
     var card = h('div', { class: 'padc', 'data-fit': '1', 'data-kind': pd.kind },
       h('div', { class: 'padh' }, h('b', { text: lay.title }), h('button', { class: 'padx', text: '✕', 'aria-label': 'סְגִירָה', on: { click: close } })),
