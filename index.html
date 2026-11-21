@@ -1418,6 +1418,140 @@ body .mwrap .mlab{font-size:clamp(16px,calc(12.5px*var(--s)),20px)}
 body.toy .marr{background:#fff;color:var(--ti);border-color:#fff;box-shadow:0 4px 0 var(--te2),0 7px 10px rgba(0,0,0,.2)}
 body.toy .mwrap>.parb{background:#fff;color:var(--ti);box-shadow:0 4px 0 var(--te2)}
 /* SCROLLMAP-END */
+/* DS-BEGIN ================= the design system (task "ds"; the approved direction A of spike/polish; for agents: docs/prompts/ds-handoff.md) =================
+   ONE set of tokens and base components for the whole game. A screen is converted by using these tokens and classes instead of numbers of its own.
+   TOKENS (custom properties on body.toy)
+   type     --t-cap 14 · --t-body 16 · --t-lead 20 (17 on a 360 px phone) · --t-h2 24 (20) · --t-h1 32 (26) · --t-num 48 (36): the four big sizes are clamp()s on vmin
+            line heights are multiples of 4: --lh-cap 20 · --lh-body 24 · --lh-lead 24 · --lh-h2 32 · --lh-h1 40 · --lh-num 56
+            --w-reg 500 · --w-bold 700 · --w-black 800
+   space    --sp1 4 · --sp2 8 · --sp3 12 · --sp4 16 · --sp5 24 · --sp6 32 · --sp7 48   (the 4/8 grid; --s0/--s1 were taken by the sky)
+   radius   --r-s 12 (chip, label) · --r-m 16 (button, toast) · --r-l 24 (card, panel) · --r-full 999 (round button, capsule, counters)
+   colour   --ink text and icons · --ink-2 secondary text · --surface cards, chips, buttons · --surface-2 sunken area inside a card · --line hairline, empty pip
+            --edge the solid edge under a surface · --primary THE action of the screen (+ --primary-edge) · --success right, done, next (+ --success-edge)
+            --accent "you are here", warning, gift (+ --accent-edge) · --locked locked icon · --locked-ink locked text · --locked-surface
+            --ans-0 pink · --ans-1 blue · --ans-2 orange-brown · --ans-3 purple (+ --ans-0e ... --ans-3e their edges): the four answers, white text 4.6:1 or better
+            --c-star · --energy · --heart: the colours of the three small glyphs
+            the world keeps the names of the skin: --s0 --s1 sky · --w0 --w1 sea · --g0..--g3 island grass · --sand --sand2 (they change at dusk and at night)
+   shadow   ONE recipe: a solid edge below + one soft ambient shadow. --e1 (chip, button, toast) · --e2 (card) · --e3 (panel, overlay card);
+            a coloured button uses its own edge colour: 0 4px 0 <edge>, 0 10px 20px <soft>. Pressed: --press (translateY(3px)) and the edge drops to 1px
+   motion   --d-fast 120ms · --d-base 200ms · --d-slow 360ms · --ease · --spring. Only transform and opacity move.
+   The variables of the older blocks (--ti --tp --tc --te --te2 --tmain --tnext --tgold --tpink ...) now point at these tokens, so unconverted screens shift with them. */
+body.toy{
+  --t-cap:14px;--t-body:16px;--t-lead:clamp(17px,5vmin,20px);--t-h2:clamp(20px,6vmin,24px);--t-h1:clamp(26px,8vmin,32px);--t-num:clamp(36px,11vmin,48px);
+  --lh-cap:20px;--lh-body:24px;--lh-lead:24px;--lh-h2:32px;--lh-h1:40px;--lh-num:56px;
+  --w-reg:500;--w-bold:700;--w-black:800;
+  --sp1:4px;--sp2:8px;--sp3:12px;--sp4:16px;--sp5:24px;--sp6:32px;--sp7:48px;
+  --r-s:12px;--r-m:16px;--r-l:24px;--r-full:999px;
+  --ink:#2e2350;--ink-2:#5a5177;--surface:#fff;--surface-2:#f3f0fa;--line:#e2dcf1;--edge:#c9bfe6;
+  --primary:#c2185b;--primary-edge:#8a0f40;--success:#1b7f3b;--success-edge:#115426;
+  --accent:#ffc83d;--accent-edge:#d99a00;--locked:#8c86a3;--locked-ink:#5d5670;--locked-surface:#e9e6f1;
+  --ans-0:#d6266f;--ans-0e:#8f1148;--ans-1:#1976c8;--ans-1e:#0f4f8f;--ans-2:#b25e00;--ans-2e:#7a3f00;--ans-3:#7a4ae0;--ans-3e:#4f2ba6;
+  --c-star:#e79b00;--energy:#f26a1b;--heart:#e0356f;
+  --e1:0 2px 0 var(--edge),0 4px 10px rgba(46,35,80,.12);--e2:0 4px 0 var(--edge),0 10px 20px rgba(46,35,80,.16);--e3:0 6px 0 var(--edge),0 18px 36px rgba(46,35,80,.22);
+  --press:translateY(3px);
+  --d-fast:120ms;--d-base:200ms;--d-slow:360ms;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  /* the older names follow the tokens */
+  --ti:var(--ink);--tp:var(--surface);--tc:var(--surface-2);--te:var(--line);--te2:var(--edge);--tsh:rgba(46,35,80,.16);--tgold:var(--accent);--tpink:var(--primary);--tpip:var(--line);--tpipon:#f2a900;
+  --tmain:var(--primary);--tmaine:var(--primary-edge);--tnext:var(--success);--tnexte:var(--success-edge);
+  color:var(--ink)}
+/* ---- icons (every skin): icon(name, size) in the ui block. Coloured by currentColor; three glyphs carry a colour of their own ---- */
+svg.ic{width:24px;height:24px;max-width:none;max-height:none;flex:none;display:inline-block;vertical-align:middle;fill:currentColor;pointer-events:none;position:static;transform:none;animation:none;filter:none}
+svg.ic.ic-s{width:16px;height:16px}svg.ic.ic-m{width:20px;height:20px}svg.ic.ic-xl{width:32px;height:32px}
+svg.ic.ic-t{width:1.15em;height:1.15em;vertical-align:-.2em}
+svg.ic.ic-flip{transform:scaleX(-1)}
+.ic-star{color:#e79b00}.ic-energy{color:#f26a1b}.ic-heart{color:#e0356f}
+.ic-coin{border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe28a,#f5b400 70%);box-shadow:inset 0 0 0 2px #d99a00}.ic-coin path{display:none}
+.btn .ic-star,.btn .ic-energy,.btn .ic-heart{color:inherit}
+.num{direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.ct{display:inline-flex;align-items:center;gap:4px}.ct .num{font-weight:inherit}
+.chip.who{display:inline-flex;align-items:center;gap:4px}.chip.who .whon{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tgroup{display:flex;gap:8px;align-items:center}
+/* ---- the top bar: ONE row on every size. Start: [back home] [music sound] (on the camp: [player] [music sound]); end: the counters, one flat pill ---- */
+body.toy .top{flex-wrap:nowrap;gap:var(--sp2);min-height:48px;position:relative}
+body.toy .top .chips.nav{gap:var(--sp2);flex:0 0 auto}
+body.toy .tgroup{gap:0;height:48px;background:var(--surface);border-radius:var(--r-full);box-shadow:var(--e1)}
+body.toy .top .icon{width:48px;height:48px;display:grid;place-items:center;padding:0;background:none;box-shadow:none;color:var(--ink);border-radius:var(--r-full);font-size:var(--t-body);transition:transform var(--d-fast) var(--ease),background var(--d-fast) var(--ease)}
+body.toy .top .icon:active{background:var(--surface-2);transform:scale(.94)}
+body.toy .top .icon.off,body.toy .top .icon.dim{color:var(--locked);opacity:1}
+body.toy .top .chips.cnt{margin-inline-start:auto;flex:0 0 auto;gap:var(--sp2);height:32px;padding:0 10px;background:rgba(255,255,255,.88);border-radius:var(--r-full)}
+body.toy .top .ct{background:none;box-shadow:none;padding:0;border-radius:0;gap:var(--sp1);font-size:var(--t-body);font-weight:var(--w-bold);line-height:1;color:var(--ink)}
+body.toy .top .ct .ic{width:18px;height:18px}
+body.toy .top .chip.who{flex:0 1 auto;min-width:48px;max-width:11em;height:48px;padding:0 var(--sp3) 0 var(--sp4);background:var(--surface);color:var(--ink);border-radius:var(--r-full);box-shadow:var(--e1);font-size:var(--t-body);font-weight:var(--w-bold);transition:transform var(--d-fast) var(--ease)}
+body.toy .top .chip.who:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+/* phones: the pill is compact; with long numbers (.long = 9 digits or more in the three counters, .xlong = 12, .xxlong = 13 or more; set by ctSet) it gets tighter */
+@media (max-width:520px){
+  body.toy .top .cnt.long .ct{font-size:var(--t-cap);gap:3px}body.toy .top .cnt.long .ct .ic{width:16px;height:16px}body.toy .top .cnt.long{gap:6px;padding:0 var(--sp2)}
+  body.toy .top .cnt.xxlong .ct{font-size:12px}
+}
+@media (max-width:420px){
+  body.toy .top,body.toy .top .chips.nav{gap:var(--sp1)}
+  body.toy .top .chips.cnt{gap:6px;padding:0 6px}body.toy .top .ct{font-size:var(--t-cap);gap:3px}body.toy .top .ct .ic{width:16px;height:16px}
+  body.toy .top .cnt.long{gap:5px;padding:0 6px}body.toy .top .cnt.long .ct{font-size:12px;gap:2px}body.toy .top .cnt.long .ct .ic{width:14px;height:14px}
+  body.toy .top .cnt.xxlong .xpchip{display:none}
+  body.toy .top .chip.who{padding:0 var(--sp2) 0 var(--sp3)}
+}
+@media (max-width:380px){body.toy .top .icon{width:44px}body.toy .top.tight .icon{width:42px}}
+/* ---- title: plain ink on the world, no pill. By night the sky is dark, so a title that stands on the world is white ---- */
+:where(body.toy) .h2,:where(body.toy) .title{background:none;box-shadow:none;border-radius:0;padding:0;color:var(--ink);font-weight:var(--w-black);-webkit-text-stroke:0;text-shadow:none}
+body.toy .rmap .h2,body.toy .camp .title,body.toy .tpl>.h2,body.toy #podium .h2{background:none;box-shadow:none;border-radius:0;color:var(--ink);font-weight:var(--w-black)}
+body.toy.night .screen>.h2,body.toy.night .screen>.title,body.toy.night .camp .title{color:#fff;text-shadow:0 2px 0 rgba(12,34,96,.6)}
+.ds-title{margin:0;font-size:var(--t-h2);line-height:var(--lh-h2);font-weight:var(--w-black);color:var(--ink);text-align:center}
+/* ---- buttons. .btn = primary (THE action); .btn.b2 = secondary (white); .btn.b3 = accent; .btn.check / .btn.nxt = success; .btn.quiet = tertiary; .icon = round icon button.
+   The shape is one: radius --r-m, a 4 px solid edge and a soft shadow, pressed = 3 px down. Screens keep their own sizes until they are converted. ---- */
+:where(body.toy) .btn{border-radius:var(--r-m);background:var(--primary);color:#fff;font-weight:var(--w-bold);text-shadow:none;box-shadow:0 4px 0 var(--primary-edge),0 10px 20px rgba(138,15,64,.28);transition:transform var(--d-fast) var(--ease),box-shadow var(--d-fast) var(--ease)}
+:where(body.toy) .btn.b2{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+:where(body.toy) .btn.b3{background:var(--accent);color:var(--ink);box-shadow:0 4px 0 var(--accent-edge),0 10px 20px rgba(46,35,80,.16)}
+:where(body.toy) .btn.check,:where(body.toy) .btn.nxt{background:var(--success);color:#fff;box-shadow:0 4px 0 var(--success-edge),0 10px 20px rgba(17,84,38,.25)}
+:where(body.toy) .btn.quiet{background:rgba(255,255,255,.88);color:var(--ink);box-shadow:none;border-radius:var(--r-full);font-size:var(--t-cap);min-height:48px;padding:0 var(--sp3)}
+body.toy .btn:active,body.toy .ans:active{transform:var(--press)}
+:where(body.toy) .btn:disabled,:where(body.toy) .btn.locked{background:var(--locked-surface);color:var(--locked-ink);box-shadow:none}
+:where(body.toy) .icon{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+:where(body.toy) .icon.off{color:var(--locked)}
+body.toy .helpb{background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .helpb.glow{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+body.toy .parb{background:rgba(255,255,255,.88);color:var(--ink);box-shadow:none}
+body.toy button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+/* ---- the four answers: four colours as before, in the one button shape ---- */
+body.toy .ans{border-radius:var(--r-m);font-weight:var(--w-black);text-shadow:none;transition:transform var(--d-fast) var(--ease),box-shadow var(--d-fast) var(--ease),opacity var(--d-base) var(--ease),filter var(--d-base) var(--ease)}
+body.toy .ans.c0{background:var(--ans-0);box-shadow:0 4px 0 var(--ans-0e),0 10px 20px rgba(143,17,72,.25)}
+body.toy .ans.c1{background:var(--ans-1);box-shadow:0 4px 0 var(--ans-1e),0 10px 20px rgba(15,79,143,.25)}
+body.toy .ans.c2{background:var(--ans-2);box-shadow:0 4px 0 var(--ans-2e),0 10px 20px rgba(122,63,0,.25)}
+body.toy .ans.c3{background:var(--ans-3);box-shadow:0 4px 0 var(--ans-3e),0 10px 20px rgba(79,43,166,.25)}
+body.toy .ans.right{background:var(--success);box-shadow:0 4px 0 var(--success-edge),0 10px 20px rgba(17,84,38,.25)}
+body.toy .ans.pic{background:var(--surface);color:var(--ink)}
+body.toy .ans.pic.c0{box-shadow:inset 0 0 0 4px var(--ans-0),0 4px 0 var(--ans-0e)}body.toy .ans.pic.c1{box-shadow:inset 0 0 0 4px var(--ans-1),0 4px 0 var(--ans-1e)}
+body.toy .ans.pic.c2{box-shadow:inset 0 0 0 4px var(--ans-2),0 4px 0 var(--ans-2e)}body.toy .ans.pic.c3{box-shadow:inset 0 0 0 4px var(--ans-3),0 4px 0 var(--ans-3e)}
+body.toy .ans.pic.right{background:#dff5e4;box-shadow:inset 0 0 0 4px var(--success),0 4px 0 var(--success-edge)}
+/* ---- chip / label, card, panel, overlay card, toast ---- */
+:where(body.toy) .chip{background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1);font-weight:var(--w-bold)}
+.ds-chip{display:inline-flex;align-items:center;gap:var(--sp1);padding:var(--sp1) var(--sp2);background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold)}
+.ds-chip.here{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+.ds-chip.locked{background:rgba(255,255,255,.78);color:var(--locked-ink);box-shadow:none;font-weight:var(--w-reg)}
+.ds-card{background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e2);padding:var(--sp3)}
+.ds-panel{background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e3);padding:var(--sp3)}
+body.toy .ovl{background:rgba(46,35,80,.5)}
+body.toy .ovl .card{background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e3)}
+body.toy .qcard{border-radius:var(--r-l);box-shadow:var(--e2);color:var(--ink)}
+:where(body.toy) .bubble,:where(body.toy) .banner,.ds-toast{background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);font-weight:var(--w-bold)}
+.ds-toast{display:inline-block;padding:var(--sp2) var(--sp4);font-size:var(--t-body);line-height:var(--lh-body);text-wrap:balance}
+.ds-toast.good{background:var(--success);color:#fff;box-shadow:0 2px 0 var(--success-edge),0 4px 10px rgba(46,35,80,.12)}
+:where(body.toy) .note{background:rgba(255,255,255,.88);color:var(--ink);border-radius:var(--r-s)}
+/* ---- pips: .ds-pips > .ds-pip = one stage of a house (empty, .s1 .s2 .s3 = stars as a fill level, .now); .ds-stones > .ds-stone = the progress of a round (.now, .done) ---- */
+.ds-pips{display:inline-flex;gap:var(--sp1);direction:rtl}
+.ds-pip{width:12px;height:12px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px rgba(46,35,80,.55)}
+.ds-pip.s1{background:linear-gradient(to top,#f2a900 38%,#fff 38%)}.ds-pip.s2{background:linear-gradient(to top,#f2a900 68%,#fff 68%)}.ds-pip.s3{background:#f2a900}
+.ds-pip.now{box-shadow:inset 0 0 0 2px var(--primary),0 0 0 2px #fff,0 0 0 4px var(--primary)}
+.ds-stones{display:flex;justify-content:center;align-items:center;gap:var(--sp2);direction:rtl}
+.ds-stone{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.7);color:var(--ink-2);font-size:var(--t-cap);font-weight:var(--w-bold);line-height:1}
+.ds-stone.now{width:32px;height:32px;margin:-4px 0;background:var(--accent);color:var(--ink);box-shadow:0 2px 0 var(--accent-edge)}
+.ds-stone.done{background:var(--success);color:#fff}.ds-stone.done .ic{width:14px;height:14px}
+/* ---- until the exercise screen is converted: on a phone the companion stood in the corner where the counters are now; it stands beside the progress row ---- */
+@media (max-width:520px) and (min-height:521px){
+  body.toy .qrow .buddy,body.toy .screen.vmode .buddy,body.toy .screen.packq .buddy,body.toy .screen.handson .buddy{top:58px;width:46px}
+  body.toy .screen>.path{min-height:54px;padding-inline-end:54px}
+  body.toy .screen>.path[style*="none"]~.lvrow{min-height:60px;padding-inline-end:54px}
+}
+/* DS-END */
 </style>
 </head>
 <body>
@@ -4090,7 +4224,7 @@ var TrollModels = (function () {
   'use strict';
   var L = TrollLogic, A = TrollArt, M = TrollModels, KEY = 'trollVillage.v1', PKEY = 'trollVillage.profiles', DKEY = 'trollVillage.r.', DKEY_OLD = 'trollVillage.q.', DKEY_OLD2 = 'trollVillage.p.';
   var VILLAGE = ''; // an optional second line under the name of the game
-  var CHEST = { bronze: '🥉 תֵּבַת אָרָד', silver: '🥈 תֵּבַת כֶּסֶף', gold: '🥇 תֵּבַת זָהָב' };
+  var CHEST = { bronze: 'תֵּבַת אָרָד', silver: 'תֵּבַת כֶּסֶף', gold: 'תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
   var TOY = !/[&#]skin=old/.test(hash); // the skin "the toy island" (body.toy). At the flip this becomes !/[&#]skin=old/.test(hash)
@@ -4388,11 +4522,107 @@ var TrollModels = (function () {
   function frx(t) { return String(t).replace(/([\d□?]+)\/(\d+)/g, '<span class="fr"><i>$1</i><i>$2</i></span>'); } // 3/5 with a fraction bar
   function topicOf(id) { for (var i = 0; i < L.TOPICS.length; i++) if (L.TOPICS[i].id === id) return L.TOPICS[i]; return MIX; }
 
+  // DS-ICONS-BEGIN ---------- the design system's icons (task "ds", docs/prompts/ds-handoff.md): Phosphor Icons, MIT (assets/icons/LICENSE-phosphor.txt),
+  // weight Fill; check, close, plus and minus in weight Bold; heart-off in weight Regular. One path per icon, viewBox 0 0 256 256, coloured by currentColor.
+  // icon(name, size) returns an <svg class="ic ic-<name>"> element; size: 's' 16 px, 'm' 20, 'l' 24 (default), 'xl' 32, 't' = 1.15em (inside a line of text).
+  // iconHTML(name, size) returns the same as a string. An unknown name returns an empty 'ic' box and reports it once.
+  var ICONS = {
+    back: 'M221.66,133.66l-72,72A8,8,0,0,1,136,200V136H40a8,8,0,0,1,0-16h96V56a8,8,0,0,1,13.66-5.66l72,72A8,8,0,0,1,221.66,133.66Z',
+    home: 'M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z',
+    sound: 'M160,32.25V223.69a8.29,8.29,0,0,1-3.91,7.18,8,8,0,0,1-9-.56l-65.57-51A4,4,0,0,1,80,176.16V79.84a4,4,0,0,1,1.55-3.15l65.57-51a8,8,0,0,1,10,.16A8.27,8.27,0,0,1,160,32.25ZM60,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H60a4,4,0,0,0,4-4V84A4,4,0,0,0,60,80Zm126.77,20.84a8,8,0,0,0-.72,11.3,24,24,0,0,1,0,31.72,8,8,0,1,0,12,10.58,40,40,0,0,0,0-52.88A8,8,0,0,0,186.74,100.84Zm40.89-26.17a8,8,0,1,0-11.92,10.66,64,64,0,0,1,0,85.34,8,8,0,1,0,11.92,10.66,80,80,0,0,0,0-106.66Z',
+    'sound-off': 'M213.92,210.62a8,8,0,1,1-11.84,10.76L160,175.09v48.6a8.29,8.29,0,0,1-3.91,7.18,8,8,0,0,1-9-.56l-65.55-51A4,4,0,0,1,80,176.18V87.09L42.08,45.38A8,8,0,1,1,53.92,34.62Zm-27.21-55.46a8,8,0,0,0,11.29-.7,40,40,0,0,0,0-52.88,8,8,0,1,0-12,10.57,24,24,0,0,1,0,31.72A8,8,0,0,0,186.71,155.16Zm40.92-80.49a8,8,0,1,0-11.92,10.66,64,64,0,0,1,0,85.34,8,8,0,1,0,11.92,10.66,80,80,0,0,0,0-106.66ZM153,119.87a4,4,0,0,0,7-2.7V32.25a8.27,8.27,0,0,0-2.88-6.4,8,8,0,0,0-10-.16L103.83,59.33a4,4,0,0,0-.5,5.85ZM60,80H32A16,16,0,0,0,16,96v64a16,16,0,0,0,16,16H60a4,4,0,0,0,4-4V84A4,4,0,0,0,60,80Z',
+    music: 'M212.92,17.71a7.89,7.89,0,0,0-6.86-1.46l-128,32A8,8,0,0,0,72,56V166.1A36,36,0,1,0,88,196V102.25l112-28V134.1A36,36,0,1,0,216,164V24A8,8,0,0,0,212.92,17.71Z',
+    map: 'M228.92,49.69a8,8,0,0,0-6.86-1.45L160.93,63.52,99.58,32.84a8,8,0,0,0-5.52-.6l-64,16A8,8,0,0,0,24,56V200a8,8,0,0,0,9.94,7.76l61.13-15.28,61.35,30.68A8.15,8.15,0,0,0,160,224a8,8,0,0,0,1.94-.24l64-16A8,8,0,0,0,232,200V56A8,8,0,0,0,228.92,49.69ZM96,176a8,8,0,0,0-1.94.24L40,189.75V62.25L95.07,48.48l.93.46Zm120,17.75-55.07,13.77-.93-.46V80a8,8,0,0,0,1.94-.23L216,66.25Z',
+    cart: 'M239.71,74.14l-25.64,92.28A24.06,24.06,0,0,1,191,184H92.16A24.06,24.06,0,0,1,69,166.42L33.92,40H16a8,8,0,0,1,0-16H40a8,8,0,0,1,7.71,5.86L57.19,64H232a8,8,0,0,1,7.71,10.14ZM88,200a16,16,0,1,0,16,16A16,16,0,0,0,88,200Zm104,0a16,16,0,1,0,16,16A16,16,0,0,0,192,200Z',
+    gift: 'M216,72H180.92c.39-.33.79-.65,1.17-1A29.53,29.53,0,0,0,192,49.57,32.62,32.62,0,0,0,158.44,16,29.53,29.53,0,0,0,137,25.91a54.94,54.94,0,0,0-9,14.48,54.94,54.94,0,0,0-9-14.48A29.53,29.53,0,0,0,97.56,16,32.62,32.62,0,0,0,64,49.57,29.53,29.53,0,0,0,73.91,71c.38.33.78.65,1.17,1H40A16,16,0,0,0,24,88v32a16,16,0,0,0,16,16v64a16,16,0,0,0,16,16h60a4,4,0,0,0,4-4V120H40V88h80v32h16V88h80v32H136v92a4,4,0,0,0,4,4h60a16,16,0,0,0,16-16V136a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72ZM84.51,59a13.69,13.69,0,0,1-4.5-10A16.62,16.62,0,0,1,96.59,32h.49a13.69,13.69,0,0,1,10,4.5c8.39,9.48,11.35,25.2,12.39,34.92C109.71,70.39,94,67.43,84.51,59Zm87,0c-9.49,8.4-25.24,11.36-35,12.4C137.7,60.89,141,45.5,149,36.51a13.69,13.69,0,0,1,10-4.5h.49A16.62,16.62,0,0,1,176,49.08,13.69,13.69,0,0,1,171.49,59Z',
+    journal: 'M240,56V200a8,8,0,0,1-8,8H160a24,24,0,0,0-24,23.94,7.9,7.9,0,0,1-5.12,7.55A8,8,0,0,1,120,232a24,24,0,0,0-24-24H24a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8H88a32,32,0,0,1,32,32v87.73a8.17,8.17,0,0,0,7.47,8.25,8,8,0,0,0,8.53-8V80a32,32,0,0,1,32-32h64A8,8,0,0,1,240,56Z',
+    gear: 'M237.94,107.21a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A111.92,111.92,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.63a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z',
+    hint: 'M176,232a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,232Zm40-128a87.55,87.55,0,0,1-33.64,69.21A16.24,16.24,0,0,0,176,186v6a16,16,0,0,1-16,16H96a16,16,0,0,1-16-16v-6a16,16,0,0,0-6.23-12.66A87.59,87.59,0,0,1,40,104.49C39.74,56.83,78.26,17.14,125.88,16A88,88,0,0,1,216,104Zm-32.11-9.34a57.6,57.6,0,0,0-46.56-46.55,8,8,0,0,0-2.66,15.78c16.57,2.79,30.63,16.85,33.44,33.45A8,8,0,0,0,176,104a9,9,0,0,0,1.35-.11A8,8,0,0,0,183.89,94.66Z',
+    say: 'M198.13,202.85A8,8,0,0,1,192,216H24a8,8,0,0,1-6.12-13.15c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,172.44,183.18,185.07,198.13,202.85ZM196.86,61.39a8,8,0,0,0-4.22,10.5,92.26,92.26,0,0,1,0,72.22,8,8,0,1,0,14.72,6.29,108.36,108.36,0,0,0,0-84.8A8,8,0,0,0,196.86,61.39Zm39.85-8.54a8,8,0,1,0-14.7,6.3,124.43,124.43,0,0,1,0,97.7,8,8,0,1,0,14.7,6.3,140.34,140.34,0,0,0,0-110.3Z',
+    sheet: 'M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM146.34,77.66a8,8,0,0,1,11.32-11.32L168,76.69l10.34-10.35a8,8,0,0,1,11.32,11.32L179.31,88l10.35,10.34a8,8,0,0,1-11.32,11.32L168,99.31l-10.34,10.35a8,8,0,0,1-11.32-11.32L156.69,88ZM112,176H96v16a8,8,0,0,1-16,0V176H64a8,8,0,0,1,0-16H80V144a8,8,0,0,1,16,0v16h16a8,8,0,0,1,0,16Zm0-80H64a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Zm80,96H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Zm0-32H144a8,8,0,0,1,0-16h48a8,8,0,0,1,0,16Z',
+    close: 'M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z',
+    next: 'M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z',
+    check: 'M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z',
+    lock: 'M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Zm32-84H96V56a32,32,0,0,1,64,0Z',
+    'lock-open': 'M208,80H96V56a32,32,0,0,1,32-32c15.37,0,29.2,11,32.16,25.59a8,8,0,0,0,15.68-3.18C171.32,24.15,151.2,8,128,8A48.05,48.05,0,0,0,80,56V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80Zm-80,84a12,12,0,1,1,12-12A12,12,0,0,1,128,164Z',
+    star: 'M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z',
+    coin: 'M207.58,63.84C186.85,53.48,159.33,48,128,48S69.15,53.48,48.42,63.84,16,88.78,16,104v48c0,15.22,11.82,29.85,32.42,40.16S96.67,208,128,208s58.85-5.48,79.58-15.84S240,167.22,240,152V104C240,88.78,228.18,74.15,207.58,63.84Zm-87.58,96v32c-19-.62-35-3.42-48-7.49V153.05A203.43,203.43,0,0,0,120,159.86Zm16,0a203.43,203.43,0,0,0,48-6.81v31.31c-13,4.07-29,6.87-48,7.49ZM32,152V133.53a82.88,82.88,0,0,0,16.42,10.63c2.43,1.21,5,2.35,7.58,3.43V178C40.17,170.16,32,160.29,32,152Zm168,26V147.59c2.61-1.08,5.15-2.22,7.58-3.43A82.88,82.88,0,0,0,224,133.53V152C224,160.29,215.83,170.16,200,178Z',
+    energy: 'M213.85,125.46l-112,120a8,8,0,0,1-13.69-7l14.66-73.33L45.19,143.49a8,8,0,0,1-3-13l112-120a8,8,0,0,1,13.69,7L153.18,90.9l57.63,21.61a8,8,0,0,1,3,12.95Z',
+    heart: 'M240,102c0,70-103.79,126.66-108.21,129a8,8,0,0,1-7.58,0C119.79,228.66,16,172,16,102A62.07,62.07,0,0,1,78,40c20.65,0,38.73,8.88,50,23.89C139.27,48.88,157.35,40,178,40A62.07,62.07,0,0,1,240,102Z',
+    'heart-off': 'M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102A46.06,46.06,0,0,1,78,56c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,155.61,146.24,204.15,128,214.8Z',
+    player: 'M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z',
+    players: 'M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z',
+    trash: 'M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,168a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm0-120H96V40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z',
+    plus: 'M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z',
+    minus: 'M228,128a12,12,0,0,1-12,12H40a12,12,0,0,1,0-24H216A12,12,0,0,1,228,128Z',
+    up: 'M207.39,115.06A8,8,0,0,1,200,120H136v96a8,8,0,0,1-16,0V120H56a8,8,0,0,1-5.66-13.66l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,207.39,115.06Z',
+    down: 'M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72A8,8,0,0,1,56,136h64V40a8,8,0,0,1,16,0v96h64a8,8,0,0,1,5.66,13.66Z',
+    left: 'M224,128a8,8,0,0,1-8,8H120v64a8,8,0,0,1-13.66,5.66l-72-72a8,8,0,0,1,0-11.32l72-72A8,8,0,0,1,120,56v64h96A8,8,0,0,1,224,128Z',
+    flag: 'M227.32,48.75A8,8,0,0,0,218.76,50c-28,24.22-51.72,12.48-79.21-1.13C111.07,34.76,78.78,18.79,42.76,50h0A8,8,0,0,0,40,56V224a8,8,0,0,0,16,0V179.77c26.79-21.16,49.87-9.75,76.45,3.41,16.4,8.11,34.06,16.85,53,16.85,13.93,0,28.54-4.75,43.82-18a8,8,0,0,0,2.76-6V56A8,8,0,0,0,227.32,48.75ZM56,160.44V109.88c16.85-11.28,32.64-11.59,48-7.34v51.74C88.87,150.47,72.87,150.71,56,160.44ZM104,50.87c9.25,2.83,18.61,7.45,28.45,12.32,11.26,5.57,23.11,11.43,35.55,14.56v51.74c15.35,4.25,31.14,3.94,48-7.35v50.11c-16.87,13.32-32.27,13.72-48,8.91V129.49c-21.62-6-42.38-21-64-26.95Z',
+    trophy: 'M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z',
+    cloud: 'M160.06,40A88.1,88.1,0,0,0,81.29,88.67h0A87.48,87.48,0,0,0,72,127.73,8.18,8.18,0,0,1,64.57,136,8,8,0,0,1,56,128a103.66,103.66,0,0,1,5.34-32.92,4,4,0,0,0-4.75-5.18A64.09,64.09,0,0,0,8,152c0,35.19,29.75,64,65,64H160a88.09,88.09,0,0,0,87.93-91.48C246.11,77.54,207.07,40,160.06,40Z',
+    'cloud-ok': 'M247.93,124.52C246.11,77.54,207.07,40,160.06,40A88.1,88.1,0,0,0,81.29,88.67h0A87.48,87.48,0,0,0,72,127.73,8.18,8.18,0,0,1,64.57,136,8,8,0,0,1,56,128a103.66,103.66,0,0,1,5.34-32.92,4,4,0,0,0-4.75-5.18A64.09,64.09,0,0,0,8,152c0,35.19,29.75,64,65,64H160A88.09,88.09,0,0,0,247.93,124.52Zm-50.27-6.86-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L144,148.69l42.34-42.35a8,8,0,0,1,11.32,11.32Z',
+    'cloud-off': 'M248,128.72A87.74,87.74,0,0,1,222.41,190a4,4,0,0,1-5.77-.16L103.78,65.67a4,4,0,0,1,.39-5.76A87.82,87.82,0,0,1,160.87,40C209.15,40.47,248.38,80.43,248,128.72ZM53.92,34.62A8,8,0,1,0,42.08,45.38L81.33,88.56l-.06.11A64,64,0,0,0,8,153c.53,35.12,29.84,63,65,63h87a87.65,87.65,0,0,0,31.78-5.95l10.3,11.33a8,8,0,0,0,11.33.52,8.32,8.32,0,0,0,.29-11.52Z',
+    practice: 'M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z',
+    discover: 'M168,112a56,56,0,1,1-56-56A56,56,0,0,1,168,112Zm61.66,117.66a8,8,0,0,1-11.32,0l-50.06-50.07a88,88,0,1,1,11.32-11.31l50.06,50.06A8,8,0,0,1,229.66,229.66ZM112,184a72,72,0,1,0-72-72A72.08,72.08,0,0,0,112,184Z',
+    challenge: 'M101.85,191.14C97.34,201,82.29,224,40,224a8,8,0,0,1-8-8c0-42.29,23-57.34,32.86-61.85a8,8,0,0,1,6.64,14.56c-6.43,2.93-20.62,12.36-23.12,38.91,26.55-2.5,36-16.69,38.91-23.12a8,8,0,1,1,14.56,6.64Zm122-144a16,16,0,0,0-15-15c-12.58-.75-44.73.4-71.4,27.07h0L88,108.7A8,8,0,0,1,76.67,97.39l26.56-26.57A4,4,0,0,0,100.41,64H74.35A15.9,15.9,0,0,0,63,68.68L28.7,103a16,16,0,0,0,9.07,27.16l38.47,5.37,44.21,44.21,5.37,38.49a15.94,15.94,0,0,0,10.78,12.92,16.11,16.11,0,0,0,5.1.83A15.91,15.91,0,0,0,153,227.3L187.32,193A16,16,0,0,0,192,181.65V155.59a4,4,0,0,0-6.83-2.82l-26.57,26.56a8,8,0,0,1-11.71-.42,8.2,8.2,0,0,1,.6-11.1l49.27-49.27h0C223.45,91.86,224.6,59.71,223.85,47.12Z',
+    target: 'M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32L167.6,99.71h0l-37.71,37.71-23.95,23.95a40,40,0,0,0,62-35.67,8,8,0,1,1,16-.9,56,56,0,0,1-95.5,42.79h0a56,56,0,0,1,73.13-84.43L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z',
+    repeat: 'M24,128A72.08,72.08,0,0,1,96,56h96V40a8,8,0,0,1,13.66-5.66l24,24a8,8,0,0,1,0,11.32l-24,24A8,8,0,0,1,192,88V72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H64V168a8,8,0,0,0-13.66-5.66l-24,24a8,8,0,0,0,0,11.32l24,24A8,8,0,0,0,64,216V200h96a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z',
+    shuffle: 'M237.66,178.34a8,8,0,0,1,0,11.32l-24,24A8,8,0,0,1,200,208V192a72.15,72.15,0,0,1-57.65-30.14l-41.72-58.4A56.1,56.1,0,0,0,55.06,80H32a8,8,0,0,1,0-16H55.06a72.12,72.12,0,0,1,58.59,30.15l41.72,58.4A56.08,56.08,0,0,0,200,176V160a8,8,0,0,1,13.66-5.66ZM143,107a8,8,0,0,0,11.16-1.86l1.2-1.67A56.08,56.08,0,0,1,200,80V96a8,8,0,0,0,13.66,5.66l24-24a8,8,0,0,0,0-11.32l-24-24A8,8,0,0,0,200,48V64a72.15,72.15,0,0,0-57.65,30.14l-1.2,1.67A8,8,0,0,0,143,107Zm-30,42a8,8,0,0,0-11.16,1.86l-1.2,1.67A56.1,56.1,0,0,1,55.06,176H32a8,8,0,0,0,0,16H55.06a72.12,72.12,0,0,0,58.59-30.15l1.2-1.67A8,8,0,0,0,113,149Z',
+    sync: 'M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1-5.66-13.66L180.65,72a79.48,79.48,0,0,0-54.72-22.09h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27,96,96,0,0,1,192,60.7l18.36-18.36A8,8,0,0,1,224,48ZM186.41,183.29A80,80,0,0,1,75.35,184l18.31-18.31A8,8,0,0,0,88,152H40a8,8,0,0,0-8,8v48a8,8,0,0,0,13.66,5.66L64,195.3a95.42,95.42,0,0,0,66,26.76h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z',
+    undo: 'M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H88v40a8,8,0,0,1-13.66,5.66l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,88,40V80h80A64.07,64.07,0,0,1,232,144Z',
+    eraser: 'M225,80.4,183.6,39a24,24,0,0,0-33.94,0L31,157.66a24,24,0,0,0,0,33.94l30.06,30.06A8,8,0,0,0,66.74,224H216a8,8,0,0,0,0-16h-84.7L225,114.34A24,24,0,0,0,225,80.4ZM213.67,103,160,156.69,107.31,104,161,50.34a8,8,0,0,1,11.32,0l41.38,41.38a8,8,0,0,1,0,11.31Z',
+    backspace: 'M216,40H68.53a16.12,16.12,0,0,0-13.72,7.77L9.14,123.88a8,8,0,0,0,0,8.24l45.67,76.11h0A16.11,16.11,0,0,0,68.53,216H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM165.66,146.34a8,8,0,0,1-11.32,11.32L136,139.31l-18.35,18.35a8,8,0,0,1-11.31-11.32L124.69,128l-18.35-18.34a8,8,0,1,1,11.31-11.32L136,116.69l18.34-18.35a8,8,0,0,1,11.32,11.32L147.31,128Z',
+    clock: 'M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z',
+    hourglass: 'M200,75.64V40a16,16,0,0,0-16-16H72A16,16,0,0,0,56,40V76a16.08,16.08,0,0,0,6.41,12.8L114.67,128,62.4,167.2A16.07,16.07,0,0,0,56,180v36a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V180.36a16,16,0,0,0-6.36-12.77L141.26,128l52.38-39.59A16.05,16.05,0,0,0,200,75.64Z',
+    mail: 'M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48Zm-8,144H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z',
+    device: 'M176,16H80A24,24,0,0,0,56,40V216a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V40A24,24,0,0,0,176,16ZM80,32h96a8,8,0,0,1,8,8v8H72V40A8,8,0,0,1,80,32Zm96,192H80a8,8,0,0,1-8-8v-8H184v8A8,8,0,0,1,176,224Z',
+    globe: 'M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm88,104a87.62,87.62,0,0,1-6.4,32.94l-44.7-27.49a15.92,15.92,0,0,0-6.24-2.23l-22.82-3.08a16.11,16.11,0,0,0-16,7.86h-8.72l-3.8-7.86a15.91,15.91,0,0,0-11-8.67l-8-1.73L96.14,104h16.71a16.06,16.06,0,0,0,7.73-2l12.25-6.76a16.62,16.62,0,0,0,3-2.14l26.91-24.34A15.93,15.93,0,0,0,166,49.1l-.36-.65A88.11,88.11,0,0,1,216,128ZM40,128a87.53,87.53,0,0,1,8.54-37.8l11.34,30.27a16,16,0,0,0,11.62,10l21.43,4.61L96.74,143a16.09,16.09,0,0,0,14.4,9h1.48l-7.23,16.23a16,16,0,0,0,2.86,17.37l.14.14L128,205.94l-1.94,10A88.11,88.11,0,0,1,40,128Z',
+    crown: 'M248,80a28,28,0,1,0-51.12,15.77l-26.79,33L146,73.4a28,28,0,1,0-36.06,0L85.91,128.74l-26.79-33a28,28,0,1,0-26.6,12L47,194.63A16,16,0,0,0,62.78,208H193.22A16,16,0,0,0,209,194.63l14.47-86.85A28,28,0,0,0,248,80ZM128,40a12,12,0,1,1-12,12A12,12,0,0,1,128,40ZM24,80A12,12,0,1,1,36,92,12,12,0,0,1,24,80ZM220,92a12,12,0,1,1,12-12A12,12,0,0,1,220,92Z',
+    medal: 'M216,96A88,88,0,1,0,72,163.83V240a8,8,0,0,0,11.58,7.16L128,225l44.43,22.21A8.07,8.07,0,0,0,176,248a8,8,0,0,0,8-8V163.83A87.85,87.85,0,0,0,216,96ZM56,96a72,72,0,1,1,72,72A72.08,72.08,0,0,1,56,96Zm16,0a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z',
+    eye: 'M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z',
+    info: 'M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-4,48a12,12,0,1,1-12,12A12,12,0,0,1,124,72Zm12,112a16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40a8,8,0,0,1,0,16Z',
+    warning: 'M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM120,104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm8,88a12,12,0,1,1,12-12A12,12,0,0,1,128,192Z',
+    question: 'M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,168a12,12,0,1,1,12-12A12,12,0,0,1,128,192Zm8-48.72V144a8,8,0,0,1-16,0v-8a8,8,0,0,1,8-8c13.23,0,24-9,24-20s-10.77-20-24-20-24,9-24,20v4a8,8,0,0,1-16,0v-4c0-19.85,17.94-36,40-36s40,16.15,40,36C168,125.38,154.24,139.93,136,143.28Z',
+    'sign-out': 'M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40A8,8,0,0,0,176,88v32H112a8,8,0,0,0,0,16h64v32a8,8,0,0,0,13.66,5.66l40-40A8,8,0,0,0,229.66,122.34Z',
+    'caret-left': 'M168,48V208a8,8,0,0,1-13.66,5.66l-80-80a8,8,0,0,1,0-11.32l80-80A8,8,0,0,1,168,48Z',
+    'caret-right': 'M181.66,133.66l-80,80A8,8,0,0,1,88,208V48a8,8,0,0,1,13.66-5.66l80,80A8,8,0,0,1,181.66,133.66Z',
+    'caret-up': 'M215.39,163.06A8,8,0,0,1,208,168H48a8,8,0,0,1-5.66-13.66l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,215.39,163.06Z',
+    'caret-down': 'M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,48,88H208a8,8,0,0,1,5.66,13.66Z',
+    pause: 'M216,48V208a16,16,0,0,1-16,16H160a16,16,0,0,1-16-16V48a16,16,0,0,1,16-16h40A16,16,0,0,1,216,48ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Z',
+    fire: 'M143.38,17.85a8,8,0,0,0-12.63,3.41l-22,60.41L84.59,58.26a8,8,0,0,0-11.93.89C51,87.53,40,116.08,40,144a88,88,0,0,0,176,0C216,84.55,165.21,36,143.38,17.85Zm40.51,135.49a57.6,57.6,0,0,1-46.56,46.55A7.65,7.65,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z',
+    sparkle: 'M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z',
+    bell: 'M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z',
+    calculator: 'M200,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V40A16,16,0,0,0,200,24ZM88,200a12,12,0,1,1,12-12A12,12,0,0,1,88,200Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,88,160Zm40,40a12,12,0,1,1,12-12A12,12,0,0,1,128,200Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,128,160Zm40,40a12,12,0,1,1,12-12A12,12,0,0,1,168,200Zm0-40a12,12,0,1,1,12-12A12,12,0,0,1,168,160Zm16-56a8,8,0,0,1-8,8H80a8,8,0,0,1-8-8V64a8,8,0,0,1,8-8h96a8,8,0,0,1,8,8Z',
+    dress: 'M247.59,61.22,195.83,33A8,8,0,0,0,192,32H160a8,8,0,0,0-8,8,24,24,0,0,1-48,0,8,8,0,0,0-8-8H64a8,8,0,0,0-3.84,1L8.41,61.22A15.76,15.76,0,0,0,1.82,82.48l19.27,36.81A16.37,16.37,0,0,0,35.67,128H56v80a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V128h20.34a16.37,16.37,0,0,0,14.58-8.71l19.27-36.81A15.76,15.76,0,0,0,247.59,61.22ZM35.67,112a.62.62,0,0,1-.41-.13L16.09,75.26,56,53.48V112Zm185.07-.14a.55.55,0,0,1-.41.14H200V53.48l39.92,21.78Z',
+    palette: 'M200.77,53.89A103.27,103.27,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.77,53.89ZM84,168a12,12,0,1,1,12-12A12,12,0,0,1,84,168Zm0-56a12,12,0,1,1,12-12A12,12,0,0,1,84,112Zm44-24a12,12,0,1,1,12-12A12,12,0,0,1,128,88Zm44,24a12,12,0,1,1,12-12A12,12,0,0,1,172,112Z',
+    brush: 'M232,32a8,8,0,0,0-8-8c-44.08,0-89.31,49.71-114.43,82.63A60,60,0,0,0,32,164c0,30.88-19.54,44.73-20.47,45.37A8,8,0,0,0,16,224H92a60,60,0,0,0,57.37-77.57C182.3,121.31,232,76.08,232,32ZM124.42,113.55q5.14-6.66,10.09-12.55A76.23,76.23,0,0,1,155,121.49q-5.9,4.94-12.55,10.09A60.54,60.54,0,0,0,124.42,113.55Zm42.7-2.68a92.57,92.57,0,0,0-22-22c31.78-34.53,55.75-45,69.9-47.91C212.17,55.12,201.65,79.09,167.12,110.87Z',
+    paw: 'M240,108a28,28,0,1,1-28-28A28,28,0,0,1,240,108ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm72,0a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm23.12,60.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72Z',
+    share: 'M212,200a36,36,0,1,1-69.85-12.25l-53-34.05a36,36,0,1,1,0-51.4l53-34a36.09,36.09,0,1,1,8.67,13.45l-53,34.05a36,36,0,0,1,0,24.5l53,34.05A36,36,0,0,1,212,200Z'
+  };
+  ICONS.right = ICONS.back; ICONS.speaker = ICONS.sound; ICONS['music-off'] = ICONS.music; ICONS.prev = ICONS.next; ICONS.settings = ICONS.gear; ICONS.pencil = ICONS.practice; ICONS.search = ICONS.discover;
+  var IC_FLIP = { next: 1 }, IC_MISS = {}; // mirrored for right-to-left: "next" points left ("prev" is the same glyph, not mirrored)
+  function iconHTML(name, size) {
+    if (!ICONS[name] && !IC_MISS[name]) { IC_MISS[name] = 1; try { console.warn('icon: no "' + name + '"'); } catch (e) {} }
+    return '<svg class="ic ic-' + name + (size && size !== 'l' ? ' ic-' + size : '') + (IC_FLIP[name] ? ' ic-flip' : '') + '" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" focusable="false"><path d="' + (ICONS[name] || '') + '"/></svg>';
+  }
+  function icon(name, size) { var t = document.createElement('template'); t.innerHTML = iconHTML(name, size); return t.content.firstChild; }
+  // The emoji policy, in one place. A UI emoji that carries a FUNCTION is drawn as its icon instead of the 3D picture: the table maps the emoji (code point)
+  // to the icon name, and swapEmoji uses it everywhere EXCEPT inside content (IC_PIC): exercises, explanations, the calculation sheet, shop items, stamps,
+  // reward and world objects keep their pictures. A screen opts a part out with the attribute data-pic, or in again (inside content) with data-ui.
+  var IC_OF = { '1f50a': 'sound', '1f507': 'sound-off', '1f3b5': 'music', '1f3e0': 'home', '21a9': 'undo', '21aa': 'back', '26a1': 'energy', '2b50': 'star', '1fa99': 'coin', '1f464': 'player',
+    '1f5fa': 'map', '1f381': 'gift', '1f6d2': 'cart', '1f3c1': 'flag', '1f3c6': 'trophy', '1f9ee': 'sheet', '1f4a1': 'hint', '2699': 'gear', '1f512': 'lock', '1f50d': 'discover', '270f': 'practice',
+    '1f680': 'challenge', '1f5d1': 'trash', '2601': 'cloud', '1f4f1': 'device', '1f504': 'sync', '1f501': 'repeat', '1f3b2': 'shuffle', '1f3af': 'target', '1f496': 'heart', '1f90d': 'heart-off',
+    '2705': 'check', '274c': 'close', '23f3': 'hourglass', '1f552': 'clock', '1f48c': 'mail', '1f4e8': 'mail', '1f30d': 'globe', '25c0': 'next', '25b6': 'prev', '2714': 'check', '2715': 'close',
+    '1f9fd': 'eraser', '232b': 'backspace' };
+  var IC_PIC = '[data-pic],.qcard,.answers,.say,.mdl,.oq,.vis,.node,.spark,.fly,.pk,.padg,.jpage,.citem,.opt,.gift,.psex,.mnode .mic,.deco';
+  function icOf(cp, p) { var n = TOY && IC_OF[cp]; if (!n || !p.closest) return null; var pic = p.closest(IC_PIC); return pic && !(p.closest('[data-ui]') && pic.contains(p.closest('[data-ui]'))) ? null : n; }
+  // DS-ICONS-END
   // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
   // the same on every device; if a picture is missing the emoji itself stays as the fallback ----------
   var ICO = {};
   '1f300 1f386 1f387 1f38a 1f43e 1f483 1f647 1f938 1f998 1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f5fa 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 2699 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
-  var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
+  var ICO_RE = /(?:\p{Extended_Pictographic}|\u2715)\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
   var TOY_ICO = { '1f309': '1f308' }; // toy: the bridge is a rainbow, so the mark of the bridge in a text is the rainbow
   function icoSrc(cp) { return 'assets/ico/' + (TOY && TOY_ICO[cp] || cp) + '.png'; }
   function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
@@ -4406,12 +4636,12 @@ var TrollModels = (function () {
     var frag = null, last = 0, m;
     ICO_RE.lastIndex = 0;
     while ((m = ICO_RE.exec(s))) {
-      var cp = cpOf(m[0]);
-      if (!ICO[cp]) continue;
+      var cp = cpOf(m[0]), icn = icOf(cp, p);
+      if (!icn && !ICO[cp]) continue;
       if (!frag) frag = document.createDocumentFragment();
       if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
-      var img = document.createElement('img');
-      img.className = 'ico'; img.src = icoSrc(cp); img.alt = m[0]; img.draggable = false;
+      var img = icn ? icon(icn, 't') : document.createElement('img');
+      if (!icn) { img.className = 'ico'; img.src = icoSrc(cp); img.alt = m[0]; img.draggable = false; }
       frag.appendChild(img); last = m.index + m[0].length;
     }
     if (!frag) return;
@@ -4661,25 +4891,46 @@ var TrollModels = (function () {
     if (old) { sfx.whoosh(); old.classList.add('out'); setTimeout(function () { old.remove(); }, 320); }
   }
   function btn(text, cls, fn) { return h('button', { class: 'btn ' + (cls || ''), text: text, on: { click: function () { sfx.tap(); fn(); } } }); }
+  // The top bar of every screen (task "ds"): ONE row. At the start (the right side): back and home in one capsule, music and sound in the next;
+  // at the end (the left side): the counters as one flat pill (points, stars, coins). The camp puts the player chip before the capsules.
+  // The classes the rest of the code and the tests use are kept: .top, .chips, .icon, .chip.xpchip/.starchip/.coinchip with data-n.
+  function iconBtn(name, label, fn, cls, tapAfter) { // a round icon button: 48 px target, 24 px icon (tapAfter: the tap sound comes after fn, for the sound switches)
+    var b = h('button', { class: 'icon' + (cls ? ' ' + cls : ''), 'aria-label': label }, icon(name));
+    if (fn) b.addEventListener('click', function () { if (!tapAfter) sfx.tap(); fn(b); if (tapAfter) sfx.tap(); });
+    return b;
+  }
+  function setIcon(b, name) { var o = b.querySelector('svg.ic'), n = icon(name); if (o) b.replaceChild(n, o); else b.insertBefore(n, b.firstChild); }
+  function counter(cls, ic, n, title, label) {
+    var c = h('div', { class: 'chip ct ' + cls, 'data-n': n }, icon(ic, 's'), h('b', { class: 'num', text: String(n) }));
+    if (title) c.title = title; if (label) c.setAttribute('aria-label', label);
+    return c;
+  }
+  function ctSet(c, n) { // a new number in a counter; the pill gets tighter when the three numbers are long, so the bar stays one row on a 360 px phone
+    c.setAttribute('data-n', n); c.querySelector('.num').textContent = String(n);
+    var box = c.parentNode, d = 0; if (!box) return;
+    [].forEach.call(box.querySelectorAll('.ct'), function (x) { d += (x.getAttribute('data-n') || '').length; });
+    box.classList.toggle('long', d >= 9); box.classList.toggle('xlong', d >= 12); box.classList.toggle('xxlong', d >= 13);
+    if (box.parentNode) box.parentNode.classList.toggle('tight', d >= 12);
+  }
   function topBar(withHome, backFn) {
-    var mute = h('button', { class: 'icon', 'aria-label': 'צְלִילִים', text: state.mute ? '🔇' : '🔊' });
-    mute.addEventListener('click', function () { sndSet('mute', !state.mute); save(true); mute.textContent = state.mute ? '🔇' : '🔊'; if (state.mute) hush(); sfx.tap(); applyMusic(); });
-    var music = h('button', { class: 'icon' + (state.music ? '' : ' dim'), 'aria-label': 'מוּזִיקַת רֶקַע', text: '🎵' });
-    music.addEventListener('click', function () { sndSet('music', !state.music); save(true); music.className = 'icon' + (state.music ? '' : ' dim'); sfx.tap(); applyMusic(); });
-    var homeB = withHome ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה לַכְּפָר', text: '🏠', on: { click: function () { sfx.tap(); home(); } } }) : null;
-    var backB = backFn ? h('button', { class: 'icon', 'aria-label': 'חֲזָרָה', text: '↩', on: { click: function () { sfx.tap(); backFn(); } } }) : null;
-    return h('div', { class: 'top' },
-      h('div', { class: 'chips' },
-        h('div', { class: 'chip xpchip', 'data-n': state.xp, title: 'נְקֻדּוֹת נִסָּיוֹן: נְקֻדָּה עַל כָּל תַּרְגִּיל שֶׁנִּפְתַּר', 'aria-label': state.xp + ' נְקֻדּוֹת נִסָּיוֹן', text: '⚡ ' + state.xp }),
-        h('div', { class: 'chip starchip', 'data-n': state.stars, text: '⭐ ' + state.stars }),
-        h('div', { class: 'chip coinchip', 'data-n': state.coins, title: 'מַטְבְּעוֹת', text: '🪙 ' + state.coins })),
-      h('div', { class: 'chips' }, backB, homeB, music, mute));
+    var mute = iconBtn(state.mute ? 'sound-off' : 'sound', 'צְלִילִים', function () { sndSet('mute', !state.mute); save(true); setIcon(mute, state.mute ? 'sound-off' : 'sound'); mute.classList.toggle('off', !!state.mute); if (state.mute) hush(); applyMusic(); }, state.mute ? 'off' : '', true);
+    var music = iconBtn('music', 'מוּזִיקַת רֶקַע', function () { sndSet('music', !state.music); save(true); music.className = 'icon' + (state.music ? '' : ' dim off'); applyMusic(); }, state.music ? '' : 'dim off', true);
+    var homeB = withHome ? iconBtn('home', 'חֲזָרָה לַכְּפָר', function () { home(); }) : null;
+    var backB = backFn ? iconBtn('back', 'חֲזָרָה', function () { backFn(); }) : null;
+    var cnt = h('div', { class: 'chips cnt' },
+      counter('xpchip', 'energy', state.xp, 'נְקֻדּוֹת נִסָּיוֹן: נְקֻדָּה עַל כָּל תַּרְגִּיל שֶׁנִּפְתַּר', state.xp + ' נְקֻדּוֹת נִסָּיוֹן'),
+      counter('starchip', 'star', state.stars, 'כּוֹכָבִים'),
+      counter('coinchip', 'coin', state.coins, 'מַטְבְּעוֹת'));
+    var bar = h('div', { class: 'top' },
+      h('div', { class: 'chips nav' }, backB || homeB ? h('div', { class: 'tgroup' }, backB, homeB) : null, h('div', { class: 'tgroup' }, music, mute)), cnt);
+    ctSet(cnt.firstChild, state.xp);
+    return bar;
   }
   function bumpStars(el) {
     var chip = el.querySelector('.starchip'), coin = el.querySelector('.coinchip'), xpc = el.querySelector('.xpchip');
-    if (xpc && xpc.getAttribute('data-n') !== String(state.xp)) { xpc.setAttribute('data-n', state.xp); xpc.textContent = '⚡ ' + state.xp; restart(xpc, 'bump'); }
-    if (chip && chip.getAttribute('data-n') !== String(state.stars)) { chip.setAttribute('data-n', state.stars); chip.textContent = '⭐ ' + state.stars; restart(chip, 'bump'); }
-    if (coin && coin.getAttribute('data-n') !== String(state.coins)) { coin.setAttribute('data-n', state.coins); coin.textContent = '🪙 ' + state.coins; restart(coin, 'bump'); }
+    if (xpc && xpc.getAttribute('data-n') !== String(state.xp)) { ctSet(xpc, state.xp); restart(xpc, 'bump'); }
+    if (chip && chip.getAttribute('data-n') !== String(state.stars)) { ctSet(chip, state.stars); restart(chip, 'bump'); }
+    if (coin && coin.getAttribute('data-n') !== String(state.coins)) { ctSet(coin, state.coins); restart(coin, 'bump'); }
   }
 
   // ---------- home: the camp on the journey. Parchment, a rolled-open strip of the map with the current stretch of the trail,
@@ -4714,7 +4965,7 @@ var TrollModels = (function () {
       here = 'home';
       el.classList.add('rmap', 'camp');
       var tb = topBar(false);
-      tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
+      tb.insertBefore(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', on: { click: function () { sfx.tap(); who(); } } }, icon('player', 'm'), h('span', { class: 'whon', text: curName() })), tb.firstChild);
       el.appendChild(tb);
       var grid = h('div', { class: 'cgrid' });
       grid.appendChild(h('h1', { class: 'title', text: 'עוֹלַם הַטְּרוֹלִים' + (VILLAGE ? ' · ' + VILLAGE : '') }));
@@ -4754,7 +5005,7 @@ var TrollModels = (function () {
 
       // the one big button, and the smaller choices
       if (nb) nb.classList.add('cgo');
-      grid.appendChild(nb || h('button', { class: 'btn big cgo', text: '▶ בּוֹאִי נְשַׂחֵק!', on: { click: function () { sfx.tap(); subjects(); } } }));
+      grid.appendChild(nb || h('button', { class: 'btn big cgo', text: 'בּוֹאִי נְשַׂחֵק!', on: { click: function () { sfx.tap(); subjects(); } } }));
       var row = h('div', { class: 'row hrow' });
       function more(ico, label, full, cls, fn) {
         row.appendChild(h('button', { class: 'btn ' + cls, 'aria-label': full, on: { click: function () { sfx.tap(); fn(); } } }, h('span', { class: 'ci', text: ico }), h('span', { class: 'cl', text: label })));
@@ -4837,7 +5088,7 @@ var TrollModels = (function () {
       txt.appendChild(h('b', { text: GATE.world })); txt.appendChild(h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }));
     } else if (nx.boss) {
       pic.appendChild(mapImg(ART.bridge));
-      txt.appendChild(h('b', { text: 'מְשִׂימַת הַגֶּשֶׁר' })); txt.appendChild(h('small', { text: t.icon + ' ' + t.world }));
+      txt.appendChild(h('b', { text: 'מְשִׂימַת הַגֶּשֶׁר' })); txt.appendChild(h('small', { text: t.world }));
     } else {
       var pr = L.progOf(state, nx.topic, nx.level), pips = h('span', { class: 'pips', 'aria-hidden': 'true' });
       var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length };
@@ -4845,7 +5096,7 @@ var TrollModels = (function () {
       [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: k === nx.stage ? 'now' : pr[k] >= 1 ? 'on' : '' })); });
       txt.appendChild(h('b', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }));
       txt.appendChild(h('small', { class: 'nname', text: t.levels[nx.level - 1].name }));
-      txt.appendChild(h('small', { class: 'nstage' }, nx.bridge ? null : pips, h('span', { text: nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר' : 'שָׁלָב ' + (nx.stage + 1) + ' מִתּוֹךְ 3' })));
+      txt.appendChild(h('small', { class: 'nstage' }, nx.bridge ? null : pips, h('span', { text: nx.bridge ? 'עוֹד קְצָת לַגֶּשֶׁר' : 'שָׁלָב ' + (nx.stage + 1) + ' מִתּוֹךְ 3' })));
     }
     return h('button', { class: 'btn big nextb', 'data-next': nx.challenge ? 'challenge' : nx.topic + (nx.boss ? '-boss' : '-' + nx.level + '-' + nx.stage), on: { click: function () { sfx.pop(); goStep(nx); } } },
       pic, txt, h('span', { class: 'ngo', 'aria-hidden': 'true', text: '◀' }));
@@ -5130,7 +5381,7 @@ var TrollModels = (function () {
         L.topicsFor(state, x).forEach(function (id) { got += L.topicStars(state, id); all += topicOf(id).levels.length * 9; });
         grid.appendChild(h('button', { class: 'land' + (x === mark ? ' rec' : ''), 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: function () { sfx.pop(); curSub = x; topics(); } } },
           h('span', { class: 'mtop' }, x === mark ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ART.land[x] || ART.land.math))),
-          h('span', { class: 'mlab', text: SUBJ[x][0] + ' ' + SUBJ[x][1] }),
+          h('span', { class: 'mlab', text: SUBJ[x][1] }),
           h('span', { class: 'lstars', text: '⭐ ' + got + ' / ' + all }),
           h('span', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' }))));
       });
@@ -5146,8 +5397,8 @@ var TrollModels = (function () {
     show(function (el) {
       el.classList.add('map', 'rmap');
       el.appendChild(topBar(true, ch ? function () { topics(); } : subsHere().length > 1 ? subjects : home));
-      el.appendChild(h('h2', { class: 'h2', text: ch ? '🚀 אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
-      var sj = SUBJ[curSub] || SUBJ.math, msg = h('div', { class: 'banner rmsg', text: sj[0] + ' ' + sj[1] + ' · כִּתָּה ' + GRADE_HE[state.grade + (ch ? 1 : 0)] });
+      el.appendChild(h('h2', { class: 'h2', text: ch ? 'אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
+      var sj = SUBJ[curSub] || SUBJ.math, msg = h('div', { class: 'banner rmsg', text: sj[1] + ' · כִּתָּה ' + GRADE_HE[state.grade + (ch ? 1 : 0)] });
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
       var box = h('div', { class: 'tmap wmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), items = [];
       mapDeco(box); box.appendChild(trail);
@@ -5179,14 +5430,14 @@ var TrollModels = (function () {
       shown.forEach(function (t, i) {
         var f = info[i], pips = h('span', { class: 'mpips hp', 'aria-hidden': 'true' });
         f.hs.forEach(function (n) { pips.appendChild(h('i', { class: n ? 's' + n : 'o' })); });
-        node('reg' + (f.flag ? ' done' : f.got ? ' open' : ' plain'), t.id, icons[i], (t.icon ? t.icon + ' ' : '') + t.world + (f.ready ? ' 🌉' : ''), { flag: f.flag, pips: pips }, f.got > 0,
+        node('reg' + (f.flag ? ' done' : f.got ? ' open' : ' plain'), t.id, icons[i], t.world + (f.ready ? ' 🌉' : ''), { flag: f.flag, pips: pips }, f.got > 0,
           function () { sfx.pop(); region(t.id); });
       });
       if (!ch) {
-        node('mixn', MIX.id, ART.mix, MIX.icon + ' ' + MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
-        node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, (gopen ? '🚀 ' : '🔒 ') + GATE.world, null, gopen, function (b) {
+        node('mixn', MIX.id, ART.mix, MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
+        node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, (gopen ? '' : '🔒 ') + GATE.world, null, gopen, function (b) {
           if (gopen) { sfx.pop(); topics(true); return; }
-          sfx.wrong(); restart(b, 'shake'); say('🔒 ' + GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
+          sfx.wrong(); restart(b, 'shake'); say(GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
         });
       }
       var mw = mapWrap(box, null);
@@ -5205,7 +5456,7 @@ var TrollModels = (function () {
     show(function (el) {
       el.classList.add('map', 'rmap');
       el.appendChild(topBar(true, function () { topics(t.g !== state.grade); }));
-      el.appendChild(h('h2', { class: 'h2', text: t.icon + ' ' + t.world }));
+      el.appendChild(h('h2', { class: 'h2', text: t.world }));
       var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי בַּיִת בַּמַּפָּה' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
       if (!state.intro[t.id]) { state.intro[t.id] = true; save(); }
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
@@ -5236,7 +5487,7 @@ var TrollModels = (function () {
           slot.appendChild(h('button', { class: 'btn mgo', 'data-next': t.id + (rec.boss ? '-boss' : '-' + rec.level + '-' + rec.stage), on: { click: function () {
             sfx.pop(); startRound(t.id, rec.boss ? { boss: rec.boss } : { level: rec.level, stage: rec.stage });
           } } }, h('b', { text: (fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים') + ' ◀' }),
-            h('small', { text: rec.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name + ', שָׁלָב ' + (rec.stage + 1) })));
+            h('small', { text: rec.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name + ', שָׁלָב ' + (rec.stage + 1) })));
           return;
         }
         var d = openIt.d, lv = openIt.lv, pr = L.progOf(state, t.id, lv), n = win.length;
@@ -5291,7 +5542,7 @@ var TrollModels = (function () {
     }
     draw();
     ovl = h('div', { class: 'ovl', on: { click: function (e) { if (e.target === ovl) close(); } } }, h('div', { class: 'card pcard2' },
-      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: '⚙️ לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } })),
+      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: 'לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } })),
       h('div', { class: 'pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('−', -1, 'לִסְגֹּר בַּיִת')),
       h('div', { class: 'pnote', text: 'בַּיִת נִפְתָּח מֵעַצְמוֹ אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו. כָּאן אֶפְשָׁר לִפְתֹּחַ אוֹ לִסְגֹּר בָּתִּים בַּיָּד; הַכּוֹכָבִים נִשְׁמָרִים.' })));
     document.body.appendChild(ovl);
@@ -5436,7 +5687,7 @@ var TrollModels = (function () {
           // the item itself, large, with its name and the icon of what it does
           if (it) { stage.appendChild(h('div', { class: 'gitem reveal' }, h('span', { class: 'cdo', 'aria-hidden': 'true' }, icoImg(doesOf(it)[0])), h('span', { class: 'cpic' }, itemPic(it)), h('span', { class: 'cnm', text: it.name }))); fitPart(stage); }
           var c = center(stage); burst(c[0], c[1], 16); if (it && it.slot === 'party') partyFx(item, c[0], c[1]); else confetti(70); sfx.win();
-          msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (it ? ' וְהַפְתָּעָה: ' + it.name + '!' : '! 🪙'); restart(msg, 'pop'); bumpStars(el);
+          msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (it ? ' וְהַפְתָּעָה: ' + it.name + '!' : '!'); restart(msg, 'pop'); bumpStars(el);
           btns.appendChild(btn('יֹפִי!', 'nxt', home));
           if (it && state.owned.length) btns.appendChild(btn('🛒 לָעֲגָלָה', '', function () { dress(null, tabOf(it), item); }));
         }, 700);
@@ -5538,7 +5789,7 @@ var TrollModels = (function () {
     return h('div', { class: 'num' }, g, h('div', { class: 'lbl', text: String(n) }));
   }
   function buildHint(q) {
-    var v = q.hint.vis, box = h('div', { class: 'hint' }, h('div', { class: 'cap', text: '💡 ' + q.hint.tip, on: { click: function () { speak(q.hint.tip); } } }));
+    var v = q.hint.vis, box = h('div', { class: 'hint' }, h('div', { class: 'cap', on: { click: function () { speak(q.hint.tip); } } }, icon('hint', 't'), h('span', { 'data-pic': '', text: ' ' + q.hint.tip })));
     if (autoSay()) speak(q.hint.tip);
     if (!v) return box;
     var vis = h('div', { class: 'vis' }), i, j, d;
@@ -5623,7 +5874,7 @@ var TrollModels = (function () {
           n.className = 'node' + (k < round.i ? ' done' : k === round.i ? ' cur' : '');
           n.textContent = k < round.i ? (cfg.boss ? '🪵' : round.results[k] ? '⭐' : '🌸') : String(k + 1);
         });
-        label.textContent = (cfg.race ? '🏁 ' + (round.i + 1) + ' / ' + round.qs.length + ' · ' : '') + (cfg.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][0] + ' ' + STAGES[cfg.stage][1] + ' · ' : '') + t.icon + ' ' + t.levels[q.level - 1].name + (q.review ? ' · 🔁 חֲזָרָה' : '');
+        label.textContent = (cfg.race ? '🏁 ' + (round.i + 1) + ' / ' + round.qs.length + ' · ' : '') + (cfg.boss ? 'מְשִׂימַת הַגֶּשֶׁר · ' : cfg.stage != null ? STAGES[cfg.stage][1] + ' · ' : '') + t.levels[q.level - 1].name + (q.review ? ' · חֲזָרָה' : '');
         mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : memo && round.i === 0 ? voice(L.MEMO[memo], 'memo-' + memo) : voice(ASK, 'ask'));
         if (memo && round.i === 0) bubble.setAttribute('data-mem', memo); else bubble.removeAttribute('data-mem');
         helpB.classList.toggle('glow', cfg.stage === 0);
@@ -5793,7 +6044,7 @@ var TrollModels = (function () {
           b.classList.add('right'); tv.solve = tv.flub = null;
           [].forEach.call(answers.children, function (x) { if (x !== b && !x.classList.contains('wrong')) x.classList.add('off'); });
           sfx.correct(combo); var c = center(b); burst(c[0], c[1], 12 + combo * 2);
-          mood('cheer', combo >= 3 ? '🔥 ' + combo + ' בְּרֶצֶף! ' + praise() : res.firstTry ? praise() : line('after', AFTER));
+          mood('cheer', combo >= 3 ? combo + ' בְּרֶצֶף! ' + praise() : res.firstTry ? praise() : line('after', AFTER));
           var hs = state.hists[q.topic]; hs.push(res.firstTry); state.hists[q.topic] = hs.slice(-5);
           state.coins += res.firstTry ? 2 : 1; state.xp += 1; // one experience point for every exercise that was solved
           tv.solvedAt = Date.now();
@@ -5839,8 +6090,8 @@ var TrollModels = (function () {
     el.classList.add('rmap', 'endm');
     var tb = topBar(true, o.back), coin = tb.querySelector('.coinchip'), starc = tb.querySelector('.starchip');
     if (!reduced) { // the counters start from before the prize; they go up when the coins land (or at the skip)
-      coin.setAttribute('data-n', state.coins - o.coins); coin.textContent = '🪙 ' + (state.coins - o.coins);
-      if (o.gained) { starc.setAttribute('data-n', state.stars - o.gained); starc.textContent = '⭐ ' + (state.stars - o.gained); }
+      ctSet(coin, state.coins - o.coins);
+      if (o.gained) { ctSet(starc, state.stars - o.gained); }
     }
     el.appendChild(tb);
     var P = { res: h('div', { class: 'eres' }), frame: h('div', { class: 'eframe' }), caps: h('div', { class: 'banners ecaps' }), btns: h('div', { class: 'row ebtns ea', style: '--d:' + END_T.btns + 's' }) };
@@ -5903,7 +6154,7 @@ var TrollModels = (function () {
   }
   // the words on the button of the next step (the same step as the big button of the camp)
   function stepText(nx) {
-    return nx.challenge ? '🚀 ' + GATE.world : nx.boss ? '🌉 מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).icon + ' ' + topicOf(nx.topic).world : nx.bridge ? '🌉 עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀';
+    return nx.challenge ? GATE.world : nx.boss ? 'מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).world : nx.bridge ? 'עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀';
   }
   function endRound(round) {
     var st = round.stars(), ups = [];
@@ -5925,10 +6176,10 @@ var TrollModels = (function () {
       })(i);
       P.res.appendChild(stars); P.res.appendChild(P.chest);
       // the picture: the temple of the mixed round with the companion, and the egg of the round
-      P.frame.appendChild(h('div', { class: 'emix' }, h('span', { class: 'mtop' }, mapBuddy(), h('span', { class: 'mic' }, mapImg(ART.mix))), h('span', { class: 'mlab', text: MIX.icon + ' ' + MIX.world })));
+      P.frame.appendChild(h('div', { class: 'emix' }, h('span', { class: 'mtop' }, mapBuddy(), h('span', { class: 'mic' }, mapImg(ART.mix))), h('span', { class: 'mlab', text: MIX.world })));
       var eg = eggSlot(troll, el, function () {
         ups.forEach(function (u) {
-          P.caps.appendChild(h('div', { class: 'banner', text: '🎈 עָלִית רָמָה: ' + u.t.name + ', ' + u.lv.name + (u.newGrade ? " · 🎓 זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
+          P.caps.appendChild(h('div', { class: 'banner', text: 'עָלִית רָמָה: ' + u.t.name + ', ' + u.lv.name + (u.newGrade ? " · זֶה כְּבָר חֹמֶר שֶׁל כִּתָּה ג'!" : '') }));
         });
         if (ups.length) later(function () { sfx.levelup(); }, 600);
         if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
@@ -5998,13 +6249,13 @@ var TrollModels = (function () {
       P.frame.appendChild(box);
 
       P.cap(CHEST[rw.tier] + ': ' + rw.coins + '+ 🪙', 'chest ' + rw.tier, END_T.chest);
-      if (r.opened) P.cap('🏠 נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name, '', D + 0.25);
-      if (bossG) P.cap('🌉 מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!', '', D + 0.4);
+      if (r.opened) P.cap('נִפְתַּח בַּיִת חָדָשׁ: ' + t.levels[r.opened - 1].name, '', D + 0.25);
+      if (bossG) P.cap('מְשִׂימַת הַגֶּשֶׁר מוּכָנָה!', '', D + 0.4);
       if (r.opened) P.at((D + 0.25) * 1000, function () { sfx.levelup(); });
       function buttons() {
         if (nx) P.btns.appendChild(btn(nx.challenge || nx.boss ? stepText(nx) : nx.topic === topicId && nx.level === cfg.level ? 'הַשָּׁלָב הַבָּא ◀' : nx.topic === topicId && nx.level === r.opened ? 'לַבַּיִת הַבָּא ◀' : stepText(nx), 'nxt', function () { goStep(nx); }));
         else if (t.g === state.grade) { /* nothing left in the grade and no challenge map */ }
-        else if (bossG) P.btns.appendChild(btn('🌉 לִמְשִׂימַת הַגֶּשֶׁר', 'nxt', function () { startRound(topicId, { boss: bossG }); }));
+        else if (bossG) P.btns.appendChild(btn('לִמְשִׂימַת הַגֶּשֶׁר', 'nxt', function () { startRound(topicId, { boss: bossG }); }));
         else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) P.btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
         else if (r.opened) P.btns.appendChild(btn('לַבַּיִת הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
         if (r.stars < 3) P.btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
@@ -6167,7 +6418,7 @@ var TrollModels = (function () {
   function cloud(msg) {
     show(function (el) {
       el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
-      el.appendChild(h('h2', { class: 'h2', text: '☁️ חֶשְׁבּוֹן הַמִּשְׁפָּחָה' }));
+      el.appendChild(h('h2', { class: 'h2', text: 'חֶשְׁבּוֹן הַמִּשְׁפָּחָה' }));
       var p = h('div', { class: 'cpanel' }), status = h('div', { class: 'cmsg', text: msg || '' });
       function say(t) { status.textContent = t; }
       function fail() { say('אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.'); }
@@ -6208,7 +6459,7 @@ var TrollModels = (function () {
         if (cloudOn()) googleReady().catch(function () {}); // ready before the tap, so the browser lets Google's window open
         p.appendChild(h('b', { text: 'הַמֵּיְל שֶׁל הַהוֹרֶה' })); p.appendChild(mail);
         p.appendChild(h('b', { text: 'סִיסְמָה (6 תָּוִים לְפָחוֹת)' })); p.appendChild(pass);
-        p.appendChild(h('div', { class: 'crow' }, btn('כְּנִיסָה', 'signin', function () { go(false); }), btn('✨ חֶשְׁבּוֹן חָדָשׁ', 'b2 signup', function () { go(true); })));
+        p.appendChild(h('div', { class: 'crow' }, btn('כְּנִיסָה', 'signin', function () { go(false); }), btn('חֶשְׁבּוֹן חָדָשׁ', 'b2 signup', function () { go(true); })));
         p.appendChild(h('button', { class: 'clink', text: 'שָׁכַחְתִּי סִיסְמָה', on: { click: function () {
           var em = mail.value.trim(); if (!em) { say(ERR.MISSING_EMAIL); return; }
           say('רֶגַע...'); idt('sendOobCode', { requestType: 'PASSWORD_RESET', email: em }).then(function () { say('שָׁלַחְנוּ מֵיְל לְאִפּוּס הַסִּיסְמָה ✓'); }, why);
@@ -6239,7 +6490,7 @@ var TrollModels = (function () {
   var DOES = { look: ['👗', 'לְבוּשׁ לַטְּרוֹל'], pet: ['🐾', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['💫', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['✨', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
   function doesOf(it) { return DOES[it.slot] || DOES.look; }
   function tabOf(it) { for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === it.slot) return i; return 3; }
-  function icoImg(e, cls) { var cp = cpOf(e); return ICO[cp] ? h('img', { class: cls || 'ico', src: icoSrc(cp), alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
+  function icoImg(e, cls) { var cp = cpOf(e); if (!cls && TOY && IC_OF[cp]) return icon(IC_OF[cp], 't'); return ICO[cp] ? h('img', { class: cls || 'ico', src: icoSrc(cp), alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
   // code-drawn pieces (accessories, hairstyles): the viewBox hugs the drawing, measured once the piece is in the page
   var PART_BOX = {};
   function fitPart(root) {
@@ -6338,7 +6589,7 @@ var TrollModels = (function () {
             show1(o, true); drawGrid(); drawAct('קָנִית: ' + it.name + '!'); drawThumbs();
           });
         } else if (gl && gl.id === it.id) {
-          say('🎯 הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' 🪙');
+          say('הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' 🪙');
           one('לְבַטֵּל אֶת הַיַּעַד', 'koff', function () { sfx.tap(); state = L.setGoal(state, ''); save(); drawGrid(); drawAct(); });
         } else {
           say('חֲסֵרִים עוֹד ' + (cost - state.coins) + ' 🪙');
@@ -6444,7 +6695,7 @@ var TrollModels = (function () {
       }
       el.appendChild(h('div', { class: 'cwrap' },
         h('div', { class: 'cstage' + (ids.length > 1 ? '' : ' solo') },
-          h('div', { class: 'chead' }, h('b', { class: 'ctitle', text: '🛒 הָעֲגָלָה' }), nameEl), prev,
+          h('div', { class: 'chead' }, h('b', { class: 'ctitle', text: 'הָעֲגָלָה' }), nameEl), prev,
           ids.length > 1 ? h('div', { class: 'cpickr' }, tPrev, ths, tNext) : null,
           h('div', { class: 'cacts' }, pickB, h('button', { class: 'btn pick', text: '🎲 הַפְתָּעָה!', on: { click: surprise } }))),
         h('div', { class: 'kpanel' }, tabs, gridw, h('div', { class: 'cmsgr' }, msg, pgEl), h('div', { class: 'cfoot' }, prevB, act, nextB))));
@@ -6883,7 +7134,7 @@ var TrollModels = (function () {
     show(function (el) {
       here = 'pool'; el.classList.add('tpl');
       el.appendChild(topBar(true, home));
-      el.appendChild(h('h2', { class: 'h2', text: '🏁 מֵרוֹץ הַטְּרוֹלִים' }));
+      el.appendChild(h('h2', { class: 'h2', text: 'מֵרוֹץ הַטְּרוֹלִים' }));
       msg = h('div', { class: 'banner pmsg' }); grid = h('div', { class: 'plist' });
       go = h('button', { class: 'btn pgo', text: '📨 הַזְמָנָה לַמֵּרוֹץ' });
       go.addEventListener('click', function () {
@@ -7050,7 +7301,7 @@ var TrollModels = (function () {
     var old = document.getElementById('podium'); if (old) old.remove(); // still looking at the last results
     var big = h('div', { class: 'big', text: '3' }), row = h('div', { class: 'rrow' }), r = race;
     racers().forEach(function (p, i) { var c = h('div', { class: 'rp' + (p.id === myRid() ? ' me' : ''), style: 'animation-delay:' + (i * 0.12) + 's', html: trollOf(p, 'cheer') }); c.appendChild(h('b', { text: p.n })); row.appendChild(c); });
-    var ov = h('div', { class: 'rov', id: 'launch', 'data-fit': '1' }, h('div', { class: 'banner', text: '🏁 הַמֵּרוֹץ מַתְחִיל!' }), row, big);
+    var ov = h('div', { class: 'rov', id: 'launch', 'data-fit': '1' }, h('div', { class: 'banner', text: 'הַמֵּרוֹץ מַתְחִיל!' }), row, big);
     document.body.appendChild(ov); sfx.levelup(); beat();
     if (still) return;
     ['2', '1', 'צְאוּ!'].forEach(function (t, i) { setTimeout(function () { if (race !== r) return; big.textContent = t; restart(big, 'go'); if (i < 2) sfx.star(i + 2); else { sfx.win(); confetti(80); } }, 800 * (i + 1)); });
@@ -7156,7 +7407,7 @@ var TrollModels = (function () {
     });
     var won = mine && mine.place === 1 && !mine.out;
     var ov = h('div', { class: 'rov', id: 'podium', 'data-fit': '1' },
-      h('h2', { class: 'h2', text: won ? '🏆 נִצַּחְתְּ בַּמֵּרוֹץ!' : '🏁 הַמֵּרוֹץ נִגְמַר!' }), row,
+      h('h2', { class: 'h2', text: won ? 'נִצַּחְתְּ בַּמֵּרוֹץ!' : 'הַמֵּרוֹץ נִגְמַר!' }), row,
       coins ? h('div', { class: 'banner', text: '+' + coins + ' 🪙' }) : null);
     function close() { ov.remove(); tv.hold = false; }
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
@@ -7182,7 +7433,7 @@ var TrollModels = (function () {
     show(function (el) {
       here = 'board'; el.classList.add('tpl');
       el.appendChild(topBar(true, home));
-      el.appendChild(h('h2', { class: 'h2', text: '🏆 טַבְלַת הַדֵּרוּג' }));
+      el.appendChild(h('h2', { class: 'h2', text: 'טַבְלַת הַדֵּרוּג' }));
       var list = h('div', { class: 'blist' }, h('div', { class: 'banner pmsg', text: 'רֶגַע...' }));
       el.appendChild(list);
       function num(x, hi) { x = Math.floor(+x); return isFinite(x) ? Math.max(0, Math.min(hi, x)) : 0; }
@@ -7242,6 +7493,8 @@ var TrollModels = (function () {
   if (sandbox) { // layout checks of the cart: &coins=N, &own=id.id (items owned), &fx=id.id (equipped move / celebration), &goal=id (the savings goal), &wear=id.id (on the companion)
     var hq = function (k) { return ((new RegExp('[#&]' + k + '=([\\w.]+)').exec(hash) || [])[1] || '').split('.').filter(function (x) { return L.ITEM[x]; }); };
     if (/[#&]coins=(\d+)/.test(hash)) state.coins = +/[#&]coins=(\d+)/.exec(hash)[1];
+    if (/[#&]nstars=(\d+)/.test(hash)) state.stars = +/[#&]nstars=(\d+)/.exec(hash)[1]; // task "ds": long numbers in the counters of the top bar (&coins=9999&nstars=999&nxp=99999)
+    if (/[#&]nxp=(\d+)/.test(hash)) state.xp = +/[#&]nxp=(\d+)/.exec(hash)[1];
     hq('own').concat(hq('fx'), hq('wear')).forEach(function (x) { if (state.items.indexOf(x) < 0) state.items.push(x); });
     hq('fx').forEach(function (x) { state = L.setFx(state, L.ITEM[x].slot, x); });
     hq('wear').forEach(function (x) { var hb = state.owned.indexOf(state.buddy) >= 0 ? state.buddy : state.owned[0]; if (hb != null) { state.dress[hb] = state.dress[hb] || {}; state.dress[hb][L.ITEM[x].slot] = x; } });
@@ -7419,6 +7672,8 @@ var TrollModels = (function () {
       if (cur.classList.contains('cart') && !cur.querySelector('.citem')) bad++;
     }
     var why = [], no = function (w) { bad++; if (why.indexOf(w) < 0) why.push(w); };
+    var dsTop = cur.querySelector('.top'); // task "ds": the top bar is one row, nothing in it is cut or pushed out, its buttons keep their size (measured in the layout, so a counter that is popping does not count)
+    if (TOY && dsTop) { if (dsTop.scrollWidth > dsTop.clientWidth + 1 || dsTop.offsetHeight > 60) no('topbar'); [].forEach.call(dsTop.querySelectorAll('button,.ct'), function (x) { if (!x.offsetWidth && x.classList.contains('xpchip')) return; if (!x.offsetWidth || x.offsetLeft < -1 || x.offsetLeft + x.offsetWidth > dsTop.clientWidth + 1 || (x.nodeName === 'BUTTON' && (x.offsetWidth < 41.5 || x.offsetHeight < 47.5))) no('topbar'); }); if (dsTop.querySelector('svg.ic') && dsTop.querySelector('img.ico')) no('topicon'); }
     // the camp: the book of the journal is a whole touch target above the bottom tenth, nothing is pushed out of the scene, the heart
     // stays on the companion, and what the companion says has at most three lines
     if (cur.classList.contains('camp')) {
