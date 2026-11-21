@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>sw live</title></head>
+<body>
+<!-- Run by tests/sw-live.js (never opened by hand): the service worker in a real browser, on line, on a slow line and off line. -->
+<script>
+(async function () {
+  var log = [], ok = true;
+  function check(name, cond, extra) { log.push((cond ? 'ok   ' : 'FAIL ') + name + (extra === undefined ? '' : ' [' + extra + ']')); if (!cond) ok = false; }
+  function mode(m) { return fetch('/__mode?m=' + m, { method: 'POST' }); } // a POST: the worker never touches it
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  async function keys(name) { var c = await caches.open(name); return (await c.keys()).map(function (r) { return new URL(r.url).pathname; }); }
+  async function fails(p) { try { await p; return false; } catch (e) { return true; } }
+  try {
+    await caches.open('troll-fresh-v0').then(function (c) { return c.put('/old', new Response('old')); }); // a cache of an older worker
+    await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    for (var i = 0; i < 100 && !navigator.serviceWorker.controller; i++) await wait(100);
+    check('the worker takes charge of the open page (clients.claim)', !!navigator.serviceWorker.controller);
+    var names = await caches.keys();
+    check('caches of an older version are deleted', names.indexOf('troll-fresh-v0') < 0, names.join(' '));
+    var fresh = names.filter(function (n) { return /^troll-fresh-/.test(n); })[0], assets = 'troll-assets-' + fresh.split('-')[2];
+    var k = await keys(fresh), packs = (await (await fetch('/index.html')).text()).match(/<script src="packs\/[^"]+"/g).length;
+    check('install saved the page and every pack', k.indexOf('/') >= 0 && k.filter(function (p) { return /^\/packs\/.*\.js$/.test(p); }).length === packs, k.length + ' entries, ' + packs + ' packs');
+
+    // on line
+    var a = await (await fetch('/packs/geo1.js')).text();
+    await mode('v2');
+    var b = await (await fetch('/packs/geo1.js')).text();
+    check('on line a script is the newest one, never the saved copy', !/SECOND-DEPLOY/.test(a) && /SECOND-DEPLOY/.test(b));
+    var img = await fetch('/assets/ico/1f512.png'), snd = await fetch('/assets/snd/pizzi12.mp3', { headers: { Range: 'bytes=0-' } });
+    check('a picture arrives', img.status === 200 && (await img.blob()).size > 100);
+    check('a sound asked by bytes arrives', snd.status === 206 && (await snd.blob()).size > 100, snd.status);
+    await wait(1500);
+    k = await keys(assets);
+    check('the picture and the sound are saved', k.indexOf('/assets/ico/1f512.png') >= 0 && k.indexOf('/assets/snd/pizzi12.mp3') >= 0, k.join(' '));
+    navigator.serviceWorker.controller.postMessage({ seen: [location.origin + '/assets/forest.jpg', location.origin + '/index.html', 'https://example.com/a.png'] });
+    await wait(1500);
+    k = await keys(assets);
+    check('pictures the page reports are saved, nothing else', k.indexOf('/assets/forest.jpg') >= 0 && k.length === 3, k.join(' '));
+    check('no script or page among the saved pictures', !(await keys(assets)).some(function (p) { return /\.(js|html)$/.test(p); }));
+    // the game itself on line, through the worker (a real navigation), in the sandbox
+    var on = document.createElement('iframe'); on.style.cssText = 'width:390px;height:700px;border:0';
+    on.src = '/?v=1#demo&s=home&hour=10'; document.body.appendChild(on);
+    await new Promise(function (r) { on.onload = r; });
+    await wait(2500);
+    var oa = on.contentDocument.getElementById('app'), seenOn = on.contentDocument.images.length;
+    check('on line: the game opens through the worker', !!oa && oa.children.length > 0 && !!on.contentWindow.__tv && /SECOND-DEPLOY/.test(await (await fetch('/packs/geo1.js')).text()));
+    check('on line: its pictures are saved as they load', (await keys(assets)).length > 3 + seenOn / 2, (await keys(assets)).length + ' saved, ' + seenOn + ' on the screen');
+    on.remove();
+
+    // a line that does not answer: the saved copy after about four seconds
+    await mode('slow');
+    var t = Date.now(), slow = await (await fetch('/packs/geo1.js')).text(); t = Date.now() - t;
+    check('a silent network: the saved copy after the timeout', /SECOND-DEPLOY/.test(slow) && t > 3000 && t < 6500, t + ' ms');
+
+    // off line
+    await mode('down');
+    check('the test server is really down', await fails(fetch('/__nothing', { method: 'POST' })));
+    var page = await fetch('/'), text = await page.text();
+    check('off line: the page', page.status === 200 && /<script id="logic">/.test(text));
+    var p2 = await (await fetch('/packs/geo1.js')).text();
+    check('off line: the newest pack that was seen', /SECOND-DEPLOY/.test(p2));
+    check('off line: every pack', (await Promise.all(text.match(/<script src="packs\/[^"]+"/g).map(function (s) { return fetch('/' + s.slice(13, -1)).then(function (r) { return r.status === 200; }, function () { return false; }); }))).every(Boolean));
+    img = await fetch('/assets/ico/1f512.png');
+    check('off line: a saved picture', img.status === 200 && (await img.blob()).size > 100);
+    snd = await fetch('/assets/snd/pizzi12.mp3', { headers: { Range: 'bytes=10-109' } });
+    var part = await snd.blob();
+    check('off line: 100 bytes of a saved sound', snd.status === 206 && part.size === 100 && /^bytes 10-109\/\d+$/.test(snd.headers.get('Content-Range')), snd.status + ' ' + part.size + ' ' + snd.headers.get('Content-Range'));
+    var played = await new Promise(function (r) { var au = new Audio('/assets/snd/pizzi12.mp3'); au.oncanplaythrough = function () { r(au.duration > 0); }; au.onerror = function () { r(false); }; setTimeout(function () { r('timeout'); }, 5000); au.load(); });
+    check('off line: an <audio> can play the saved sound', played === true, played);
+    check('off line: a picture never seen fails (nothing invented)', await fails(fetch('/assets/app/maskable-512.png')));
+    check('off line: a POST is not answered by the worker', await fails(fetch('/index.html', { method: 'POST' })));
+
+    // the game itself, off line, in the sandbox (#demo: no saved progress is read or written)
+    var f = document.createElement('iframe'); f.style.cssText = 'width:390px;height:700px;border:0';
+    var errs = [];
+    f.src = '/#demo&s=home&hour=10'; document.body.appendChild(f);
+    await new Promise(function (r) { f.onload = r; });
+    f.contentWindow.addEventListener('error', function (e) { errs.push(e.message); });
+    await wait(2500);
+    var d = f.contentDocument, app = d.getElementById('app');
+    check('off line: the game starts and draws its home screen', !!app && app.children.length > 0 && !!f.contentWindow.TrollLogic && !!f.contentWindow.__tv, app ? app.children.length + ' children' : 'no #app');
+    check('off line: every pack is in the game', d.querySelectorAll('script[src^="packs/"]').length === packs);
+    check('off line: no script error in the game', errs.length === 0, errs.join(' | '));
+    var broken = [].filter.call(d.images, function (im) { return im.complete && !im.naturalWidth; }).length;
+    log.push('note: pictures of the home screen that are missing off line: ' + broken + ' of ' + d.images.length);
+  } catch (e) { check('the test ran to its end', false, e && (e.stack || e.message || e)); }
+  try { (await navigator.serviceWorker.getRegistrations()).forEach(function (r) { r.unregister(); }); } catch (e) {}
+  navigator.sendBeacon('/__result', JSON.stringify({ ok: ok, log: log }));
+})();
+</script>
+</body>
+</html>

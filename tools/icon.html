@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>icon</title>
+<!-- The app icon of "עולם הטרולים": the guide troll of the game (TrollArt.trollSVG with the spec GUIDE, both read from
+     ../index.html, nothing is redrawn here) on the colours of the toy island (sky, sea, grass, sand).
+     tools/make-icons.js photographs this page with headless Edge at each size.
+     #m = maskable: the troll stays inside the safe circle (80% of the width), the background fills the whole square. -->
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+#i{position:relative;width:100vmin;height:100vmin;overflow:hidden;
+  background:linear-gradient(to bottom,#7fdcff 0,#c8f3ff 56%,#27b4ea 56.4%,#0b78c6 100%)}
+#isle{position:absolute;left:50%;width:78%;height:26%;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(120% 90% at 30% 0,#c9f27a 0,#8fe05a 35%,#5fcb49 75%,#49b943 100%);
+  box-shadow:0 1.6vmin 0 #f6d27a,0 3vmin 0 #dba94a,0 4.2vmin 0 rgba(0,70,130,.35)}
+#t{position:absolute;left:50%;transform:translateX(-50%)}
+#t svg{display:block;width:100%;height:100%;overflow:visible}
+.troll .arm{fill:none;stroke-linecap:round;stroke-width:15}
+/* the usual icon: a large troll */
+#isle{top:88%}
+#t{height:84%;width:64.1%;top:7%}
+/* maskable: the troll (hair to feet) fits the circle of 40% radius around the centre */
+.m #isle{top:80%;width:70%;height:22%}
+.m #t{height:64%;width:48.9%;top:18%}
+</style>
+</head>
+<body>
+<div id="i"><div id="isle"></div><div id="t"></div></div>
+<script>
+(function () {
+  if (/m/.test(location.hash)) document.getElementById('i').className = 'm';
+  var x = new XMLHttpRequest();
+  x.open('GET', '../index.html', false); x.send();
+  var html = x.responseText;
+  var art = /<script id="troll">([\s\S]*?)<\/script>/.exec(html)[1];
+  var guide = /GUIDE = (\{[^}]*\});/.exec(html)[1];
+  var TrollArt = new Function(art + '; return TrollArt;')();
+  var spec = new Function('return ' + guide)();
+  document.getElementById('t').innerHTML = TrollArt.trollSVG(spec, { mood: 'happy' });
+  document.title = 'ICON OK';
+})();
+</script>
+</body>
+</html>

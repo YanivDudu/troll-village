@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>running</title></head>
+<body>
+<!-- Opened from the disk (file://) with headless Edge and --allow-file-access-from-files --dump-dom; the title becomes
+     "PWA FILE OK" when the game starts from a file with no script error and without a service worker. -->
+<iframe id="f" style="width:390px;height:700px;border:0"></iframe>
+<script>
+(function () {
+  var f = document.getElementById('f'), errs = [];
+  f.onload = function () {
+    var w = f.contentWindow;
+    w.addEventListener('error', function (e) { errs.push(e.message); });
+    w.addEventListener('unhandledrejection', function (e) { errs.push('rejection: ' + (e.reason && e.reason.message || e.reason)); });
+    setTimeout(function () {
+      var sw = w.navigator.serviceWorker, app = w.document.getElementById('app');
+      var started = !!app && app.children.length > 0 && !!w.TrollLogic && !!w.__tv;
+      var head = w.document.querySelector('link[rel=manifest]') && w.document.querySelector('script#pwa');
+      function end(regs) {
+        document.title = started && head && !errs.length && !regs && !(sw && sw.controller) ? 'PWA FILE OK' : 'PWA FILE FAILED started=' + started + ' head=' + !!head + ' registrations=' + regs + ' errors=' + errs.join(' | ');
+      }
+      if (!sw) return end(0);
+      sw.getRegistrations().then(function (r) { end(r.length); }, function () { end(0); });
+    }, 3000);
+  };
+  f.src = '../index.html';
+})();
+</script>
+</body>
+</html>

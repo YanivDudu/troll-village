@@ -17,3 +17,4 @@ The toy island skin (toy/*.png): "Fluent Emoji" 3D by Microsoft, trimmed to the 
   https://github.com/microsoft/fluentui-emoji  -  license: MIT (the text is in toy/LICENSE-fluent.txt)
   Two files are compositions of Fluent pictures, nothing drawn: toy/bridge.png (the Rainbow as a whole arch on two "Desert island" islets),
   toy/campfire.png ("Fire" on two "Wood" logs). The sky, the sea, the islands, the path, the haze and the shadows are CSS.
+App icon (app/*.png): the guide troll of the game (drawn by the code of index.html) on the colours of the toy island, photographed from tools/icon.html by tools/make-icons.js. Nothing from outside.

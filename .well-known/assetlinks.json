@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.web.trollmath.twa",
+      "sha256_cert_fingerprints": ["3C:63:4E:46:A6:BA:D2:BB:72:2A:B7:03:C7:1A:A7:C0:B2:7A:9E:B8:8F:D7:D7:3C:A8:96:F8:20:AB:88:89:8F"]
+    }
+  }
+]
