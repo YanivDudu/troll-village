@@ -496,16 +496,19 @@ console.log('all ' + n + ' passed (formats)');
 t('cloud: newer progress wins per player, deleted players stay deleted, ids never clash', () => {
   const j = x => JSON.parse(JSON.stringify(x));
   assert(L.CODE_RE.test(L.newCode(Math.random)));
-  const A = { list: [{ id: 'p111111111', name: 'a' }, { id: 'p222222222', name: 'b' }], gone: [], t: { p111111111: 5, p222222222: 9 } };
+  const A = { list: [{ id: 'p111111111', name: 'a' }, { id: 'p222222222', name: 'b' }], gone: [], n: { p111111111: 5, p222222222: 9 }, t: { p111111111: 5, p222222222: 9 }, has: { p111111111: true, p222222222: true } };
   let m = j(L.mergeCloud(A, null)); // first upload
-  assert(m.meta); assert.deepStrictEqual(m.push, ['p111111111', 'p222222222']); assert.deepStrictEqual(m.pull, []);
-  const R = { list: A.list.concat([{ id: 'p333333333', name: 'c' }]), gone: [], t: { p111111111: 7, p222222222: 9, p333333333: 2 } };
+  assert(m.meta); assert.deepStrictEqual(m.push, ['p111111111', 'p222222222']); assert.deepStrictEqual(m.pull, []); assert.deepStrictEqual(m.n, { p111111111: 5, p222222222: 9 });
+  const all3 = { p111111111: true, p222222222: true, p333333333: true };
+  const R = { list: A.list.concat([{ id: 'p333333333', name: 'c' }]), gone: [], n: { p111111111: 7, p222222222: 9, p333333333: 2 }, t: { p111111111: 7, p222222222: 9, p333333333: 2 }, st: { p111111111: '7:7|7', p222222222: '9:9|9', p333333333: '2:2|2' }, has: all3 };
   m = j(L.mergeCloud(A, R));
-  assert.deepStrictEqual(m.pull, ['p111111111', 'p333333333']); assert.deepStrictEqual(m.push, []); assert(!m.meta);
+  assert.deepStrictEqual(m.pull, ['p111111111', 'p222222222', 'p333333333'], 'no base yet: the cloud wins the full tie of the second player too'); assert.deepStrictEqual(m.push, []); assert(!m.meta);
   assert.strictEqual(m.list.length, 3);
-  m = j(L.mergeCloud({ list: A.list, gone: ['p222222222'], t: { p111111111: 8 } }, R)); // deleted here
-  assert(m.meta); assert(!m.list.some(p => p.id === 'p222222222')); assert.deepStrictEqual(m.push, ['p111111111']);
-  m = j(L.mergeCloud(A, { list: [A.list[0]], gone: ['p222222222'], t: { p111111111: 5 } })); // deleted elsewhere
+  m = j(L.mergeCloud(Object.assign({}, A, { b: { p222222222: '9:9|9' } }), R));
+  assert.deepStrictEqual(m.pull, ['p111111111', 'p333333333'], 'the copy this device already holds is not pulled again');
+  m = j(L.mergeCloud({ list: A.list, gone: ['p222222222'], n: { p111111111: 8 }, t: { p111111111: 8 }, has: { p111111111: true } }, R)); // deleted here
+  assert(m.meta); assert(!m.list.some(p => p.id === 'p222222222')); assert.deepStrictEqual(m.push, ['p111111111']); assert.strictEqual(m.n.p111111111, 8);
+  m = j(L.mergeCloud(A, { list: [A.list[0]], gone: ['p222222222'], n: { p111111111: 5 }, t: { p111111111: 5 }, st: { p111111111: '5:5|5' }, has: { p111111111: true } })); // deleted elsewhere
   assert(!m.meta); assert.deepStrictEqual(m.list.map(p => p.id), ['p111111111']); assert.deepStrictEqual(m.gone, ['p222222222']);
   const P = L.addProfile({ cur: null, list: [{ id: 'p1', name: 'x' }] }, 'y', 'p987654321');
   assert.strictEqual(P.cur, 'p987654321');
@@ -572,9 +575,9 @@ t('players: boy or girl wording, public or local, experience points', () => {
   assert.deepStrictEqual(j(P.list), [{ id: 'p111111111', name: 'a', sex: 'm', loc: true }, { id: 'p222222222', name: 'b', sex: 'f' }, { id: 'p333333333', name: 'c' }]);
   assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify(P)).list), j(P.list));
   assert.deepStrictEqual(j(L.loadProfiles({ list: [{ id: 'p1', name: 'x', sex: 'zz', loc: 'yes' }] }).list), [{ id: 'p1', name: 'x' }]);
-  const m = j(L.mergeCloud({ list: P.list, gone: [], t: {} }, { list: [], gone: [], t: {} }));
-  assert.deepStrictEqual(m.list, j(P.list)); assert(m.meta, 'the list with the new fields is pushed');
-  assert(!j(L.mergeCloud({ list: P.list, gone: [], t: {} }, { list: P.list, gone: [], t: {} })).meta);
+  const m = j(L.mergeCloud({ list: P.list, gone: [] }, { list: [], gone: [] }));
+  assert.deepStrictEqual(m.list, j(P.list)); assert(m.meta, 'the list with the new fields is pushed'); assert.deepStrictEqual(m.push.concat(m.pull), [], 'a card without progress is neither pushed nor pulled');
+  assert(!j(L.mergeCloud({ list: P.list, gone: [] }, { list: P.list, gone: [] })).meta);
   assert.strictEqual(L.newState(2).xp, 0);
   assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10 }).xp, 30); // an estimate for players from before the points
   assert.strictEqual(L.loadState({ v: 4, grade: 2, stars: 10, xp: 7 }).xp, 7);
@@ -717,9 +720,9 @@ t('memory: the optional field state.mem loads, is cleaned, survives a round trip
   const one = L.loadState(JSON.stringify(o)), two = L.loadState(JSON.stringify(one));
   assert.deepStrictEqual(J6(two), J6(one)); assert.deepStrictEqual(J6(two.mem), { ev: good });
   // ... and through a sync: device A pushes its player (the saved text goes through loadState), device B has older progress and pulls it
-  const A = { list: [{ id: 'p111111111', name: 'a' }], gone: [], t: { p111111111: 9 } }, B = { list: A.list, gone: [], t: { p111111111: 4 } };
-  const up = L.mergeCloud(A, { list: A.list, gone: [], t: { p111111111: 4 } }); assert.deepStrictEqual(Array.from(up.push), ['p111111111']);
-  const cloud = { list: A.list, gone: [], t: { p111111111: 9 }, s: { p111111111: JSON.stringify(L.loadState(JSON.stringify(one))) } };
+  const A = { list: [{ id: 'p111111111', name: 'a' }], gone: [], n: { p111111111: 9 }, t: { p111111111: 9 }, has: { p111111111: true } }, B = { list: A.list, gone: [], n: { p111111111: 4 }, t: { p111111111: 4 }, has: { p111111111: true } };
+  const up = L.mergeCloud(A, { list: A.list, gone: [], n: { p111111111: 4 }, t: { p111111111: 4 }, st: { p111111111: '4:4|4' }, has: { p111111111: true } }); assert.deepStrictEqual(Array.from(up.push), ['p111111111']);
+  const cloud = { list: A.list, gone: [], n: { p111111111: 9 }, t: { p111111111: 9 }, st: { p111111111: '9:9|9' }, has: { p111111111: true }, s: { p111111111: JSON.stringify(L.loadState(JSON.stringify(one))) } };
   const down = L.mergeCloud(B, cloud); assert.deepStrictEqual(Array.from(down.pull), ['p111111111']);
   const onB = L.loadState(cloud.s[down.pull[0]]);
   assert.deepStrictEqual(J6(onB.mem), { ev: good }); assert.deepStrictEqual(J6(onB), J6(one));
@@ -930,15 +933,16 @@ t('memory: every line is vocalised, has no feminine form left for a boy, and say
   assert.deepStrictEqual(Object.keys(M.unlock), ['2', '3', '4', '5', '6']);
 });
 t('cloud: a save that lands while the cloud is being fetched cannot beat newer progress in the cloud', () => {
-  // syncNow copies the times before the request and merges against the copy; the live times may move meanwhile (touch)
-  const list = [{ id: 'p111111111', name: 'a' }], cloud = { list: list, gone: [], t: { p111111111: 700 } };
-  const live = { p111111111: 500 }, before = Object.assign({}, live);
-  live.p111111111 = 900; // the child tapped "continue" during the fetch: save() -> touch()
-  const m = L.mergeCloud({ list: list, gone: [], t: before }, cloud);
-  assert.deepStrictEqual(Array.from(m.pull), ['p111111111']); assert.deepStrictEqual(Array.from(m.push), []);
-  assert.deepStrictEqual(Array.from(L.mergeCloud({ list: list, gone: [], t: live }, cloud).push), ['p111111111'], 'the live times would have pushed the stale device');
-  // progress that was newer here before the fetch is still pushed
-  assert.deepStrictEqual(Array.from(L.mergeCloud({ list: list, gone: [], t: { p111111111: 800 } }, cloud).push), ['p111111111']);
+  // syncNow decides with the live number after the request: the save raised it by one, the cloud is five ahead
+  const id = 'p111111111', list = [{ id: id, name: 'a' }], cloud = { list: list, gone: [], n: { [id]: 25 }, t: { [id]: 700 }, st: { [id]: '25:700|700' }, has: { [id]: true } };
+  const dev = (n, t, d) => ({ list: list, gone: [], n: { [id]: n }, t: { [id]: t }, b: { [id]: '20:500|500' }, d: d ? { [id]: 1 } : {}, has: { [id]: true } });
+  let m = L.mergeCloud(dev(21, 900, true), cloud); // the child tapped "continue" during the fetch: save() -> touch(); the later time decides nothing
+  assert.deepStrictEqual(Array.from(m.pull), [id]); assert.deepStrictEqual(Array.from(m.push), []); assert.strictEqual(m.n[id], 25);
+  // progress that outranks the cloud (more saves since the base) is still pushed, above the number of the cloud
+  m = L.mergeCloud(dev(27, 100, true), cloud); assert.deepStrictEqual(Array.from(m.push), [id]); assert.strictEqual(m.n[id], 27);
+  // and when the cloud copy is the one this device last saw, the save is simply pushed
+  m = L.mergeCloud(dev(21, 900, true), Object.assign({}, cloud, { n: { [id]: 20 }, t: { [id]: 500 }, st: { [id]: '20:500|500' } }));
+  assert.deepStrictEqual(Array.from(m.push), [id]); assert.strictEqual(m.n[id], 21);
 });
 t('cloud: boy or girl changed on a player card travels (the newer card wins), progress is still decided by its own times', () => {
   const j = x => JSON.parse(JSON.stringify(x)), id = 'p111111111', id2 = 'p222222222';
@@ -947,14 +951,15 @@ t('cloud: boy or girl changed on a player card travels (the newer card wins), pr
   ['x', -1, 0, NaN, null, '50', Infinity].forEach(v => assert(!('mt' in L.loadProfiles({ list: [{ id: id, name: 'a', mt: v }] }).list[0]), 'mt ' + v));
   assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify({ cur: id, list: [{ id: id, name: 'a', sex: 'f' }] }))), { cur: id, list: [{ id: id, name: 'a', sex: 'f' }] }, 'a saved list without the field loads as before');
   // this device changed the card: the cloud gets it, and the progress times decide nothing here
-  const cloud = { list: [{ id: id, name: 'a', sex: 'f' }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: { [id]: 7, [id2]: 7 } };
-  const mine = { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: { [id]: 3, [id2]: 7 } };
+  const both = { [id]: true, [id2]: true }, st7 = { [id]: '7:7|7', [id2]: '7:7|7' };
+  const cloud = { list: [{ id: id, name: 'a', sex: 'f' }, { id: id2, name: 'b', sex: 'f' }], gone: [], n: { [id]: 7, [id2]: 7 }, t: { [id]: 7, [id2]: 7 }, st: st7, has: both };
+  const mine = { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }, { id: id2, name: 'b', sex: 'f' }], gone: [], n: { [id]: 3, [id2]: 7 }, t: { [id]: 3, [id2]: 7 }, b: { [id]: '3:3|3', [id2]: '7:7|7' }, has: both };
   let m = j(L.mergeCloud(mine, cloud));
   assert.deepStrictEqual(m.list, [{ id: id, name: 'a', sex: 'm', mt: 50 }, { id: id2, name: 'b', sex: 'f' }]);
   assert(m.meta, 'the list is written to the cloud'); assert.deepStrictEqual(m.pull, [id], 'the progress of the cloud is newer and is still pulled'); assert.deepStrictEqual(m.push, []);
   // the other device (old card, no time) pulls it and writes nothing
-  const cloud2 = { list: m.list, gone: [], t: cloud.t };
-  m = j(L.mergeCloud({ list: cloud.list, gone: [], t: cloud.t }, cloud2));
+  const cloud2 = Object.assign({}, cloud, { list: m.list });
+  m = j(L.mergeCloud({ list: cloud.list, gone: [], n: cloud.n, t: cloud.t, b: st7, has: both }, cloud2));
   assert.strictEqual(m.list[0].sex, 'm'); assert.strictEqual(m.list[0].mt, 50); assert(!m.meta); assert.deepStrictEqual(m.pull.concat(m.push), []);
   // an older change here loses to a newer one in the cloud; equal times: the cloud wins, as it always did
   m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'f', mt: 40 }], gone: [], t: {} }, { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [], t: {} }));
@@ -962,18 +967,168 @@ t('cloud: boy or girl changed on a player card travels (the newer card wins), pr
   m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'f', mt: 50 }], gone: [], t: {} }, { list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [], t: {} }));
   assert.strictEqual(m.list[0].sex, 'm'); assert(!m.meta);
   // old data on both sides (no time anywhere): the cloud wins and nothing is written
-  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm' }], gone: [], t: { [id]: 9 } }, { list: [{ id: id, name: 'a', sex: 'f' }], gone: [], t: { [id]: 9 } }));
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm' }], gone: [], n: { [id]: 9 }, t: { [id]: 9 }, b: { [id]: '9:9|9' }, has: { [id]: true } }, { list: [{ id: id, name: 'a', sex: 'f' }], gone: [], n: { [id]: 9 }, t: { [id]: 9 }, st: { [id]: '9:9|9' }, has: { [id]: true } }));
   assert.deepStrictEqual(m.list, [{ id: id, name: 'a', sex: 'f' }]); assert(!m.meta);
   // an older page rewrote the list without the time: the device that made the change wins again and puts it back
-  m = j(L.mergeCloud(mine, { list: [{ id: id, name: 'a', sex: 'm' }, { id: id2, name: 'b', sex: 'f' }], gone: [], t: cloud.t }));
+  m = j(L.mergeCloud(mine, Object.assign({}, cloud, { list: [{ id: id, name: 'a', sex: 'm' }, { id: id2, name: 'b', sex: 'f' }] })));
   assert.strictEqual(m.list[0].mt, 50); assert(m.meta);
   // a deleted player stays deleted, whatever time the card carries, on either side
-  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: Date.now() }], gone: [], t: { [id]: Date.now() } }, { list: [{ id: id2, name: 'b' }], gone: [id], t: {} }));
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: Date.now(), mn: 99 }], gone: [], n: { [id]: 1e6 }, t: { [id]: Date.now() }, d: { [id]: 1 }, has: { [id]: true } }, { list: [{ id: id2, name: 'b' }], gone: [id], t: {} }));
   assert.deepStrictEqual(m.list.map(p => p.id), [id2]); assert.deepStrictEqual(m.gone, [id]); assert.deepStrictEqual(m.push.concat(m.pull), []);
-  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [id], t: {} }, { list: [{ id: id, name: 'a', sex: 'f', mt: 90 }], gone: [], t: { [id]: 5 } }));
-  assert.deepStrictEqual(m.list, []); assert(m.meta);
+  m = j(L.mergeCloud({ list: [{ id: id, name: 'a', sex: 'm', mt: 50 }], gone: [id], t: {} }, { list: [{ id: id, name: 'a', sex: 'f', mt: 90 }], gone: [], n: { [id]: 5 }, t: { [id]: 5 }, st: { [id]: '5:5|5' }, has: { [id]: true } }));
+  assert.deepStrictEqual(m.list, []); assert(m.meta); assert.deepStrictEqual(m.push.concat(m.pull), []);
   // the order of the players stays the cloud's, a player that only this device has is added after them, at most 8
   m = j(L.mergeCloud({ list: [{ id: 'p333333333', name: 'c' }, { id: id2, name: 'b', sex: 'm', mt: 9 }], gone: [], t: {} }, cloud));
   assert.deepStrictEqual(m.list.map(p => p.id), [id, id2, 'p333333333']); assert.strictEqual(m.list[1].sex, 'm');
 });
 console.log('all ' + n + ' passed (players)');
+
+// ---- sync by a running number per player (docs/prompts/sync-rev-spec.md) ----
+{
+  const j = x => JSON.parse(JSON.stringify(x)), id = 'p111111111', id2 = 'p222222222', card = [{ id: id, name: 'a' }];
+  // one player on both sides: dev(number, time, base stamp, dirty), cl(number, time) is a numbered cloud copy
+  const dev = (nn, tt, b, d, o) => Object.assign({ list: card, gone: [], n: { [id]: nn }, t: { [id]: tt }, b: b ? { [id]: b } : {}, d: d ? { [id]: 1 } : {}, has: { [id]: true } }, o || {});
+  const cl = (nn, tt, o) => Object.assign({ list: card, gone: [], n: { [id]: nn }, t: { [id]: tt }, st: { [id]: L.stampOf(nn + ':' + tt, tt) }, has: { [id]: true } }, o || {});
+  const act = m => m.pull.indexOf(id) >= 0 ? 'pull' : m.push.indexOf(id) >= 0 ? 'push' : 'none';
+  const st = (xp, rounds, coins) => { const s = j(L.newState(2)); s.xp = xp; s.rounds = rounds; s.coins = coins || 0; return L.loadState(JSON.stringify(s)); };
+  t('sync number: the first number comes from the progress, the number of a cloud copy, its stamp', () => {
+    assert.strictEqual(L.revSeed(L.newState(2)), 1); assert.strictEqual(L.revSeed(st(40, 7)), 48);
+    assert.strictEqual(L.revSeed(null), 1); assert.strictEqual(L.revSeed({ xp: 'x', rounds: -3 }), 1);
+    assert.strictEqual(L.revSeed(L.loadState({ v: 4, grade: 2, stars: 10 })), 31, 'a player from before the points: the estimate of loadState');
+    assert.strictEqual(L.cloudNum('12:500', '500', st(40, 7)), 12, 'numbered: the number, whatever the progress says');
+    assert.strictEqual(L.cloudNum('12:500', 500, st(40, 7)), 12);
+    assert.strictEqual(L.cloudNum('12:500', '900', st(2, 0)), 13, 'an older page wrote over it: one more than the number it left behind');
+    assert.strictEqual(L.cloudNum('12:500', '900', st(40, 7)), 48, '... or the seed of the new progress when that is higher');
+    assert.strictEqual(L.cloudNum('', '900', st(40, 7)), 48, 'only a time: the seed');
+    [undefined, null, 'x', '12', '12:', ':5', '-1:500', '1.5:500', '12:500:1', 12].forEach(r => assert.strictEqual(L.cloudNum(r, '500', st(40, 7)), 48, 'garbage ' + r));
+    assert.strictEqual(L.stampOf('12:500', '500'), '12:500|500'); assert.strictEqual(L.stampOf('', 500), '|500'); assert.strictEqual(L.stampOf(undefined, 500), '|500');
+    assert.notStrictEqual(L.stampOf('12:500', '500'), L.stampOf('12:500', '900'), 'a write by an older page changes the stamp');
+  });
+  t('sync number: the decision table, one row at a time', () => {
+    let m;
+    // 1. deleted in the cloud: the deletion wins even over a dirty device far ahead
+    m = j(L.mergeCloud(dev(999, 9e15, '5:5|5', true), { list: [], gone: [id] }));
+    assert.deepStrictEqual([m.list, m.gone, m.pull, m.push, m.meta], [[], [id], [], [], false], 'row 1');
+    // 2. deleted on this device: gone and list are written, the player is neither pulled nor pushed
+    m = j(L.mergeCloud(dev(3, 3, '', false, { gone: [id] }), cl(50, 50)));
+    assert.deepStrictEqual([m.list, m.gone, m.pull, m.push, m.meta], [[], [id], [], [], true], 'row 2');
+    // 3. removed from this device only: nothing, and nothing is written
+    m = j(L.mergeCloud({ list: [], gone: [], hide: [id] }, cl(50, 50)));
+    assert.deepStrictEqual([m.list.map(p => p.id), m.pull, m.push, m.meta], [[id], [], [], false], 'row 3');
+    // 4. a card without progress anywhere
+    m = j(L.mergeCloud({ list: card, gone: [] }, { list: card, gone: [] })); assert.strictEqual(act(m), 'none', 'row 4'); assert(!m.meta);
+    // 5. the cloud has progress, the device has none (new device, storage cleared): pull, never push
+    m = j(L.mergeCloud({ list: [], gone: [] }, cl(7, 70))); assert.strictEqual(act(m), 'pull', 'row 5'); assert.strictEqual(m.n[id], 7); assert(!m.meta);
+    m = j(L.mergeCloud({ list: card, gone: [], n: { [id]: 999 }, t: { [id]: 9e15 }, d: { [id]: 1 }, b: { [id]: '7:70|70' } }, cl(7, 70)));
+    assert.strictEqual(act(m), 'pull', 'row 5: a card and a number without progress still only pull'); assert.deepStrictEqual(m.push, []);
+    // 6. the device has progress, the cloud has none (also: no document)
+    m = j(L.mergeCloud(dev(4, 40), { list: card, gone: [] })); assert.strictEqual(act(m), 'push', 'row 6'); assert.strictEqual(m.n[id], 4);
+    m = j(L.mergeCloud(dev(4, 40), null)); assert.strictEqual(act(m), 'push', 'row 6, no document'); assert(m.meta);
+    // 7. the cloud copy is the one this device last saw, nothing saved since
+    m = j(L.mergeCloud(dev(7, 70, '7:70|70'), cl(7, 70))); assert.strictEqual(act(m), 'none', 'row 7'); assert(!m.meta); assert.deepStrictEqual(m.n, {});
+    // 8. ... and something was saved: push, with a number above the cloud's
+    m = j(L.mergeCloud(dev(8, 80, '7:70|70', true), cl(7, 70))); assert.strictEqual(act(m), 'push', 'row 8'); assert.strictEqual(m.n[id], 8);
+    m = j(L.mergeCloud(dev(7, 80, '7:70|70', true), cl(7, 70))); assert.strictEqual(m.n[id], 8, 'row 8: the pushed number is max(own, cloud + 1)');
+    m = j(L.mergeCloud(dev(12, 80, '7:70|70', true), cl(7, 70))); assert.strictEqual(m.n[id], 12);
+    // 9. another copy in the cloud, ranked higher or a full tie: pull, clean or dirty
+    m = j(L.mergeCloud(dev(7, 70, '7:70|70'), cl(9, 90))); assert.strictEqual(act(m), 'pull', 'row 9 clean'); assert.strictEqual(m.n[id], 9);
+    m = j(L.mergeCloud(dev(8, 80, '7:70|70', true), cl(9, 60))); assert.strictEqual(act(m), 'pull', 'row 9 dirty: the play since the base is lost, fewer saves');
+    m = j(L.mergeCloud(dev(9, 80, '7:70|70', true), cl(9, 90))); assert.strictEqual(act(m), 'pull', 'row 9: equal numbers, the later time is the cloud');
+    m = j(L.mergeCloud(dev(9, 90, '7:70|70', true), cl(9, 90))); assert.strictEqual(act(m), 'pull', 'row 9: a full tie with another stamp goes to the cloud');
+    m = j(L.mergeCloud(dev(9, 90), cl(9, 90))); assert.strictEqual(act(m), 'pull', 'row 9: no base at all, a full tie');
+    // 10. another copy in the cloud, the device ranks higher: push, clean or dirty
+    m = j(L.mergeCloud(dev(11, 10, '7:70|70', true), cl(9, 90))); assert.strictEqual(act(m), 'push', 'row 10 dirty'); assert.strictEqual(m.n[id], 11);
+    m = j(L.mergeCloud(dev(11, 10, '7:70|70'), cl(9, 90))); assert.strictEqual(act(m), 'push', 'row 10 clean: a lower number in the cloud is never a reason to pull');
+    m = j(L.mergeCloud(dev(9, 91, '7:70|70', true), cl(9, 90))); assert.strictEqual(act(m), 'push', 'row 10: equal numbers, the later time is the device'); assert.strictEqual(m.n[id], 10, 'and the pushed number goes above the cloud');
+    // rows 5-10 run only for players of the merged list (cloud first, then the device, at most 8)
+    const many = []; for (let i = 0; i < 8; i++) many.push({ id: 'p90000000' + i, name: 'x' });
+    m = j(L.mergeCloud(dev(5, 5), { list: many, gone: [] })); assert.deepStrictEqual(m.push, [], 'a ninth player is not written');
+    // two players are decided separately
+    m = j(L.mergeCloud({ list: card.concat([{ id: id2, name: 'b' }]), gone: [], n: { [id]: 3, [id2]: 30 }, t: {}, has: { [id]: true, [id2]: true } },
+      { list: card.concat([{ id: id2, name: 'b' }]), gone: [], n: { [id]: 5, [id2]: 20 }, t: { [id]: 1, [id2]: 1 }, st: { [id]: '5:1|1', [id2]: '20:1|1' }, has: { [id]: true, [id2]: true } }));
+    assert.deepStrictEqual([m.pull, m.push, m.n], [[id], [id2], { [id]: 5, [id2]: 30 }]);
+  });
+  t('sync number: a device clock that is years wrong decides nothing when the numbers differ', () => {
+    const YEAR = 365 * 864e5, now = 1795000000000;
+    [1, now - 10 * YEAR, now, now + 10 * YEAR].forEach(dt => [1, now - 10 * YEAR, now, now + 10 * YEAR].forEach(ct => [false, true].forEach(dirty => {
+      const what = ' device clock ' + dt + ' cloud clock ' + ct + (dirty ? ' dirty' : '');
+      assert.strictEqual(act(L.mergeCloud(dev(8, dt, '7:70|70', dirty), cl(9, ct))), 'pull', 'lower number pulls,' + what);
+      assert.strictEqual(act(L.mergeCloud(dev(10, dt, '7:70|70', dirty), cl(9, ct))), 'push', 'higher number pushes,' + what);
+      assert.strictEqual(act(L.mergeCloud(dev(10, dt, '', dirty), cl(9, ct))), 'push', 'no base,' + what);
+      assert.strictEqual(act(L.mergeCloud({ list: card, gone: [], t: { [id]: dt } }, cl(9, ct))), 'pull', 'no local progress,' + what);
+      assert.strictEqual(act(L.mergeCloud(dev(1, dt, '', dirty), { list: card, gone: [] })), 'push', 'nothing in the cloud,' + what);
+      if (dirty) assert.strictEqual(act(L.mergeCloud(dev(10, dt, L.stampOf('9:' + ct, ct), true), cl(9, ct))), 'push', 'same base,' + what);
+    })));
+  });
+  t('sync number: the first sync after the update (no numbers stored anywhere) keeps the more advanced copy', () => {
+    // both sides are seeded from their progress: the device from its saved state, the cloud copy (only s3 and t3) by cloudNum
+    const first = (ds, dt, cs, ct, r3) => L.mergeCloud(dev(L.revSeed(ds), dt), { list: card, gone: [], n: { [id]: L.cloudNum(r3 || '', ct, cs) }, t: { [id]: ct }, st: { [id]: L.stampOf(r3 || '', ct) }, has: { [id]: true } });
+    let m = first(st(40, 7), 500, st(40, 7), 500); // device and cloud agree: a full tie, the client sees equal states and only sets the base
+    assert.strictEqual(act(m), 'pull'); assert.strictEqual(m.n[id], 48); assert(!m.meta);
+    m = first(st(40, 7), 500, st(46, 8), 900); assert.strictEqual(act(m), 'pull', 'the cloud is newer and more advanced');
+    m = first(st(40, 7, 10), 500, st(40, 7, 90), 900); assert.strictEqual(act(m), 'pull', 'the cloud is newer, same points (coins were spent): the later time');
+    m = first(st(46, 8), 900, st(40, 7), 500); assert.strictEqual(act(m), 'push', 'the device is newer and more advanced'); assert.strictEqual(m.n[id], 55);
+    m = first(st(40, 7, 90), 900, st(40, 7, 10), 500); assert.strictEqual(act(m), 'push', 'the device is newer, same points'); assert.strictEqual(m.n[id], 49, 'written above the seed of the cloud');
+    m = first(st(80, 12), 500, st(44, 8), 900); assert.strictEqual(act(m), 'push', 'both played: more solved exercises win against a later clock');
+    m = first(st(44, 8), 900, st(80, 12), 500); assert.strictEqual(act(m), 'pull', 'both played: the device with the later clock and less progress is overwritten');
+    // an older cached page wrote s3/t3 over a numbered copy (r3 still says 60:500, t3 is now 900)
+    const oldPage = (nn, b, d, cs) => L.mergeCloud(dev(nn, 600, b, d), { list: card, gone: [], n: { [id]: L.cloudNum('60:500', 900, cs) }, t: { [id]: 900 }, st: { [id]: L.stampOf('60:500', 900) }, has: { [id]: true } });
+    m = oldPage(60, '60:500|500', false, st(50, 9)); assert.strictEqual(act(m), 'pull', 'a clean device takes what the older page wrote'); assert.strictEqual(m.n[id], 61);
+    m = oldPage(61, '60:500|500', true, st(50, 9)); assert.strictEqual(act(m), 'pull', 'one save against the write of the older page: equal numbers, the later time');
+    m = oldPage(64, '60:500|500', true, st(50, 9)); assert.strictEqual(act(m), 'push', 'a device with more saves since the base outranks it'); assert.strictEqual(m.n[id], 64);
+    m = oldPage(64, '60:500|500', true, st(90, 9)); assert.strictEqual(act(m), 'pull', 'unless the older page carried much more progress (its seed)'); assert.strictEqual(m.n[id], 100);
+  });
+  t('sync number: the card of a player has its own number (then the time, then the cloud)', () => {
+    const c = (sex, mn, mt) => { const o = { id: id, name: 'a', sex: sex }; if (mt) o.mt = mt; if (mn) o.mn = mn; return o; };
+    const pick = (mine, cloud) => j(L.mergeCloud({ list: [mine], gone: [] }, { list: [cloud], gone: [] }));
+    let m = pick(c('m', 2, 10), c('f', 1, 99)); assert.strictEqual(m.list[0].sex, 'm', 'the higher number wins against a later time'); assert(m.meta);
+    m = pick(c('m', 1, 99), c('f', 2, 10)); assert.strictEqual(m.list[0].sex, 'f'); assert(!m.meta);
+    m = pick(c('m', 2, 50), c('f', 2, 40)); assert.strictEqual(m.list[0].sex, 'm', 'equal numbers: the later time'); assert(m.meta);
+    m = pick(c('m', 2, 50), c('f', 2, 50)); assert.strictEqual(m.list[0].sex, 'f', 'a full tie: the cloud'); assert(!m.meta);
+    m = pick(c('m', 1, 5), c('f', 0, 99)); assert.strictEqual(m.list[0].sex, 'm', 'a card that an older page rewrote without the number loses to the device that changed it'); assert(m.meta);
+    m = pick(c('m', 0, 50), c('f', 0, 40)); assert.strictEqual(m.list[0].sex, 'm', 'cards from before the number: the time decides, as it did');
+    assert.strictEqual(L.loadProfiles({ list: [c('m', 3, 50)] }).list[0].mn, 3);
+    ['x', -1, 0, 0.5, 2.5, NaN, null, '3', Infinity].forEach(v => assert(!('mn' in L.loadProfiles({ list: [{ id: id, name: 'a', mn: v }] }).list[0]), 'mn ' + v));
+    const P = { cur: id, list: [c('f', 4, 77)] };
+    assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify(P))), P, 'saved and loaded');
+    assert.deepStrictEqual(j(L.loadProfiles(JSON.stringify(L.loadProfiles(JSON.stringify(P))))), P);
+  });
+  t('sync number: devices that take turns lose nothing; nobody writes over a copy it has not read; a cleared device only pulls', () => {
+    // A small model of the client around mergeCloud: the cloud holds { n, t, state } of one player, a device its copy, number, base and dirty mark.
+    let seed = 12345; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let run = 0; run < 300; run++) {
+      let cloud = null, clock = 1000, serial = 0; const turns = run % 2 === 0; // even runs: one device plays at a time and syncs before and after
+      const devs = [0, 1, 2].map(i => ({ state: null, n: 0, t: 0, b: '', d: false, skew: (i - 1) * 9e11 })); // clocks 28 years apart
+      const side = c => c && { list: card, gone: [], n: { [id]: c.n }, t: { [id]: c.t }, st: { [id]: L.stampOf(c.n + ':' + c.t, c.t) }, has: { [id]: true } };
+      const wipe = d => { d.state = null; d.n = 0; d.t = 0; d.b = ''; d.d = false; };
+      const sync = d => {
+        const before = cloud && JSON.stringify(cloud);
+        const m = L.mergeCloud({ list: d.state !== null ? card : [], gone: [], n: { [id]: d.n }, t: { [id]: d.t }, b: { [id]: d.b }, d: d.d ? { [id]: 1 } : {}, has: d.state !== null ? { [id]: true } : {} }, side(cloud));
+        assert(!(m.pull.length && m.push.length));
+        if (m.pull.length) { assert(cloud); d.state = cloud.state; d.n = m.n[id]; d.t = cloud.t; d.b = L.stampOf(cloud.n + ':' + cloud.t, cloud.t); d.d = false; assert.strictEqual(JSON.stringify(cloud), before, 'a pull writes nothing'); }
+        if (m.push.length) {
+          assert(d.state !== null, 'a device without progress never pushes');
+          if (cloud) assert(m.n[id] > cloud.n, 'the number in the cloud only grows');
+          if (cloud && turns) assert(d.state.indexOf(cloud.state) === 0, 'taking turns: the pushed progress contains everything the cloud had');
+          const tt = Math.max(clock + d.skew, cloud ? cloud.t + 1 : 0, d.t); if (cloud) assert(tt > cloud.t, 'the time of the write grows too (older pages compare it)');
+          cloud = { n: m.n[id], t: tt, state: d.state }; d.n = m.n[id]; d.t = tt; d.b = L.stampOf(d.n + ':' + tt, tt); d.d = false;
+        }
+        if (cloud) assert.strictEqual(d.state, cloud.state, 'after a sync the device holds the copy of the cloud');
+      };
+      const save = d => { if (d.state === null) d.state = ''; d.state += '.' + (++serial); d.n = (d.n || 1) + 1; d.t = Math.max(clock + d.skew, d.t + 1); d.d = true; };
+      for (let step = 0; step < 40; step++) {
+        clock += 1000; const d = devs[Math.floor(rnd() * 3)], r = rnd();
+        if (turns) { sync(d); if (d.state === null || r < 0.8) { for (let k = 1 + Math.floor(rnd() * 3); k > 0; k--) save(d); } sync(d); if (r > 0.9) wipe(d); }
+        else if (r < 0.5) save(d);
+        else if (r < 0.9) sync(d);
+        else { // the storage of the device is cleared: it must pull, and the cloud must not change
+          wipe(d);
+          const before = cloud && JSON.stringify(cloud); sync(d);
+          if (cloud) { assert.strictEqual(JSON.stringify(cloud), before, 'a cleared device changes nothing in the cloud'); assert.strictEqual(d.state, cloud.state); }
+        }
+      }
+      if (turns && cloud) assert.strictEqual(cloud.state.split('.').length - 1, serial, 'taking turns: every save of every device is in the cloud');
+    }
+  });
+}
+console.log('all ' + n + ' passed (sync number)');
