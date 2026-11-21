@@ -11,10 +11,11 @@
    "firebase.json",
    "*.rules",
    "*.rules.json",
-   ".*",
-   ".*/**",
-   "**/.*",
-   "**/.*/**",
+   ".!(well-known)",
+   ".!(well-known)/**",
+   "*/**/.*",
+   "*/**/.*/**",
+   "tools/**",
    "**/node_modules/**",
    "docs/**",
    "tests/**",
@@ -25,6 +26,15 @@
    "**/*.log"
   ],
   "headers": [
+   {
+    "source": "@(sw.js|manifest.webmanifest)",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "no-cache"
+     }
+    ]
+   },
    {
     "source": "**/*.@(html|js)",
     "headers": [

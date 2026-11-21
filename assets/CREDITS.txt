@@ -19,3 +19,4 @@ The toy island skin (toy/*.png): "Fluent Emoji" 3D by Microsoft, trimmed to the 
   toy/campfire.png ("Fire" on two "Wood" logs). The sky, the sea, the islands, the path, the haze and the shadows are CSS.
 Interface icons (the table ICONS in index.html, block DS-ICONS; no files): "Phosphor Icons" by Tobias Fried and Helena Zhang, weights Fill, Bold and Regular, path data copied unchanged
   https://phosphoricons.com  -  license: MIT (the text is in icons/LICENSE-phosphor.txt)
+App icon (app/*.png): the guide troll of the game (drawn by the code of index.html) on the colours of the toy island, photographed from tools/icon.html by tools/make-icons.js. Nothing from outside.
