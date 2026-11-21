@@ -4278,8 +4278,9 @@ var TrollModels = (function () {
   function sndApply() {
     if (!snd) { try { snd = JSON.parse(lsGet(SNDKEY) || 'null'); } catch (e) {} if (!snd || typeof snd !== 'object') { snd = { mute: !!state.mute, music: state.music !== false }; lsSet(SNDKEY, JSON.stringify(snd)); } }
     state.mute = !!snd.mute; state.music = snd.music !== false;
+    if (state.mute && typeof silence === 'function') silence();
   }
-  function sndSet(k, v) { sndApply(); snd[k] = v; lsSet(SNDKEY, JSON.stringify(snd)); state[k] = v; }
+  function sndSet(k, v) { sndApply(); snd[k] = v; lsSet(SNDKEY, JSON.stringify(snd)); state[k] = v; if (state.mute) silence(); else if (ac && master) { try { master.gain.value = 0.9; } catch (e) {} } }
   function load() {
     state = L.loadState(profiles.cur ? rawOf(profiles.cur) : null);
     sndApply();
@@ -4661,7 +4662,8 @@ var TrollModels = (function () {
         ac = new AC(); master = ac.createGain(); master.gain.value = 0.9;
         var comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
       }
-      if (ac.state === 'suspended') ac.resume();
+      if (state.mute) { master.gain.value = 0; return ac; } // silent means silent: nothing is resumed while the speaker is off
+      master.gain.value = 0.9; if (ac.state === 'suspended') ac.resume();
       return ac;
     } catch (e) { return null; }
   }
@@ -4731,7 +4733,7 @@ var TrollModels = (function () {
   };
   // ---------- recorded sound (assets/snd): effects by Kenney (CC0), music by Kevin MacLeod (CC BY 4.0).
   // If a file cannot be played, the synthesised version above is used instead. ----------
-  var sndPool = {}, sndBad = {};
+  var sndPool = {}, sndBad = {}, live = []; // live: the effects that are sounding right now
   function playFile(name, vol, rate) {
     if (state.mute) return true;
     if (sndBad[name]) return false;
@@ -4744,7 +4746,8 @@ var TrollModels = (function () {
       var a = base.cloneNode();
       a.volume = vol;
       if (rate) { a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.playbackRate = rate; }
-      var p = a.play(); if (p && p.catch) p.catch(function () {});
+      live.push(a); a.addEventListener('ended', function () { var i = live.indexOf(a); if (i >= 0) live.splice(i, 1); });
+      var p = a.play(); if (p && p.then) p.then(function () { if (state.mute) a.pause(); }, function () {});
       return true;
     } catch (e) { return false; }
   }
@@ -4777,9 +4780,20 @@ var TrollModels = (function () {
         a = bgm[want] = new Audio('assets/snd/' + TRACKS[want] + '.mp3'); a.loop = true; a.volume = 0.2;
         a.addEventListener('error', function () { bgmBad = true; });
       }
-      var p = a.play(); if (p && p.catch) p.catch(function () {});
+      var p = a.play(); if (p && p.then) p.then(function () { if (state.mute || !state.music || document.hidden) a.pause(); }, function () {});
     } catch (e) { bgmBad = true; }
   }
+  // The speaker button means total silence, at once: music, effects that are already playing, notes scheduled ahead, and reading aloud.
+  function silence() {
+    var k, i;
+    for (k in bgm) try { bgm[k].pause(); } catch (e) {}
+    for (i = 0; i < live.length; i++) try { live[i].pause(); } catch (e) {}
+    live.length = 0;
+    if (ac && master) try { master.gain.cancelScheduledValues(0); master.gain.value = 0; ac.suspend(); } catch (e) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    musicT = 0;
+  }
+  tv.snd = function () { var k, n = 0; for (k in bgm) if (!bgm[k].paused) n++; return { music: n, fx: live.filter(function (x) { return !x.paused; }).length, ac: ac ? ac.state : 'none', gain: master ? master.gain.value : 0, mute: !!state.mute }; }; // for tests/mute.html
   function setMusic(name) { if (bgmWant !== name) { bgmWant = name; } applyMusic(); }
 
   // Quiet background tune: pentatonic melody with a soft bass, scheduled a little ahead of time.
