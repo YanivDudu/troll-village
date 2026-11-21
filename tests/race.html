@@ -32,9 +32,9 @@ async function invite(x, name) {
   r.click(); q(x, '.pgo').click();
 }
 async function toRound(x) { // first building, first house, discovery stage
-  if (!q(x, '.bld[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.btn.big'); }, 'home ' + x)).click(); }
-  var first = await until(function () { return q(x, '.bld[data-t]') || q(x, '.bld[data-sub]'); }, 'map ' + x);
-  if (first.hasAttribute('data-sub')) { q(x, '.bld[data-sub="math"]').click(); first = await until(function () { return q(x, '.bld[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
+  if (!q(x, '.mnode[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.mapb') || q(x, '.btn.big'); }, 'home ' + x)).click(); } // the small map button of the camp; the big button starts an exercise
+  var first = await until(function () { return q(x, '.mnode[data-t]') || q(x, '.land[data-sub]'); }, 'map ' + x);
+  if (first.hasAttribute('data-sub')) { q(x, '.land[data-sub="math"]').click(); first = await until(function () { return q(x, '.mnode[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
   first.click();
   (await until(function () { return q(x, '.mnode:not(.far):not(.boss)'); }, 'region ' + x)).click(); // a house of the map opens its three stages
   (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'stages ' + x)).click();
@@ -106,8 +106,8 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     var rb = inRace('B'), ib = rb.i; await solve('B');
     check(rb.i > ib || rb.done(), 'after the race B can go on answering');
     all('A', '#podium .btn')[1].click();
-    await until(function () { return q('A', '.bld[data-t]'); }, 'A, who finished the list, is on the map');
-    q('A', '.bld[data-t]').click();
+    await until(function () { return q('A', '.mnode[data-t]'); }, 'A, who finished the list, is on the map');
+    q('A', '.mnode[data-t]').click();
     await until(function () { return q('A', '.mnode'); }, 'and A can go into a building');
     document.title = 'RACE1 OK';
 
@@ -148,7 +148,7 @@ function put(path, v) { return fetch(U + path + '.json', { method: 'PUT', body: 
     doc('A').querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]').click();
     await until(function () { return q('A', '.btn.big') && !doc('A').getElementById('track'); }, 'A went home and is out of the race');
     q('A', '.btn.big').click();
-    await until(function () { return q('A', '.bld'); }, 'A can play on');
+    await until(function () { return q('A', '.answers,.land,.mnode[data-t]'); }, 'A can play on');
     for (k = 0; k < 5 && !doc('B').getElementById('podium'); k++) await solve('B');
     await until(function () { return doc('B').getElementById('podium'); }, 'B finishes the list and gets the results');
     document.title = 'RACE8 OK';

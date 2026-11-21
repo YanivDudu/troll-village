@@ -761,6 +761,64 @@ body.night .mote{background:rgba(255,244,150,.9);box-shadow:0 0 12px #ffe45c}
 .buddy .troll .pup{animation:none;transform:translate(-3px,3px)}
 .buddy .troll.think .tb{animation:tilt 1.6s ease-in-out 1}
 @media (max-width:520px) and (min-height:521px){.qrow .buddy,.screen.vmode .buddy,.screen.packq .buddy,.screen.handson .buddy{display:block;position:absolute;top:4px;inset-inline-end:8px;width:66px;z-index:2}}
+/* ---- the journey world: the world map of a subject, the four lands of the subjects, and the camp (home) are the same
+   parchment as the map of a topic. The time of day is only a tint of the parchment; every text sits on a light label. ---- */
+.mpips.hp{flex-wrap:wrap;justify-content:center;max-width:100%;gap:calc(2px*var(--s))}
+.mpips.hp i{width:clamp(7px,calc(9px*var(--s)),14px);height:clamp(7px,calc(9px*var(--s)),14px);border-width:1.5px}
+.lands{position:relative;flex:1 1 0;min-height:0;width:100%;max-width:1180px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:clamp(8px,2vmin,24px);--s:1}
+@media (orientation:landscape){.lands{grid-template-columns:repeat(4,minmax(0,1fr))}.lands.n3{grid-template-columns:repeat(3,minmax(0,1fr))}.lands.n2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.land{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1.2vmin,12px);background:rgba(255,250,235,.5);border:3px dashed rgba(59,42,21,.4);border-radius:24px;padding:6px;color:#3b2a15;min-width:0;min-height:0;transition:transform .12s}
+.land:active{transform:scale(.96)}
+.land .mtop{height:clamp(60px,21vmin,180px);gap:4px}
+.land .mic{width:clamp(60px,21vmin,180px);height:clamp(60px,21vmin,180px)}
+.land .mbud{width:clamp(40px,13vmin,112px);height:clamp(52px,17vmin,146px)}
+.land .mlab{font-size:clamp(18px,3.6vmin,32px);padding:2px 14px;border-radius:14px}
+.lstars{font-size:clamp(14px,2.4vmin,20px);font-weight:700;background:rgba(255,250,235,.92);border-radius:999px;padding:0 10px}
+.land .pbar{display:block;width:min(78%,230px);height:9px;margin:0;background:#e2cfa6}
+.land.rec{border-style:solid;border-color:#c8452e;background:rgba(255,238,180,.62)}
+.land.rec .mlab{background:#ffd23f}
+.land.rec .mic:before{content:"";position:absolute;inset:-14%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,206,70,.95),rgba(255,206,70,0));z-index:-1}
+.screen.camp{gap:clamp(4px,1.2vmin,12px)}
+.cgrid{overflow-x:clip;flex:1 1 0;min-height:0;width:100%;max-width:720px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) minmax(0,1.3fr) auto auto auto;grid-template-areas:"title" "strip" "camp" "go" "more" "folk";gap:clamp(6px,1.4vmin,13px);justify-items:center;align-items:center}
+.camp .title{grid-area:title;font-size:clamp(17px,3.4vmin,30px);color:#3b2a15;-webkit-text-stroke:0;text-shadow:none;background:rgba(255,250,235,.92);border-radius:999px;padding:1px 22px;box-shadow:0 3px 0 rgba(90,60,20,.3);line-height:1.4}
+.cstrip{grid-area:strip;width:100%;height:100%;max-height:340px;min-height:0;display:flex;padding:4px 8px;color:#3b2a15;background:linear-gradient(rgba(255,251,238,.78),rgba(248,232,196,.78));border:0 solid #9a6a3a;border-inline-width:10px;border-radius:12px;box-shadow:0 4px 0 rgba(90,60,20,.35),inset 0 0 22px rgba(120,80,30,.28);transition:transform .12s}
+.cstrip:active{transform:scale(.98)}
+.cstrip .tmap{display:block;flex:1 1 auto;max-width:none;height:100%}
+.cstrip .mnode{min-height:0}
+.campv{grid-area:camp;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.4vmin,13px)}
+.cbub{flex:0 0 auto;position:relative;max-width:min(100%,560px);background:#fffaf0;color:#3b2a15;border-radius:18px;padding:5px 16px;font-weight:700;font-size:clamp(17px,2.9vmin,24px);line-height:1.3;text-align:center;box-shadow:0 3px 0 rgba(90,60,20,.3);text-wrap:balance}
+.cbub:after{content:"";position:absolute;top:100%;left:50%;margin-left:-8px;border:8px solid transparent;border-top-color:#fffaf0;border-bottom-width:0}
+.cground{flex:1 1 0;min-height:0;max-height:clamp(110px,46vmin,340px);width:100%;display:flex;align-items:flex-end;justify-content:center;gap:clamp(8px,3vmin,34px)}
+.cbud{align-self:stretch;aspect-ratio:200/262;min-width:0;flex:0 0 auto;background:none;padding:0;filter:drop-shadow(0 4px 3px rgba(60,40,10,.35));transition:transform .12s}
+.cbud:active{transform:scale(.95)}
+.cbud svg{width:100%;height:100%;display:block}
+.ctent{height:clamp(46px,16vmin,160px);max-height:100%;width:auto;aspect-ratio:1;flex:0 0 auto}
+.cfire{position:relative;height:clamp(40px,13vmin,120px);max-height:80%;aspect-ratio:1;flex:0 0 auto}
+.cfire img{position:relative;width:100%;height:100%;display:block}
+.cfire:before{content:"";position:absolute;inset:-40%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,170,60,.5),rgba(255,170,60,0))}
+body.dusk .cfire:before{inset:-70%;background:radial-gradient(closest-side,rgba(255,176,70,.75),rgba(255,160,60,0))}
+body.night .cfire:before{inset:-100%;background:radial-gradient(closest-side,rgba(255,206,110,.95),rgba(255,160,60,.5) 45%,rgba(255,150,50,0));animation:fglow 3.2s ease-in-out infinite}
+@keyframes fglow{0%,100%{opacity:.78}50%{opacity:1}}
+.camp .btn.big.nextb,.camp .btn.big.cgo{grid-area:go;background:linear-gradient(#c44a33,#a93522);border:2px solid #7c2416;border-radius:20px;box-shadow:0 6px 0 #7c2416,0 11px 14px rgba(60,30,10,.3)}
+.camp .nextb .npic{background:#fff6e0;border-radius:16px}
+.camp .nextb .ngo{color:#a93522}
+.camp .hrow{grid-area:more;width:100%;flex-wrap:nowrap;gap:8px}
+.camp .hrow .btn{flex:1 1 0;min-width:0;max-width:150px;min-height:58px;padding:3px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:#fffaf0;color:#3b2a15;text-shadow:none;border:2px solid #b9783a;border-radius:14px;box-shadow:0 4px 0 #8a5524,0 7px 10px rgba(60,30,10,.2);font-size:clamp(13px,2.2vmin,18px);line-height:1.25}
+.camp .hrow .btn .ci{font-size:clamp(22px,4vmin,32px);line-height:1.1}
+.camp .hrow .btn.wig{background:#ffe9a8}
+.folk{grid-area:folk;display:flex;justify-content:center;align-items:flex-end;gap:8px;width:100%;min-height:0;--rs:48px}
+.rt{width:var(--rs);min-height:48px;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;background:none;padding:0;color:#3b2a15;transition:transform .12s}
+.rt:active{transform:scale(.93)}
+.rt svg{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 2px rgba(60,40,10,.3))}
+.rt .troll .hair,.rt .troll .pup{animation:none}
+.rt b{display:none;max-width:100%;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,250,235,.92);border-radius:999px;padding:0 6px}
+.rt.rmore{width:48px;height:48px;border-radius:50%;align-self:center;justify-content:center;background:#fffaf0;border:2px solid #b9783a;box-shadow:0 3px 0 #8a5524;font-weight:700;font-size:17px;direction:ltr}
+@media (min-width:640px) and (min-height:521px){.rt b{display:block}}
+@media (orientation:landscape) and (min-width:700px){
+  .cgrid{max-width:1180px;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"title title" "camp strip" "camp go" "folk more";column-gap:clamp(10px,2.4vw,34px)}
+}
+@media (max-height:520px){.camp .title{font-size:15px;line-height:1.3}.cbub{font-size:15px;padding:3px 12px}.camp .hrow .btn{min-height:48px}.camp .hrow .btn .ci{font-size:19px}.camp .hrow .btn{flex-direction:row;gap:5px}}
+@media (prefers-reduced-motion:reduce){body.night .cfire:before{animation:none}}
 </style>
 </head>
 <body>
@@ -3609,55 +3667,100 @@ var TrollModels = (function () {
     if (coin && coin.getAttribute('data-n') !== String(state.coins)) { coin.setAttribute('data-n', state.coins); coin.textContent = '🪙 ' + state.coins; restart(coin, 'bump'); }
   }
 
+  // ---------- home: the camp on the journey. Parchment, a rolled-open strip of the map with the current stretch of the trail,
+  // the companion beside the campfire and the tent, the one big button of the next step, and the trolls the child has earned
+  // as residents of the camp. Nothing walks here: the trolls stand, breathe and blink. ----------
+  var GREET = [['שָׁלוֹם! יוֹצְאִים לַדֶּרֶךְ?', 'אֲנִי אִתָּךְ בַּמַּסָּע', 'הַמְּדוּרָה דּוֹלֶקֶת, וְהַמַּפָּה פְּתוּחָה', 'בּוֹאִי נַמְשִׁיךְ בַּמַּסָּע!', 'אֵיזֶה יֹפִי שֶׁחָזַרְנוּ לַמַּחֲנֶה!'],
+    ['יוֹצְאִים לַדֶּרֶךְ?', 'הַמַּפָּה פְּתוּחָה.', 'מַמְשִׁיכִים בַּמַּסָּע.', 'קָדִימָה, לַדֶּרֶךְ.', 'הַמְּדוּרָה דּוֹלֶקֶת.']];
   function home() {
     tv.round = null; setMusic('home');
     show(function (el) {
       here = 'home';
+      el.classList.add('rmap', 'camp');
       var tb = topBar(false);
       tb.firstChild.appendChild(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', text: '👤 ' + curName(), on: { click: function () { sfx.tap(); who(); } } }));
       el.appendChild(tb);
-      var title = h('h1', { class: 'title' });
-      'עוֹלַם הַטְּרוֹלִים'.match(/[\u05D0-\u05EA][\u0591-\u05C7]*|[^]/g).forEach(function (ch, i) { title.appendChild(ch === ' ' ? document.createTextNode(' ') : h('span', { text: ch, style: 'animation-delay:' + (i * 0.09) + 's' })); });
-      el.appendChild(title);
-      if (VILLAGE) el.appendChild(h('div', { class: 'subtitle', text: VILLAGE }));
-      var row = h('div', { class: 'row' });
-      var nx = L.nextStep(state), nb = nextBtn(nx);
-      el.appendChild(nb || btn('▶ בּוֹאִי נְשַׂחֵק!', 'big', function () { subjects(); }));
-      if (nb) row.appendChild(btn('🗺️ כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); }));
-      row.classList.add('hrow');
-      if (state.lastGift !== L.todayStr()) row.appendChild(btn('🎁 מַתָּנָה יוֹמִית', 'b3 wig', gift));
-      if (state.owned.length) row.appendChild(btn('👗 הַלְבָּשָׁה וַחֲנוּת', 'b2', function () { dress(); }));
+      var grid = h('div', { class: 'cgrid' });
+      grid.appendChild(h('h1', { class: 'title', text: 'עוֹלַם הַטְּרוֹלִים' + (VILLAGE ? ' · ' + VILLAGE : '') }));
+      var nx = L.nextStep(state), nb = nextBtn(nx), fresh = !state.rounds && !state.stars && !state.last;
+
+      // the strip of the map: the stretch of the trail the child is on. A tap opens the whole map of that topic.
+      var st = campStrip(nx);
+      if (st) grid.appendChild(st.el);
+
+      // the camp: the companion with what it says, the campfire and the tent
+      var bs = buddySpec(), mine = buddyId();
+      var bubble = h('div', { class: 'cbub', text: fresh ? 'שָׁלוֹם! אֲנִי ' + bs.name + '. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַכְּפָר!' : voice(GREET, 'greet') });
+      var bud = h('button', { class: 'cbud', 'aria-label': bs.name, html: A.trollSVG(bs) });
+      bud.addEventListener('click', function () {
+        sfx.giggle(); var c = center(bud); burst(c[0], c[1], 9);
+        bud.innerHTML = A.trollSVG(bs, { mood: 'cheer' });
+        later(function () { bud.innerHTML = A.trollSVG(bs); }, 1200);
+        if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent);
+      });
+      grid.appendChild(h('div', { class: 'campv' }, bubble,
+        h('div', { class: 'cground' },
+          h('img', { class: 'ctent', src: 'assets/map/tent.png', alt: '', draggable: 'false' }), bud,
+          h('span', { class: 'cfire', 'aria-hidden': 'true' }, h('img', { src: 'assets/map/campfire.png', alt: '', draggable: 'false' })))));
+
+      // the one big button, and the smaller choices
+      if (nb) nb.classList.add('cgo');
+      grid.appendChild(nb || h('button', { class: 'btn big cgo', text: '▶ בּוֹאִי נְשַׂחֵק!', on: { click: function () { sfx.tap(); subjects(); } } }));
+      var row = h('div', { class: 'row hrow' });
+      function more(ico, label, full, cls, fn) {
+        row.appendChild(h('button', { class: 'btn ' + cls, 'aria-label': full, on: { click: function () { sfx.tap(); fn(); } } }, h('span', { class: 'ci', text: ico }), h('span', { class: 'cl', text: label })));
+      }
+      if (nb) more('🗺️', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
+      if (state.lastGift !== L.todayStr()) more('🎁', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
+      if (state.owned.length) more('👗', 'הַלְבָּשָׁה', 'הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb', function () { dress(); });
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
-        row.appendChild(btn('🏁 מֵרוֹץ', 'b3 raceb', function () { pool(); }));
-        row.appendChild(btn('🏆 דֵּרוּג', 'b2 boardb', function () { board(); }));
+        more('🏁', 'מֵרוֹץ', 'מֵרוֹץ', 'b3 raceb', function () { pool(); });
+        more('🏆', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
         pushBoard(true);
       }
-      el.appendChild(row);
-      var village = h('div', { class: 'village' });
-      if (!state.owned.length) {
-        village.appendChild(h('div', { class: 'guide' },
-          h('div', { class: 'g', html: A.trollSVG(GUIDE) }),
-          h('div', { class: 'bubble', text: 'שָׁלוֹם! אֲנִי טְרוֹלִי. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַכְּפָר!' })));
-      } else {
-        var small = window.innerWidth < 640 || window.innerHeight < 520;
-        var mine = buddyId(), ids = state.owned.slice(small ? -8 : -14).filter(function (x) { return x !== mine; }), sm = ids.length > (small ? 3 : 8);
-        ids.unshift(mine);
-        ids.forEach(function (id, i) {
-          var s = specOf(id), label = '<b>' + (id === mine ? '💖 ' : '') + s.name + '</b>';
-          function body(mood) { return '<span class="walk">' + A.trollSVG(s, mood ? { mood: mood } : undefined) + '</span>' + label; }
-          var wx = 6 + (id * 7 + i * 5) % 15, wd = 5 + (id * 3 + i) % 6; // every troll has a walk of its own
-          var b = h('button', { class: 'vt' + (id === mine ? ' mine' : sm ? ' sm' : ''), style: 'animation-delay:' + (i * 0.05) + 's;--wx:' + (i % 2 ? wx : -wx) + 'px;--wd:' + wd + 's;--wl:-' + ((id + i * 2) % 9) + 's', html: body() });
+      grid.appendChild(row);
+
+      // the residents: every other troll the child owns, the newest first. When they do not all fit, "+N" opens the
+      // dressing room, where all of them are.
+      var folk = h('div', { class: 'folk' });
+      var others = state.owned.filter(function (x) { return x !== mine; }).reverse();
+      if (others.length) {
+        var W = window.innerWidth, H = window.innerHeight, two = W > H && W >= 700, small = W < 640 || H < 520;
+        var gw = Math.min(W - (small ? 16 : 40), two ? 1180 : 720), room = two ? (gw - 14) / 2.15 : gw, slot = small ? 48 : 72;
+        var cap = Math.max(2, Math.floor((room + 8) / (slot + 8))), n = others.length > cap ? cap - 1 : others.length;
+        folk.style.setProperty('--rs', slot + 'px');
+        others.slice(0, n).forEach(function (id) {
+          var s = specOf(id), b = h('button', { class: 'rt', 'aria-label': s.name, html: A.trollSVG(s) + '<b>' + s.name + '</b>' });
           b.addEventListener('click', function () {
             sfx.giggle(); var c = center(b); burst(c[0], c[1], 9);
-            b.innerHTML = body('cheer');
-            later(function () { b.innerHTML = body(); }, 1200);
+            b.innerHTML = A.trollSVG(s, { mood: 'cheer' }) + '<b>' + s.name + '</b>';
+            bubble.textContent = s.name + '!';
+            later(function () { b.innerHTML = A.trollSVG(s) + '<b>' + s.name + '</b>'; }, 1200);
           });
-          village.appendChild(b);
+          folk.appendChild(b);
         });
+        if (others.length > n) folk.appendChild(h('button', { class: 'rt rmore', 'aria-label': 'כָּל הַטְּרוֹלִים', text: '+' + (others.length - n), on: { click: function () { sfx.tap(); dress(); } } }));
       }
-      el.appendChild(village);
-      el.appendChild(street());
+      grid.appendChild(folk);
+      el.appendChild(grid);
+      if (st) st.start(el);
     });
+  }
+  // The strip of the map in the camp: the stop before, the stop of the next step and the stop after it, drawn by the same
+  // code as the map of the topic. Without a next step in a topic: the end of the trail the child walked last.
+  function campStrip(nx) {
+    var tid = nx && nx.topic ? nx.topic : state.last && state.last.t, t = tid ? topicOf(tid) : MIX;
+    if (t === MIX) t = topicOf(L.topicsFor(state)[0]);
+    if (t === MIX || !t.levels) return null;
+    var tr = trailItems(t), all = tr.items, k = all.length - 1, i;
+    var rec = nx && nx.topic === t.id ? nx : null;
+    if (rec) for (i = 0; i < all.length; i++) if (rec.boss ? all[i].boss === rec.boss : all[i].lv === rec.level) { k = i; break; }
+    var from = Math.max(0, Math.min(k - 1, all.length - 3)), items = all.slice(from, from + 3);
+    var box = h('span', { class: 'tmap' }), trail = h('span', { class: 'mtrail', 'aria-hidden': 'true' });
+    box.appendChild(trail);
+    items.forEach(function (it) { it.el = stopEl('span', t, it, tr.win.length, rec, true); box.appendChild(it.el); });
+    var el = h('button', { class: 'cstrip', 'aria-label': t.world, 'data-map': t.id, on: { click: function () { sfx.pop(); region(t.id); } } }, box);
+    return { el: el, start: function (scr) { trailLayout(scr, box, trail, items, null); } };
   }
   // The one big button of the home screen: the next step of this player, started by one tap (the same call as a tap on
   // the stage in the map of the topic). An icon, two short lines and three pips: done, now, to do.
@@ -3671,14 +3774,15 @@ var TrollModels = (function () {
     var t = nx.challenge ? null : topicOf(nx.topic), fresh = !state.rounds && !state.stars && !state.last;
     var pic = h('span', { class: 'npic' }), txt = h('span', { class: 'ntxt' });
     if (nx.challenge) {
-      pic.appendChild(h('img', { src: 'assets/' + GATE.bld + '.png', alt: '', draggable: 'false' }));
+      pic.appendChild(mapImg('gate'));
       txt.appendChild(h('b', { text: GATE.world })); txt.appendChild(h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }));
     } else if (nx.boss) {
-      pic.textContent = '🌉';
+      pic.appendChild(mapImg('bridgeRope'));
       txt.appendChild(h('b', { text: 'מְשִׂימַת הַגֶּשֶׁר' })); txt.appendChild(h('small', { text: t.icon + ' ' + t.world }));
     } else {
       var pr = L.progOf(state, nx.topic, nx.level), pips = h('span', { class: 'pips', 'aria-hidden': 'true' });
-      if (t.bld) pic.appendChild(h('img', { src: 'assets/' + t.bld + '.png', alt: '', draggable: 'false' })); else pic.textContent = t.icon || STAGES[nx.stage][0];
+      var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length };
+      pic.appendChild(mapImg(stopIco(nx.level - sp.lo, sp.hi - sp.lo + 1))); // the same ink icon as this house has on the map of its topic
       [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: k === nx.stage ? 'now' : pr[k] >= 1 ? 'on' : '' })); });
       txt.appendChild(h('b', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }));
       txt.appendChild(h('small', { class: 'nname', text: t.levels[nx.level - 1].name }));
@@ -3711,73 +3815,215 @@ var TrollModels = (function () {
   function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
   function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
   // ch: the map behind the challenge gate, with the tiles of the next grade
-  // ---------- subjects: arithmetic, geometry, Hebrew, English. Each has a map of its own for the player's grade ----------
   function subsHere() { return L.SUBS.filter(function (x) { return L.topicsFor(state, x).length > 0; }); }
+  // ---------- the journey world: every screen of choice is the same parchment map with ink landmarks (Kenney Cartography Pack) ----------
+  var MAP_BLD = ['houseSmall', 'house', 'houseChimney', 'houseTall', 'tower', 'towerTall', 'towerWatch', 'castle', 'castleTall'];
+  var MAP_DECO = [['treePines', 6, 14, 1.1], ['rocksMountain', 52, 7, 1.2], ['lake', 30, 52, 1.5], ['treePine', 93, 46, 0.8], ['rocks', 16, 88, 1], ['treePines', 70, 93, 1], ['treePine', 44, 80, 0.7], ['rocksMountain', 84, 20, 0.9]];
+  var LAND_BLD = { math: 'castle', geo: 'pyramid', heb: 'houses', eng: 'ship' }; // the four lands of the subjects screen
+  // one landmark for each region of the world map: by the kind of its building (a tower stays a tower), never twice on one map
+  var WORLD_BLD = ['houses', 'mill', 'stable', 'waterWheel', 'houseViking', 'dock', 'mine', 'lighthouse', 'watchtower', 'pyramid', 'castleTall', 'tipi', 'well'];
+  var WORLD_KIND = [[/^tower/, ['watchtower', 'lighthouse']], [/^pyramid/, ['pyramid', 'mine']], [/^castle/, ['castleTall']]];
+  function worldIcons(list) {
+    var used = {};
+    return list.map(function (t) {
+      var pick = null;
+      WORLD_KIND.forEach(function (k) { if (!pick && k[0].test(t.bld || '')) k[1].forEach(function (x) { if (!pick && !used[x]) pick = x; }); });
+      WORLD_BLD.forEach(function (x) { if (!pick && !used[x]) pick = x; });
+      pick = pick || WORLD_BLD[0]; used[pick] = true; return pick;
+    });
+  }
+  function mapImg(name, cls) { return h('img', { class: cls || null, src: 'assets/map/' + name + '.png', alt: '', draggable: 'false' }); }
+  function mapBuddy() { return h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(buddySpec()) }); }
+  function mapFlag() { return mapImg('flag', 'mflag'); }
+  function mapDeco(box) { MAP_DECO.forEach(function (d) { var im = mapImg(d[0], 'mdeco'); im.setAttribute('style', 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3]); box.appendChild(im); }); }
+  function stopIco(i, n) { return MAP_BLD[Math.min(MAP_BLD.length - 1, Math.max(0, Math.round(i * (MAP_BLD.length - 1) / Math.max(1, Math.max(n, 5) - 1))))]; }
+  // the stops of the trail of one topic, in order: the houses of the player's grade, and the bridge mission that closes each grade
+  function trailItems(t) {
+    var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, win = t.levels.slice(sp.lo - 1, sp.hi);
+    var real = win.length, pad = sandbox ? +((/[#&]nh=(\d+)/.exec(hash) || [])[1] || 0) : 0; // layout check: a map with that many houses
+    while (win.length < pad) win.push(win[real - 1]);
+    var items = [];
+    win.forEach(function (d, i) {
+      items.push({ d: d, i: i, lv: sp.lo + i });
+      var next = win[i + 1];
+      if (!d.enr && d.g <= 4 && (!next || next.g !== d.g || next.enr) && L.bossLevels(t.id, d.g).length) items.push({ boss: d.g });
+    });
+    return { sp: sp, win: win, real: real, items: items };
+  }
+  // One stop of a trail: a house (ink icon that grows along the trail, a flag when all three stages are done, three pips for
+  // the stages) or the bridge mission. rec: the recommended step (the companion stands beside it). bare: no label and no
+  // companion (the strip of the map in the camp). The state of the stop is left on `it` for the tap handlers.
+  function stopEl(tag, t, it, n, rec, bare) {
+    var isRec, b;
+    if (it.boss) {
+      var g = it.boss, done = L.bossDone(state, t.id, g), ready = L.bossReady(state, t.id, g), hero = resolve(L.trollFromId(L.heroId(t.id, g)));
+      isRec = !!rec && rec.boss === g; it.reached = done || ready; it.done = done; it.ready = ready; it.hero = hero;
+      b = h(tag, { class: 'mnode boss' + (done ? ' done' : ready ? ' ready' : ' far') + (isRec ? ' rec' : ''), 'data-boss': g },
+        h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
+          h('span', { class: 'mic' }, mapImg('bridgeRope'), done ? mapFlag() : null),
+          done ? h('span', { class: 'mhero', 'aria-hidden': 'true', html: A.trollSVG(hero) }) : null),
+        bare ? null : h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }));
+    } else {
+      var pr = L.progOf(state, t.id, it.lv), far = it.lv > state.levels[t.id], full = pr.every(function (x) { return x >= 1; });
+      var pips = h('span', { class: 'mpips', 'aria-hidden': 'true' });
+      isRec = !!rec && !rec.boss && rec.level === it.lv; it.reached = !far; it.far = far;
+      [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: (pr[k] >= 1 ? 's' + Math.min(3, pr[k]) : L.stageOpen(state, t.id, it.lv, k) ? 'o' : 'l') + (isRec && rec.stage === k ? ' now' : '') })); });
+      b = h(tag, { class: 'mnode' + (far ? ' far' : full ? ' done' : ' open') + (isRec ? ' rec' : ''), 'data-house': it.lv },
+        h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
+          h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, mapImg(stopIco(it.i, n)), full && !far ? mapFlag() : null)),
+        bare ? null : h('span', { class: 'mlab', text: it.d.name }), far ? null : pips);
+    }
+    return b;
+  }
+  // Where the stops of a map stand. Rows that run from right to left like lines of text, each stop a little lower than the one
+  // before, so the trail zigzags down the map and ends at the far left; when the map is wide enough, one row that goes
+  // up and down. s is the size of the icons and labels: the biggest that leaves every label free. Every item has its
+  // element in `el` (with .mtop and .mic inside) and `reached` (the trail is red up to the last stop that was reached).
+  // parb: a button that keeps the bottom corner of the map (or null). Laid out again whenever the size of the map changes.
+  function trailLayout(el, box, trail, items, parb) {
+    function place(c, s) {
+      var W = box.clientWidth, H = box.clientHeight, N = items.length, one = c >= N, cw = W / c, off = (c - N % c) % c, xs = [], tops = [], hm = 0, ok = true, i;
+      box.style.setProperty('--s', s.toFixed(3));
+      for (i = 0; i < N; i++) xs.push(W - (((i + off) % c) + 0.5) * cw);
+      function widths(wide) {
+        items.forEach(function (it, i) { // a wide label reaches under its neighbours, but not out of the map and not into the corner of the parents' button
+          it.w = Math.max(40, (wide ? Math.max(cw, Math.min(cw * 1.9, 2 * Math.min(xs[i], W - xs[i] - (parb && i % 2 ? parb.offsetWidth + 8 : 0)))) : cw) - 8); it.el.style.width = it.w + 'px';
+        });
+        hm = 0; items.forEach(function (it) { hm = Math.max(hm, it.el.offsetHeight); });
+      }
+      if (one) {
+        widths(true);
+        var amp = Math.min((H - hm) / 2, H * 0.3);
+        if (N > 1 && 2 * amp < hm + 8) { widths(false); amp = Math.min((H - hm) / 2, H * 0.3); ok = amp >= hm * 0.12; }
+        for (i = 0; i < N; i++) tops.push((H - hm) / 2 + (N > 1 ? (i % 2 ? amp : -amp) : 0));
+        ok = ok && hm <= H;
+      } else {
+        widths(false);
+        var step = (H - hm) / (N - 1);
+        ok = c * step >= hm + 8;
+        for (i = 0; i < N; i++) tops.push(i * step);
+      }
+      var pts = [], last = 0, pl = parb ? parb.offsetLeft : 0, pt = parb ? parb.offsetTop : 0;
+      items.forEach(function (it, i) {
+        var x0 = xs[i] - it.w / 2, m = it.el.querySelector('.mic'), mt = it.el.querySelector('.mtop');
+        it.el.style.left = x0.toFixed(1) + 'px'; it.el.style.top = tops[i].toFixed(1) + 'px';
+        pts.push([x0 + m.offsetLeft + m.offsetWidth / 2, tops[i] + m.offsetTop + m.offsetHeight * 0.6]);
+        if (it.reached) last = i;
+        if (mt.scrollWidth > it.w + 1) ok = false; // the icon and the troll beside it must fit in the width of the stop
+        if (parb && x0 < pl + parb.offsetWidth + 6 && x0 + it.w > pl - 6 && tops[i] + it.el.offsetHeight > pt - 6 && tops[i] < pt + parb.offsetHeight + 6) ok = false; // the parents' button keeps its corner
+      });
+      function path(to) {
+        var dd = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1), k;
+        for (k = 1; k <= to; k++) {
+          var a = pts[k - 1], b = pts[k], f = (k % 2 ? 0.1 : -0.1); // a gentle bend, to one side and then to the other
+          dd += ' Q' + ((a[0] + b[0]) / 2 - (b[1] - a[1]) * f).toFixed(1) + ',' + ((a[1] + b[1]) / 2 + (b[0] - a[0]) * f).toFixed(1) + ' ' + b[0].toFixed(1) + ',' + b[1].toFixed(1);
+        }
+        return dd;
+      }
+      trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
+      return ok;
+    }
+    function layout() {
+      if (cur !== el) return;
+      var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false;
+      if (W < 60 || H < 60 || !N) return;
+      for (c = 2; c <= Math.ceil(N / 2); c++) cands.push([c, Math.min(1.9, W / (c * 104), c * H / (100 * (N - 1 + c))), 1]);
+      cands.push([N, Math.min(1.9, (W / N - 8) / 86, H / 135), 1.3]); // one row is preferred when it is nearly as big
+      cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
+      for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
+      if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
+    }
+    layout();
+    if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  }
+
+  // ---------- subjects: arithmetic, geometry, Hebrew, English. Four lands on the parchment; each has a map of its own for
+  // the player's grade. The land the child played in last is marked, and the companion stands in it. ----------
   function subjects() {
     var list = subsHere();
     if (list.length < 2) { curSub = 'math'; topics(); return; }
     setMusic('home');
     show(function (el) {
-      el.classList.add('map');
+      el.classList.add('map', 'rmap');
       el.appendChild(topBar(true, home));
       el.appendChild(h('h2', { class: 'h2', text: 'מָה לוֹמְדִים הַיּוֹם?' }));
-      var grid = h('div', { class: 'plots subj' });
-      list.forEach(function (x, i) {
+      var nx = L.nextStep(state), lt = state.last && topicOf(state.last.t), mark = lt && lt !== MIX ? lt.sub || 'math' : nx && nx.sub;
+      if (list.indexOf(mark) < 0) mark = null;
+      var grid = h('div', { class: 'lands n' + list.length });
+      mapDeco(grid);
+      list.forEach(function (x) {
         var got = 0, all = 0;
         L.topicsFor(state, x).forEach(function (id) { got += L.topicStars(state, id); all += topicOf(id).levels.length * 9; });
-        function go() { sfx.pop(); curSub = x; topics(); }
-        var sign = h('button', { class: 'sign', on: { click: go } }, h('b', { text: SUBJ[x][0] + ' ' + SUBJ[x][1] }), h('span', { class: 'pstars', text: '⭐ ' + got + ' / ' + all }),
-          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' })));
-        grid.appendChild(h('div', { class: 'plot', style: 'animation-delay:' + (i * 0.06) + 's' },
-          h('button', { class: 'bld', 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: go } }, h('img', { src: 'assets/' + SUBJ[x][2] + '.png', alt: '', draggable: 'false' })), sign));
+        grid.appendChild(h('button', { class: 'land' + (x === mark ? ' rec' : ''), 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: function () { sfx.pop(); curSub = x; topics(); } } },
+          h('span', { class: 'mtop' }, x === mark ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(LAND_BLD[x] || 'castle'))),
+          h('span', { class: 'mlab', text: SUBJ[x][0] + ' ' + SUBJ[x][1] }),
+          h('span', { class: 'lstars', text: '⭐ ' + got + ' / ' + all }),
+          h('span', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' }))));
       });
       el.appendChild(grid);
     });
   }
+  // ---------- the world map of one subject for the player's grade: one region per topic along a trail from right to left,
+  // then the temple of the mixed round, and the challenge gate at the far end. Every region can be tapped.
+  // ch: the map behind the challenge gate, with the regions of the next grade ----------
   function topics(ch) {
     ch = ch === true;
     setMusic('home');
     show(function (el) {
-      el.classList.add('map');
+      el.classList.add('map', 'rmap');
       el.appendChild(topBar(true, ch ? function () { topics(); } : subsHere().length > 1 ? subjects : home));
       el.appendChild(h('h2', { class: 'h2', text: ch ? '🚀 אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
-      var grid = h('div', { class: 'plots' });
-      function plot(t, i, parts, go) {
-        var sign = h('button', { class: 'sign', on: { click: go } });
-        parts.forEach(function (p) { sign.appendChild(p); });
-        grid.appendChild(h('div', { class: 'plot', style: 'animation-delay:' + (i * 0.06) + 's' },
-          h('button', { class: 'bld', 'data-t': t.id, 'aria-label': t.world, on: { click: go } },
-            h('img', { src: 'assets/' + t.bld + '.png', alt: '', draggable: 'false', style: 'animation-delay:-' + (i * 0.37) + 's' })),
-          sign));
-      }
+      var sj = SUBJ[curSub] || SUBJ.math, msg = h('div', { class: 'banner rmsg', text: sj[0] + ' ' + sj[1] + ' · כִּתָּה ' + GRADE_HE[state.grade + (ch ? 1 : 0)] });
+      function say(text) { msg.textContent = text; restart(msg, 'pop'); }
+      var box = h('div', { class: 'tmap wmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), items = [];
+      mapDeco(box); box.appendChild(trail);
       var mine = ch ? L.challengeFor(state, curSub) : L.topicsFor(state, curSub), shown = L.TOPICS.filter(function (t) { return mine.indexOf(t.id) >= 0; });
+      // what is seen of a region without reading: a pip for each house (filled by its finished stages), a flag when its
+      // bridge was crossed (a region without a bridge mission: when every house is finished)
+      var info = shown.map(function (t) {
+        var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, hs = [], lv, got = 0, full = true, boss = false, bdone = true, seen = {};
+        for (lv = sp.lo; lv <= sp.hi; lv++) {
+          var n = L.progOf(state, t.id, lv).filter(function (x) { return x >= 1; }).length, g = t.levels[lv - 1].g;
+          hs.push(n); got += n; if (n < 3) full = false;
+          if (!seen[g] && g <= 4 && !t.levels[lv - 1].enr && L.bossLevels(t.id, g).length) { seen[g] = true; boss = true; if (!L.bossDone(state, t.id, g)) bdone = false; }
+        }
+        return { hs: hs, got: got, full: full, flag: boss ? bdone : full, ready: readyBoss(t.id) > 0 };
+      });
+      // the recommended region: the one of the next step when it is on this map; otherwise the first region that is not finished
+      var gopen = !ch && L.challengeOpen(state, curSub), nx = ch ? null : L.nextStep(state), recId = null;
+      if (nx && nx.sub === curSub) recId = nx.challenge ? (gopen ? 'gate' : null) : mine.indexOf(nx.topic) >= 0 ? nx.topic : null;
+      if (!recId) shown.forEach(function (t, i) { if (!recId && !(info[i].flag && info[i].full)) recId = t.id; });
+      function node(cls, id, ico, label, extra, reached, go) {
+        var isRec = recId === id;
+        var b = h('button', { class: 'mnode ' + cls + (isRec ? ' rec' : ''), 'data-t': id, 'aria-label': label },
+          h('span', { class: 'mtop' }, isRec ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ico), extra && extra.flag ? mapFlag() : null)),
+          h('span', { class: 'mlab', text: label }), extra && extra.pips ? extra.pips : null);
+        b.addEventListener('click', function () { go(b); });
+        items.push({ el: b, reached: reached || isRec }); box.appendChild(b);
+      }
+      var icons = worldIcons(shown);
       shown.forEach(function (t, i) {
-        var open = state.levels[t.id], got = 0, k;
-        for (k = 1; k <= open; k++) L.progOf(state, t.id, k).forEach(function (x) { got += x; });
-        var ready = readyBoss(t.id) > 0;
-        plot(t, i, [h('b', { text: t.world }), h('small', { text: t.name }),
-          h('span', { class: 'pstars', text: '⭐ ' + got + (ready ? ' · 🌉' : '') }),
-          h('div', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / (t.levels.length * 9)) + '%' }))],
-        function () { sfx.pop(); region(t.id); });
+        var f = info[i], pips = h('span', { class: 'mpips hp', 'aria-hidden': 'true' });
+        f.hs.forEach(function (n) { pips.appendChild(h('i', { class: n ? 's' + n : 'o' })); });
+        node('reg' + (f.flag ? ' done' : f.got ? ' open' : ' plain'), t.id, icons[i], (t.icon ? t.icon + ' ' : '') + t.world + (f.ready ? ' 🌉' : ''), { flag: f.flag, pips: pips }, f.got > 0,
+          function () { sfx.pop(); region(t.id); });
       });
       if (!ch) {
-        plot(MIX, shown.length, [h('b', { text: MIX.world }), h('small', { text: 'תַּרְגִּילִים מִכָּל הַנּוֹשְׂאִים' })], function () { sfx.pop(); startRound('mix'); });
-        var gopen = L.challengeOpen(state, curSub);
-        plot(GATE, shown.length + 1, [h('b', { text: (gopen ? '🚀 ' : '🔒 ') + GATE.world }), h('small', { text: 'חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] }), h('span', { class: 'pstars', text: gopen ? 'פָּתוּחַ!' : 'נִפְתָּח כְּשֶׁמְּסַיְּמִים בִּנְיָן אֶחָד' })], function () {
+        node('mixn', MIX.id, 'ruins', MIX.icon + ' ' + MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
+        node('gate' + (gopen ? ' open' : ' far'), GATE.id, 'gate', (gopen ? '🚀 ' : '🔒 ') + GATE.world, null, gopen, function (b) {
           if (gopen) { sfx.pop(); topics(true); return; }
-          sfx.wrong(); var p = grid.lastChild; restart(p.lastChild, 'shake');
+          sfx.wrong(); restart(b, 'shake'); say('🔒 ' + GATE.world + ': נִפְתָּח כְּשֶׁמְּסַיְּמִים בִּנְיָן אֶחָד');
         });
       }
-      el.appendChild(grid);
-      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: CraftPix.net (יַעַר), Kenney.nl (בָּתִּים, צְלִילִים). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
-      if (window.innerWidth >= 1280 && window.innerHeight >= 520) el.appendChild(h('div', { class: 'mapbuddy', html: A.trollSVG(buddySpec()) }));
+      el.appendChild(msg); el.appendChild(box);
+      el.appendChild(h('div', { class: 'note', text: 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: Kenney.nl (מַפָּה, בָּתִּים, צְלִילִים), CraftPix.net (יַעַר). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
+      trailLayout(el, box, trail, items, null);
     });
   }
 
   // ---------- region: the treasure map of one topic. A trail from right to left, one ink icon per house (three stages
   // each) and the bridge mission at its end. The positions are computed from the size of the map, for any number of houses ----------
-  var MAP_BLD = ['houseSmall', 'house', 'houseChimney', 'houseTall', 'tower', 'towerTall', 'towerWatch', 'castle', 'castleTall'];
-  var MAP_DECO = [['treePines', 6, 14, 1.1], ['rocksMountain', 52, 7, 1.2], ['lake', 30, 52, 1.5], ['treePine', 93, 46, 0.8], ['rocks', 16, 88, 1], ['treePines', 70, 93, 1], ['treePine', 44, 80, 0.7], ['rocksMountain', 84, 20, 0.9]];
   function region(topicId) {
     var t = topicOf(topicId);
     curSub = t.sub || 'math';
@@ -3789,16 +4035,7 @@ var TrollModels = (function () {
       var msg = h('div', { class: 'banner rmsg', text: state.intro[t.id] ? 'בַּחֲרִי בַּיִת בַּמַּפָּה' : 'הִגַּעְתְּ אֶל ' + t.world + '! בְּכָל בַּיִת שְׁלוֹשָׁה שְׁלַבִּים: גִּלּוּי, תִּרְגּוּל וְאֶתְגָּר' });
       if (!state.intro[t.id]) { state.intro[t.id] = true; save(); }
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
-      var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }, win = t.levels.slice(sp.lo - 1, sp.hi);
-      var real = win.length, pad = sandbox ? +((/[#&]nh=(\d+)/.exec(hash) || [])[1] || 0) : 0; // layout check: a map with that many houses
-      while (win.length < pad) win.push(win[real - 1]);
-      // the stops of the trail, in order: the houses, and the bridge mission that closes each grade
-      var items = [];
-      win.forEach(function (d, i) {
-        items.push({ d: d, i: i, lv: sp.lo + i });
-        var next = win[i + 1];
-        if (!d.enr && d.g <= 4 && (!next || next.g !== d.g || next.enr) && L.bossLevels(t.id, d.g).length) items.push({ boss: d.g });
-      });
+      var tr0 = trailItems(t), sp = tr0.sp, win = tr0.win, real = tr0.real, items = tr0.items; // the stops of the trail, in order
       // The recommended step: the one the home button offers when it is on this map; otherwise (another topic is next, or this
       // is a map of the next grade) the frontier of this map by the same order: newest open house, earlier unfinished houses, bridge.
       function frontier() {
@@ -3809,12 +4046,10 @@ var TrollModels = (function () {
         return r;
       }
       var nx = t.g === state.grade ? L.nextStep(state) : null, rec = nx && !nx.challenge && nx.topic === t.id ? nx : frontier();
-      function buddyEl() { return h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(buddySpec()) }); }
-      function flagEl() { return h('img', { class: 'mflag', src: 'assets/map/flag.png', alt: '', draggable: 'false' }); }
 
       var slot = h('div', { class: 'mslot' }), box = h('div', { class: 'tmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), openIt = null;
       var parb = h('button', { class: 'parb', text: '⚙️ הוֹרִים', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, real); } } });
-      MAP_DECO.forEach(function (d) { box.appendChild(h('img', { class: 'mdeco', src: 'assets/map/' + d[0] + '.png', alt: '', draggable: 'false', style: 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3] })); });
+      mapDeco(box);
       box.appendChild(trail);
 
       // under the title: the one big button (the recommended step), or the three stages of the house that was tapped
@@ -3848,99 +4083,23 @@ var TrollModels = (function () {
       }
 
       items.forEach(function (it) {
-        var isRec, b;
-        if (it.boss) {
-          var g = it.boss, done = L.bossDone(state, t.id, g), ready = L.bossReady(state, t.id, g), hero = resolve(L.trollFromId(L.heroId(t.id, g)));
-          isRec = !!rec && rec.boss === g; it.reached = done || ready;
-          b = h('button', { class: 'mnode boss' + (done ? ' done' : ready ? ' ready' : ' far') + (isRec ? ' rec' : ''), 'data-boss': g },
-            h('span', { class: 'mtop' }, isRec ? buddyEl() : null,
-              h('span', { class: 'mic' }, h('img', { src: 'assets/map/bridgeRope.png', alt: '', draggable: 'false' }), done ? flagEl() : null),
-              done ? h('span', { class: 'mhero', 'aria-hidden': 'true', html: A.trollSVG(hero) }) : null),
-            h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }));
-          b.addEventListener('click', function () {
-            if (done) { sfx.giggle(); say(hero.name + ' נִצַּל וְעָבַר לָגוּר בַּכְּפָר!'); return; }
-            if (!ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
-            sfx.pop(); startRound(t.id, { boss: g });
-          });
-        } else {
-          var pr = L.progOf(state, t.id, it.lv), far = it.lv > state.levels[t.id], full = pr.every(function (x) { return x >= 1; }), n = win.length;
-          var bi = Math.min(MAP_BLD.length - 1, Math.round(it.i * (MAP_BLD.length - 1) / Math.max(1, Math.max(n, 5) - 1)));
-          var pips = h('span', { class: 'mpips', 'aria-hidden': 'true' });
-          isRec = !!rec && !rec.boss && rec.level === it.lv; it.reached = !far;
-          [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: (pr[k] >= 1 ? 's' + Math.min(3, pr[k]) : L.stageOpen(state, t.id, it.lv, k) ? 'o' : 'l') + (isRec && rec.stage === k ? ' now' : '') })); });
-          b = h('button', { class: 'mnode' + (far ? ' far' : full ? ' done' : ' open') + (isRec ? ' rec' : ''), 'data-house': it.lv },
-            h('span', { class: 'mtop' }, isRec ? buddyEl() : null,
-              h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, h('img', { src: 'assets/map/' + MAP_BLD[bi] + '.png', alt: '', draggable: 'false' }), full && !far ? flagEl() : null)),
-            h('span', { class: 'mlab', text: it.d.name }), far ? null : pips);
-          b.addEventListener('click', function () {
-            if (far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו'); return; }
-            sfx.pop(); openIt = openIt === it ? null : it; drawSlot();
-          });
-        }
+        var b = stopEl('button', t, it, win.length, rec);
+        if (it.boss) b.addEventListener('click', function () {
+          if (it.done) { sfx.giggle(); say(it.hero.name + ' נִצַּל וְעָבַר לָגוּר בַּכְּפָר!'); return; }
+          if (!it.ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת כְּשֶׁמְּסַיְּמִים אֶת כָּל הַשְּׁלַבִּים שֶׁלְּפָנֶיהָ'); return; }
+          sfx.pop(); startRound(t.id, { boss: it.boss });
+        });
+        else b.addEventListener('click', function () {
+          if (it.far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו'); return; }
+          sfx.pop(); openIt = openIt === it ? null : it; drawSlot();
+        });
         it.el = b; box.appendChild(b);
       });
       box.appendChild(parb);
       el.appendChild(msg); el.appendChild(slot); el.appendChild(box);
       drawSlot();
 
-      // Where the stops stand. Rows that run from right to left like lines of text, each stop a little lower than the one
-      // before, so the trail zigzags down the map and ends at the far left; when the map is wide enough, one row that goes
-      // up and down. s is the size of the icons and labels: the biggest that leaves every label free.
-      function place(c, s) {
-        var W = box.clientWidth, H = box.clientHeight, N = items.length, one = c >= N, cw = W / c, off = (c - N % c) % c, xs = [], tops = [], hm = 0, ok = true, i;
-        box.style.setProperty('--s', s.toFixed(3));
-        for (i = 0; i < N; i++) xs.push(W - (((i + off) % c) + 0.5) * cw);
-        function widths(wide) {
-          items.forEach(function (it, i) { // a wide label reaches under its neighbours, but not out of the map and not into the corner of the parents' button
-            it.w = Math.max(40, (wide ? Math.max(cw, Math.min(cw * 1.9, 2 * Math.min(xs[i], W - xs[i] - (i % 2 ? parb.offsetWidth + 8 : 0)))) : cw) - 8); it.el.style.width = it.w + 'px';
-          });
-          hm = 0; items.forEach(function (it) { hm = Math.max(hm, it.el.offsetHeight); });
-        }
-        if (one) {
-          widths(true);
-          var amp = Math.min((H - hm) / 2, H * 0.3);
-          if (N > 1 && 2 * amp < hm + 8) { widths(false); amp = Math.min((H - hm) / 2, H * 0.3); ok = amp >= hm * 0.12; }
-          for (i = 0; i < N; i++) tops.push((H - hm) / 2 + (N > 1 ? (i % 2 ? amp : -amp) : 0));
-          ok = ok && hm <= H;
-        } else {
-          widths(false);
-          var step = (H - hm) / (N - 1);
-          ok = c * step >= hm + 8;
-          for (i = 0; i < N; i++) tops.push(i * step);
-        }
-        var pts = [], last = 0, pl = parb.offsetLeft, pt = parb.offsetTop;
-        items.forEach(function (it, i) {
-          var x0 = xs[i] - it.w / 2, m = it.el.querySelector('.mic'), mt = it.el.querySelector('.mtop');
-          it.el.style.left = x0.toFixed(1) + 'px'; it.el.style.top = tops[i].toFixed(1) + 'px';
-          pts.push([x0 + m.offsetLeft + m.offsetWidth / 2, tops[i] + m.offsetTop + m.offsetHeight * 0.6]);
-          if (it.reached) last = i;
-          if (mt.scrollWidth > it.w + 1) ok = false; // the icon and the troll beside it must fit in the width of the stop
-          if (x0 < pl + parb.offsetWidth + 6 && x0 + it.w > pl - 6 && tops[i] + it.el.offsetHeight > pt - 6 && tops[i] < pt + parb.offsetHeight + 6) ok = false; // the parents' button keeps its corner
-        });
-        function path(to) {
-          var dd = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1), k;
-          for (k = 1; k <= to; k++) {
-            var a = pts[k - 1], b = pts[k], f = (k % 2 ? 0.1 : -0.1); // a gentle bend, to one side and then to the other
-            dd += ' Q' + ((a[0] + b[0]) / 2 - (b[1] - a[1]) * f).toFixed(1) + ',' + ((a[1] + b[1]) / 2 + (b[0] - a[0]) * f).toFixed(1) + ' ' + b[0].toFixed(1) + ',' + b[1].toFixed(1);
-          }
-          return dd;
-        }
-        trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '"><path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
-        return ok;
-      }
-      function layout() {
-        if (cur !== el) return;
-        var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false;
-        if (W < 60 || H < 60 || !N) return;
-        for (c = 2; c <= Math.ceil(N / 2); c++) cands.push([c, Math.min(1.9, W / (c * 104), c * H / (100 * (N - 1 + c))), 1]);
-        cands.push([N, Math.min(1.9, (W / N - 8) / 86, H / 135), 1.3]); // one row is preferred when it is nearly as big
-        cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
-        for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
-        if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
-      }
-      layout();
-      if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+      trailLayout(el, box, trail, items, parb);
     });
   }
   // For parents: how many houses of the topic are open. Behind a small button, so that it is not among the child's stages.
@@ -5308,6 +5467,8 @@ var TrollModels = (function () {
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
+  if (sandbox && /many=1/.test(hash)) { state.owned = []; for (var hm = 0; hm < 30; hm++) state.owned.push(5 + 37 * hm); state.stars = 240; } // layout check: a veteran with 30 trolls
+  if (sandbox && /[#&]sub=(\w+)/.test(hash)) curSub = /[#&]sub=(\w+)/.exec(hash)[1]; // layout check: the map of another subject
   var hhome = sandbox ? (/[#&]home=(\w+)/.exec(hash) || [])[1] : ''; // debug: states of the big home button (new, mid, next, bridge, done)
   if (hhome) {
     var hfull = function (id) { var tl = topicOf(id); state.levels[id] = tl.levels.length; state.prog[id] = tl.levels.map(function () { return [3, 3, 3]; }); }, hT = L.topicsFor(state)[0];
