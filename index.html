@@ -1197,6 +1197,84 @@ body.toy .snext .sdisc{background:rgba(255,255,255,.55);border-color:rgba(185,16
 body.toy .snext .sname{background:var(--tgold);box-shadow:0 2px 0 var(--te)}
 body.toy .jcard{background:#fff;box-shadow:0 3px 0 var(--te)}
 /* TOY-END */
+/* RESKIN-2B ================= the toy island, part 2b: the cart, the daily gift, who plays, the family account, the ranking, the race.
+   Colours and plates only: no size, grid or text changes. Every selector starts with body.toy, so &skin=old is untouched. */
+/* ---- the cart: a cream panel for the troll, white cards, lilac edges, pink for "chosen" ---- */
+body.toy .cwrap{color:var(--ti)}
+body.toy .cstage{background:var(--tc);border-color:var(--tc);border-radius:22px;box-shadow:0 5px 0 var(--te),0 10px 14px rgba(0,0,0,.2)}
+body.toy .cname{background:#fff;box-shadow:0 2px 0 var(--te)}
+body.toy .cprev svg.troll,body.toy .cpet{filter:var(--osh)}
+body.toy .parr{background:#fff;color:var(--ti);border-color:transparent;box-shadow:0 4px 0 var(--te2)}
+body.toy .cths .cnt,body.toy .kmsg,body.toy .cpg{background:#fff}
+body.toy .kmsg,body.toy .cpg{box-shadow:0 2px 0 var(--te)}
+body.toy .cth{background:#fff}
+body.toy .cth.on{border-color:var(--tpink);box-shadow:0 2px 0 var(--te2)}
+body.toy .cacts .btn,body.toy .cbtn.koff,body.toy .cbtn.kgoal{background:#fff;color:var(--ti);text-shadow:none;border-color:transparent;box-shadow:0 4px 0 var(--te2)}
+body.toy .cacts .btn.is,body.toy .cbtn.kgoal{background:#ffe9a8}
+body.toy .ctab{background:#fff;color:var(--ti);border-color:transparent;box-shadow:0 3px 0 var(--te2)}
+body.toy .ctab.on{background:var(--tmain);color:#fff;border-color:transparent;box-shadow:0 3px 0 var(--tmaine)}
+body.toy .citem{background:#fff;color:var(--ti);box-shadow:0 3px 0 var(--te)}
+body.toy .citem.worn{background:#fff1b8;border-color:#ffb300}
+body.toy .citem.pick{border-color:var(--tpink);box-shadow:0 0 0 3px rgba(255,79,154,.3),0 3px 0 var(--te)}
+body.toy .ppart svg{filter:drop-shadow(0 1px 1px rgba(59,42,85,.4))}
+body.toy .cpic .sw{box-shadow:inset 0 -5px 0 rgba(0,0,0,.15),0 0 0 3px #fff,0 2px 0 3px var(--te)}
+body.toy .cpr.cant{color:#77708c}
+body.toy .cdo,body.toy .cgl{box-shadow:0 1px 0 var(--te2)}
+body.toy .cdo{background:#f3eefb}
+body.toy .cbtn{background:var(--tmain);border-color:transparent;box-shadow:0 4px 0 var(--tmaine),0 8px 10px rgba(0,0,0,.2)}
+body.toy .gbar{background:var(--tpip)}
+body.toy .gbar>i{background:var(--tpipon)}
+body.toy .ready>.gbar>i,body.toy .ready .gbar>i{background:#1b8038}
+/* ---- the daily gift: the same window on the sea as the end of a stage, the troll and the gift stand on its island ---- */
+body.toy .gframe{position:relative;z-index:0;color:var(--ti);background:linear-gradient(var(--w0),var(--w1));border-color:#fff;border-radius:22px;box-shadow:inset 0 4px 0 #fff,inset 0 -4px 0 #fff,0 5px 0 var(--te),0 10px 14px rgba(0,0,0,.2)}
+body.toy .gframe::before{content:"";position:absolute;inset:32% 6px 24px;z-index:-1;pointer-events:none;border-radius:46% 54% 44% 56%/30% 28% 16% 16%;background:var(--isle);box-shadow:var(--isin),var(--rims)}
+body.toy .gbud svg{background:var(--gtr);filter:var(--osh)}
+body.toy .gitem{background:#fff;box-shadow:0 4px 0 var(--te)}
+/* ---- who plays, the family account, the pool of the race, the ranking: white cards on the calm ground, the title on a white pill ---- */
+body.toy .tpl>.h2,body.toy #podium .h2{color:var(--ti);-webkit-text-stroke:0;text-shadow:none;background:#fff;border-radius:999px;box-shadow:0 4px 0 var(--te);flex:0 0 auto}
+body.toy .tpl>.h2{padding:2px 22px;font-size:clamp(20px,4.2vmin,38px)}
+body.toy #podium .h2{padding:0 22px}
+body.toy .tpl,body.toy .rov{color:var(--ti)}
+body.toy .pcard,body.toy .cpanel{background:#fff;box-shadow:0 5px 0 var(--te2)}
+body.toy .pname{border-color:var(--te2);color:var(--ti)}
+body.toy .gbtn.on{background:#c2185f;color:#fff;border-color:#8f1148}
+body.toy .cmsg,body.toy .clink{color:var(--ti)}
+body.toy .tpl .note{background:#fff}
+body.toy .prow{box-shadow:0 4px 0 var(--te2)}
+body.toy .prow small,body.toy .brow small,body.toy .rp small{color:#5d5670}
+body.toy .prow.on{box-shadow:0 0 0 4px var(--tpink),0 4px 0 4px var(--te2)}
+body.toy .prow.self{box-shadow:0 0 0 4px var(--tgold),0 4px 0 4px var(--te2)}
+body.toy .brow{background:#fff;box-shadow:0 3px 0 var(--te)}
+body.toy .brow.me{background:#fff1b8;box-shadow:inset 0 0 0 3px var(--tgold),0 3px 0 var(--te)}
+/* ---- the race: the invitation bar, the launch, the track (a strip of grass with a path for every runner), the results ---- */
+body.toy #frame i:nth-child(1){background:linear-gradient(rgba(255,179,0,.9),rgba(255,179,0,0))}
+body.toy #frame i:nth-child(2){background:linear-gradient(rgba(255,179,0,0),rgba(255,179,0,.9))}
+body.toy #frame i:nth-child(3){background:linear-gradient(90deg,rgba(255,179,0,.9),rgba(255,179,0,0))}
+body.toy #frame i:nth-child(4){background:linear-gradient(270deg,rgba(255,179,0,.9),rgba(255,179,0,0))}
+body.toy #track{color:var(--ti);background:linear-gradient(var(--g1),var(--g2));box-shadow:0 -4px 0 var(--sand)}
+body.toy #track .tx{background:#fff;color:var(--ti);box-shadow:0 3px 0 rgba(30,90,40,.35)}
+body.toy #track .tclock{background:#fff;border-radius:8px;box-shadow:0 0 0 3px #fff}
+body.toy #track .ask{background:#fff;border-radius:999px}
+body.toy #track .ask button{background:#f3eefb;color:var(--ti)}
+body.toy #track .ask .y{background:#c2185f;color:#fff}
+body.toy .ln:before{background:var(--tpath);box-shadow:0 0 0 1.5px var(--tbed)}
+body.toy .ln.me:before{background:var(--tgold)}
+body.toy .run b{background:#fff;color:var(--ti)}
+body.toy .run.me b{background:var(--tgold)}
+body.toy .run .plus{color:#c2185f;background:#fff;border-radius:8px;padding:0 3px}
+body.toy #invite{color:var(--ti);box-shadow:0 -4px 0 var(--te)}
+body.toy #invite .y{background:var(--tnext);box-shadow:0 4px 0 var(--tnexte)}
+body.toy #invite .n{background:#f3eefb;color:var(--ti);box-shadow:0 4px 0 var(--te2)}
+body.toy #invite .bar{background:#d6266f}
+body.toy .rov{background:rgba(30,20,60,.55)}
+body.toy .rov .big{color:var(--ti);-webkit-text-stroke:0;text-shadow:none;background:#fff;border-radius:999px;min-width:1.1em;padding:0 .18em;text-align:center;box-shadow:0 8px 0 var(--te2)}
+body.toy .rp{box-shadow:0 5px 0 var(--te2)}
+body.toy .rp.me{box-shadow:0 0 0 4px var(--tgold),0 5px 0 4px var(--te2)}
+body.toy .rp .pl{background:var(--ti)}
+body.toy .rp.win .pl{background:#ffb300}
+/* a landscape phone with the race track or the invitation bar: the map of a topic with nine houses has no room for labels of 14 px */
+@media (max-height:420px){body.toy.racing .screen>.tmap .mlab,body.toy.invited .screen>.tmap .mlab{font-size:clamp(12px,calc(12.5px*var(--s)),20px)}}
+/* RESKIN-2B-END */
 </style>
 </head>
 <body>
@@ -4518,7 +4596,7 @@ var TrollModels = (function () {
         if (taken.some(function (t) { return q[0] < t[2] && t[0] < q[2] && q[1] < t[3] && t[1] < q[3]; })) return false;
         im.style.left = cx.toFixed(0) + 'px'; im.style.top = by.toFixed(0) + 'px'; taken.push(q); return true;
       });
-      im.style.visibility = ok ? '' : 'hidden';
+      im.style.visibility = ok ? '' : 'hidden'; if (!ok) im.style.left = im.style.top = ''; // a hidden piece must not keep a place from a taller map (it made the screen scroll by a few px)
     });
   }
   var LMARK = {}; // toy: one landmark for each tile, the same idea keeps its picture from grade to grade (docs/prompts/reskin-spec.md, 2.3)
@@ -5634,7 +5712,7 @@ var TrollModels = (function () {
   function who(first) {
     setMusic('home');
     show(function (el) {
-      el.appendChild(topBar(!!profiles.cur, profiles.cur ? home : null));
+      el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, profiles.cur ? home : null));
       el.appendChild(h('h2', { class: 'h2', text: 'מִי מְשַׂחֵק הַיּוֹם?' }));
       var grid = h('div', { class: 'who-grid' });
       profiles.list.forEach(function (p, i) {
@@ -5712,7 +5790,7 @@ var TrollModels = (function () {
   // ---------- one village on every device ----------
   function cloud(msg) {
     show(function (el) {
-      el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
+      el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
       el.appendChild(h('h2', { class: 'h2', text: '☁️ חֶשְׁבּוֹן הַמִּשְׁפָּחָה' }));
       var p = h('div', { class: 'cpanel' }), status = h('div', { class: 'cmsg', text: msg || '' });
       function say(t) { status.textContent = t; }
@@ -6196,7 +6274,7 @@ var TrollModels = (function () {
     var online = {}, picked = {}, stopList = null, msg, grid, go;
     if (raceDbg) ['נֹעָה', 'אוּרִי', 'תָּמָר', 'דָּנִיֵּאל', 'מַאיָה', 'אִיתַי'].forEach(function (n, i) { online['p10000000' + i] = { n: n, b: 5 + i * 37, d: '', g: 1 + i % 4, t: Date.now(), r: i === 4 ? 'r123456789' : '' }; });
     show(function (el) {
-      here = 'pool';
+      here = 'pool'; el.classList.add('tpl');
       el.appendChild(topBar(true, home));
       el.appendChild(h('h2', { class: 'h2', text: '🏁 מֵרוֹץ הַטְּרוֹלִים' }));
       msg = h('div', { class: 'banner pmsg' }); grid = h('div', { class: 'plist' });
@@ -6495,7 +6573,7 @@ var TrollModels = (function () {
   function board() {
     setMusic('home');
     show(function (el) {
-      here = 'board';
+      here = 'board'; el.classList.add('tpl');
       el.appendChild(topBar(true, home));
       el.appendChild(h('h2', { class: 'h2', text: '🏆 טַבְלַת הַדֵּרוּג' }));
       var list = h('div', { class: 'blist' }, h('div', { class: 'banner pmsg', text: 'רֶגַע...' }));
