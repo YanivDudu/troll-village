@@ -64,7 +64,7 @@ function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' 
     var mute = await until(function () { return profs().cur === idA && q('.top .chips:last-child .icon:last-child'); }, 'home as A1 on B');
     var coins0 = st(idA).coins; mute.click(); // sound off: a setting of device B, it must not travel to device A
     (await until(function () { return q('.btn.b3.wig'); }, 'daily gift')).click(); // the daily gift: progress that must travel
-    var chest = await until(function () { return q('.gift,.chestb,.egg,.gbox,[class*=gift] button,[class*=chest]'); }, 'gift screen'); chest.click(); chest.dispatchEvent(new Event('click'));
+    var chest = await until(function () { return q('button.gift') || q('.chestb,.egg,.gbox'); }, 'gift screen'); chest.click(); chest.dispatchEvent(new Event('click'));
     await until(function () { return st(idA).coins > coins0; }, 'the gift was opened');
     var coins1 = st(idA).coins;
     await wait(6500); // the push waits 4 seconds after the last change
