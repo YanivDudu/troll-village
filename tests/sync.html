@@ -135,7 +135,7 @@ async function run() {
   chip.click();
   var cards = await until(function () { var c = doc().querySelectorAll('.screen:not(.out) .pcard .go'); return c.length === 2 && c; }, 'two players on B');
   cards[profs().list.findIndex(function (p) { return p.id === idA; })].click();
-  var mute = await until(function () { return profs().cur === idA && q('.top .chips:last-child .icon:last-child'); }, 'home as A1 on B');
+  var mute = await until(function () { return profs().cur === idA && q('.top [aria-label="צְלִילִים"]'); }, 'home as A1 on B');
   var coins0 = st(idA).coins; mute.click(); // sound off: a setting of device B, it must not travel to device A
   (await until(function () { return q('.btn.b3.wig'); }, 'daily gift')).click(); // the daily gift: progress that must travel
   var chest = await until(function () { return q('button.gift') || q('.chestb,.egg,.gbox'); }, 'gift screen'); chest.click(); chest.dispatchEvent(new Event('click'));
