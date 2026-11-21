@@ -2979,9 +2979,11 @@ var TrollLogic = (function () {
   // writes the state and t3 and leaves r3 behind: that copy is newer than the number r3 remembers.
   function cloudNum(r3, t3, state) {
     var m = /^(\d+):(\d+)$/.exec(typeof r3 === 'string' ? r3 : '');
-    if (!m) return revSeed(state);
+    if (!m || +m[1] < 1) return revSeed(state); // a number below 1 is no number: the copy counts as unnumbered
     return +m[2] === +t3 ? +m[1] : Math.max(+m[1] + 1, revSeed(state));
   }
+  // Which document a device is linked to: every family account has the code 'acct', so the account itself is part of it.
+  function linkKey(code, uid) { return code === 'acct' ? 'acct:' + (uid || '') : String(code || ''); }
   function stampOf(r3, t3) { return (r3 || '') + '|' + t3; } // the identity of a cloud copy: it changes with every write by any page
   // a = this device { list, gone, hide, n:{id: number}, t:{id: ms}, b:{id: stamp of the cloud copy last pulled or pushed}, d:{id: saved since then}, has:{id: local progress exists} }
   // c = the cloud    { list, gone, n:{id}, t:{id}, st:{id: stamp}, has:{id} }, or null when there is no document yet
@@ -3454,7 +3456,7 @@ var TrollLogic = (function () {
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
     ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
-    newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, CODE_RE: CODE_RE,
+    newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, linkKey: linkKey, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
@@ -3971,16 +3973,18 @@ var TrollModels = (function () {
   }
   // Reads the cloud, compares the running number of every player (L.mergeCloud) and overwrites the lower side: pulls what is
   // newer in the cloud, pushes what is newer here. Nothing is merged. done(ok, changed)
+  function linkNow() { return L.linkKey(sync.code, auth && auth.uid); }
   function syncNow(done, keep) {
     if (typeof done !== 'function') done = function () {};
     if (!sync.code || !cloudOn()) { done(false); return; }
     if (syncBusy) { syncAgain = true; done(false); return; }
     syncBusy = true; clearTimeout(pushTimer);
-    var changed = false, tries = 0, code = sync.code;
+    var changed = false, tries = 0, code = sync.code, link = linkNow();
+    function linked() { return sync.code === code && linkNow() === link; } // still the same village or the same family account as when the sync started
     function attempt() {
       var sent = {};
       cloudGet(code).then(function (rem) {
-        if (sync.code !== code) throw new Error('unlinked'); // signed out while the cloud was being read
+        if (!linked()) throw new Error('unlinked'); // signed out, or signed in to another account, while the cloud was being read
         // decided with what is stored now, not with what it was before the request: a save may have landed meanwhile
         syncFresh();
         var revs = revAll(), a = { list: profiles.list, gone: sync.gone, hide: sync.hide, n: {}, t: sync.t, b: sync.b, d: sync.d, has: {} };
@@ -4016,7 +4020,7 @@ var TrollModels = (function () {
         if (Object.keys(left).length > 40) Object.keys(left).forEach(function (k) { var x = /^(?:s|t|s2|t2)_(p\d+)$/.exec(k); if (x && left['s3_' + x[1]] && !(k in f)) { del.push(k); delete left[k]; } });
         return cloudPut(code, f, keep, rem ? rem.ut : '', del);
       }).then(function () {
-        if (sync.code !== code) { fin(false); return; }
+        if (!linked()) { fin(false); return; }
         syncFresh();
         var revs = revAll(), again = false, id;
         for (id in sent) {
@@ -4029,7 +4033,7 @@ var TrollModels = (function () {
         fin(true);
       }, function (e) {
         // somebody else wrote between the read and the write: nothing was written here. Read again and decide again.
-        if (e && e.conflict && ++tries < 3 && sync.code === code) setTimeout(attempt, 300 + Math.floor(Math.random() * 500));
+        if (e && e.conflict && ++tries < 3 && linked()) setTimeout(attempt, 300 + Math.floor(Math.random() * 500));
         else fin(false);
       });
     }

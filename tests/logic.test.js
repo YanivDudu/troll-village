@@ -1001,6 +1001,13 @@ console.log('all ' + n + ' passed (players)');
     assert.strictEqual(L.cloudNum('12:500', '900', st(40, 7)), 48, '... or the seed of the new progress when that is higher');
     assert.strictEqual(L.cloudNum('', '900', st(40, 7)), 48, 'only a time: the seed');
     [undefined, null, 'x', '12', '12:', ':5', '-1:500', '1.5:500', '12:500:1', 12].forEach(r => assert.strictEqual(L.cloudNum(r, '500', st(40, 7)), 48, 'garbage ' + r));
+    ['0:500', '00:500', '0:900'].forEach(r => assert.strictEqual(L.cloudNum(r, '500', st(40, 7)), 48, 'a number below 1 is no number: ' + r));
+    assert.strictEqual(L.cloudNum('0:500', '500', L.newState(2)), 1, 'so the copy never counts as 0, below every device');
+    assert.strictEqual(act(L.mergeCloud(dev(30, 9e15, '', true), { list: card, gone: [], n: { [id]: L.cloudNum('0:500', '500', st(40, 7)) }, t: { [id]: 500 }, st: { [id]: '0:500|500' }, has: { [id]: true } })), 'pull', 'and a device with less progress does not push over it');
+    // the document a device is linked to: two family accounts are two documents although both have the code acct
+    assert.notStrictEqual(L.linkKey('acct', 'uidA'), L.linkKey('acct', 'uidB')); assert.strictEqual(L.linkKey('acct', 'uidA'), L.linkKey('acct', 'uidA'));
+    assert.notStrictEqual(L.linkKey('acct', 'uidA'), L.linkKey('acct', null), 'signed out'); assert.notStrictEqual(L.linkKey('acct', ''), L.linkKey('', ''));
+    assert.notStrictEqual(L.linkKey('ABCDEFGH', 'uidA'), L.linkKey('ABCDEFGJ', 'uidA')); assert.strictEqual(L.linkKey('ABCDEFGH', 'uidA'), L.linkKey('ABCDEFGH', null), 'a village code does not depend on an account');
     assert.strictEqual(L.stampOf('12:500', '500'), '12:500|500'); assert.strictEqual(L.stampOf('', 500), '|500'); assert.strictEqual(L.stampOf(undefined, 500), '|500');
     assert.notStrictEqual(L.stampOf('12:500', '500'), L.stampOf('12:500', '900'), 'a write by an older page changes the stamp');
   });
