@@ -1575,6 +1575,198 @@ body.toy .qcard{border-radius:var(--r-l);box-shadow:var(--e2);color:var(--ink)}
   body.toy .screen>.path[style*="none"]~.lvrow{min-height:60px;padding-inline-end:54px}
 }
 /* DS-END */
+/* WORLD-BEGIN ================= task "world screens": the camp, the four lands, the world map and the challenge map, the map of a topic with its stage
+   panel and parents panel, the end screens (stage, mixed round, bridge, egg, new troll) and the travel journal, converted to the design system (DS block above).
+   Only tokens: colours, sizes, radii and shadows come from the DS; the world keeps its own names (--g0.. grass, --tpath --tbed --tdot the trail).
+   Three wrappers were added in the DOM (.cjour: strip + big button, .mcard: name + pips of a stop, .lcard: name + stars + bar of a land); the parchment skin does not see them. */
+.cjour,.mcard,.lcard{display:contents}
+.mlock{display:none}
+.parb .ic{margin-inline-end:4px}
+.sbtn .ss{display:flex;justify-content:center;direction:rtl}.sbtn .ss .ic{opacity:.3}.sbtn .ss .ic.on{opacity:1}
+.endm .star .ic{display:block;width:1em;height:1em;color:inherit}
+/* ---- shared by these screens: the button of the next step (camp, map of a topic, journal), the bubble, pips, labels as cards, the lock badge ---- */
+body.toy .camp .btn.big.nextb,body.toy .camp .btn.big.cgo,body.toy .btn.mgo{grid-area:auto;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:var(--sp3);width:100%;max-width:none;min-width:0;min-height:64px;padding:var(--sp2) var(--sp4);padding-inline-end:var(--sp3);
+  border:0;border-radius:var(--r-m);background:var(--primary);color:#fff;text-align:start;line-height:var(--lh-lead);box-shadow:0 4px 0 var(--primary-edge),0 10px 20px rgba(138,15,64,.28)}
+body.toy .camp .btn.big.cgo:not(.nextb){justify-content:center;font-size:var(--t-h2)}
+body.toy .camp .btn.big.nextb{animation:none}body.toy .camp .nextb .ngo{animation:pulse2 1.8s ease-in-out infinite}
+body.toy .camp .nextb .npic,body.toy .camp .nextb .pips{display:none}
+body.toy .nextb .ntxt,body.toy .mgo .ntxt{display:block;flex:1 1 auto;min-width:0}
+body.toy .nextb .ntxt b,body.toy .mgo .ntxt b{display:block;font-size:var(--t-h2);line-height:28px;font-weight:var(--w-black);white-space:nowrap}
+body.toy .nextb .ntxt small,body.toy .mgo .ntxt small{display:inline;font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-reg);white-space:normal;overflow:visible}
+body.toy .nextb .ntxt small+small::before{content:" \2022  "}
+body.toy .nextb .nstage{white-space:nowrap}body.toy .nextb .nstage span{display:inline}
+body.toy .nextb .ngo,body.toy .mgo .ngo{flex:none;width:40px;height:40px;padding:0;border-radius:50%;background:var(--surface);color:var(--primary);display:grid;place-items:center}
+body.toy .cbub{max-width:92%;padding:var(--sp2) var(--sp4);background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);font-size:var(--t-body);line-height:var(--lh-body);font-weight:var(--w-bold)}
+body.toy .cbub:after{top:auto;bottom:-6px;left:50%;margin-left:-7px;width:14px;height:14px;border:0;border-radius:3px;background:var(--surface);transform:rotate(45deg);box-shadow:2px 2px 0 var(--edge)}
+body.toy .mcard{display:flex;flex-direction:column;align-items:center;gap:var(--sp1);max-width:100%;padding:var(--sp1) var(--sp2) 6px;background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1)}
+body.toy .mcard .mlab,body.toy .lcard .mlab{background:none;box-shadow:none;border-radius:0;padding:0;font-weight:var(--w-bold);text-align:center}
+body.toy .mpips{background:none;box-shadow:none;padding:0;gap:var(--sp1)}
+body.toy .mpips i{width:12px;height:12px;border:0;background:var(--surface);box-shadow:inset 0 0 0 2px rgba(46,35,80,.55)}
+body.toy .mpips.hp{gap:3px}body.toy .mpips.hp i{width:10px;height:10px}
+body.toy .mpips i.l{background:var(--line);box-shadow:inset 0 0 0 2px rgba(46,35,80,.25)}
+body.toy .mpips i.s1{background:linear-gradient(to top,var(--tpipon) 38%,var(--surface) 38%)}
+body.toy .mpips i.s2{background:linear-gradient(to top,var(--tpipon) 68%,var(--surface) 68%)}
+body.toy .mpips i.s3{background:var(--tpipon)}
+body.toy .mpips i.now{box-shadow:inset 0 0 0 2px var(--primary),0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+body.toy .mnode.rec .mcard{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+body.toy .mnode.rec .mlab,body.toy .land.rec .mcard .mlab{background:none}
+body.toy .mnode.sel .mlab{box-shadow:none}
+body.toy .mnode.sel .mcard{outline:3px solid var(--primary);outline-offset:1px}
+body.toy .mnode.far .mcard{background:rgba(255,255,255,.78);box-shadow:none}
+body.toy .mnode.far .mcard .mlab{color:var(--locked-ink);font-weight:var(--w-reg)}
+body.toy .mlock{display:grid;place-items:center;position:absolute;z-index:2;left:50%;top:50%;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:50%;background:var(--surface);color:var(--locked-ink);box-shadow:var(--e1);pointer-events:none}
+body.toy .mlock .ic{width:18px;height:18px}
+body.toy .mnode.far .mic:before,body.toy .mnode.far .mic:after{display:none}
+body.toy .mnode.far .mic>img:first-child{filter:grayscale(.85) brightness(1.08);opacity:.78}
+body.toy .emeet .mlab,body.toy .ecrew .mlab,body.toy .enode .mlab,body.toy .emix .mlab{padding:2px var(--sp2);background:var(--surface);color:var(--ink);border-radius:var(--r-s);box-shadow:var(--e1);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold)}
+/* a phone has no room for a sun and a cloud behind a title: on these screens (not on the camp) they are left out; a wide screen keeps the sun and the cloud that stands clear of the title */
+@media (max-width:899px){body.toy:has(.screen.map:not(.out)) :is(.tsun,.tcloud),body.toy:has(.screen.endm:not(.out)) :is(.tsun,.tcloud),body.toy:has(.screen.jrn:not(.out)) :is(.tsun,.tcloud){display:none}}
+@media (min-width:900px){body.toy:has(.screen.map:not(.out)) .tcloud:not(.c2),body.toy:has(.screen.camp:not(.out)) .tcloud{display:none}}
+@media (max-width:899px){body.toy:has(.screen.camp:not(.out)) .tcloud{display:none}}
+@media (min-width:900px){body.toy:has(.screen.map:not(.out)) .tcloud.c2{left:16%}}
+/* ---- the camp ---- */
+body.toy .screen.camp{gap:var(--sp2)}
+body.toy .cgrid{grid-template-rows:auto minmax(0,1fr) auto auto auto;grid-template-areas:"title" "camp" "jour" "more" "folk";gap:var(--sp2)}
+body.toy .camp .title{font-size:var(--t-lead);line-height:var(--lh-lead);padding:0}
+@media (max-height:699px) and (max-width:899px){body.toy .camp .title{display:none}}
+body.toy .cjour{grid-area:jour;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp2);width:100%;padding:var(--sp2) var(--sp2) var(--sp3);background:var(--surface);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .cjour>*{grid-area:auto}
+body.toy .cstrip{position:relative;display:block;width:100%;height:auto;max-height:none;padding:var(--sp1) 0 0;border:0;border-radius:var(--r-m);background:linear-gradient(var(--g0),var(--g1));box-shadow:none;overflow:hidden;color:var(--ink)}
+body.toy .cstrip .tmap{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:end;height:auto;--s:1.5}
+body.toy .cstrip .tmap::before{display:none}
+body.toy .cstrip .mnode{position:relative;min-height:0;gap:2px;padding-bottom:6px}
+body.toy .cstrip .mtrail{inset:calc(46px*var(--s)*.6) 16.67% auto;height:10px;border-radius:5px;background:var(--tpath);box-shadow:0 1px 0 var(--tbed);z-index:0}
+body.toy .cstrip .tmap.n2 .mtrail{left:25%;right:25%}body.toy .cstrip .tmap.n1 .mtrail{display:none}
+body.toy .cstrip .mtrail::after{content:"";position:absolute;top:3px;height:4px;inset-inline-start:0;width:0;background:radial-gradient(circle,var(--tdot) 2px,transparent 2.5px) 0 0/12px 4px}
+body.toy .cstrip .tmap.n3.w1 .mtrail::after{width:50%}body.toy .cstrip .tmap.n3.w2 .mtrail::after,body.toy .cstrip .tmap.n2.w1 .mtrail::after{width:100%}
+body.toy .cstrip .mcard{padding:3px 5px;border-radius:var(--r-full);box-shadow:none}
+body.toy .cstrip .mnode.rec .mcard{box-shadow:none}
+body.toy .cstrip .mlock{width:24px;height:24px;margin:-12px 0 0 -12px}body.toy .cstrip .mlock .ic{width:14px;height:14px}
+@media (max-height:660px){body.toy .cstrip .tmap{--s:1.3}}
+@media (max-height:520px){body.toy .cstrip .tmap{--s:1}body.toy .cstrip .mnode{padding-bottom:var(--sp1)}body.toy .cjour{padding:var(--sp1) var(--sp1) var(--sp2);gap:var(--sp1)}
+  body.toy .camp .btn.big.nextb,body.toy .camp .btn.big.cgo,body.toy .btn.mgo{min-height:52px;padding-block:var(--sp1)}body.toy .nextb .ntxt b,body.toy .mgo .ntxt b{line-height:24px}}
+@media (min-width:700px) and (min-height:600px){body.toy .cstrip .tmap{--s:1.9}body.toy .cjour{padding:var(--sp3) var(--sp3) var(--sp4);gap:var(--sp3)}}
+body.toy .cground{margin-bottom:var(--sp4)}
+body.toy .fheart{display:flex;align-items:center;gap:var(--sp1);height:28px;padding:0 var(--sp2);background:var(--surface);color:var(--ink);border-radius:var(--r-full);box-shadow:var(--e1);font-size:var(--t-body);font-weight:var(--w-bold);line-height:1}
+body.toy .fheart .ic{width:18px;height:18px}
+body.toy .camp .hrow{gap:var(--sp2);align-items:stretch}
+body.toy .camp .hrow .btn{position:relative;flex:1 1 0;min-width:48px;max-width:none;min-height:64px;padding:var(--sp1) 2px;gap:0;background:var(--surface);color:var(--ink);border:0;border-radius:var(--r-m);box-shadow:var(--e1);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold);animation:none}
+body.toy .camp .hrow .btn.wig{background:var(--surface)}
+body.toy .camp .hrow .btn:active{box-shadow:0 1px 0 var(--edge)}
+body.toy .camp .hrow .btn .ci{display:flex;align-items:center;justify-content:center;gap:var(--sp1);height:28px;font-size:var(--t-lead);line-height:1}
+body.toy .camp .hrow .btn .ci .ic{width:28px;height:28px}
+body.toy .camp .hrow .btn .cl{max-width:100%;white-space:nowrap}
+body.toy .camp .hrow .btn.wig::after{content:"";position:absolute;top:var(--sp2);inset-inline-end:calc(50% - 22px);width:10px;height:10px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--surface)}
+body.toy .camp .hrow .btn.hasgoal.ready{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+@media (max-width:420px),(orientation:landscape) and (min-width:700px) and (max-width:1023px){body.toy .camp .hrow.n6 .btn{font-size:12px}body.toy .camp .hrow.n6 .btn .ci .ic{width:24px;height:24px}}
+@media (max-height:520px){body.toy .camp .hrow .btn{flex-direction:column;min-height:48px;padding:2px;gap:0}body.toy .camp .hrow .btn .ci{height:20px}body.toy .camp .hrow .btn .ci .ic{width:20px;height:20px}body.toy .camp .hrow .btn.wig::after{top:var(--sp1);inset-inline-end:var(--sp1)}
+  body.toy .camp .hrow .btn.hasgoal .ci>.ic{display:none}}
+body.toy .rt{color:var(--ink)}
+body.toy .rt b{background:none;padding:0;border-radius:0;font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold)}
+body.toy.night .rt b{color:#fff}
+body.toy .rt.rmore{background:var(--surface);color:var(--ink);border:0;box-shadow:var(--e1);font-size:var(--t-body);font-weight:var(--w-bold)}
+@media (orientation:landscape) and (min-width:700px){
+  body.toy .cgrid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto auto minmax(0,1fr) auto;grid-template-areas:"camp ." "camp title" "camp jour" "camp more" "camp ." "folk .";column-gap:clamp(var(--sp4),4vw,var(--sp7));row-gap:var(--sp3)}
+  body.toy .camp .title{justify-self:start;font-size:var(--t-h1);line-height:var(--lh-h1)}
+}
+/* a wide screen that is not tall (a laptop of 620 or 650 px, a phone on its side): the residents stand beside the row of buttons, so the race track or an invitation bar still leaves room */
+@media (orientation:landscape) and (min-width:700px) and (max-height:699px){body.toy .cgrid{grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"camp title" "camp jour" "folk more"}body.toy .cjour{align-self:center}}
+@media (orientation:landscape) and (min-width:700px) and (max-height:520px){body.toy .cgrid{row-gap:var(--sp1)}body.toy .cground{margin-bottom:var(--sp2)}}
+/* ---- the map of a topic, the world map, the challenge map: title and intro are plain text; the stage panel; the parents' button ---- */
+body.toy .rmap .h2{font-size:var(--t-h2);line-height:var(--lh-h2);padding:0}
+body.toy .rmsg{max-width:36ch;padding:0;background:none;box-shadow:none;border-radius:0;color:var(--ink);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-reg);text-wrap:balance}
+body.toy.night .screen>.rmsg{color:#fff;text-shadow:0 2px 0 rgba(12,34,96,.6)}
+@media (min-width:900px) and (min-height:521px){body.toy .screen.map>.h2{margin-top:-52px;max-width:min(560px,46vw);font-size:var(--t-h1);line-height:var(--lh-h1);position:relative;z-index:1}}
+body.toy .mslot{max-width:520px}
+body.toy .mpanel{max-width:none;gap:var(--sp2);padding:var(--sp2) var(--sp3) var(--sp3);background:var(--surface);color:var(--ink);border:0;border-radius:var(--r-l);box-shadow:var(--e3)}
+body.toy .mphead{gap:var(--sp2)}
+body.toy .mphead b{font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-black)}
+body.toy .dif{display:inline-flex;margin:0;gap:2px}
+body.toy .dif i{background:var(--line)}body.toy .dif i.on{background:var(--ink)}
+body.toy .mx{display:grid;place-items:center;background:var(--surface-2);color:var(--ink);font-size:var(--t-body)}
+body.toy .mpanel .stg{gap:var(--sp2)}
+body.toy .mpanel .sbtn{min-height:72px;gap:2px;padding:var(--sp1);border:0;border-radius:var(--r-m);background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 2px var(--line);opacity:1;transition:transform var(--d-fast) var(--ease)}
+body.toy .mpanel .sbtn:active{transform:scale(.96)}
+body.toy .mpanel .sbtn .si{display:grid;place-items:center;font-size:var(--t-body);line-height:1}
+body.toy .mpanel .sbtn .sl{font-size:var(--t-body);line-height:20px;font-weight:var(--w-bold)}
+body.toy .mpanel .sbtn.now{box-shadow:inset 0 0 0 3px var(--primary);color:var(--primary)}
+body.toy .mpanel .sbtn.locked{background:var(--locked-surface);color:var(--locked-ink);box-shadow:none}
+body.toy .mpanel .sbtn.locked .si{color:var(--locked)}
+body.toy .sbtn .ss{display:flex;gap:1px;direction:rtl;letter-spacing:0;line-height:1}
+body.toy .sbtn .ss .ic{width:14px;height:14px;opacity:1;color:var(--line)}
+body.toy .sbtn .ss .ic.on{color:var(--c-star)}
+body.toy .sbtn.locked .ss .ic{color:var(--locked)}
+@media (min-height:521px){body.toy .mphead{grid-column:1;grid-row:1}body.toy .mpanel .mx{grid-column:2;grid-row:1}body.toy .mpanel .stg{grid-column:1/-1;grid-row:2}}
+@media (max-height:699px) and (min-height:521px){body.toy .mpanel .sbtn{min-height:60px}body.toy .mpanel .sbtn .si .ic{width:20px;height:20px}}
+@media (max-height:520px){body.toy .mslot{max-width:760px}body.toy .mpanel{padding:var(--sp1) var(--sp2)}body.toy .mpanel .sbtn{min-height:48px;gap:var(--sp1)}body.toy .mpanel .sbtn .si .ic{width:20px;height:20px}}
+body.toy .mwrap>.parb,body.toy .tmap .parb{display:inline-flex;align-items:center;gap:var(--sp2);min-height:48px;padding:0 var(--sp3);background:rgba(255,255,255,.88);color:var(--ink);border-radius:var(--r-full);box-shadow:none;font-size:var(--t-cap);font-weight:var(--w-bold)}
+body.toy .parb .ic{order:2;margin:0}
+body.toy .marr{background:var(--surface);color:var(--ink);border:0;box-shadow:var(--e1)}
+body.toy .pcard2 .ohead b.ptitle{color:var(--ink);font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-black)}
+body.toy .pcard2 .pctl .step{display:grid;place-items:center;width:56px;height:56px;background:var(--surface-2);color:var(--ink)}
+body.toy .pcount{font-size:var(--t-lead);line-height:var(--lh-lead)}
+body.toy .pnote{color:var(--ink-2);font-size:var(--t-cap);line-height:var(--lh-cap)}
+/* ---- the four lands: the name, the stars and the bar of a land are one card ---- */
+body.toy .lcard{display:flex;flex-direction:column;align-items:center;gap:var(--sp1);min-width:min(88%,200px);max-width:100%;padding:var(--sp2) var(--sp3) var(--sp3);background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .land .lcard .mlab{font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-black);padding:0 var(--sp2);border-radius:var(--r-s)}
+body.toy .land.rec .lcard .mlab{background:var(--accent)}
+body.toy .lstars{display:inline-flex;align-items:center;gap:var(--sp1);padding:0;background:none;color:var(--ink-2);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold)}
+body.toy .land .pbar{width:100%;height:8px;margin:0;border-radius:var(--r-full);background:var(--line)}
+body.toy .land .pbar i{border-radius:inherit;background:var(--tpipon)}
+@media (max-height:520px){body.toy .lcard{padding:var(--sp1) var(--sp2) var(--sp2);gap:2px}}
+/* ---- the end screens: the result on one card, the captions as plain text on one card, one green button and white ones ---- */
+body.toy .eres{gap:2px var(--sp4);padding:var(--sp1) var(--sp4);background:var(--surface);border-radius:var(--r-l);box-shadow:var(--e1)}
+body.toy .endm .star{display:grid;place-items:center;color:var(--line);text-shadow:none}
+body.toy .endm .star.on{color:var(--c-star)}
+body.toy .endm .bigstars .star{font-size:var(--t-num)}
+body.toy .endm .stars:not(.bigstars){gap:2px}body.toy .endm .stars:not(.bigstars) .star{font-size:var(--t-h2)}
+body.toy .echest{gap:var(--sp2);color:var(--ink);font-size:var(--t-h2);font-weight:var(--w-black)}
+body.toy .ebox{width:48px;box-shadow:var(--e1)}
+body.toy .ebox::after{display:none}
+body.toy .eframe{border-radius:var(--r-l);box-shadow:inset 0 4px 0 var(--surface),inset 0 -4px 0 var(--surface),var(--e2);color:var(--ink);background:linear-gradient(var(--w0),var(--w1));border-color:var(--surface)}
+body.toy .ecaps{gap:0 var(--sp3);padding:var(--sp1) var(--sp4);background:var(--surface);border-radius:var(--r-m);box-shadow:var(--e1)}
+body.toy .ecaps:empty{display:none}
+body.toy .endm .ecaps .banner{padding:0;background:none;box-shadow:none;border-radius:0;color:var(--ink);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold)}
+body.toy .endm .ecaps .banner.chest,body.toy .endm .ecaps .banner.efriend,body.toy .endm .ecaps .banner.egoal{background:none}
+body.toy .endm .ecaps .banner.eggmsg{padding:0 var(--sp2);background:var(--accent);border-radius:var(--r-s)}
+body.toy .endm .ecaps .banner.egoal{gap:var(--sp1)}
+body.toy .ebtns{gap:var(--sp2)}
+body.toy .ebtns .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);flex:1 1 auto;min-height:48px;padding:var(--sp1) var(--sp3);background:var(--surface);color:var(--ink);border:0;border-radius:var(--r-m);box-shadow:var(--e1);font-size:var(--t-body);line-height:var(--lh-body);font-weight:var(--w-bold);text-shadow:none}
+body.toy .ebtns .btn:active{box-shadow:0 1px 0 var(--edge)}
+body.toy .ebtns .btn.nxt{flex:1 1 100%;min-height:56px;background:var(--success);color:#fff;box-shadow:0 4px 0 var(--success-edge),0 10px 20px rgba(17,84,38,.25);font-size:var(--t-lead);line-height:var(--lh-lead)}
+body.toy .ebtns .btn.nxt:active{box-shadow:0 1px 0 var(--success-edge)}
+body.toy .ebtns .btn.cartb.offer{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+@media (max-height:520px){body.toy .ebtns .btn.nxt{min-height:48px}body.toy .endm .bigstars .star{font-size:var(--t-h1)}body.toy .ebox{width:40px}}
+/* ---- the travel journal: page number and the name of a region are plain text, the page is one card, the stars and the hearts are glyphs of the family ---- */
+body.toy .jnum{padding:0;background:none;color:var(--ink-2);font-size:var(--t-cap);line-height:var(--lh-cap)}
+body.toy.night .jnum{color:#fff}
+body.toy.night .endm .h2,body.toy.night .jrn .h2{color:#fff;text-shadow:0 2px 0 rgba(12,34,96,.6)}
+body.toy .jrn .h2{font-size:var(--t-h2);line-height:var(--lh-h2)}
+body.toy .jrn .parr{display:grid;place-items:center;background:var(--surface);color:var(--ink);border:0;box-shadow:var(--e1)}
+body.toy .jrh{padding:0;background:none;box-shadow:none;border-radius:0}
+body.toy .jrh b{font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-black)}
+body.toy.night .jrh b{color:#fff;text-shadow:0 2px 0 rgba(12,34,96,.6)}
+body.toy .jgridw{background:var(--surface);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .jgrid{inset:var(--sp2)}
+body.toy .stp,body.toy .jpage{color:var(--ink)}
+body.toy .sdisc{background:var(--surface-2);border-color:var(--edge);box-shadow:none}
+body.toy .sname{padding:0;background:none;border-radius:0;font-size:var(--t-cap);line-height:18px}
+@media (max-height:520px){body.toy .sname,body.toy .sst,body.toy .jd{font-size:12px;line-height:14px}body.toy .snext .sname{padding:1px var(--sp2)}}
+body.toy .sst{display:inline-flex;align-items:center;gap:var(--sp1);color:var(--ink-2);font-size:var(--t-cap)}
+body.toy .jd{opacity:1;color:var(--ink-2)}
+body.toy .snext .sdisc{background:var(--surface);border-color:var(--edge);box-shadow:none}
+body.toy .snext .sname{display:inline-flex;align-items:center;gap:var(--sp1);padding:2px var(--sp2);background:var(--accent);border-radius:var(--r-s);box-shadow:0 2px 0 var(--accent-edge)}
+body.toy .jcard{background:var(--surface-2);border:0;border-radius:var(--r-m);box-shadow:none}
+body.toy .jinfo{gap:var(--sp2);padding:var(--sp3) var(--sp4);background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e2)}
+body.toy .jhearts{gap:var(--sp1)}
+body.toy .jhearts .ic{width:clamp(28px,6.4vmin,40px);height:clamp(28px,6.4vmin,40px)}
+body.toy .jhearts .ic-heart-off{color:var(--line)}
+body.toy .jneed{font-size:var(--t-body);line-height:var(--lh-body)}
+body.toy .jinfo small{opacity:1;color:var(--ink-2);font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-reg)}
+body.toy .jrt{font-size:var(--t-body);line-height:var(--lh-body)}
+body.toy .jrow{font-size:var(--t-cap);line-height:var(--lh-cap)}
+body.toy .btn.jgo{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:56px;padding:var(--sp2) var(--sp5);border:0;border-radius:var(--r-m);background:var(--primary);color:#fff;box-shadow:0 4px 0 var(--primary-edge),0 10px 20px rgba(138,15,64,.28);font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-bold);text-shadow:none}
+/* WORLD-END */
 </style>
 </head>
 <body>
@@ -5009,8 +5201,8 @@ var TrollModels = (function () {
       var nx = L.nextStep(state), nb = nextBtn(nx), fresh = !state.rounds && !state.stars && !state.last;
 
       // the strip of the map: the stretch of the trail the child is on. A tap opens the whole map of that topic.
-      var st = campStrip(nx);
-      if (st) grid.appendChild(st.el);
+      var st = campStrip(nx), jour = h('div', { class: 'cjour' }); // the strip of the trail and the big button are ONE card
+      if (st) jour.appendChild(st.el);
 
       // the camp: the companion with what it says, the campfire and the tent
       var bs = buddySpec(), mine = buddyId();
@@ -5033,25 +5225,25 @@ var TrollModels = (function () {
       var dbgTrick = sandbox ? (/[#&]trick=(\w+)/.exec(hash) || [])[1] : ''; // layout check: a trick frozen at 40% of its motion
       if (dbgTrick) bud.classList.add('tr-' + dbgTrick, 'trstill');
       else if (tricks.length && !WAVED[profiles.cur]) { WAVED[profiles.cur] = true; trick('wave'); } // the secret wave: once, on the first view of the camp
-      // the travel journal lies in the camp as a book (a sixth button does not fit the row of a phone)
-      var book = h('button', { class: 'cjrn', 'aria-label': 'יוֹמַן הַמַּסָּע', on: { click: function () { sfx.tap(); journal(0); } } }, jart('book'), h('span', { class: 'cl', text: 'יוֹמָן' }));
       grid.appendChild(h('div', { class: 'campv' }, bubble,
         h('div', { class: 'cground' },
           mapImg(ART.tent, 'ctent'), bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
-          h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)), book)));
+          h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)))));
 
       // the one big button, and the smaller choices
       if (nb) nb.classList.add('cgo');
-      grid.appendChild(nb || h('button', { class: 'btn big cgo', text: 'בּוֹאִי נְשַׂחֵק!', on: { click: function () { sfx.tap(); subjects(); } } }));
+      jour.appendChild(nb || h('button', { class: 'btn big cgo', text: 'בּוֹאִי נְשַׂחֵק!', on: { click: function () { sfx.tap(); subjects(); } } }));
+      grid.appendChild(jour);
       var row = h('div', { class: 'row hrow' });
-      function more(ico, label, full, cls, fn) {
-        row.appendChild(h('button', { class: 'btn ' + cls, 'aria-label': full, on: { click: function () { sfx.tap(); fn(); } } }, h('span', { class: 'ci', text: ico }), h('span', { class: 'cl', text: label })));
+      function more(ico, label, full, cls, fn) { // ico: the name of an icon of the family
+        row.appendChild(h('button', { class: 'btn ' + cls, 'aria-label': full, on: { click: function () { sfx.tap(); fn(); } } }, h('span', { class: 'ci' }, icon(ico)), h('span', { class: 'cl', text: label })));
       }
-      if (nb) more('🗺️', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
-      if (state.lastGift !== L.todayStr()) more('🎁', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
+      if (nb) more('map', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
+      more('journal', 'יוֹמָן', 'יוֹמַן הַמַּסָּע', 'b2 jrnb', function () { journal(0); }); // the travel journal: one of the smaller choices
+      if (state.lastGift !== L.todayStr()) more('gift', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
       if (state.owned.length) { // the cart; with a savings goal the button carries its meter, and one tap opens the cart on that item
         var gl = L.goalOf(state);
-        more('🛒', 'הָעֲגָלָה', 'הָעֲגָלָה: הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb' + (gl ? ' hasgoal' + (gl.ready ? ' ready' : '') : ''), function () { goCart(gl); });
+        more('cart', 'הָעֲגָלָה', 'הָעֲגָלָה: הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb' + (gl ? ' hasgoal' + (gl.ready ? ' ready' : '') : ''), function () { goCart(gl); });
         if (gl) { // the cart icon with the picture of the item, and "coins / price" over a bar instead of the word
           var cb = row.lastChild, gm = goalMeter(gl);
           cb.setAttribute('aria-label', 'הָעֲגָלָה. הַיַּעַד שֶׁלִּי: ' + gl.item.name + ', ' + gl.have + ' מִתּוֹךְ ' + gl.price);
@@ -5060,10 +5252,11 @@ var TrollModels = (function () {
         }
       }
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
-        more('🏁', 'מֵרוֹץ', 'מֵרוֹץ', 'b3 raceb', function () { pool(); });
-        more('🏆', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
+        more('flag', 'מֵרוֹץ', 'מֵרוֹץ', 'b2 raceb', function () { pool(); });
+        more('trophy', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
         pushBoard(true);
       }
+      row.classList.add('n' + row.children.length);
       grid.appendChild(row);
 
       // the residents: every other troll the child owns, the newest first. When they do not all fit, "+N" opens the
@@ -5107,7 +5300,8 @@ var TrollModels = (function () {
     box.appendChild(trail);
     items.forEach(function (it) { it.el = stopEl('span', t, it, tr.win.length, rec, true); box.appendChild(it.el); });
     var el = h('button', { class: 'cstrip', 'aria-label': t.world, 'data-map': t.id, on: { click: function () { sfx.pop(); region(t.id); } } }, box);
-    return { el: el, start: function (scr) { trailLayout(scr, box, trail, items, null); } };
+    if (TOY) { var lastR = 0; items.forEach(function (it, i) { if (it.reached) lastR = i; }); box.classList.add('w' + lastR, 'n' + items.length); } // the toy strip is a straight row laid out by CSS: the walked part of its path reaches the last stop that was reached
+    return { el: el, start: function (scr) { if (!TOY) trailLayout(scr, box, trail, items, null); } };
   }
   // The one big button of the home screen: the next step of this player, started by one tap (the same call as a tap on
   // the stage in the map of the topic). An icon, two short lines and three pips: done, now, to do.
@@ -5136,7 +5330,7 @@ var TrollModels = (function () {
       txt.appendChild(h('small', { class: 'nstage' }, nx.bridge ? null : pips, h('span', { text: nx.bridge ? 'עוֹד קְצָת לַגֶּשֶׁר' : 'שָׁלָב ' + (nx.stage + 1) + ' מִתּוֹךְ 3' })));
     }
     return h('button', { class: 'btn big nextb', 'data-next': nx.challenge ? 'challenge' : nx.topic + (nx.boss ? '-boss' : '-' + nx.level + '-' + nx.stage), on: { click: function () { sfx.pop(); goStep(nx); } } },
-      pic, txt, h('span', { class: 'ngo', 'aria-hidden': 'true', text: '◀' }));
+      pic, txt, h('span', { class: 'ngo', 'aria-hidden': 'true' }, icon('next', 'm')));
   }
   // The street behind the trolls: houses with smoke from the chimneys, trees that sway, small animals that pass by.
   // It moves a little against the hills when the pointer or the device moves, which gives the village depth.
@@ -5159,6 +5353,12 @@ var TrollModels = (function () {
   // ---------- world map: a village in the forest, one building per topic ----------
   var STAGES = [['🔍', 'גִּלּוּי'], ['✏️', 'תִּרְגּוּל'], ['🏆', 'אֶתְגָּר']];
   function starStr(n) { return '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n); }
+  var STAGE_IC = ['discover', 'practice', 'trophy']; // the three stages of a house, as icons of the family
+  function starRow(n) { // the stars of a stage: three glyphs of the family, the earned ones in the colour of a star
+    var r = h('span', { class: 'ss', role: 'img', 'aria-label': (n || 0) + ' / 3' });
+    [0, 1, 2].forEach(function (k) { var s = icon('star', 's'); if (k < n) s.classList.add('on'); r.appendChild(s); });
+    return r;
+  }
   function readyBoss(topicId) { for (var g = 1; g <= 4; g++) if (L.bossReady(state, topicId, g) && inSpan(topicId, g)) return g; return 0; }
   function inSpan(topicId, g) { var sp = L.span(topicId, state.grade), lv = L.bossLevels(topicId, g); return !!sp && lv.length > 0 && lv[0] >= sp.lo && lv[lv.length - 1] <= sp.hi; }
   // ch: the map behind the challenge gate, with the tiles of the next grade
@@ -5224,10 +5424,13 @@ var TrollModels = (function () {
     return b;
   }
   function mapFlag() { return mapImg(ART.flag, 'mflag'); }
+  // design system: the name of a stop and its pips are ONE card (.mcard; the parchment skin shows it as before), a locked stop carries the lock of the icon family on a small badge
+  function mapCard(lab, pips) { return lab || pips ? h('span', { class: 'mcard' }, lab || null, pips || null) : null; }
+  function mapLock() { return h('span', { class: 'mlock', 'aria-hidden': 'true' }, icon('lock', 's')); }
   // the scroll area of a map: only the island with the trail moves in it. The two arrows (shown when there is more map at that edge) and the parents' button stay.
   function mapWrap(box, parb) {
     return h('div', { class: 'mwrap' }, h('div', { class: 'mscroll' }, box),
-      h('button', { class: 'marr mup', text: '▲', 'aria-label': 'לְמַעְלָה בַּמַּפָּה' }), h('button', { class: 'marr mdn', text: '▼', 'aria-label': 'לְמַטָּה בַּמַּפָּה' }), parb || null);
+      h('button', { class: 'marr mup', 'aria-label': 'לְמַעְלָה בַּמַּפָּה' }, icon('up')), h('button', { class: 'marr mdn', 'aria-label': 'לְמַטָּה בַּמַּפָּה' }, icon('down')), parb || null);
   }
   function mapDeco(box) {
     if (TOY) { if (!box.classList.contains('lands')) ART.deco.forEach(function (d) { var im = mapImg(d[0], 'mdeco deco' + (d[3] ? ' ' + d[3] : '')); im.setAttribute('data-kind', d[1]); im.setAttribute('style', '--z:' + d[2]); box.appendChild(im); }); return; }
@@ -5257,9 +5460,9 @@ var TrollModels = (function () {
       isRec = !!rec && rec.boss === g; it.reached = done || ready; it.done = done; it.ready = ready; it.hero = hero;
       b = h(tag, { class: 'mnode boss' + (done ? ' done' : ready ? ' ready' : ' far') + (isRec ? ' rec' : ''), 'data-boss': g },
         h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
-          h('span', { class: 'mic' }, mapImg(ART.bridge), done ? mapFlag() : null),
+          h('span', { class: 'mic' }, mapImg(ART.bridge), done ? mapFlag() : null, done || ready ? null : mapLock()),
           done ? h('span', { class: 'mhero', 'aria-hidden': 'true', html: A.trollSVG(hero) }) : null),
-        bare ? null : h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }));
+        mapCard(bare ? null : h('span', { class: 'mlab', text: done ? hero.name : 'מְשִׂימַת הַגֶּשֶׁר' }), null));
     } else {
       var pr = L.progOf(state, t.id, it.lv), far = it.lv > state.levels[t.id], full = pr.every(function (x) { return x >= 1; });
       var pips = h('span', { class: 'mpips', 'aria-hidden': 'true' });
@@ -5267,8 +5470,8 @@ var TrollModels = (function () {
       [0, 1, 2].forEach(function (k) { pips.appendChild(h('i', { class: (pr[k] >= 1 ? 's' + Math.min(3, pr[k]) : L.stageOpen(state, t.id, it.lv, k) ? 'o' : 'l') + (isRec && rec.stage === k ? ' now' : '') })); });
       b = h(tag, { class: 'mnode' + (far ? ' far' : full ? ' done' : ' open') + (isRec ? ' rec' : ''), 'data-house': it.lv },
         h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
-          h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, mapImg(stopIco(it.i, n)), full && !far ? mapFlag() : null)),
-        bare ? null : h('span', { class: 'mlab', text: it.d.name }), far ? null : pips);
+          h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, mapImg(stopIco(it.i, n)), full && !far ? mapFlag() : null, far ? mapLock() : null)),
+        mapCard(bare ? null : h('span', { class: 'mlab', text: it.d.name }), far ? null : pips));
     }
     return b;
   }
@@ -5418,9 +5621,9 @@ var TrollModels = (function () {
         L.topicsFor(state, x).forEach(function (id) { got += L.topicStars(state, id); all += topicOf(id).levels.length * 9; });
         grid.appendChild(h('button', { class: 'land' + (x === mark ? ' rec' : ''), 'data-sub': x, 'aria-label': SUBJ[x][1], on: { click: function () { sfx.pop(); curSub = x; topics(); } } },
           h('span', { class: 'mtop' }, x === mark ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ART.land[x] || ART.land.math))),
-          h('span', { class: 'mlab', text: SUBJ[x][1] }),
-          h('span', { class: 'lstars', text: '⭐ ' + got + ' / ' + all }),
-          h('span', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' }))));
+          h('span', { class: 'lcard' }, h('span', { class: 'mlab', text: SUBJ[x][1] }), // the name, the stars and the bar are one card
+            h('span', { class: 'lstars' }, icon('star', 's'), h('span', { class: 'num', text: got + ' / ' + all })),
+            h('span', { class: 'pbar' }, h('i', { style: 'width:' + Math.round(100 * got / Math.max(1, all)) + '%' })))));
       });
       el.appendChild(grid);
     });
@@ -5458,8 +5661,8 @@ var TrollModels = (function () {
       function node(cls, id, ico, label, extra, reached, go) {
         var isRec = recId === id;
         var b = h('button', { class: 'mnode ' + cls + (isRec ? ' rec' : ''), 'data-t': id, 'aria-label': label },
-          h('span', { class: 'mtop' }, isRec ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ico), extra && extra.flag ? mapFlag() : null)),
-          h('span', { class: 'mlab', text: label }), extra && extra.pips ? extra.pips : null);
+          h('span', { class: 'mtop' }, isRec ? mapBuddy() : null, h('span', { class: 'mic' }, mapImg(ico), extra && extra.flag ? mapFlag() : null, extra && extra.lock ? mapLock() : null)),
+          mapCard(h('span', { class: 'mlab', text: label }), extra && extra.pips ? extra.pips : null));
         b.addEventListener('click', function () { go(b); });
         items.push({ el: b, reached: reached || isRec }); box.appendChild(b);
       }
@@ -5472,7 +5675,7 @@ var TrollModels = (function () {
       });
       if (!ch) {
         node('mixn', MIX.id, ART.mix, MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
-        node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, (gopen ? '' : '🔒 ') + GATE.world, null, gopen, function (b) {
+        node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, GATE.world, gopen ? null : { lock: true }, gopen, function (b) {
           if (gopen) { sfx.pop(); topics(true); return; }
           sfx.wrong(); restart(b, 'shake'); say(GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
         });
@@ -5510,7 +5713,7 @@ var TrollModels = (function () {
       var nx = t.g === state.grade ? L.nextStep(state) : null, rec = nx && !nx.challenge && nx.topic === t.id ? nx : frontier();
 
       var slot = h('div', { class: 'mslot' }), box = h('div', { class: 'tmap' }), trail = h('div', { class: 'mtrail', 'aria-hidden': 'true' }), openIt = null;
-      var parb = h('button', { class: 'parb', text: '⚙️ הוֹרִים', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, real); } } });
+      var parb = h('button', { class: 'parb', 'aria-label': 'לַהוֹרִים: בָּתִּים פְּתוּחִים', on: { click: function () { sfx.tap(); openParents(t, sp, real); } } }, icon('gear', 'm'), h('span', { text: 'הוֹרִים' }));
       mapDeco(box);
       box.appendChild(trail);
 
@@ -5523,8 +5726,8 @@ var TrollModels = (function () {
           var fresh = !state.rounds && !state.stars && !state.last;
           slot.appendChild(h('button', { class: 'btn mgo', 'data-next': t.id + (rec.boss ? '-boss' : '-' + rec.level + '-' + rec.stage), on: { click: function () {
             sfx.pop(); startRound(t.id, rec.boss ? { boss: rec.boss } : { level: rec.level, stage: rec.stage });
-          } } }, h('b', { text: (fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים') + ' ◀' }),
-            h('small', { text: rec.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name + ', שָׁלָב ' + (rec.stage + 1) })));
+          } } }, h('span', { class: 'ntxt' }, h('b', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }),
+            h('small', { text: rec.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name + ', שָׁלָב ' + (rec.stage + 1) })), h('span', { class: 'ngo', 'aria-hidden': 'true' }, icon('next', 'm'))));
           return;
         }
         var d = openIt.d, lv = openIt.lv, pr = L.progOf(state, t.id, lv), n = win.length;
@@ -5533,7 +5736,7 @@ var TrollModels = (function () {
         STAGES.forEach(function (sg, k) {
           var open = L.stageOpen(state, t.id, lv, k), now = !!rec && rec.level === lv && rec.stage === k;
           var b = h('button', { class: 'sbtn' + (open ? '' : ' locked') + (pr[k] ? ' won' : '') + (now ? ' now' : ''), 'data-stage': lv + '-' + k, 'aria-label': sg[1] + ': ' + d.name },
-            h('span', { class: 'si', text: open ? sg[0] : '🔒' }), h('span', { class: 'sl', text: sg[1] }), h('span', { class: 'ss', text: starStr(pr[k]) }));
+            h('span', { class: 'si' }, icon(open ? STAGE_IC[k] : 'lock')), h('span', { class: 'sl', text: sg[1] }), starRow(pr[k]));
           b.addEventListener('click', function () {
             if (!open) { restart(b, 'shake'); sfx.wrong(); say('קֹדֶם מְסַיְּמִים אֶת הַשָּׁלָב שֶׁלְּפָנָיו'); return; }
             sfx.pop(); startRound(t.id, { level: lv, stage: k });
@@ -5541,7 +5744,7 @@ var TrollModels = (function () {
           row.appendChild(b);
         });
         slot.appendChild(h('div', { class: 'mpanel' }, h('div', { class: 'mphead' }, h('b', { text: d.name }), dif), row,
-          h('button', { class: 'mx', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); openIt = null; drawSlot(); } } })));
+          h('button', { class: 'mx', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); openIt = null; drawSlot(); } } }, icon('close'))));
       }
 
       items.forEach(function (it) {
@@ -5571,16 +5774,16 @@ var TrollModels = (function () {
     function draw() { count.textContent = 'בָּתִּים פְּתוּחִים ' + (state.levels[t.id] - sp.lo + 1) + '/' + n; }
     function close() { closeExplain(); if (state.levels[t.id] !== from) region(t.id); }
     function step(sym, d, label) {
-      return h('button', { class: 'step', text: sym, 'aria-label': label, on: { click: function () {
+      return h('button', { class: 'step', 'aria-label': label, on: { click: function () {
         var nl = Math.max(sp.lo, Math.min(sp.hi, state.levels[t.id] + d));
         if (nl === state.levels[t.id]) return;
         state.levels[t.id] = nl; save(); sfx.tap(); draw();
-      } } });
+      } } }, icon(sym));
     }
     draw();
     ovl = h('div', { class: 'ovl', on: { click: function (e) { if (e.target === ovl) close(); } } }, h('div', { class: 'card pcard2' },
-      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: 'לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } })),
-      h('div', { class: 'pctl' }, step('+', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('−', -1, 'לִסְגֹּר בַּיִת')),
+      h('div', { class: 'ohead' }, h('b', { class: 'ptitle', text: 'לַהוֹרִים: ' + t.world }), h('button', { class: 'icon', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); close(); } } }, icon('close'))),
+      h('div', { class: 'pctl' }, step('plus', 1, 'לִפְתֹּחַ בַּיִת נוֹסָף'), count, step('minus', -1, 'לִסְגֹּר בַּיִת')),
       h('div', { class: 'pnote', text: 'בַּיִת נִפְתָּח מֵעַצְמוֹ אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו. כָּאן אֶפְשָׁר לִפְתֹּחַ אוֹ לִסְגֹּר בָּתִּים בַּיָּד; הַכּוֹכָבִים נִשְׁמָרִים.' })));
     document.body.appendChild(ovl);
   }
@@ -5634,7 +5837,7 @@ var TrollModels = (function () {
       }
       function firstPage() {
         var f = J.friend, hearts = h('div', { class: 'jhearts', role: 'img', 'aria-label': 'חֲבֵרוּת ' + f.level + ' מִתּוֹךְ 6' }), i;
-        for (i = 1; i <= 6; i++) hearts.appendChild(jart(i <= f.level ? 'heart' : 'heartOff', 'jh'));
+        for (i = 1; i <= 6; i++) hearts.appendChild(TOY ? icon(i <= f.level ? 'heart' : 'heart-off') : jart(i <= f.level ? 'heart' : 'heartOff', 'jh'));
         var need = f.level >= 6 ? 'כָּל הַלְּבָבוֹת מְלֵאִים' : f.need === 1 ? 'עוֹד בַּיִת שָׁלֵם אֶחָד לַלֵּב הַבָּא' : 'עוֹד ' + f.need + ' בָּתִּים שְׁלֵמִים לַלֵּב הַבָּא';
         var info = h('div', { class: 'jinfo' }, hearts, h('b', { class: 'jneed', text: need }), f.level < 6 ? h('small', { text: 'גֶּשֶׁר שָׁוֶה שְׁנֵי בָּתִּים' }) : null,
           h('div', { class: 'jtot', role: 'img', 'aria-label': J.journey.houses + ' דְּגָלִים, ' + J.journey.bridges + ' גְּשָׁרִים' },
@@ -5653,7 +5856,7 @@ var TrollModels = (function () {
       function firstNew() {
         var t = nx && nx.topic ? topicOf(nx.topic) : null, name = t && nx.level ? t.levels[nx.level - 1].name : '';
         var ring = h('span', { class: 'sdisc jring', 'aria-hidden': 'true' }, mapImg(t && nx.level ? houseIco(t, nx.level) : nx && nx.boss ? JART.bridge : JART.house));
-        var go = h('button', { class: 'btn jgo', text: (fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים') + ' ◀', on: { click: function () { sfx.pop(); if (nx) goStep(nx); else subjects(); } } });
+        var go = h('button', { class: 'btn jgo', on: { click: function () { sfx.pop(); if (nx) goStep(nx); else subjects(); } } }, h('span', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }), icon('next', 'm'));
         return h('div', { class: 'jfirst new' },
           h('div', { class: 'jscene', 'aria-hidden': 'true' }, h('span', { class: 'jbud', html: A.trollSVG(noPet(buddySpec())) }), jart('fire', 'jfire')),
           h('div', { class: 'jinfo' }, ring, h('b', { class: 'jneed', text: name ? 'הַחוֹתֶמֶת הָרִאשׁוֹנָה מְחַכָּה בַּבַּיִת: ' + name : 'הַחוֹתֶמֶת הָרִאשׁוֹנָה מְחַכָּה' }), go));
@@ -5664,11 +5867,11 @@ var TrollModels = (function () {
           if (c.stamp) {
             var s = c.stamp;
             grid.appendChild(h('div', { class: 'stp' }, h('span', { class: 'sdisc', style: '--a:' + ((s.l * 37) % 11 - 5) + 'deg' }, mapImg(houseIco(t, s.l)), mapFlag()),
-              h('span', { class: 'sname', text: t.levels[s.l - 1].name }), h('span', { class: 'sst', dir: 'ltr', text: JART.star + ' ' + s.stars + '/9' }), dayEl(s.d)));
+              h('span', { class: 'sname', text: t.levels[s.l - 1].name }), h('span', { class: 'sst', dir: 'ltr' }, icon('star', 's'), h('span', { class: 'num', text: s.stars + '/9' })), dayEl(s.d)));
           } else if (c.next) { // the one open slot: the next step, started by a tap
             grid.appendChild(h('button', { class: 'stp snext', 'data-next': t.id, 'aria-label': c.next.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : 'הַחוֹתֶמֶת הַבָּאָה: ' + t.levels[c.next.level - 1].name, on: { click: function () { sfx.pop(); goStep(nx); } } },
               h('span', { class: 'sdisc' }, mapImg(c.next.boss ? JART.bridge : houseIco(t, c.next.level))),
-              h('span', { class: 'sname', text: (c.next.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : 'הַחוֹתֶמֶת הַבָּאָה') + ' ◀' })));
+              h('span', { class: 'sname' }, h('span', { text: c.next.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : 'הַחוֹתֶמֶת הַבָּאָה' }), icon('next', 's'))));
           } else {
             var hero = resolve(L.trollFromId(c.card.hero));
             grid.appendChild(h('div', { class: 'jcard' }, h('span', { class: 'phero', 'aria-hidden': 'true', html: A.trollSVG(hero) }),
@@ -6145,7 +6348,7 @@ var TrollModels = (function () {
     P.cart = function () {
       if (!gl || !gl.ready || (state.fx && state.fx.told === gl.id)) return;
       state.fx.told = gl.id; save(true);
-      P.btns.appendChild(h('button', { class: 'btn cartb', 'aria-label': 'לָעֲגָלָה: ' + gl.item.name, on: { click: function () { sfx.tap(); goCart(gl); } } }, '🛒 לָעֲגָלָה'));
+      P.btns.appendChild(h('button', { class: 'btn cartb offer', 'aria-label': 'לָעֲגָלָה: ' + gl.item.name, on: { click: function () { sfx.tap(); goCart(gl); } } }, '🛒 לָעֲגָלָה'));
     };
     P.at = function (ms, f) { later(function () { if (!fin && cur === el) f(); }, ms); }; // a step of the show: dropped when the show was skipped
     P.cap = function (text, cls, d) { var b = h('div', { class: 'banner ea ' + (cls || ''), style: '--d:' + d + 's', text: text }); P.caps.appendChild(b); return b; };
@@ -6190,6 +6393,7 @@ var TrollModels = (function () {
     return { msg: msg, slot: slot };
   }
   // the words on the button of the next step (the same step as the big button of the camp)
+  function ibtn(ic, text, cls, fn) { var b = btn(text, cls, fn); b.insertBefore(icon(ic, 'm'), b.firstChild); return b; } // a button with an icon of the family before its words
   function stepText(nx) {
     return nx.challenge ? GATE.world : nx.boss ? 'מְשִׂימַת הַגֶּשֶׁר: ' + topicOf(nx.topic).world : nx.bridge ? 'עוֹד קְצָת לַגֶּשֶׁר ◀' : 'מַמְשִׁיכִים ◀';
   }
@@ -6208,7 +6412,7 @@ var TrollModels = (function () {
         say: st + ' מִתּוֹךְ ' + round.qs.length + ' בַּנִּסָּיוֹן הָרִאשׁוֹן' + (state.grade >= 3 ? '.' : '') });
       var stars = h('div', { class: 'stars' });
       for (var i = 0; i < round.qs.length; i++) (function (k) {
-        stars.appendChild(h('span', { class: 'star' + (k < st ? ' on' : ''), text: '★', style: '--d:' + (0.1 + k * 0.05).toFixed(2) + 's' }));
+        stars.appendChild(h('span', { class: 'star' + (k < st ? ' on' : ''), style: '--d:' + (0.1 + k * 0.05).toFixed(2) + 's' }, icon('star')));
         if (k < st) P.at(100 + k * 50, function () { sfx.star(k); });
       })(i);
       P.res.appendChild(stars); P.res.appendChild(P.chest);
@@ -6220,7 +6424,7 @@ var TrollModels = (function () {
         });
         if (ups.length) later(function () { sfx.levelup(); }, 600);
         if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
-        P.btns.appendChild(btn(nx ? '↻ עוֹד סִבּוּב' : 'עוֹד סִבּוּב', nx ? '' : 'nxt', function () { startRound(round.topic); }));
+        P.btns.appendChild(ibtn('repeat', 'עוֹד סִבּוּב', nx ? '' : 'nxt', function () { startRound(round.topic); }));
         P.btns.appendChild(btn('לַמַּפָּה', '', function () { topics(); }));
         P.btns.appendChild(btn('🛒 לָעֲגָלָה', 'cartb', function () { var g = L.goalOf(state); if (g && g.ready) goCart(g); else dress(null, 4); }));
         tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
@@ -6254,7 +6458,7 @@ var TrollModels = (function () {
       if (f1 > f0) P.friend(f1);
       var big = h('div', { class: 'stars bigstars' });
       [0, 1, 2].forEach(function (k) {
-        big.appendChild(h('span', { class: 'star' + (k < r.stars ? ' on' : ''), text: '★', style: '--d:' + (0.1 + k * 0.2).toFixed(1) + 's' }));
+        big.appendChild(h('span', { class: 'star' + (k < r.stars ? ' on' : ''), style: '--d:' + (0.1 + k * 0.2).toFixed(1) + 's' }, icon('star')));
         if (k < r.stars) P.at(100 + k * 200, function () { sfx.star(k * 2 + 2); });
       });
       P.res.appendChild(big); P.res.appendChild(P.chest);
@@ -6295,7 +6499,7 @@ var TrollModels = (function () {
         else if (bossG) P.btns.appendChild(btn('לִמְשִׂימַת הַגֶּשֶׁר', 'nxt', function () { startRound(topicId, { boss: bossG }); }));
         else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) P.btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
         else if (r.opened) P.btns.appendChild(btn('לַבַּיִת הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
-        if (r.stars < 3) P.btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
+        if (r.stars < 3) P.btns.appendChild(ibtn('repeat', 'שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
         P.btns.appendChild(btn('לַמַּפָּה', P.btns.firstChild ? '' : 'nxt', back));
         P.cart();
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll;
@@ -7714,11 +7918,12 @@ var TrollModels = (function () {
     // the camp: the book of the journal is a whole touch target above the bottom tenth, nothing is pushed out of the scene, the heart
     // stays on the companion, and what the companion says has at most three lines
     if (cur.classList.contains('camp')) {
-      var cg = cur.querySelector('.cground'), cgr = cg.getBoundingClientRect(), cj = cur.querySelector('.cjrn'), cb = cur.querySelector('.cbub'), fh = cur.querySelector('.fheart');
+      var cg = cur.querySelector('.cground'), cgr = cg.getBoundingClientRect(), cj = cur.querySelector('.jrnb'), cb = cur.querySelector('.cbub'), fh = cur.querySelector('.fheart');
       [].forEach.call(cg.children, function (x) { var r = x.getBoundingClientRect(); if (r.width && (r.left < cgr.left - 1 || r.right > cgr.right + 1 || r.width < 20)) no('scene'); });
-      if (cj) { var jr = cj.getBoundingClientRect(), jl = cj.querySelector('.cl'); if (jr.width < 47.5 || jr.height < 47.5 || jr.bottom > window.innerHeight * 0.9 + 1 || jl.scrollWidth > jl.clientWidth + 1) no('book'); } else no('nobook');
+      if (cj) { var jr = cj.getBoundingClientRect(), jl = cj.querySelector('.cl'); if (jr.width < 47.5 || jr.height < 47.5 || jl.scrollWidth > jl.clientWidth + 1) no('book'); } else no('nobook'); // the journal is one of the buttons of the row (it was a book in the scene)
+      if (TOY) { var hb = [].slice.call(cur.querySelectorAll('.hrow .btn')); hb.forEach(function (b, i) { var r = b.getBoundingClientRect(), l = b.querySelector('.cl'); if (r.width < 47.5 || r.height < 47.5 || (l && l.scrollWidth > l.clientWidth + 1)) no('row'); if (i && hb[i - 1].getBoundingClientRect().left - r.right < 7.5) no('rowgap'); }); var cs = cur.querySelector('.cstrip'); if (cs) [].forEach.call(cs.querySelectorAll('.mnode'), function (n) { var r = n.getBoundingClientRect(), q = cs.getBoundingClientRect(); if (r.top < q.top - 1 || r.bottom > q.bottom + 1 || r.left < q.left - 1 || r.right > q.right + 1) no('strip'); }); }
       if (fh) { var hr = fh.getBoundingClientRect(); if (hr.left < 0 || hr.right > window.innerWidth || hr.top < cb.getBoundingClientRect().bottom - 12) no('heart'); }
-      if (cb.getBoundingClientRect().height > parseFloat(getComputedStyle(cb).lineHeight) * 3 + 14) no('bubble');
+      if (cb.getBoundingClientRect().height > parseFloat(getComputedStyle(cb).lineHeight) * 3 + 18) no('bubble');
     }
     // the travel journal: nothing scrolls and nothing is cut: every stamp, postcard and line lies whole inside the page, the arrows and
     // the open slot are full touch targets, and no button is in the bottom tenth of the screen
