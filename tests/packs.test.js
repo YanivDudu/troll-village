@@ -52,6 +52,7 @@ for (const file of files) {
         let q;
         try { q = L.makeQuestion(d.id, i + 1, L.seeded(k * 7919 + i)); } catch (e) { err(H + ': throws: ' + e.message); break; }
         keys.add(q.key); fmts[q.fmt] = 1;
+        if (L.padKind(q)) err(H + ': an exercise of a subject pack gets the calculation sheet: ' + q.text); // task "pad": packs get no sheet in this version
         if (['choice', 'tf', 'order'].indexOf(q.fmt) < 0) { err(H + ': unknown fmt ' + q.fmt); break; }
         if (!q.text && !q.svg && !q.say && !q.pic) err(H + ': an exercise with no text, drawing or spoken word');
         if (q.text.length > 90) err(H + ': question text longer than 90 chars: ' + q.text);

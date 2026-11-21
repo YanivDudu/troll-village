@@ -1197,6 +1197,49 @@ body.toy .snext .sdisc{background:rgba(255,255,255,.55);border-color:rgba(185,16
 body.toy .snext .sname{background:var(--tgold);box-shadow:0 2px 0 var(--te)}
 body.toy .jcard{background:#fff;box-shadow:0 3px 0 var(--te)}
 /* TOY-END */
+/* PAD-BEGIN ================= the calculation sheet (task "pad", docs/prompts/pad-spec.md) =================
+   A cream page in the look of the toy island, self-contained: it uses only the dimmed layer .ovl, none of the rules of the generic
+   overlay card. All sizes come from fitPad() as variables: --u a cell, --s a small cell, --k a key, --kc keys in a row. */
+.padc{--u:40px;--s:26px;--k:48px;--kc:6;--p:10px;--g:8px;flex:0 0 auto;display:flex;flex-direction:column;justify-items:center;align-items:center;gap:var(--g);padding:var(--p);max-width:100%;max-height:100%;overflow:hidden;direction:ltr;color:#3b2a55;font-weight:700;background:#fff8e6;border-radius:24px;box-shadow:inset 0 0 0 3px #fff,0 6px 0 #c9b9ea,0 14px 24px rgba(30,20,60,.3)}
+.padc>*{flex-shrink:0}
+.padc.sd{display:grid;grid-template-columns:auto auto;grid-template-areas:"h h" "m k";column-gap:12px}
+.padc.sh{grid-template-areas:"m h" "m k";grid-template-rows:auto 1fr}
+.padc.sh .padk{align-self:start}
+.padh{grid-area:h;justify-self:stretch;align-self:stretch;flex:0 0 auto;display:flex;align-items:center;gap:8px;height:48px;direction:rtl}
+.padh b{flex:1 1 auto;min-width:0;font-size:clamp(15px,2.6vmin,21px);line-height:1.15;color:#7a4fe0;padding-inline-start:6px}
+.padc.sh .padh b{font-size:13px;padding:0}
+.padx{flex:0 0 auto;width:48px;height:48px;border-radius:50%;background:#fff;color:#3b2a55;font-size:18px;font-weight:700;padding:0;box-shadow:0 3px 0 #c9b9ea}
+.padc .padtip{grid-area:t;direction:rtl;font-size:clamp(12px,2.2vmin,16px);line-height:1.3;text-align:center;color:#5b4a78;font-weight:700}
+.padm{grid-area:m;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--g);min-width:0}
+.padcap{font-size:clamp(14px,3.8vmin,20px);line-height:1.25;max-height:calc(3.75em + 6px);overflow:hidden;text-align:center;background:#fff;border-radius:12px;padding:3px 12px;box-shadow:0 2px 0 #e4dcf5}
+.padc .padg{display:grid;gap:2px;justify-content:center;justify-items:center;align-items:center;direction:ltr}
+.padc .pd{min-width:0;width:100%;height:var(--u);line-height:var(--u);font-size:calc(var(--u)*.72);text-align:center;white-space:nowrap}
+.padc .pd.ps{font-size:calc(var(--u)*.62);color:#7a4fe0}
+.padc .pd.x,.padc .pc.x{text-decoration:line-through;text-decoration-color:#ff4f9a;text-decoration-thickness:3px}
+.padc .pd.x{color:#a79bbd}
+.padc .pd.plab{direction:rtl;font-size:max(11px,calc(var(--u)*.3));color:#7a4fe0;line-height:1;height:auto;align-self:end;justify-self:center;width:auto}
+.padc .pc{width:var(--u);height:var(--u);border-radius:calc(var(--u)*.22);background:#fff;border:2px dashed #c9b9ea;font-size:calc(var(--u)*.66);line-height:1;color:#3b2a55;padding:0}
+.padc .pc.car{width:var(--s);height:var(--s);border-radius:8px;border-width:1.5px;font-size:calc(var(--s)*.62);color:#e0357f;border-color:#ff8fc0;background:#fff0f7}
+.padc .pc.car.two{width:calc(var(--s)*1.3)}
+.padc .pc.zc{color:#8a7fa3;border-color:#d9d3e6;background:rgba(255,255,255,.55)}
+.padc .pc.rem{border-color:#ffb300;background:#fffbe6}
+.padc .pc.on{border-style:solid;border-color:#ff4f9a;box-shadow:0 0 0 3px rgba(255,79,154,.28)}
+.padc .pl{height:3px;background:#3b2a55;border-radius:2px;width:100%}
+.padc .pbr{width:3px;height:calc(var(--u) + 5px);margin-top:-5px;background:#3b2a55;border-radius:0 2px 2px 2px;justify-self:end;align-self:start}
+.padc .pfx{display:flex;gap:2px;align-items:center;justify-content:center;direction:ltr}
+.padc .pfx .pd{width:auto;min-width:calc(var(--u)*.7);padding:0 calc(var(--u)*.06)}
+.padc .padf{gap:0;background:#fff;border:2px solid #9fc0e6;border-radius:10px;overflow:hidden}
+.padc .pc.fc{border:0;border-radius:0;background:transparent;box-shadow:inset -1px -1px 0 #c5daf0;font-size:calc(var(--u)*.6)}
+.padc .pc.fc.on{background:#fff0f6;box-shadow:inset 0 0 0 3px #ff4f9a}
+.padc .padk{grid-area:k;display:grid;grid-template-columns:repeat(var(--kc),var(--k));gap:6px;padding-bottom:4px;direction:ltr}
+.padc .pk{width:var(--k);height:var(--k);border-radius:14px;background:#fff;color:#3b2a55;font-size:calc(var(--k)*.46);font-weight:700;padding:0;box-shadow:inset 0 -3px 0 #ece6f8,0 4px 0 #b9a6e6}
+.padc .pk:active{transform:translateY(2px)}
+.padc .pk.sg{background:#e9f4ff;color:#1f5fa8;box-shadow:inset 0 -3px 0 #d3e8fb,0 4px 0 #8fb8e6}
+.padc .pk.del{background:#ffe3ee;box-shadow:inset 0 -3px 0 #ffd0e2,0 4px 0 #f08fb6}
+.padc .pk.clr{background:#fff1b8;box-shadow:inset 0 -3px 0 #ffe58a,0 4px 0 #e0b63a}
+.padback{grid-area:b;min-height:52px;padding:0 26px;border-radius:999px;background:#38b872;color:#fff;font-size:clamp(16px,3vmin,22px);font-weight:700;direction:rtl;box-shadow:0 4px 0 #23894f}
+.padbtn b{white-space:nowrap}
+/* PAD-END */
 </style>
 </head>
 <body>
@@ -3442,6 +3485,74 @@ var TrollLogic = (function () {
     BODIES: BODIES, HAIR_COLORS: HAIR_COLORS, HAIR_STYLES: HAIR_STYLES, ACCESSORIES: ACCESSORIES
   };
 })();
+// ================= the calculation sheet: when is it offered (task "pad", docs/prompts/pad-spec.md section 2) =================
+// A pure function of what is written in the exercise and of the grade. The answer and the options are never read, so the
+// presence of the button says nothing about the result. From grade 2 up the sheet is offered when the exercise holds a
+// calculation that is not a basic fact, and never in the hands-on formats; whatever had the sheet before keeps it.
+(function (L) {
+  var MARKS = /[‎‏‪-‮⁦-⁩,]/g;
+  // the old rule (a long addition or multiplication): it also decides which exercises are drawn in columns on the card
+  function vertOf(q) {
+    if (!q || /^(tf|cmp|pairs|array|line|build)$/.test(q.fmt || '')) return null;
+    var m = /^(\d{1,7}) ([+×]) (\d{1,7}) = \?$/.exec(String(q.text).replace(MARKS, '').trim());
+    if (!m) return null;
+    var a = +m[1], b = +m[3], t;
+    if (a < 10 && b < 10) return null;
+    if (m[2] === '×' && a < b) { t = a; a = b; b = t; } // the longer number on top
+    return { a: a, b: b, op: m[2], key: q.key + '|' + q.text };
+  }
+  function clean(s) { return String(s).replace(MARKS, '').replace(/[֑-ׇ]/g, '').trim(); }
+  function needs(op, x, y, g) { // is this more than a fact to 20 or a row of the multiplication table?
+    if (op === '+') return Math.max(x, y) >= 10;
+    if (op === '−') return x >= 10 && !(y < 10 && x - y < 10);
+    if (op === '×') return Math.max(x, y) >= 11;
+    return x > 10 * y || (y >= 10 && g >= 3);
+  }
+  function kindOf(q, T, fromKey) {
+    var g = q.g, m, x, y, t, ops, whole, v;
+    if ((m = /^(\d{1,7}) ([+−×:]) (\d{1,7}) = \?$/.exec(T))) {
+      x = +m[1]; y = +m[3];
+      if (!needs(m[2], x, y, g)) return null;
+      if (m[2] === '+') return { kind: 'add', op: '+', nums: [x, y] };
+      if (m[2] === '−') return { kind: 'sub', op: '−', nums: [x, y] };
+      if (m[2] === '×') { if (x < y) { t = x; x = y; y = t; } return { kind: 'mul', op: '×', nums: [x, y] }; }
+      return g >= 4 ? { kind: 'div', op: ':', nums: [x, y] } : m[1].length === 2 ? { kind: 'split', op: ':', nums: [x, y] } : { kind: 'free' };
+    }
+    if (/^\d{1,7}(?: \+ \d{1,7}){2,3} = \?$/.test(T)) {
+      v = T.replace(' = ?', '').split(' + ').map(Number);
+      return v.some(function (n) { return n >= 10; }) ? { kind: 'add', op: '+', nums: v } : null;
+    }
+    if ((m = /^(\d+(?:\.\d+)?) ([+−]) (\d+(?:\.\d+)?) = \?$/.exec(T)) && /\./.test(m[1] + m[3])) return { kind: 'dec', op: m[2], nums: [m[1], m[3]] };
+    if (T.indexOf('/') >= 0) return g >= 5 && /[+−◯]/.test(T) ? { kind: 'free' } : null;
+    if ((m = /(\d+) : (\d+)\?$/.exec(T)) || ((m = /\u05e0\u05db\u05e0\u05e1 (\d+) \u05d1\u05ea\u05d5\u05da (\d+)\?$/.exec(T)) && (m = [0, m[2], m[1]]))) // a remainder question (the Hebrew, without niqqud: 'how many whole times does N go into M?')
+      return needs(':', +m[1], +m[2], g) ? { kind: 'div', op: ':', nums: [+m[1], +m[2]], rem: true } : null;
+    if (/\u05de\u05ea\u05d7\u05dc\u05e7 \u05d1/.test(T)) return { kind: 'free' }; // 'which number is divisible by N?'
+    if ((q.rtl && !fromKey) || T.indexOf('→') >= 0) return null;
+    if (/[⁰¹²³⁴⁵⁶⁷⁸⁹]/.test(T)) return { kind: 'free' };
+    ops = T.match(/[+−×:]/g) || [];
+    if (ops.length >= 2) return { kind: 'free' };
+    if (ops.length === 1 && T.indexOf('□') >= 0) {
+      if (T.indexOf('.') >= 0) return { kind: 'free' };
+      v = (T.match(/\d+/g) || []).map(Number); if (v.length < 2) return null;
+      if (ops[0] === '+' || ops[0] === '−') { whole = /^□ −/.test(T) ? v[0] + v[1] : Math.max(v[0], v[1]); return whole >= 21 ? { kind: 'free' } : null; }
+      whole = /^□ :/.test(T) ? v[0] * v[1] : Math.max(v[0], v[1]); return whole >= 101 ? { kind: 'free' } : null;
+    }
+    return null;
+  }
+  // null (no sheet) or { kind: add | sub | mul | div | split | dec | free, op, nums, rem, key }
+  function padKind(q) {
+    if (!q) return null;
+    var key = q.key + '|' + q.text, v = vertOf(q), f = q.fmt || 'choice', fromKey, out;
+    if (v) return { kind: v.op === '+' ? 'add' : 'mul', op: v.op, nums: [v.a, v.b], rem: false, key: key };
+    if (q.g === 1 || q.pack || /^(pairs|array|line|build|order)$/.test(f)) return null;
+    fromKey = f !== 'choice' && typeof q.key === 'string' && q.key.indexOf(f + '|') === 0; // a clone keeps the exercise it was made from in its key
+    out = kindOf(q, clean(fromKey ? q.key.slice(f.length + 1) : q.text), fromKey);
+    if (!out) return null;
+    if (f === 'word' || f === 'lefteq') out = { kind: 'free' }; // a story must not show the operation: choosing it is the exercise
+    return { kind: out.kind, op: out.op || null, nums: out.nums || [], rem: !!out.rem, key: key };
+  }
+  L.vertOf = vertOf; L.padKind = padKind;
+})(TrollLogic);
 </script>
 <script id="troll">
 // Troll drawing: pure string generation, no DOM access.
@@ -5148,10 +5259,11 @@ var TrollModels = (function () {
       var answers = h('div', { class: 'answers' }), hintSlot = h('div', { style: 'width:100%;display:flex;justify-content:center;flex:0 0 auto' });
       var helpB = h('button', { class: 'helpb', text: '💡 אֵיךְ פּוֹתְרִים?', on: { click: function () { sfx.tap(); openExplain(round.current()); } } });
       var padB = h('button', { class: 'helpb padbtn', 'aria-label': 'חִשּׁוּב בִּמְאֻנָּךְ', on: { click: function () { sfx.tap(); openPad(round.current(), padShow); } } });
-      function padShow() { // the button appears only for a long addition or multiplication, and keeps the result the child wrote
-        var q = round.current(), sum = padSum(q);
-        padB.style.display = padOf(q) ? '' : 'none';
-        padB.textContent = '🧮'; padB.appendChild(h('span', { class: 'pt', text: sum ? '' : ' בִּמְאֻנָּךְ' })); if (sum) padB.appendChild(h('b', { text: ' ' + sum }));
+      function padShow() { // the button appears for every exercise that needs written working (L.padKind), and keeps the result the child wrote
+        var q = round.current(), sum = padSum(q), lab = padLabel(q);
+        padB.style.display = lab ? '' : 'none';
+        padB.setAttribute('aria-label', /דַּף/.test(lab) ? 'דַּף חִשּׁוּב' : 'חִשּׁוּב בִּמְאֻנָּךְ');
+        padB.textContent = '🧮'; padB.appendChild(h('span', { class: 'pt', text: sum ? '' : lab })); if (sum) padB.appendChild(h('b', { text: ' ' + sum }));
       }
       function sayQ() { var q = round.current(); return q ? (ASKS[q.fmt] ? ASKS[q.fmt] + '. ' : '') + (q.fmt === 'pairs' ? '' : q.fmt === 'array' ? q.a + ' × ' + q.b : q.text) : ''; }
       el.appendChild(path); el.appendChild(h('div', { class: 'lvrow' }, label, sayBtn(sayQ, 'helpb'), padB, helpB));
@@ -6000,70 +6112,301 @@ var TrollModels = (function () {
     });
   }
 
-  // ---------- scratch pad ----------
-  // A long addition or multiplication is hard to hold in the head. The child can open the exercise written in columns (ones under
-  // ones), write what is carried in the small boxes on top and the digits of the result below. It is paper: nothing is checked.
+  // ---------- the calculation sheet (task "pad", docs/prompts/pad-spec.md) ----------
+  // Paper next to the exercise: the child taps a cell and then a key (a real keyboard types too). It is paper: nothing is checked,
+  // nothing is revealed and nothing is saved; what was written lives in padKeep until the next exercise. L.padKind decides which
+  // exercises get a sheet and of which kind. Every way of writing is ONE definition in PADS (one place per operation): it returns the
+  // columns, the rows and the order of typing, and openPad draws whatever it is given. To change how an operation is written on
+  // paper, change its definition only. Sources of the layouts: the Ministry of Education programmes and approved textbooks listed
+  // at the end of the spec.
   var padKeep = null;
-  function padOf(q) {
-    if (!q || /^(tf|cmp|pairs|array|line|build)$/.test(q.fmt || '')) return null;
-    var m = /^(\d{1,7}) ([+×]) (\d{1,7}) = \?$/.exec(String(q.text).replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069,]/g, '').trim());
-    if (!m) return null;
-    var a = +m[1], b = +m[3], t;
-    if (a < 10 && b < 10) return null;
-    if (m[2] === '×' && a < b) { t = a; a = b; b = t; } // the longer number on top
-    return { a: a, b: b, op: m[2], key: q.key + '|' + q.text };
-  }
-  function padSum(q) { // what the child wrote on the result line of this exercise
-    var pd = padOf(q), out = '';
-    if (!pd || !padKeep || padKeep.key !== pd.key) return '';
-    for (var i = 0; i < 12; i++) if (padKeep.v['r' + i]) out += padKeep.v['r' + i];
+  function padOf(q) { return L.vertOf(q); } // which exercises the card itself shows in columns: the old rule, unchanged
+  function padAt(q) { var r = tv.round; return r && r.qs && r.qs[r.i] === q ? r.i : -1; }
+  function padE(id, cls, two, x) { return { id: id, cls: cls || '', two: !!two, x: x || null }; } // a cell to write in
+  function padRow(n, f) { var out = [], i; for (i = 0; i < n; i++) out.push(f(i)); return out; }
+  function padRun(prefix, from, to) { var out = [], i, d = from <= to ? 1 : -1; for (i = from; i !== to + d; i += d) out.push(prefix + i); return out; }
+  function padJoin(v, prefix, from, to) { var out = '', i; for (i = from; i < to; i++) out += v[prefix + i] || ''; return out; }
+  function padOne() { return 1; }
+  function padNum(n, cols, sign, strike) { // a written number, right aligned in `cols` digit columns, after the column of the sign
+    var t = String(n), out = [sign || null], i, c;
+    for (i = 0; i < cols; i++) { c = t.charAt(t.length - cols + i); out.push(c ? (strike ? { t: c, x: strike + i } : c) : null); }
     return out;
   }
+  var PAD_COL = '🧮 חִשּׁוּב בִּמְאֻנָּךְ', PAD_SHEET = '🧮 דַּף חִשּׁוּב', PAD_REM = 'שְׁאֵרִית';
+  var PAD_TIP = 'מַתְחִילִים מֵהָאֲחָדוֹת. אֶת מַה שֶּׁזּוֹכְרִים כּוֹתְבִים בַּמִּשְׁבְּצוֹת הַקְּטַנּוֹת לְמַעְלָה.';
+  // A definition returns { title, label (on the button of the exercise screen), tip, cols: [width of every column, in cells],
+  // rows, runs: [the order in which a row is typed], first: the cell that is selected at the start, sum(v): the text on the button }.
+  // A row is { cells: [null | 'text' | { t: text, x, cls, span } | padE(...) | { bar: 1 }] } (small: 1 = a row of small cells),
+  // { line: [first column, last column] } or { flex: [...] } (a centred row that does not follow the columns).
+  var PADS = {
+    // Addition in columns, 2 to 4 addends. What is carried is written small above the next column ("מִשְׁתַּלֵּם בַּטִּבְעִיִּים" ג1, p. 18).
+    add: function (pd) {
+      var cols = Math.max.apply(null, pd.nums.map(function (n) { return String(n).length; })) + 1, rows = [];
+      rows.push({ small: 1, cells: [null].concat(padRow(cols, function (i) { return i < cols - 1 ? padE('c' + i, 'car') : null; })) });
+      pd.nums.forEach(function (n, i) { rows.push({ cells: padNum(n, cols, i === pd.nums.length - 1 ? '+' : null) }); });
+      rows.push({ line: [0, cols] }, { cells: [null].concat(padRow(cols, function (i) { return padE('r' + i); })) });
+      return { title: PAD_COL, label: ' בִּמְאֻנָּךְ', tip: PAD_TIP, cols: [0.7].concat(padRow(cols, padOne)), rows: rows, runs: [padRun('r', cols - 1, 0)], first: 'r' + (cols - 1),
+        sum: function (v) { return padJoin(v, 'r', 0, cols); } };
+    },
+    // Subtraction in columns. Regrouping: the digit is crossed out and its new value is written above it ("מִשְׁתַּלֵּם בַּטִּבְעִיִּים" ג1,
+    // p. 31; "פָּשׁוּט חֶשְׁבּוֹן" ה2, p. 151). One row of small cells: a second regrouping of the same digit replaces the first (not verified).
+    sub: function (pd) {
+      var cols = Math.max(String(pd.nums[0]).length, String(pd.nums[1]).length);
+      return { title: PAD_COL, label: ' בִּמְאֻנָּךְ', tip: 'מַתְחִילִים מֵהָאֲחָדוֹת. כְּשֶׁאֵין מַסְפִּיק, פּוֹרְטִים, וְכוֹתְבִים בַּמִּשְׁבֶּצֶת הַקְּטַנָּה לְמַעְלָה כַּמָּה יֵשׁ עַכְשָׁו.',
+        cols: [0.7].concat(padRow(cols, padOne)), rows: [
+          { small: 1, cells: [null].concat(padRow(cols, function (i) { return padE('g' + i, 'car', true); })) },
+          { cells: padNum(pd.nums[0], cols, null, 'g') }, { cells: padNum(pd.nums[1], cols, '−') }, { line: [0, cols] },
+          { cells: [null].concat(padRow(cols, function (i) { return padE('r' + i); })) }],
+        runs: [padRun('r', cols - 1, 0)], first: 'r' + (cols - 1), sum: function (v) { return padJoin(v, 'r', 0, cols); } };
+    },
+    // Multiplication in columns, the standard algorithm: a row for every digit of the multiplier (the zero of the tens row is
+    // written by the child), then their sum; the carried digit small on top (new grade-4 programme p. 6; "פָּשׁוּט חֶשְׁבּוֹן" ה2, p. 5, 9).
+    mul: function (pd) {
+      var a = pd.nums[0], b = pd.nums[1], cols = String(a).length + String(b).length, parts = b >= 10 ? String(b).length : 0, runs = [], k;
+      var rows = [{ small: 1, cells: [null].concat(padRow(cols, function (i) { return i < cols - 1 ? padE('c' + i, 'car') : null; })) }, { cells: padNum(a, cols) }, { cells: padNum(b, cols, '×') }, { line: [0, cols] }];
+      function part(prefix) { rows.push({ cells: [null].concat(padRow(cols, function (i) { return padE(prefix + i); })) }); runs.push(padRun(prefix, cols - 1, 0)); }
+      for (k = 0; k < parts; k++) part('p' + k + '_');
+      if (parts) rows.push({ line: [0, cols] });
+      part('r');
+      return { title: PAD_COL, label: ' בִּמְאֻנָּךְ', tip: PAD_TIP, cols: [0.7].concat(padRow(cols, padOne)), rows: rows, runs: runs, first: (parts ? 'p0_' : 'r') + (cols - 1),
+        sum: function (v) { return padJoin(v, 'r', 0, cols); } };
+    },
+    // Long division as the Ministry of Education draws it (new grade-4 programme p. 7; "פָּשׁוּט חֶשְׁבּוֹן" ה1, p. 41-43): a line over the
+    // dividend joined to a vertical line on its right, the divisor to the right of that line, the quotient above the dividend, no ":"
+    // sign; every product under the digits it was taken from with a minus on the left, a line, and under it what is left with the
+    // digit that was brought down. The number of rows comes from the lengths of the numbers only, never from the result.
+    // Not from the source: the box of the remainder (in the source it is the last number at the bottom), and a divisor of two digits
+    // drawn the same way (no official drawing of a solved one was found).
+    div: function (pd, tight) {
+      var a = String(pd.nums[0]), b = String(pd.nums[1]), La = a.length, Lb = b.length, P = Math.max(1, Math.min(tight ? 3 : 4, La - Lb + 1)), k;
+      var none = padRow(1 + Lb, function () { return null; }), runs = [padRun('q', 0, La - 1)];
+      var rows = [{ cells: [null].concat(padRow(La, function (i) { return padE('q' + i); }), none) }, { line: [1, La + 1] },
+        { cells: [null].concat(a.split(''), [{ bar: 1 }], b.split('')) }];
+      function work(k) {
+        var last = k === P - 1;
+        rows.push({ cells: ['−'].concat(padRow(La, function (i) { return padE('s' + k + '_' + i); }), last ? [{ t: PAD_REM, cls: 'plab', span: 1 + Lb }] : none) }, { line: [1, La] },
+          { cells: [null].concat(padRow(La, function (i) { return padE('t' + k + '_' + i); }), last ? [null].concat(padRow(Lb, function (i) { return padE('m' + i, 'rem'); })) : none) });
+        runs.push(padRun('s' + k + '_', 0, La - 1), padRun('t' + k + '_', 0, La - 1));
+      }
+      for (k = 0; k < P; k++) work(k);
+      runs.push(padRun('m', 0, Lb - 1));
+      return { title: PAD_SHEET, label: ' דַּף חִשּׁוּב', tip: 'הַמָּנָה נִכְתֶּבֶת לְמַעְלָה, מֵעַל הַמְּחֻלָּק. לְמַטָּה מְחַסְּרִים, וּמַה שֶּׁנִּשְׁאָר בַּסּוֹף הוּא הַשְּׁאֵרִית.',
+        cols: [0.7].concat(padRow(La, padOne), [0.4], padRow(Lb, padOne)), rows: rows, runs: runs, first: 'q0', pairs: La - Lb + 1,
+        // the new grade-3 programme (p. 9) rejects the remainder in brackets: it is written in words
+        sum: function (v) { var m = padJoin(v, 'm', 0, Lb); return (padJoin(v, 'q', 0, La) + (m ? ' ' + PAD_REM + ' ' + m : '')).trim(); } };
+    },
+    // Grade 3, two digits by one digit: the number is split into two convenient parts, each part is divided, the results are
+    // added (the game's own explanation of this house). The four written rows are an assumption (not verified: the sources show one
+    // horizontal chain).
+    split: function (pd) {
+      var a = String(pd.nums[0]), b = String(pd.nums[1]);
+      function B(p) { return [padE(p + '0'), padE(p + '1')]; }
+      return { title: PAD_SHEET, label: ' דַּף חִשּׁוּב', tip: 'מְפָרְקִים אֶת הַמִּסְפָּר לִשְׁנֵי חֲלָקִים נוֹחִים, מְחַלְּקִים כָּל חֵלֶק, וּמְחַבְּרִים.',
+        cols: [7.6], rows: [{ flex: [a, '='].concat(B('x'), ['+'], B('y')) }, { flex: B('e').concat([':', b, '='], B('f')) }, { flex: B('h').concat([':', b, '='], B('i')) }, { line: [0, 0] }, { flex: B('r') }],
+        runs: [['x0', 'x1', 'y0', 'y1', 'e0', 'e1', 'f0', 'f1', 'h0', 'h1', 'i0', 'i1', 'r0', 'r1']], first: 'x0', sum: function (v) { return padJoin(v, 'r', 0, 2); } };
+    },
+    // Decimals: the point under the point, ones under ones, tenths under tenths (2006 grade-5 programme p. 102; "פָּשׁוּט חֶשְׁבּוֹן" ה2,
+    // p. 143). A place that a number does not have is a dashed cell where the child may add a zero.
+    dec: function (pd) {
+      var A = pd.nums[0].split('.'), B = pd.nums[1].split('.'), plus = pd.op === '+';
+      var Lf = Math.max((A[1] || '').length, (B[1] || '').length, 1), nI = Math.max(A[0].length, B[0].length) + (plus ? 1 : 0), n = nI + Lf;
+      function row(sign, f, pt) { var out = [sign || null], j; for (j = 0; j < n; j++) { if (j === nI) out.push(pt || null); out.push(f(j)); } return out; }
+      function num(parts, sign, z, strike) {
+        var zc = 0;
+        return row(sign, function (j) {
+          var c = j < nI ? parts[0].charAt(parts[0].length - nI + j) : (parts[1] || '').charAt(j - nI);
+          return c ? (strike ? { t: c, x: 'g' + j } : c) : j < nI ? null : padE(z + (zc++), 'zc', false, strike ? 'g' + j : null);
+        }, '.');
+      }
+      return { title: PAD_COL, label: ' בִּמְאֻנָּךְ', tip: 'נְקֻדָּה מִתַּחַת לִנְקֻדָּה. בְּמָקוֹם רֵיק אֶפְשָׁר לִכְתֹּב 0.',
+        cols: [0.7].concat(padRow(nI, padOne), [0.4], padRow(Lf, padOne)), rows: [
+          { small: 1, cells: row(null, function (j) { return plus ? (j < n - 1 ? padE('c' + j, 'car') : null) : padE('g' + j, 'car', true); }) },
+          { cells: num(A, null, 'za', !plus) }, { cells: num(B, pd.op, 'zb') }, { line: [0, n + 1] }, { cells: row(null, function (j) { return padE('r' + j); }, '.') }],
+        runs: [padRun('r', n - 1, 0)], first: 'r' + (n - 1),
+        sum: function (v) { var i = padJoin(v, 'r', 0, nI), f = padJoin(v, 'r', nI, n); return i + (f ? '.' + f : ''); } };
+    },
+    // Everything else: squared paper under the exercise. The number of squares comes from the size of the screen (see fitPad).
+    free: function () {
+      return { title: PAD_SHEET, label: ' דַּף חִשּׁוּב', tip: '', free: true, sum: function (v) { for (var k in v) if (v[k]) return '✎'; return ''; } };
+    }
+  };
+  function padSum(q) { // what the child wrote on the result line of this exercise: shown on the 🧮 button after the sheet is closed
+    var pd = L.padKind(q);
+    if (!pd || !padKeep || padKeep.key !== pd.key || padKeep.at !== padAt(q) || padKeep.kind !== pd.kind) return '';
+    return PADS[pd.kind](pd).sum(padKeep.v);
+  }
+  function padLabel(q) { var pd = L.padKind(q); return pd ? PADS[pd.kind](pd).label : ''; }
   function openPad(q, done) {
-    var pd = padOf(q); if (!pd) return;
+    var pd = L.padKind(q); if (!pd) return;
     closeExplain();
-    if (!padKeep || padKeep.key !== pd.key) padKeep = { key: pd.key, v: {}, sel: null };
-    var cols = pd.op === '+' ? Math.max(String(pd.a).length, String(pd.b).length) + 1 : String(pd.a).length + String(pd.b).length;
-    var parts = pd.op === '×' && pd.b >= 10 ? String(pd.b).length : 0; // a line for every digit of the multiplier, then their sum
-    var grid = h('div', { class: 'padg', style: 'grid-template-columns:repeat(' + (cols + 1) + ',auto)' }), cells = {}, sel = null, k;
-    function pick(id) { if (sel && cells[sel]) cells[sel].classList.remove('on'); sel = padKeep.sel = id; cells[id].classList.add('on'); }
-    function cell(id, cls) {
-      var b = h('button', { class: 'pc ' + cls, 'data-c': id, text: padKeep.v[id] || '', on: { click: function () { sfx.tap(); pick(id); } } });
-      cells[id] = b; return b;
+    var at = padAt(q);
+    if (!padKeep || padKeep.key !== pd.key || padKeep.at !== at || padKeep.kind !== pd.kind) padKeep = { key: pd.key, at: at, kind: pd.kind, v: {}, sel: null, undo: null };
+    var keep = padKeep, free = pd.kind === 'free', tight = false, lay = PADS[pd.kind](pd, tight), cells = {}, strikes = {}, next = {}, prev = {}, sel = null, box = null, ro = null, fc = 0, fr = 0;
+    var grid = h('div', { class: 'padg' + (free ? ' padf' : '') });
+    function show(id) { var t = keep.v[id] || ''; if (cells[id]) cells[id].textContent = t; if (strikes[id]) strikes[id].classList.toggle('x', !!t); }
+    function put(id, t) { if (t) keep.v[id] = t; else delete keep.v[id]; show(id); }
+    function pick(id) { if (!cells[id]) return; if (sel && cells[sel]) cells[sel].classList.remove('on'); sel = keep.sel = id; cells[id].classList.add('on'); }
+    function cell(e) {
+      var b = h('button', { class: 'pc ' + (e.cls || 'res') + (e.two ? ' two' : ''), 'data-c': e.id, on: { click: function () { sfx.tap(); pick(e.id); } } });
+      b.two = e.two; cells[e.id] = b; if (e.x) strikes[e.x] = b;
+      return b;
     }
-    function put(arr) { arr.forEach(function (x) { grid.appendChild(x); }); }
-    function digits(n, sign) {
-      var t = String(n), out = [h('span', { class: 'ps', text: sign || '' })], i;
-      for (i = 0; i < cols; i++) out.push(h('span', { class: 'pd', text: t.charAt(t.length - cols + i) }));
-      return out;
+    function draw() { // builds the cells from the definition (the squared paper: from the number of squares that fit)
+      var runs, id;
+      grid.innerHTML = ''; cells = {}; strikes = {}; next = {}; prev = {};
+      if (free) {
+        grid.style.gridTemplateColumns = 'repeat(' + fc + ',var(--u))'; grid.setAttribute('data-n', fc + 'x' + fr);
+        runs = padRow(fr, function (r) { return padRow(fc, function (c) { var e = padE('f' + r + '_' + c, 'fc'); grid.appendChild(cell(e)); return e.id; }); });
+        lay.first = 'f0_0';
+      } else {
+        lay = PADS[pd.kind](pd, tight); runs = lay.runs;
+        grid.style.gridTemplateColumns = lay.cols.map(function (w) { return 'calc(var(--u)*' + w + ')'; }).join(' ');
+        lay.rows.forEach(function (row, ri) {
+          var c = 1, el;
+          function place(x, span) { x.style.gridRow = String(ri + 1); x.style.gridColumn = c + ' / span ' + (span || 1); grid.appendChild(x); c += span || 1; }
+          if (row.line) { c = row.line[0] + 1; place(h('i', { class: 'pl' }), row.line[1] - row.line[0] + 1); return; }
+          if (row.flex) { el = h('div', { class: 'pfx' }); row.flex.forEach(function (it) { el.appendChild(typeof it === 'string' ? h('span', { class: 'pd', text: it }) : cell(it)); }); place(el, lay.cols.length); return; }
+          row.cells.forEach(function (it) {
+            if (it == null) c++;
+            else if (typeof it === 'string') place(h('span', { class: /\d/.test(it) ? 'pd' : 'pd ps', text: it }));
+            else if (it.bar) place(h('i', { class: 'pbr' }));
+            else if (it.id) place(cell(it));
+            else { el = h('span', { class: 'pd' + (it.cls ? ' ' + it.cls : ''), text: it.t }); if (it.x) strikes[it.x] = el; place(el, it.span); }
+          });
+        });
+      }
+      runs.forEach(function (run) { run.forEach(function (x, i) { if (i) { next[run[i - 1]] = x; prev[x] = run[i - 1]; } }); });
+      for (id in cells) show(id);
+      for (id in strikes) show(id);
+      sel = null; pick(keep.sel && cells[keep.sel] ? keep.sel : lay.first);
     }
-    function boxes(prefix, cls, noOnes) {
-      var out = [h('span')], i;
-      for (i = 0; i < cols; i++) out.push(noOnes && i === cols - 1 ? h('span') : cell(prefix + i, cls));
-      return out;
-    }
-    function line() { grid.appendChild(h('i', { class: 'pl', style: 'grid-column:1/-1' })); }
-    put(boxes('c', 'car', true)); put(digits(pd.a)); put(digits(pd.b, pd.op)); line();
-    for (k = 0; k < parts; k++) put(boxes('p' + k + '_', 'res'));
-    if (parts) line();
-    put(boxes('r', 'res'));
+    function undoKey() { clr.textContent = keep.undo ? '↩' : '🧽'; clr.setAttribute('aria-label', keep.undo ? 'בִּטּוּל הַנִּקּוּי' : 'נִקּוּי הַדַּף'); }
+    function fresh() { if (keep.undo) { keep.undo = null; undoKey(); } } // the first key after a clearing: the cleared page cannot come back any more
     function type(d) {
       if (!sel) return;
-      padKeep.v[sel] = d; cells[sel].textContent = d;
-      var m = /^(.*?)(\d+)$/.exec(sel), nx = m[1] + (+m[2] - 1);
-      if (d !== '' && sel.charAt(0) !== 'c' && cells[nx]) pick(nx); // the next digit is written to the left
+      fresh();
+      var two = cells[sel].two, was = keep.v[sel] || '';
+      put(sel, two && was.length === 1 ? was + d : d); // a regrouping cell holds two digits (14); a third one starts over
+      if (!two && next[sel] && cells[next[sel]]) pick(next[sel]); // on to the next cell of the row; cells outside a row (carried digits, added zeros) stay
     }
-    var keys = h('div', { class: 'padk' });
-    '1234567890'.split('').forEach(function (d) { keys.appendChild(h('button', { class: 'pk', text: d, on: { click: function () { sfx.tap(); type(d); } } })); });
-    keys.appendChild(h('button', { class: 'pk del', text: '⌫', 'aria-label': 'מְחִיקָה', on: { click: function () { sfx.tap(); type(''); } } }));
-    function close() { sfx.tap(); closeExplain(); if (done) done(); }
-    var card = h('div', { class: 'card padc', 'data-fit': '1' },
-      h('div', { class: 'ohead' }, h('b', { text: '🧮 חִשּׁוּב בִּמְאֻנָּךְ' }), h('button', { class: 'icon', text: '✕', 'aria-label': 'סְגִירָה', on: { click: close } })),
-      h('div', { class: 'padtip', text: 'מַתְחִילִים מֵהָאֲחָדוֹת. אֶת מַה שֶּׁזּוֹכְרִים כּוֹתְבִים בַּמִּשְׁבְּצוֹת הַקְּטַנּוֹת לְמַעְלָה.' }),
-      h('div', { class: 'padb' }, grid, keys),
-      h('button', { class: 'btn next', text: '✓ חֲזָרָה לַתַּרְגִּיל', on: { click: close } }));
-    ovl = h('div', { class: 'ovl' }, card); document.body.appendChild(ovl);
-    pick(padKeep.sel && cells[padKeep.sel] ? padKeep.sel : (parts ? 'p0_' : 'r') + (cols - 1));
+    function back() { // erase: this cell, or when it is empty the one before it
+      if (!sel) return;
+      fresh();
+      var was = keep.v[sel] || '';
+      if (was) put(sel, was.slice(0, -1));
+      else if (prev[sel] && cells[prev[sel]]) { pick(prev[sel]); put(sel, ''); }
+    }
+    function clear() { // the sponge empties the page and keeps one copy: the same key brings it back until something is typed
+      var id, any = false;
+      if (keep.undo) { keep.v = keep.undo; keep.undo = null; }
+      else { for (id in keep.v) any = true; if (!any) return; keep.undo = keep.v; keep.v = {}; }
+      for (id in cells) show(id);
+      for (id in strikes) show(id);
+      undoKey();
+    }
+    function move(k) { // arrow keys: the nearest cell in that direction
+      if (!sel) return;
+      var a = cells[sel].getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2, best = null, bd = 1e12, id, r, dx, dy, d, side = k === 'ArrowLeft' || k === 'ArrowRight';
+      for (id in cells) {
+        if (id === sel) continue;
+        r = cells[id].getBoundingClientRect(); dx = r.left + r.width / 2 - ax; dy = r.top + r.height / 2 - ay;
+        if (side ? Math.abs(dy) > a.height / 2 || (k === 'ArrowLeft' ? dx > -4 : dx < 4) : (k === 'ArrowUp' ? dy > -4 : dy < 4)) continue;
+        d = side ? Math.abs(dx) : Math.round(Math.abs(dy)) * 4000 + Math.abs(dx);
+        if (d < bd) { bd = d; best = id; }
+      }
+      if (best) pick(best);
+    }
+    var SIGNS = { '+': '+', '-': '−', '−': '−', '*': '×', 'x': '×', 'X': '×', '×': '×', ':': ':', '/': ':', '=': '=', '(': '(', ')': ')', '.': '.', ',': '.' };
+    function onKey(e) { // a real keyboard
+      if (ovl !== box) { stop(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var k = e.key;
+      if (/^\d$/.test(k)) type(k);
+      else if (free && SIGNS[k]) type(SIGNS[k]);
+      else if (k === 'Backspace') back();
+      else if (k === 'Delete') { if (sel) { fresh(); put(sel, ''); } }
+      else if (/^Arrow(Left|Right|Up|Down)$/.test(k)) move(k);
+      else if (k === 'Escape') close(true);
+      else return;
+      e.preventDefault(); e.stopPropagation();
+    }
+    function stop() { document.removeEventListener('keydown', onKey, true); if (ro) { ro.disconnect(); ro = null; } else window.removeEventListener('resize', fitPad); }
+    function close(quiet) { if (quiet !== true) sfx.tap(); stop(); if (ovl === box) closeExplain(); if (done) done(); }
+    var keys = h('div', { class: 'padk' }), clr;
+    function key(t, f, cls, aria) { var b = h('button', { class: 'pk' + (cls ? ' ' + cls : ''), text: t, on: { click: function () { sfx.tap(); f(); } } }); if (aria) b.setAttribute('aria-label', aria); keys.appendChild(b); return b; }
+    ('1234567890' + (free ? '+−×:=().' : '')).split('').forEach(function (d) { key(d, function () { type(d); }, /\d/.test(d) ? '' : 'sg'); });
+    key('⌫', back, 'del', 'מְחִיקָה'); clr = key('🧽', clear, 'clr', 'נִקּוּי הַדַּף'); undoKey();
+    var tip = h('div', { class: 'padtip', text: lay.tip }), backB = h('button', { class: 'padback', text: '✓ חֲזָרָה לַתַּרְגִּיל', on: { click: close } });
+    var cap = free ? h('div', { class: 'padcap', dir: q.rtl ? 'rtl' : 'ltr', html: (q.pic ? q.pic + ' ' : '') + frx(q.text) }) : null;
+    var card = h('div', { class: 'padc', 'data-fit': '1', 'data-kind': pd.kind },
+      h('div', { class: 'padh' }, h('b', { text: lay.title }), h('button', { class: 'padx', text: '✕', 'aria-label': 'סְגִירָה', on: { click: close } })),
+      tip, h('div', { class: 'padm' }, cap, grid), keys, backB);
+    // Nothing scrolls: the sizes are worked out here from the room the overlay really has (it ends above the race track and the
+    // invitation bar). Keys never under 48 px; cells as large as fits, up to 54 px; the tip and the "back" button are shown only when
+    // they do not push the cells under 40 px (the ✕ is always there); on a low wide screen the title moves above the keys, so the
+    // whole height is left for the sheet (a long division is the tallest: 8 rows).
+    function fitPad() {
+      if (ovl !== box) { stop(); return; }
+      var o = parseFloat(getComputedStyle(box).paddingTop) || 0, low = box.clientHeight - 2 * o <= 520, p = low ? 6 : 10, gap = low ? 4 : 8;
+      var W = Math.min(780, box.clientWidth - 2 * o) - 2 * p, H = box.clientHeight - 2 * o - 2 * p, side = W >= 560 && W > H, sh = side && H < 430;
+      var k = Math.max(48, Math.min(60, Math.floor(Math.min(W, H) / 12))), kc = side ? (free ? 5 : 3) : 6, kr = side ? 4 : free ? 4 : 2;
+      var Gw = W - (side ? kc * k + (kc - 1) * 6 + 12 : 0), room = H - (sh ? 0 : 48 + gap) - (side ? 0 : kr * k + (kr - 1) * 6 + 4 + gap), u, tipOn = false, backOn = false, th = 0, tg, C, R;
+      function most(Gh, t) { // the largest cell with which the sheet t fits into Gw x Gh
+        var wu = 0, RF = 0, RS = 0, NL = 0, x;
+        t.cols.forEach(function (w) { wu += w; });
+        t.rows.forEach(function (r) { if (r.line) NL++; else if (r.small) RS++; else RF++; });
+        for (x = 54; x > 20; x--) if (wu * x + 2 * (t.cols.length - 1) <= Gw && RF * x + RS * Math.max(20, Math.round(x * 0.65)) + NL * 3 + 2 * (t.rows.length - 1) <= Gh) break;
+        return x;
+      }
+      card.className = 'padc' + (side ? ' sd' : '') + (sh ? ' sh' : '');
+      card.style.cssText = '--k:' + k + 'px;--kc:' + kc + ';--p:' + p + 'px;--g:' + gap + 'px';
+      if (free) {
+        cap.style.maxWidth = Gw + 'px';
+        room -= cap.offsetHeight + gap;
+        C = Math.max(8, Math.min(14, Math.floor((Gw - 4) / 40))); R = Math.max(4, Math.min(8, Math.floor((room - 4) / 40)));
+        u = Math.floor(Math.min((Gw - 4) / C, (room - 4) / R, 56));
+        if (C !== fc || R !== fr) { fc = C; fr = R; draw(); }
+      } else {
+        tg = pd.kind === 'div' && lay.pairs > 3 && most(room, PADS.div(pd, false)) < 26; // a division of four steps that would get tiny cells: three steps
+        if (tg !== tight) { tight = tg; draw(); }
+        u = Math.min(40, most(room, lay));
+        if (!side) {
+          backOn = H >= 520 && most(room - 52 - gap, lay) >= u;
+          if (backOn) room -= 52 + gap;
+          if (H >= 600 && lay.tip) { tip.style.display = ''; tip.style.maxWidth = W + 'px'; th = tip.offsetHeight + gap; tipOn = most(room - th, lay) >= u; if (tipOn) room -= th; }
+        }
+        u = most(room, lay);
+      }
+      card.style.setProperty('--u', u + 'px'); card.style.setProperty('--s', Math.max(20, Math.round(u * 0.65)) + 'px');
+      tip.style.display = tipOn ? '' : 'none'; backB.style.display = backOn ? '' : 'none';
+    }
+    box = ovl = h('div', { class: 'ovl' }, card); document.body.appendChild(ovl);
+    if (!free) draw();
+    fitPad();
+    document.addEventListener('keydown', onKey, true);
+    if (window.ResizeObserver) { ro = new ResizeObserver(fitPad); ro.observe(box); } else window.addEventListener('resize', fitPad);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (ovl === box) fitPad(); }); // the caption is measured again in the real font
+  }
+  // debug (&pad=1): the sheet of the first exercise; &padq=<text> opens the sheet of a written exercise (the worst cases of the layout check)
+  function padDebug() {
+    var q = tv.round.current(), m = /padq=([^&]+)/.exec(hash), i, c, k;
+    if (m) { c = decodeURIComponent(m[1]); q = { text: c, fmt: 'choice', g: state.grade, key: c, rtl: false }; }
+    else for (i = 0; i < 80 && !L.padKind(q) && !/fmt=/.test(hash); i++) { c = L.makeQuestion(q.topic, q.level, Math.random); if (L.padKind(c)) for (k in c) q[k] = c[k]; } // this house has a sheet only for some of its exercises
+    openPad(q, null);
+  }
+  // layout check (&fit with &pad=1): the sheet is open, nothing in it scrolls, every key and cell is whole, inside the sheet and large enough
+  function padCheck(no) {
+    var c = document.querySelector('.ovl .padc'); if (!c) { no('nopad'); return; }
+    var cr = c.getBoundingClientRect(), g = c.querySelector('.padg'), n = /^(\d+)x(\d+)$/.exec(g.getAttribute('data-n') || ''), cap = c.querySelector('.padcap');
+    [].forEach.call(c.querySelectorAll('.pk,.pc,.padx,.padback,.pd,.padtip'), function (b) {
+      var r = b.getBoundingClientRect(), m = Math.min(r.width, r.height), l = b.classList;
+      if (!r.width) return;
+      if (r.left < cr.left - 1 || r.right > cr.right + 1 || r.top < cr.top - 1 || r.bottom > cr.bottom + 1) no('padout');
+      if (l.contains('pc') ? m < (l.contains('fc') ? 39.5 : l.contains('car') ? 19.5 : 25.5) : l.contains('pk') || l.contains('padx') || l.contains('padback') ? m < 47.5 : false) no('padsmall');
+    });
+    if (c.getAttribute('data-kind') === 'free' && (!n || +n[1] < 8 || +n[2] < 4)) no('padgrid');
+    if (cap && cap.scrollHeight > cap.clientHeight + 1) no('padcap');
+    if (c.scrollHeight > c.clientHeight + 1 || c.scrollWidth > c.clientWidth + 1 || cr.top < -1 || cr.left < -1 || cr.bottom > window.innerHeight + 1 || cr.right > window.innerWidth + 1 || !c.querySelector('.pc.on')) no('padfit');
   }
 
   // ---------- error reports ----------
@@ -6695,7 +7038,7 @@ var TrollModels = (function () {
   } else if (scr === 'who' || !profiles.cur) who();
   else { home(); syncNow(); presence.start(); }
   raceDebug();
-  if (/pad=1/.test(hash) && tv.round) openPad(tv.round.current()); // layout check of the scratch pad
+  if (/pad=1/.test(hash) && tv.round) padDebug(); // layout check of the calculation sheet
   var jc = (/join=([A-Za-z0-9]{8})/.exec(hash) || [])[1]; // a link from another device
   if (jc && cloudOn()) {
     jc = jc.toUpperCase();
@@ -6756,6 +7099,7 @@ var TrollModels = (function () {
       [].forEach.call(jp.querySelectorAll('.jrow span:last-child,.jrh b'), function (x) { if (x.scrollWidth > x.clientWidth + 1) no('text'); });
       [].forEach.call(cur.querySelectorAll('.parr:not(.gone),.snext,.jgo'), function (b) { var r = b.getBoundingClientRect(), min = b.classList.contains('parr') ? 47.5 : 59.5; if (r.width < 47.5 || r.height < (b.classList.contains('jgo') ? 47.5 : min) || (!b.classList.contains('parr') && r.bottom > window.innerHeight * 0.9 + 1)) no('target'); });
     }
+    if (/pad=1/.test(hash)) padCheck(no); // task "pad": the calculation sheet
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
       var r = x.getBoundingClientRect(); ovf = Math.max(ovf, x.scrollHeight - x.clientHeight, x.scrollWidth - x.clientWidth, r.bottom - window.innerHeight, -r.top);

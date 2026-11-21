@@ -45,6 +45,7 @@ if (!quick) {
   job('race (real database)', /^RACE OK/, () => run('node', ['tests/run-page.js', 'tests/race.html', '290'], 320000).then(o => o.split('\n')[0]));
   job('sync (real database)', /^SYNC OK/, () => run('node', ['tests/run-page.js', 'tests/sync.html', '240'], 270000).then(o => o.split('\n')[0]));
 }
+job('pad', /^PAD OK/, () => edge(page + '/tests/pad.html', 90000)); // task "pad": the calculation sheet through its real cells and keys, every way of writing
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine
