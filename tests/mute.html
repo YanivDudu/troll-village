@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- The speaker button must mean total silence, at once: music, effects that are already playing, synthesised notes scheduled ahead,
+     reading aloud; nothing may start while it is off; sound must come back when it is turned on again.
+     Result in document.title: MUTE OK <checks> or MUTE FAIL <what>. Run in a browser that allows autoplay (the test taps first). -->
+<style>iframe{border:1px solid #000;margin:4px}</style>
+<script>
+var fails = [], n = 0;
+function check(ok, what) { n++; if (!ok) fails.push(what); }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function load(hash) { return new Promise(function (r) { var f = document.createElement('iframe'); f.width = 390; f.height = 800; f.src = '../index.html#' + hash; (document.body || document.documentElement).appendChild(f); f.onload = function () { setTimeout(function () { r({ f: f, w: f.contentWindow, d: f.contentDocument }); }, 2500); }; }); }
+function speaker(x) { return x.d.querySelector('.screen:not(.out) [aria-label="צְלִילִים"]') || x.d.querySelector('[aria-label="צְלִילִים"]'); }
+function tapAll(x) { [].forEach.call(x.d.querySelectorAll('.screen:not(.out) .answers button, .screen:not(.out) .ans'), function (b) { try { b.click(); } catch (e) {} }); }
+function quiet(s) { return s.music === 0 && s.fx === 0 && (s.ac !== 'running' || s.gain === 0); }
+(async function () {
+  try {
+    var SC = ['demo&s=round&t=add&l=3&fmt=choice', 'demo&s=home', 'demo&s=end&t=add', 'demo&s=round&race=1'];
+    for (var i = 0; i < SC.length; i++) {
+      var x = await load(SC[i]), S = SC[i].replace('demo&s=', '') + ': ', started = { audio: 0, osc: 0, tts: 0 }, counting = false;
+      var play0 = x.w.HTMLMediaElement.prototype.play; x.w.HTMLMediaElement.prototype.play = function () { if (counting) started.audio++; return play0.apply(this, arguments); };
+      if (x.w.OscillatorNode) { var os0 = x.w.OscillatorNode.prototype.start; x.w.OscillatorNode.prototype.start = function () { if (counting) started.osc++; return os0.apply(this, arguments); }; }
+      if (x.w.speechSynthesis) { var sp0 = x.w.speechSynthesis.speak; x.w.speechSynthesis.speak = function () { if (counting) started.tts++; }; }
+      check(!!speaker(x) && typeof x.w.__tv.snd === 'function', S + 'the screen has a speaker button');
+      x.d.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true })); // the first tap unlocks sound and starts the music
+      await wait(1200); tapAll(x); x.w.__tv && x.d.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true })); await wait(250);
+      var before = x.w.__tv.snd();
+      check(before.music > 0 || before.fx > 0 || (before.ac === 'running' && before.gain > 0), S + 'something is sounding before the button is pressed (' + JSON.stringify(before) + ')');
+      speaker(x).click(); // speaker off, in the middle of the music and of an effect
+      var at = x.w.__tv.snd(); check(at.mute && quiet(at), S + 'silent at once (' + JSON.stringify(at) + ')');
+      counting = true; x.d.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true })); tapAll(x); await wait(1500);
+      x.d.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true })); [].forEach.call(x.d.querySelectorAll('.screen:not(.out) .buddy, .screen:not(.out) .helpb'), function (b) { try { b.click(); } catch (e) {} }); await wait(2500);
+      var after = x.w.__tv.snd();
+      check(quiet(after) && started.audio === 0 && started.osc === 0 && started.tts === 0, S + 'nothing started while the speaker was off (' + JSON.stringify(after) + ' ' + JSON.stringify(started) + ')');
+      x.d.dispatchEvent(new x.w.Event('visibilitychange')); await wait(300); check(quiet(x.w.__tv.snd()), S + 'still silent after the page comes back');
+      counting = false; var sp = speaker(x); if (sp) sp.click(); // speaker on again
+      x.d.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true })); await wait(1200);
+      var back = x.w.__tv.snd(); check(!back.mute && (back.music > 0 || (back.ac === 'running' && back.gain > 0)), S + 'sound comes back when the speaker is turned on (' + JSON.stringify(back) + ')');
+      x.f.remove();
+    }
+  } catch (e) { fails.push('error: ' + (e && e.stack || e)); }
+  document.title = 'MUTE ' + (fails.length ? 'FAIL ' + fails.join(' | ') : 'OK ' + n);
+})();
+</script>
