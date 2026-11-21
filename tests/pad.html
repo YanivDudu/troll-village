@@ -48,7 +48,7 @@ function same(a, b) { return sorted(a) === sorted(b); }
 (async function () {
   try {
     for (var size of [[360, 640], [800, 380]]) {
-      var x = await frame('demo&s=round&g=4&t=add', size[0], size[1]), S = size.join('x') + ': ', c, r = x.w.__tv.round, at = r.i, L = x.w.TrollLogic;
+      var x = await frame('demo&s=round&g=4&t=add&fmt=choice', size[0], size[1]), S = size.join('x') + ': ', c, r = x.w.__tv.round, at = r.i, L = x.w.TrollLogic;
       // ---- addition: the result is written from the ones leftwards
       setQ(x, '29,598 + 16,341 = ?', 4); check(!!open(x), S + 'addition: the button opens the sheet');
       check(sheet(x).getAttribute('data-kind') === 'add' && sel(x) === 'r5', S + 'addition: the first cell is the ones of the result (' + sel(x) + ')');
@@ -115,7 +115,7 @@ function same(a, b) { return sorted(a) === sorted(b); }
       check(same(cells(x), { r5: '5' }) && /^c/.test(sel(x)), S + 'keyboard on a column sheet: digits and arrows work, signs are ignored (' + JSON.stringify(cells(x)) + ', ' + sel(x) + ')');
       sheet(x).querySelector('.padx').click(); check(written(x) === '5', S + 'the button shows the 5');
       // ---- paper only: nothing was answered, and the sheet is not offered where it should not be
-      check(r.i === at && r.results.length === at && x.d.querySelectorAll('.screen:not(.out) .answers [data-v]').length >= 2, S + 'all of this answered nothing: the same exercise, its answer buttons untouched');
+      check(r.i === at && r.results.length === at && x.d.querySelectorAll('.answers button').length >= 2 && !x.d.querySelector('.answers .right,.answers .wrong'), S + 'all of this answered nothing: the same exercise, its answer buttons untouched (i ' + r.i + ' was ' + at + ', results ' + r.results.length + ', answer buttons ' + x.d.querySelectorAll('.answers button').length + ', marked ' + x.d.querySelectorAll('.answers .right,.answers .wrong').length + ', fmt ' + (r.current() || {}).fmt + ')');
       // ---- a wrong answer keeps the sheet of the exercise; the next exercise gets a clean one
       var q0 = r.current(); q0.answer = 45939; q0.options = [45939, 45940, 45929, 46939]; // (what the buttons show is older; only the values matter here)
       var wrong = [].filter.call(x.d.querySelectorAll('.screen:not(.out) .answers [data-v]'), function (b) { return b.getAttribute('data-v') !== String(x.w.__tv.round.current().answer); })[0];
