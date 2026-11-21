@@ -503,55 +503,6 @@ body.night .screen.rmap{background-image:linear-gradient(rgba(24,32,78,.3),rgba(
 .icon .ico{height:1.35em;width:1.35em}
 .sbtn .ico,.gift .ico,.emo .ico{vertical-align:middle}
 
-/* ---------- dressing room and shop ---------- */
-.shop{display:flex;gap:clamp(6px,1.8vmin,18px);width:100%;max-width:1200px;flex:1 1 auto;min-height:0;align-items:stretch}
-.sstage{flex:0 0 clamp(200px,36vmin,340px);display:flex;flex-direction:column;align-items:center;gap:clamp(3px,1vmin,8px);background:linear-gradient(#6f43e6,#a57bff 50%,#ffc7ea);border-radius:28px;padding:clamp(6px,1.4vmin,12px);box-shadow:0 8px 0 rgba(59,42,85,.2);position:relative;overflow:hidden;min-height:0;min-width:0}
-.sstage:before{content:"";position:absolute;inset:-40% -20% 30% -20%;background:repeating-conic-gradient(from 0deg at 50% 100%,rgba(255,255,255,.14) 0 9deg,transparent 9deg 24deg);animation:spin 60s linear infinite;transform-origin:50% 100%;pointer-events:none}
-.snav{display:flex;align-items:center;gap:6px;justify-content:center;position:relative;flex:0 0 auto}
-.snav .banner{font-size:clamp(14px,2.6vmin,22px);padding:3px 14px;animation:none}
-.snav .icon{width:44px;height:44px;font-size:17px}
-.spot{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;width:100%}
-.spot:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 96%,rgba(255,255,255,.75),rgba(255,255,255,0) 62%);pointer-events:none}
-.spot:after{content:"";position:absolute;bottom:0;left:50%;width:74%;height:13%;transform:translateX(-50%);background:radial-gradient(ellipse,#fff 0,#ffe39a 55%,#ffb300 100%);border-radius:50%;box-shadow:0 5px 0 #cf8a00}
-.shop .prev{position:absolute;z-index:1;left:4%;right:4%;top:0;bottom:4%;width:auto}
-.shop .prev .troll{width:100%;height:100%}
-.srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;position:relative;flex:0 0 auto}
-.sthumbs{display:flex;gap:4px;overflow-x:auto;max-width:100%;flex:0 0 auto;padding:3px;position:relative}
-.sthumb{flex:0 0 auto;width:clamp(34px,6vmin,50px);background:rgba(255,255,255,.45);border-radius:12px;padding:2px 2px 0}
-.sthumb.on{background:#fff;box-shadow:0 0 0 3px #ff4f9a}
-.spanel{flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(4px,1vmin,8px);background:rgba(255,255,255,.95);border-radius:28px;padding:clamp(6px,1.4vmin,12px);box-shadow:0 8px 0 rgba(59,42,85,.12)}
-.stabs{display:flex;gap:4px;flex:0 0 auto}
-.stab{flex:1 1 0;min-width:0;border-radius:16px;background:#efe8ff;padding:3px 1px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:clamp(10px,1.6vmin,13px);min-height:clamp(44px,8.6vmin,68px);transition:transform .12s;line-height:1.15}
-.stab .ti{font-size:clamp(20px,3.8vmin,32px);line-height:1.15}
-.stab .tl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.stab.on{background:#8e5cff;color:#fff;transform:translateY(-3px);box-shadow:0 4px 0 #6337cf}
-.shead{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.shead b{font-size:clamp(14px,2.5vmin,21px);white-space:nowrap}
-.shead .cnt{font-size:clamp(12px,2vmin,16px);color:#8e5cff;font-weight:700;white-space:nowrap}
-.shead .pbar{flex:1 1 auto;height:9px;margin:0}
-.shop .opts{grid-template-columns:repeat(auto-fill,minmax(clamp(74px,13vmin,112px),1fr));grid-auto-rows:max-content;align-content:start;gap:clamp(5px,1.2vmin,10px);padding:3px}
-.shop .opt{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;padding:5px 3px 4px;border-radius:18px;box-shadow:0 3px 0 rgba(59,42,85,.1)}
-.shop .opt .troll{width:74%;margin:auto}
-.shop .opt .emo{font-size:clamp(34px,7vmin,54px);line-height:1.15}
-.shop .opt .sw{width:clamp(44px,8vmin,62px);height:clamp(44px,8vmin,62px)}
-.oname{font-size:clamp(10px,1.7vmin,13px);font-weight:700;line-height:1.15;text-align:center}
-.otag{font-size:clamp(11px,1.8vmin,14px);font-weight:700;border-radius:99px;padding:0 8px;background:#fff1b8;direction:ltr;white-space:nowrap}
-.otag.cant{background:#f1edf7;color:#9a8fb3}
-.otag.own{background:#d9f7e2;color:#1f8f3c}
-.shop .opt.cant>:first-child{opacity:.5}
-.shop .opt.locked>:first-child{opacity:.3;filter:grayscale(1)}
-.shop .opt.sel{border-color:#ff4f9a;background:#fff0f7;box-shadow:0 0 0 3px #ffd3e6}
-.shop .opt.shop:not(.cant){background:#fffbe9}
-.sfoot{flex:0 0 auto;min-height:clamp(40px,7.5vmin,58px);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:clamp(13px,2.3vmin,18px);color:#c92f74;text-align:center}
-.sfoot .btn{min-height:clamp(40px,7vmin,54px)}
-@media (orientation:portrait){
-  .shop{flex-direction:column}
-  .sstage{flex:0 0 auto;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"spot nav" "spot row";align-items:center;justify-items:center;column-gap:8px}
-  .spot{grid-area:spot;width:clamp(96px,26vmin,210px);height:clamp(126px,34vmin,275px);flex:none}
-  .snav{grid-area:nav}.srow{grid-area:row}.sthumbs{display:none}
-}
-@media (max-width:640px),(max-height:520px){.stab .tl{display:none}.stab{min-height:40px}.oname{display:none}.btn.pick{min-height:40px;font-size:13px;padding:4px 12px}}
-@media (max-height:520px){.sthumbs{display:none}.sstage{flex-basis:170px}.shead{display:none}}
 
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}.cloud,.mote,.fly{display:none}}
 /* ---- race between online players: invitation bar, launch, track at the bottom, results ---- */
@@ -895,6 +846,118 @@ body.night .cfire:before{inset:-100%;background:radial-gradient(closest-side,rgb
   .epic{max-height:520px}
 }
 @media (max-height:520px){.endm .h2{font-size:18px;padding:0 18px}.endm .bigstars .star{font-size:36px}.ebub{font-size:15px;padding:3px 12px}.ebtns .btn{min-height:48px}.ebtns .btn.nxt{min-height:50px;font-size:20px}.epic{gap:8px}.ehero svg{height:21vmin}.ebridge{--s:1.2}.endm .egrid{row-gap:5px}}
+/* ---------- the cart: dressing room and shop on parchment. Nothing scrolls: cards and trolls are paged by arrows ---------- */
+.screen.cart{gap:clamp(4px,1.2vmin,12px)}
+.cwrap{flex:1 1 0;min-height:0;width:100%;max-width:1320px;display:flex;gap:clamp(6px,1.4vmin,14px);align-items:stretch;color:#3b2a15}
+.cstage{flex:0 0 clamp(196px,25vw,330px);min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vmin,10px);padding:clamp(5px,1.2vmin,12px) clamp(4px,1vmin,10px);background:linear-gradient(rgba(255,251,238,.86),rgba(248,232,196,.86));border:0 solid #9a6a3a;border-inline-width:10px;border-radius:12px;box-shadow:0 4px 0 rgba(90,60,20,.35),inset 0 0 22px rgba(120,80,30,.28)}
+.chead{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 8px;flex:0 0 auto;max-width:100%}
+.ctitle{font-size:clamp(16px,3vmin,26px);white-space:nowrap;line-height:1.25}
+.cname{font-size:clamp(13px,2.2vmin,18px);font-weight:700;line-height:1.5;background:#fffaf0;border-radius:999px;padding:0 12px;box-shadow:0 2px 0 rgba(90,60,20,.3);white-space:nowrap}
+.cprev{flex:1 1 0;min-height:0;width:100%;position:relative}
+.cprev svg.troll{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 4px 3px rgba(60,40,10,.35))}
+.cpickr{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;flex:0 0 auto}
+.parr{width:48px;height:48px;flex:0 0 48px;border-radius:50%;background:#fffaf0;border:2px solid #b9783a;box-shadow:0 3px 0 #8a5524;font-size:17px;color:#3b2a15;transition:transform .12s}
+.parr:active{transform:translateY(3px)}
+.parr[disabled]{opacity:.3}
+.parr.gone{visibility:hidden}
+.cths{flex:1 1 0;min-width:0;height:48px;display:flex;justify-content:center;align-items:center;gap:8px;font-weight:700;font-size:15px}
+.cths .cnt{direction:ltr;background:rgba(255,250,235,.92);border-radius:999px;padding:1px 10px}
+.cth{flex:0 0 48px;width:48px;height:48px;background:rgba(255,250,235,.85);border-radius:12px;padding:2px 2px 0;border:2px solid transparent}
+.cth svg{width:100%;height:100%;display:block}
+.cth .troll .tb,.cth .troll .hair,.cth .troll .eyes,.cth .troll .pet,.cth .troll .pup{animation:none}
+.cth.on{background:#fff;border-color:#c8452e;box-shadow:0 2px 0 #7c2416}
+.cacts{display:flex;gap:8px;width:100%;flex:0 0 auto}
+.cacts .btn{flex:1 1 0;min-width:0;min-height:48px;padding:3px 6px;font-size:clamp(13px,2vmin,17px);line-height:1.2;background:#fffaf0;color:#3b2a15;text-shadow:none;border:2px solid #b9783a;border-radius:14px;box-shadow:0 4px 0 #8a5524}
+.cacts .btn.is{background:#ffe9a8;box-shadow:0 4px 0 #8a5524}
+.kpanel{flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(4px,1vmin,8px)}
+.ctabs{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;flex:0 0 auto}
+.ctab{min-width:0;min-height:48px;border-radius:14px;background:#fffaf0;border:2px solid #b9783a;color:#3b2a15;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:clamp(10px,1.5vmin,13px);padding:2px 1px;box-shadow:0 3px 0 #8a5524;transition:transform .12s}
+.ctab .ti{font-size:clamp(22px,3.6vmin,30px);line-height:1.15}
+.ctab .tl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.35}
+.ctab.on{background:#c44a33;border-color:#7c2416;color:#fff;box-shadow:0 3px 0 #7c2416}
+.ctab:active{transform:translateY(3px)}
+.cgridw{flex:1 1 0;min-height:0;min-width:0;position:relative}
+.cgridc{position:absolute;inset:0;display:grid;gap:8px;align-content:start}
+.citem{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 3px 3px;border-radius:14px;background:#fffaf0;color:#3b2a15;border:3px solid transparent;box-shadow:0 3px 0 rgba(90,60,20,.3);transition:transform .12s}
+.citem:active{transform:translateY(3px) scale(.97)}
+.cpic{flex:1 1 0;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.cpic .pimg{height:100%;max-width:84%;width:auto;aspect-ratio:1;object-fit:contain;display:block}
+.cpic .emo{font-size:40px;line-height:1}
+.cpic .ppart{height:100%;width:84%;display:block}
+.ppart svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 1px 1px rgba(60,40,10,.5))}
+.cpic .sw{width:auto;height:74%;max-width:74%;aspect-ratio:1;border-radius:50%;display:block;box-shadow:inset 0 -5px 0 rgba(0,0,0,.15),0 0 0 3px #fff,0 2px 0 3px rgba(90,60,20,.25)}
+.cnm{flex:0 0 auto;max-width:100%;font-size:clamp(11px,1.9vmin,15px);font-weight:700;line-height:1.3;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cnm.two{white-space:normal;text-wrap:balance;line-height:1.15}
+.cpr{flex:0 0 auto;font-size:clamp(12px,2vmin,16px);font-weight:700;line-height:1.3;white-space:nowrap}
+.cpr .ico{width:1.05em;height:1.05em;vertical-align:-.16em}
+.cpr.cant{color:#a09078}
+.cpr.own{color:#1f8f3c}
+.cdo,.cgl{position:absolute;top:3px;width:clamp(20px,3.6vmin,28px);height:clamp(20px,3.6vmin,28px);border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(90,60,20,.35);display:flex;align-items:center;justify-content:center}
+.cdo{inset-inline-start:3px}
+.cgl{inset-inline-end:3px;background:#ffe9a8}
+.cdo .ico,.cgl .ico{width:74%;height:74%;vertical-align:0}
+.citem.worn{background:#ffe9a8;border-color:#e0a520}
+.citem.pick{border-color:#c8452e;box-shadow:0 0 0 3px rgba(200,69,46,.28),0 3px 0 rgba(90,60,20,.3)}
+.cmsgr{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-height:24px}
+.kmsg{flex:1 1 0;min-width:0;font-weight:700;font-size:clamp(13px,2.2vmin,18px);line-height:1.4;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,250,235,.92);border-radius:999px;padding:1px 12px}
+.cpg{flex:0 0 auto;direction:ltr;font-weight:700;font-size:13px;line-height:1.5;background:rgba(255,250,235,.92);border-radius:999px;padding:1px 10px}
+.cpg:empty{display:none}
+.cfoot{display:flex;align-items:center;gap:8px;flex:0 0 auto;min-height:54px}
+.cact{flex:1 1 0;min-width:0;display:flex;justify-content:center}
+.cbtn{min-height:50px;width:100%;max-width:420px;padding:4px 16px;font-size:clamp(17px,3vmin,24px);line-height:1.2;border-radius:18px;color:#fff;background:linear-gradient(#c44a33,#a93522);border:2px solid #7c2416;box-shadow:0 4px 0 #7c2416,0 8px 10px rgba(60,30,10,.22)}
+.cbtn.koff,.cbtn.kgoal{background:#fffaf0;color:#3b2a15;text-shadow:none;border-color:#b9783a;box-shadow:0 4px 0 #8a5524}
+.cbtn.kgoal{background:#ffe9a8}
+@media (orientation:portrait),(max-width:699px){
+  .cwrap{flex-direction:column}
+  .cstage{flex:0 0 auto;display:grid;grid-template-columns:clamp(92px,27vw,210px) minmax(0,1fr);grid-template-areas:"prev head" "prev pick" "prev acts";column-gap:8px;align-items:center;justify-items:center}
+  .cstage.solo{grid-template-areas:"prev head" "prev acts"}
+  .chead{grid-area:head}.cprev{grid-area:prev;align-self:stretch;min-height:clamp(112px,20vh,250px)}.cpickr{grid-area:pick}.cacts{grid-area:acts}
+}
+@media (max-width:640px){.ctabs{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (max-width:1099px),(max-height:520px){.ctab .tl{display:none}}
+@media (max-height:520px){.ctitle{font-size:15px}.cname{font-size:13px}.cstage{gap:3px}.cmsgr{min-height:20px}.kmsg{font-size:13px}.cfoot{min-height:50px}.cbtn{min-height:48px;font-size:17px}}
+/* victory moves (items of the slot "move"): one shot, on the group of the troll that already jumps; never a loop */
+.mv-jump2{--mv:mvJump2}.mv-spin{--mv:mvSpin;--mo:50% 55%}.mv-mvbow{--mv:mvBow}.mv-dance{--mv:mvDance}.mv-flip{--mv:mvFlip;--mo:50% 55%}
+[class*="mv-"] .troll.cheer .tb{animation:var(--mv) .9s ease-in-out 1;transform-origin:var(--mo,50% 100%)}
+.endm .mbud[class*="mv-"] .troll .tb{animation:var(--mv) .9s ease-in-out 2.4s 1,idle 2.2s ease-in-out 3.3s infinite;transform-origin:var(--mo,50% 100%)}
+@keyframes mvJump2{0%,100%{transform:translateY(0) scale(1.08,.9)}22%{transform:translateY(-30px) scale(.95,1.07)}45%{transform:translateY(0) scale(1.1,.88)}70%{transform:translateY(-46px) scale(.93,1.09)}}
+@keyframes mvSpin{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-26px) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+@keyframes mvBow{0%,100%{transform:rotate(0) scale(1)}35%,60%{transform:rotate(24deg) scale(1,.94)}}
+@keyframes mvDance{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-12px) rotate(-9deg)}40%{transform:translateX(12px) rotate(9deg)}65%{transform:translateX(-12px) rotate(-9deg)}85%{transform:translateX(8px) rotate(6deg)}}
+@keyframes mvFlip{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(-44px) rotate(-110deg)}70%{transform:translateY(-44px) rotate(-290deg)}100%{transform:translateY(0) rotate(-360deg)}}
+/* the pet of the companion stands beside it in the camp and on the maps */
+.mbud{position:relative}
+.mpet{position:absolute;bottom:0;left:86%;width:62%;height:auto;aspect-ratio:1;object-fit:contain;vertical-align:0}
+.cpet{flex:0 0 auto;height:clamp(30px,36%,112px);width:auto;aspect-ratio:1;object-fit:contain;align-self:flex-end;margin-inline-start:calc(-1*clamp(4px,2vmin,24px));filter:drop-shadow(0 3px 2px rgba(60,40,10,.3));animation:hop 1.1s ease-in-out infinite;transform-origin:50% 100%}
+/* the savings goal: a small meter (picture, coins / price, bar) on the cart button of the camp and under the picture of an end screen */
+.gm{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 5px;max-width:100%}
+.gpic{width:1.5em;height:1.5em;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+.gpic .pimg,.gpic .ppart{width:100%;height:100%;max-width:none;object-fit:contain;display:block}
+.gnum{direction:ltr;white-space:nowrap}.gtxt{white-space:nowrap;line-height:1.5}
+.gbar{flex:0 0 100%;height:5px;border-radius:3px;background:rgba(90,60,20,.22);overflow:hidden;display:block}
+.gbar>i{display:block;height:100%;border-radius:3px;background:#e0a520}
+.ready>.gbar>i,.ready .gbar>i{background:#1f8f3c}
+.camp .hrow .btn.hasgoal .ci{display:flex;align-items:center;gap:4px}
+.camp .hrow .btn.hasgoal .gpic{font-size:.8em}
+.camp .hrow .btn.hasgoal .cl{min-width:62%}
+.camp .hrow .btn.hasgoal.ready{background:#ffe9a8}
+@media (max-height:520px){.camp .hrow .btn.hasgoal .ci>.ico,.camp .hrow .btn.hasgoal .ci>.emo{display:none}}
+.endm .banner.egoal{display:inline-flex;align-items:center;gap:6px}
+.endm .banner.egoal .gm{flex-wrap:nowrap}
+.endm .banner.egoal .gbar{flex:0 0 clamp(50px,12vmin,110px);order:3}
+.endm .banner.egoal.ready .gbar{display:none}
+.endm .banner.egoal.ready{background:#ffe9a8}
+.ebtns .btn.cartb{background:#ffe9a8}
+/* the daily gift, on parchment */
+.ggrid{flex:1 1 0;min-height:0;width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.8vmin,16px)}
+.gframe{flex:1 1 0;min-height:0;width:100%;max-height:430px;display:flex;align-items:center;justify-content:center;gap:clamp(8px,4vmin,40px);padding:8px;color:#3b2a15;background:linear-gradient(rgba(255,251,238,.78),rgba(248,232,196,.78));border:0 solid #9a6a3a;border-inline-width:10px;border-radius:12px;box-shadow:0 4px 0 rgba(90,60,20,.35),inset 0 0 22px rgba(120,80,30,.28)}
+.giftm .gift{font-size:clamp(80px,30vmin,200px)}
+.gframe .reveal{width:auto}
+.gbud{height:100%;aspect-ratio:200/262;max-width:52%;min-width:0}
+.gbud svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 3px rgba(60,40,10,.35))}
+.gitem{position:relative;width:clamp(96px,28vmin,200px);max-width:42%;height:min(100%,clamp(104px,31vmin,220px));display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px 6px;border-radius:14px;background:#fffaf0;box-shadow:0 3px 0 rgba(90,60,20,.3)}
+.gitem .cnm{font-size:clamp(13px,2.4vmin,19px);white-space:normal}
+.giftm .ebtns{flex:0 0 auto;min-height:58px}
 </style>
 </head>
 <body>
@@ -2575,19 +2638,48 @@ var TrollLogic = (function () {
     ['pet', 'hamster', '🐹', 'אוֹגֵר', 20], ['pet', 'bunny', '🐰', 'אַרְנָב', 22], ['pet', 'puppy', '🐶', 'כְּלַבְלַב', 25], ['pet', 'kitty', '🐱', 'חֲתַלְתּוּל', 25], ['pet', 'penguin', '🐧', 'פִּינְגְּוִין', 28],
     ['pet', 'fox', '🦊', 'שׁוּעָל', 30], ['pet', 'owl', '🦉', 'יַנְשׁוּף', 30], ['pet', 'octopus', '🐙', 'תְּמָנוּן', 32], ['pet', 'panda', '🐼', 'פַּנְדָּה', 35], ['pet', 'dino', '🦕', 'דִּינוֹזָאוּר', 40],
     ['pet', 'unicorn', '🦄', 'חַד-קֶרֶן', 45], ['pet', 'dragon', '🐉', 'דְּרָקוֹן', 50],
-    ['hat', 'cherry', '🍒', 'דֻּבְדְּבָנִים', 10], ['hat', 'clover', '🍀', 'תִּלְתַּן מַזָּל', 12], ['hat', 'sunflower', '🌻', 'חַמָּנִיָּה', 14], ['hat', 'pumpkin', '🎃', 'דְּלַעַת', 18], ['hat', 'glowstar', '🌟', 'כּוֹכָב זוֹהֵר', 24], ['hat', 'cake', '🎂', 'עוּגַת יוֹם הֻלֶּדֶת', 28], ['hat', 'ufo', '🛸', 'חֲלָלִית', 35], ['face', 'diving', '🤿', 'מַסֵּכַת צְלִילָה', 16], ['hand', 'banana', '🍌', 'בָּנָנָה', 5], ['hand', 'carrot', '🥕', 'גֶּזֶר', 5], ['hand', 'grapes', '🍇', 'עֲנָבִים', 6], ['hand', 'juice', '🧃', 'מִיץ', 6], ['hand', 'popcorn', '🍿', 'פּוֹפְּקוֹרְן', 7], ['hand', 'choc', '🍫', 'שׁוֹקוֹלָד', 8], ['hand', 'dice', '🎲', 'קֻבִּיָּה', 8], ['hand', 'slice', '🍰', 'עוּגָה', 9], ['hand', 'tennis', '🎾', 'טֶנִיס', 9], ['hand', 'yoyo', '🪀', 'יוֹיוֹ', 9], ['hand', 'puzzle', '🧩', 'פָּאזֶל', 10], ['hand', 'target', '🎯', 'מַטָּרָה', 12], ['hand', 'kite', '🪁', 'עֲפִיפוֹן', 14], ['hand', 'mic', '🎤', 'מִיקְרוֹפוֹן', 16], ['hand', 'drum', '🥁', 'תֹּף', 18], ['hand', 'skate', '🛹', 'סְקֵייטְבּוֹרְד', 18], ['hand', 'violin', '🎻', 'כִּנּוֹר', 20], ['hand', 'gamepad', '🎮', 'שַׁלַּט מִשְׂחָק', 22], ['hand', 'keys', '🎹', 'אוֹרְגָּנִית', 22], ['hand', 'cup', '🏆', 'גָּבִיעַ', 30], ['pet', 'snail', '🐌', 'חִלָּזוֹן', 10], ['pet', 'fish', '🐠', 'דָּג', 14], ['pet', 'hen', '🐔', 'תַּרְנְגֹלֶת', 16], ['pet', 'duck', '🦆', 'בַּרְוָז', 16], ['pet', 'piggy', '🐷', 'חֲזַרְזִיר', 20], ['pet', 'cow', '🐮', 'פָּרָה', 22], ['pet', 'squirrel', '🐿️', 'סְנָאִי', 22], ['pet', 'hedgehog', '🦔', 'קִפּוֹד', 24], ['pet', 'monkey', '🐵', 'קוֹף', 26], ['pet', 'koala', '🐨', 'קוֹאָלָה', 28], ['pet', 'parrot', '🦜', 'תֻּכִּי', 30], ['pet', 'tiger', '🐯', 'נָמֵר', 34], ['pet', 'dolphin', '🐬', 'דּוֹלְפִין', 36], ['pet', 'zebra', '🦓', 'זֶבְּרָה', 36], ['pet', 'lion', '🦁', 'אַרְיֵה', 38], ['pet', 'giraffe', '🦒', 'גִ׳ירָפָה', 40], ['pet', 'elephant', '🐘', 'פִּיל', 42], ['pet', 'whale', '🐳', 'לִוְיָתָן', 44]
+    ['hat', 'cherry', '🍒', 'דֻּבְדְּבָנִים', 10], ['hat', 'clover', '🍀', 'תִּלְתַּן מַזָּל', 12], ['hat', 'sunflower', '🌻', 'חַמָּנִיָּה', 14], ['hat', 'pumpkin', '🎃', 'דְּלַעַת', 18], ['hat', 'glowstar', '🌟', 'כּוֹכָב זוֹהֵר', 24], ['hat', 'cake', '🎂', 'עוּגַת יוֹם הֻלֶּדֶת', 28], ['hat', 'ufo', '🛸', 'חֲלָלִית', 35], ['face', 'diving', '🤿', 'מַסֵּכַת צְלִילָה', 16], ['hand', 'banana', '🍌', 'בָּנָנָה', 5], ['hand', 'carrot', '🥕', 'גֶּזֶר', 5], ['hand', 'grapes', '🍇', 'עֲנָבִים', 6], ['hand', 'juice', '🧃', 'מִיץ', 6], ['hand', 'popcorn', '🍿', 'פּוֹפְּקוֹרְן', 7], ['hand', 'choc', '🍫', 'שׁוֹקוֹלָד', 8], ['hand', 'dice', '🎲', 'קֻבִּיָּה', 8], ['hand', 'slice', '🍰', 'עוּגָה', 9], ['hand', 'tennis', '🎾', 'טֶנִיס', 9], ['hand', 'yoyo', '🪀', 'יוֹיוֹ', 9], ['hand', 'puzzle', '🧩', 'פָּאזֶל', 10], ['hand', 'target', '🎯', 'מַטָּרָה', 12], ['hand', 'kite', '🪁', 'עֲפִיפוֹן', 14], ['hand', 'mic', '🎤', 'מִיקְרוֹפוֹן', 16], ['hand', 'drum', '🥁', 'תֹּף', 18], ['hand', 'skate', '🛹', 'סְקֵייטְבּוֹרְד', 18], ['hand', 'violin', '🎻', 'כִּנּוֹר', 20], ['hand', 'gamepad', '🎮', 'שַׁלַּט מִשְׂחָק', 22], ['hand', 'keys', '🎹', 'אוֹרְגָּנִית', 22], ['hand', 'cup', '🏆', 'גָּבִיעַ', 30], ['pet', 'snail', '🐌', 'חִלָּזוֹן', 10], ['pet', 'fish', '🐠', 'דָּג', 14], ['pet', 'hen', '🐔', 'תַּרְנְגֹלֶת', 16], ['pet', 'duck', '🦆', 'בַּרְוָז', 16], ['pet', 'piggy', '🐷', 'חֲזַרְזִיר', 20], ['pet', 'cow', '🐮', 'פָּרָה', 22], ['pet', 'squirrel', '🐿️', 'סְנָאִי', 22], ['pet', 'hedgehog', '🦔', 'קִפּוֹד', 24], ['pet', 'monkey', '🐵', 'קוֹף', 26], ['pet', 'koala', '🐨', 'קוֹאָלָה', 28], ['pet', 'parrot', '🦜', 'תֻּכִּי', 30], ['pet', 'tiger', '🐯', 'נָמֵר', 34], ['pet', 'dolphin', '🐬', 'דּוֹלְפִין', 36], ['pet', 'zebra', '🦓', 'זֶבְּרָה', 36], ['pet', 'lion', '🦁', 'אַרְיֵה', 38], ['pet', 'giraffe', '🦒', 'גִ׳ירָפָה', 40], ['pet', 'elephant', '🐘', 'פִּיל', 42], ['pet', 'whale', '🐳', 'לִוְיָתָן', 44],
+    // items that do something (never anything that helps with an exercise). move: what the companion does once after a correct
+    // answer and at the end of a stage; party: the celebration of the end-of-stage screen. The equipped ones are in state.fx.
+    ['move', 'jump2', '🦘', 'קְפִיצָה כְּפוּלָה', 30], ['move', 'mvbow', '🙇', 'קִדָּה', 30], ['move', 'spin', '🌀', 'סִחְרוּר', 35], ['move', 'dance', '💃', 'רִקּוּד נִצָּחוֹן', 40], ['move', 'flip', '🤸', 'גַּלְגַּלּוֹן', 45],
+    ['party', 'prain', '🎉', 'קוֹנְפֵטִי צִבְעוֹנִי', 25], ['party', 'pgold', '🎊', 'קוֹנְפֵטִי זָהָב', 30], ['party', 'pheart', '💖', 'לְבָבוֹת', 30], ['party', 'pstar', '🎇', 'מְטַר כּוֹכָבִים', 35], ['party', 'pfire', '🎆', 'זִקּוּקִים', 45]
   ].map(function (x) { return { slot: x[0], id: x[1], e: x[2], name: x[3], price: x[4] * 2 }; }).sort(function (a, b) { return a.price - b.price; });
   var ITEM = {};
   ITEMS.forEach(function (it) { ITEM[it.id] = it; });
   var EMOJI_SLOTS = ['hat', 'face', 'hand', 'pet'];
   // Buying is the child's choice: enough coins and not owned yet. Returns a new state, never mutates.
-  // What an item costs this player right now: its base price, plus 5% for every item already bought
-  // (rounded up to a multiple of 5), so the collection takes a long time to complete.
+  // What an item costs: its own fixed price, the same for every player and however many items they already have.
   function priceOf(state, id) {
     var it = ITEM[id];
-    if (!it || !it.price) return 0;
-    var bought = Math.max(0, (state.items || []).length - FREE_ITEMS.length);
-    return Math.ceil(it.price * (1 + 0.05 * bought) / 5) * 5;
+    return it && it.price ? it.price : 0;
+  }
+  // ---- state.fx: an OPTIONAL saved field (absent in older saves, ignored by older pages): { move, party } are the ids of the
+  // equipped victory move and celebration effect, { goal } is the one item the child is saving for, { told } the goal whose
+  // "you can afford it" offer was already shown at the end of a stage. Missing = today's behaviour: one jump, no effect, no goal.
+  var FX_SLOTS = ['move', 'party'];
+  function fxOf(state, slot) { // the equipped item of that slot, only while it is owned
+    var id = state && state.fx && state.fx[slot], it = ITEM[id];
+    return it && it.slot === slot && (state.items || []).indexOf(id) >= 0 ? id : '';
+  }
+  function setFx(state, slot, id) { // id '' takes it off. Returns a new state.
+    var s = Object.assign({}, state), fx = Object.assign({}, state.fx || {});
+    if (FX_SLOTS.indexOf(slot) < 0) return state;
+    if (id && ITEM[id] && ITEM[id].slot === slot && (state.items || []).indexOf(id) >= 0) fx[slot] = id; else delete fx[slot];
+    s.fx = fx; return s;
+  }
+  // The savings goal: one item that is not owned yet. Nothing expires and nothing is lost; a goal that was bought (or
+  // received as a gift) simply stops being a goal.
+  function goalOf(state) {
+    var id = state && state.fx && state.fx.goal, it = ITEM[id];
+    if (!it || !it.price || (state.items || []).indexOf(id) >= 0) return null;
+    var have = Math.max(0, state.coins | 0);
+    return { id: id, item: it, price: it.price, have: have, ready: have >= it.price, part: Math.min(1, have / it.price) };
+  }
+  function setGoal(state, id) { // id '' removes the goal. Returns a new state.
+    var s = Object.assign({}, state), fx = Object.assign({}, state.fx || {});
+    if (id && ITEM[id] && ITEM[id].price && (state.items || []).indexOf(id) < 0) fx.goal = id; else delete fx.goal;
+    if (fx.told !== fx.goal) delete fx.told;
+    s.fx = fx; return s;
   }
   function buy(state, id) {
     var it = ITEM[id], cost = priceOf(state, id);
@@ -2830,6 +2922,10 @@ var TrollLogic = (function () {
     s.music = o.music !== false;
     s.coins = int(o.coins, 0, 1e9, 0);
     if (Array.isArray(o.items)) o.items.forEach(function (a) { if (typeof a === 'string' && ITEM[a] && s.items.indexOf(a) < 0) s.items.push(a); });
+    var fx = obj(o.fx), fxo = {}; // optional (see priceOf): equipped move and celebration, the savings goal
+    FX_SLOTS.forEach(function (k) { if (typeof fx[k] === 'string' && ITEM[fx[k]] && ITEM[fx[k]].slot === k) fxo[k] = fx[k]; });
+    if (typeof fx.goal === 'string' && ITEM[fx.goal] && ITEM[fx.goal].price) { fxo.goal = fx.goal; if (fx.told === fx.goal) fxo.told = fx.goal; }
+    if (o.fx && typeof o.fx === 'object') s.fx = fxo;
     if (Array.isArray(o.owned)) {
       var seen = {};
       o.owned.forEach(function (x) {
@@ -2888,7 +2984,7 @@ var TrollLogic = (function () {
   }
 
   // The texts of the game speak to a girl. For a boy the same texts are shown with these words replaced.
-  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְתוּכְלִי", "וְתוּכַל"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"], ["דִּיַּקְתְּ", "דִּיַּקְתָּ"], ["פָּתַרְתְּ", "פָּתַרְתָּ"], ["חָשַׁבְתְּ", "חָשַׁבְתָּ"], ["מָצָאת", "מָצָאתָ"], ["הִצְלַחְתְּ", "הִצְלַחְתָּ"], ["נִסִּית", "נִסִּיתָ"], ["וִתַּרְתְּ", "וִתַּרְתָּ"], ["תִּקַּנְתְּ", "תִּקַּנְתָּ"], ["הִתְעַקַּשְׁתְּ", "הִתְעַקַּשְׁתָּ"], ["אִתָּךְ", "אִתְּךָ"]];
+  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"], ["דִּיַּקְתְּ", "דִּיַּקְתָּ"], ["פָּתַרְתְּ", "פָּתַרְתָּ"], ["חָשַׁבְתְּ", "חָשַׁבְתָּ"], ["מָצָאת", "מָצָאתָ"], ["הִצְלַחְתְּ", "הִצְלַחְתָּ"], ["נִסִּית", "נִסִּיתָ"], ["וִתַּרְתְּ", "וִתַּרְתָּ"], ["תִּקַּנְתְּ", "תִּקַּנְתָּ"], ["הִתְעַקַּשְׁתְּ", "הִתְעַקַּשְׁתָּ"], ["אִתָּךְ", "אִתְּךָ"], ["חוֹסֶכֶת", "חוֹסֵךְ"]];
   var MALE_MAP = {}, MALE_RE = new RegExp('(^|[^\u0590-\u05FF])(' + MALE.map(function (x) { MALE_MAP[x[0]] = x[1]; return x[0]; }).join('|') + ')(?![\u0590-\u05FF])', 'g');
   function forBoy(t) { return typeof t === 'string' ? t.replace(MALE_RE, function (m, pre, w) { return pre + MALE_MAP[w]; }) : t; }
 
@@ -2896,7 +2992,7 @@ var TrollLogic = (function () {
     SUBS: SUBS, KIT: KIT,
     MALE: MALE, forBoy: forBoy,
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
-    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, roundReward: roundReward,
+    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
@@ -2986,7 +3082,13 @@ var TrollArt = (function () {
       eyes + '<ellipse cx="100" cy="180" rx="8" ry="6" fill="' + dk + '"/>' + mouth + (ACC[s.acc] || '') + em(s.faceE, 100, 186, 72) + em(s.hatE, 100, 114, 62) + em(s.handE, 172, 240, 46) +
       '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
   }
-  return { trollSVG: trollSVG, shade: shade };
+  // One piece alone, for a card of the cart: a code-drawn accessory or a hairstyle, without the troll. The caller fits the
+  // viewBox to the drawing once it is in the page (getBBox).
+  function partSVG(kind, id, color) {
+    var c = color || '#ff4f9a', inner = kind === 'hair' ? (HAIR[id] || HAIR[0])(c, shade(c, 0.5)) : (BACK[id] || '') + (ACC[id] || '');
+    return inner ? '<svg class="part" viewBox="0 0 200 262" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + inner + '</svg>' : '';
+  }
+  return { trollSVG: trollSVG, partSVG: partSVG, shade: shade };
 })();
 </script>
 <script id="models">
@@ -3464,7 +3566,7 @@ var TrollModels = (function () {
   // ---------- icons: every emoji on screen is swapped for its Fluent Emoji picture (assets/ico), so it looks
   // the same on every device; if a picture is missing the emoji itself stays as the fallback ----------
   var ICO = {};
-  '1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f5fa 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 2699 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
+  '1f300 1f386 1f387 1f38a 1f43e 1f483 1f647 1f938 1f998 1f302 1f308 1f309 1f30a 1f31f 1f333 1f338 1f33b 1f340 1f344 1f347 1f349 1f34c 1f34e 1f352 1f353 1f355 1f366 1f369 1f36a 1f36b 1f36d 1f370 1f37f 1f380 1f381 1f382 1f383 1f388 1f389 1f392 1f393 1f3a4 1f3a8 1f3a9 1f3aa 1f3ad 1f3ae 1f3af 1f3b2 1f3b5 1f3b8 1f3b9 1f3ba 1f3bb 1f3be 1f3c0 1f3c6 1f3d4 1f3e0 1f3f0 1f409 1f40c 1f414 1f418 1f419 1f41d 1f41e 1f420 1f422 1f425 1f427 1f428 1f42c 1f42e 1f42f 1f430 1f431 1f433 1f435 1f436 1f437 1f438 1f439 1f43c 1f43f 1f451 1f452 1f453 1f457 1f464 1f496 1f4a1 1f4ab 1f4da 1f501 1f507 1f50a 1f50d 1f512 1f525 1f52d 1f535 1f576 1f58c 1f58d 1f5d1 1f5fa 1f6ab 1f6cd 1f6d2 1f6f8 1f6f9 1f90d 1f93f 1f941 1f947 1f948 1f949 1f955 1f95a 1f97d 1f981 1f984 1f986 1f989 1f98a 1f98b 1f992 1f993 1f994 1f995 1f99c 1f9c1 1f9c3 1f9cc 1f9e2 1f9e9 1f9f8 1fa80 1fa81 1fa99 1fa9e 1fab5 2699 26bd 26d1 2702 2705 270f 2728 2b50'.split(' ').forEach(function (c) { ICO[c] = true; });
   var ICO_RE = /\p{Extended_Pictographic}\uFE0F?/gu, XHTML = 'http://www.w3.org/1999/xhtml';
   function cpOf(e) { return Array.from(e).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (x) { return x !== 'fe0f'; }).join('-'); }
   function swapEmoji(node) {
@@ -3644,12 +3746,12 @@ var TrollModels = (function () {
     if (!el.animate) { done(); return; }
     el.animate(kf, opt).onfinish = done;
   }
-  function burst(x, y, n) {
+  function burst(x, y, n, glyphs, colors) {
     if (reduced) return;
     for (var i = 0; i < n; i++) {
-      var s = h('span', { class: 'spark', text: rnd(['✦', '★', '✧', '♥']) });
+      var s = h('span', { class: 'spark', text: rnd(glyphs || ['✦', '★', '✧', '♥']) });
       s.style.left = x + 'px'; s.style.top = y + 'px';
-      s.style.color = rnd(['#ffd23f', '#ff6fae', '#5bb8ff', '#a57bff', '#34c759']);
+      s.style.color = rnd(colors || ['#ffd23f', '#ff6fae', '#5bb8ff', '#a57bff', '#34c759']);
       fx.appendChild(s);
       var a = Math.random() * 6.283, d = 70 + Math.random() * 130;
       anim(s, [
@@ -3671,16 +3773,17 @@ var TrollModels = (function () {
   }
   // fireworks for the biggest moments: a rescued troll, a race that was won
   function fireworks(n) {
+    if (reduced) return;
     for (var i = 0; i < n; i++) (function (k) {
       setTimeout(function () { burst(window.innerWidth * (0.15 + Math.random() * 0.7), window.innerHeight * (0.12 + Math.random() * 0.4), 22); sfx.star(k % 5); }, 250 + k * 380);
     })(i);
   }
-  function confetti(n) {
+  function confetti(n, hue) { // hue: [from, to] keeps the paper in one family of colours (default: every colour)
     if (reduced) return;
     for (var i = 0; i < n; i++) (function () {
       var c = h('i', { class: 'conf' });
       c.style.cssText = 'left:' + Math.random() * 100 + 'vw;width:' + (8 + Math.random() * 8) + 'px;height:' + (10 + Math.random() * 12) +
-        'px;background:hsl(' + Math.random() * 360 + ',90%,62%);animation-duration:' + (1.8 + Math.random() * 2) + 's;animation-delay:' +
+        'px;background:hsl(' + (hue ? hue[0] + Math.random() * (hue[1] - hue[0]) : Math.random() * 360) + ',90%,' + (hue ? 50 + Math.random() * 20 : 62) + '%);animation-duration:' + (1.8 + Math.random() * 2) + 's;animation-delay:' +
         Math.random() * 0.6 + 's;--dx:' + (Math.random() * 240 - 120) + 'px;--r:' + (Math.random() * 1440 - 720) + 'deg';
       fx.appendChild(c);
       setTimeout(function () { c.remove(); }, 4800);
@@ -3767,16 +3870,16 @@ var TrollModels = (function () {
       // the camp: the companion with what it says, the campfire and the tent
       var bs = buddySpec(), mine = buddyId();
       var bubble = h('div', { class: 'cbub', text: fresh ? 'שָׁלוֹם! אֲנִי ' + bs.name + '. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַכְּפָר!' : voice(GREET, 'greet') });
-      var bud = h('button', { class: 'cbud', 'aria-label': bs.name, html: A.trollSVG(bs) });
+      var bs0 = noPet(bs), bud = h('button', { class: 'cbud', 'aria-label': bs.name, html: A.trollSVG(bs0) }); // the pet stands beside the companion
       bud.addEventListener('click', function () {
         sfx.giggle(); var c = center(bud); burst(c[0], c[1], 9);
-        bud.innerHTML = A.trollSVG(bs, { mood: 'cheer' });
-        later(function () { bud.innerHTML = A.trollSVG(bs); }, 1200);
+        bud.innerHTML = A.trollSVG(bs0, { mood: 'cheer' });
+        later(function () { bud.innerHTML = A.trollSVG(bs0); }, 1200);
         if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent);
       });
       grid.appendChild(h('div', { class: 'campv' }, bubble,
         h('div', { class: 'cground' },
-          h('img', { class: 'ctent', src: 'assets/map/tent.png', alt: '', draggable: 'false' }), bud,
+          h('img', { class: 'ctent', src: 'assets/map/tent.png', alt: '', draggable: 'false' }), bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
           h('span', { class: 'cfire', 'aria-hidden': 'true' }, h('img', { src: 'assets/map/campfire.png', alt: '', draggable: 'false' })))));
 
       // the one big button, and the smaller choices
@@ -3788,7 +3891,16 @@ var TrollModels = (function () {
       }
       if (nb) more('🗺️', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
       if (state.lastGift !== L.todayStr()) more('🎁', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
-      if (state.owned.length) more('👗', 'הַלְבָּשָׁה', 'הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb', function () { dress(); });
+      if (state.owned.length) { // the cart; with a savings goal the button carries its meter, and one tap opens the cart on that item
+        var gl = L.goalOf(state);
+        more('🛒', 'הָעֲגָלָה', 'הָעֲגָלָה: הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb' + (gl ? ' hasgoal' + (gl.ready ? ' ready' : '') : ''), function () { goCart(gl); });
+        if (gl) { // the cart icon with the picture of the item, and "coins / price" over a bar instead of the word
+          var cb = row.lastChild, gm = goalMeter(gl);
+          cb.setAttribute('aria-label', 'הָעֲגָלָה. הַיַּעַד שֶׁלִּי: ' + gl.item.name + ', ' + gl.have + ' מִתּוֹךְ ' + gl.price);
+          cb.firstChild.appendChild(gm.firstChild); cb.lastChild.textContent = ''; cb.lastChild.className = 'cl ' + gm.className;
+          while (gm.firstChild) cb.lastChild.appendChild(gm.firstChild);
+        }
+      }
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
         more('🏁', 'מֵרוֹץ', 'מֵרוֹץ', 'b3 raceb', function () { pool(); });
         more('🏆', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
@@ -3819,6 +3931,7 @@ var TrollModels = (function () {
       }
       grid.appendChild(folk);
       el.appendChild(grid);
+      fitPart(grid);
       if (st) st.start(el);
     });
   }
@@ -3909,7 +4022,13 @@ var TrollModels = (function () {
     });
   }
   function mapImg(name, cls) { return h('img', { class: cls || null, src: 'assets/map/' + name + '.png', alt: '', draggable: 'false' }); }
-  function mapBuddy() { return h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(buddySpec()) }); }
+  function noPet(s) { var t = {}, k; for (k in s) t[k] = s[k]; t.petE = ''; return t; }
+  // the companion on a map; the pet it has with it stands beside it, large enough to be seen
+  function mapBuddy() {
+    var s = buddySpec(), b = h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(noPet(s)) });
+    if (s.petE) b.appendChild(icoImg(s.petE, 'mpet'));
+    return b;
+  }
   function mapFlag() { return mapImg('flag', 'mflag'); }
   function mapDeco(box) { MAP_DECO.forEach(function (d) { var im = mapImg(d[0], 'mdeco'); im.setAttribute('style', 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3]); box.appendChild(im); }); }
   function stopIco(i, n) { return MAP_BLD[Math.min(MAP_BLD.length - 1, Math.max(0, Math.round(i * (MAP_BLD.length - 1) / Math.max(1, Math.max(n, 5) - 1))))]; }
@@ -4200,30 +4319,35 @@ var TrollModels = (function () {
     document.body.appendChild(ovl);
   }
 
+  // The daily gift: coins and one free surprise item (cheap ones first). Free, once a day, nothing is lost by skipping a day.
   function gift() {
     var today = L.todayStr(), buddy = buddySpec();
     show(function (el) {
+      el.classList.add('rmap', 'giftm');
       el.appendChild(topBar(true, home));
       el.appendChild(h('h2', { class: 'h2', text: 'מַתָּנָה יוֹמִית!' }));
-      var msg = h('div', { class: 'banner', text: 'הַקִּישִׁי עַל הַמַּתָּנָה' }), stage = h('div', { class: 'stage', style: 'flex:1 1 auto' });
-      var g = h('button', { class: 'gift', text: '🎁', 'aria-label': 'פְּתִיחַת הַמַּתָּנָה' }), btns = h('div', { class: 'row' }), opened = false;
+      var msg = h('div', { class: 'cbub gmsg', text: 'הַקִּישִׁי עַל הַמַּתָּנָה' }), stage = h('div', { class: 'gframe' });
+      var g = h('button', { class: 'gift', text: '🎁', 'aria-label': 'פְּתִיחַת הַמַּתָּנָה' }), btns = h('div', { class: 'row ebtns' }), opened = false;
       stage.appendChild(g);
       g.addEventListener('click', function () {
         if (opened || state.lastGift === today) return;
         opened = true;
-        var bonus = 10 + 2 * Math.min(10, state.streak), item = L.rollItem(state.items, Math.random);
+        var bonus = 10 + 2 * Math.min(10, state.streak), item = L.rollItem(state.items, Math.random), it = item ? L.ITEM[item] : null;
         state.coins += bonus; state.lastGift = today; if (item) state.items.push(item); save();
         g.classList.add('open'); sfx.hatch();
         later(function () {
-          var s = {}, k; for (k in buddy) s[k] = buddy[k]; if (item) { s[L.ITEM[item].slot] = item; resolve(s); }
-          stage.innerHTML = '<div class="reveal" style="width:62%">' + A.trollSVG(s, { mood: 'cheer' }) + '</div>';
-          var c = center(stage); burst(c[0], c[1], 16); confetti(70); sfx.win();
-          msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (item ? ' וְהַפְתָּעָה: ' + L.ITEM[item].name + '!' : '! 🪙'); restart(msg, 'pop'); bumpStars(el);
-          btns.appendChild(btn('יֹפִי!', '', home));
-          if (item && state.owned.length) btns.appendChild(btn('👗 לְהַלְבִּישׁ', 'b2', function () { dress(null, ['acc', 'hat', 'face', 'hand', 'pet'].indexOf(L.ITEM[item].slot) + 3); }));
+          var s = {}, k; for (k in buddy) s[k] = buddy[k]; if (it && L.EMOJI_SLOTS.concat(['acc']).indexOf(it.slot) >= 0) { s[it.slot] = item; resolve(s); }
+          stage.innerHTML = '';
+          stage.appendChild(h('div', { class: 'reveal gbud' + (it && it.slot === 'move' ? ' mv-' + item : ''), html: A.trollSVG(s, { mood: 'cheer' }) }));
+          // the item itself, large, with its name and the icon of what it does
+          if (it) { stage.appendChild(h('div', { class: 'gitem reveal' }, h('span', { class: 'cdo', 'aria-hidden': 'true' }, icoImg(doesOf(it)[0])), h('span', { class: 'cpic' }, itemPic(it)), h('span', { class: 'cnm', text: it.name }))); fitPart(stage); }
+          var c = center(stage); burst(c[0], c[1], 16); if (it && it.slot === 'party') partyFx(item, c[0], c[1]); else confetti(70); sfx.win();
+          msg.textContent = 'קִבַּלְתְּ ' + bonus + ' מַטְבְּעוֹת' + (it ? ' וְהַפְתָּעָה: ' + it.name + '!' : '! 🪙'); restart(msg, 'pop'); bumpStars(el);
+          btns.appendChild(btn('יֹפִי!', 'nxt', home));
+          if (it && state.owned.length) btns.appendChild(btn('🛒 לָעֲגָלָה', '', function () { dress(null, tabOf(it), item); }));
         }, 700);
       });
-      el.appendChild(msg); el.appendChild(stage); el.appendChild(btns);
+      el.appendChild(h('div', { class: 'ggrid' }, msg, stage, btns));
     });
   }
 
@@ -4386,6 +4510,7 @@ var TrollModels = (function () {
       el.appendChild(h('div', { class: 'qrow' }, bud, h('div', { class: 'qside' }, bubble, qslot)));
       el.appendChild(answers); el.appendChild(hintSlot);
 
+      var mvId = L.fxOf(state, 'move'); if (mvId) bud.classList.add('mv-' + mvId); // one shot, only in the "cheer" mood: never while the child is thinking
       function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; restart(bubble, 'pop'); }
       bud.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent); });
       function renderQ() {
@@ -4618,11 +4743,22 @@ var TrollModels = (function () {
     bub.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bub.textContent) speak(bub.textContent); });
     el.appendChild(h('div', { class: 'egrid' }, h('h2', { class: 'h2', text: o.title }), P.res, h('div', { class: 'epic' }, bub, P.frame), P.caps, P.btns));
     var t0 = Date.now(), fin = false, end = null;
-    function finish() { if (fin) return; fin = true; el.classList.add('fin'); bumpStars(el); if (end) end(); }
+    // what the child chose in the cart: the celebration goes off once when the map changes (or at the skip), and the companion does its move once
+    var pf = L.fxOf(state, 'party'), mv = L.fxOf(state, 'move'), partied = false, gl = L.goalOf(state);
+    function celebrate() { if (partied || !pf || cur !== el) return; partied = true; var c = center(P.frame); partyFx(pf, c[0], c[1]); }
+    function finish() { if (fin) return; fin = true; el.classList.add('fin'); bumpStars(el); celebrate(); if (end) end(); }
+    // the savings goal: a small meter under the picture; when the coins are enough, the cart is offered once, as a small button
+    P.cart = function () {
+      if (!gl || !gl.ready || (state.fx && state.fx.told === gl.id)) return;
+      state.fx.told = gl.id; save(true);
+      P.btns.appendChild(h('button', { class: 'btn cartb', 'aria-label': 'לָעֲגָלָה: ' + gl.item.name, on: { click: function () { sfx.tap(); goCart(gl); } } }, '🛒 לָעֲגָלָה'));
+    };
     P.at = function (ms, f) { later(function () { if (!fin && cur === el) f(); }, ms); }; // a step of the show: dropped when the show was skipped
     P.cap = function (text, cls, d) { var b = h('div', { class: 'banner ea ' + (cls || ''), style: '--d:' + d + 's', text: text }); P.caps.appendChild(b); return b; };
     P.start = function (onEnd) {
       end = onEnd;
+      if (gl) { P.caps.appendChild(h('div', { class: 'banner egoal ea' + (gl.ready ? ' ready' : ''), style: '--d:' + END_T.btns + 's', 'aria-label': 'הַיַּעַד שֶׁלִּי: ' + gl.item.name }, icoImg('🎯'), goalMeter(gl, true), gl.ready ? null : h('span', { class: 'gcoin', text: '🪙' }))); fitPart(P.caps); }
+      var mb = mv && el.querySelector('.mbud'); if (mb) mb.classList.add('mv-' + mv);
       el.addEventListener('click', function (e) { // before the end of the show: no button works; after the first 0.9 s a tap skips to the end
         if (fin || (e.target.closest && e.target.closest('.top'))) return;
         e.stopPropagation(); e.preventDefault();
@@ -4630,6 +4766,7 @@ var TrollModels = (function () {
       }, true);
       tv.skip = finish;
       if (reduced) { finish(); return; }
+      P.at(END_T.map * 1000, celebrate);
       P.at(END_T.chest * 1000, function () { sfx.item(); });
       [0, 1, 2].forEach(function (k) { P.at(END_T.chest * 1000 + 150 + k * 110, function () { flyStar(P.chest.firstChild, coin, function () { if (!k && cur === el) bumpStars(el); }, '🪙'); }); });
       later(finish, END_T.all);
@@ -4687,7 +4824,7 @@ var TrollModels = (function () {
         if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
         P.btns.appendChild(btn(nx ? '↻ עוֹד סִבּוּב' : 'עוֹד סִבּוּב', nx ? '' : 'nxt', function () { startRound(round.topic); }));
         P.btns.appendChild(btn('לַמַּפָּה', '', function () { topics(); }));
-        P.btns.appendChild(btn('🛍️ לַחֲנוּת', '', function () { dress(null, 4); }));
+        P.btns.appendChild(btn('🛒 לָעֲגָלָה', 'cartb', function () { var g = L.goalOf(state); if (g && g.ready) goCart(g); else dress(null, 4); }));
         tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
       });
       P.caps.appendChild(eg.msg); P.frame.appendChild(eg.slot); P.frame.parentNode.classList.add('small');
@@ -4757,6 +4894,7 @@ var TrollModels = (function () {
         else if (r.opened) P.btns.appendChild(btn('לַבַּיִת הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
         if (r.stars < 3) P.btns.appendChild(btn('↻ שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
         P.btns.appendChild(btn('לַמַּפָּה', P.btns.firstChild ? '' : 'nxt', back));
+        P.cart();
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll;
       }
       var relay = null; // the buttons that come after the egg take room from the picture: the trail is laid out again at once
@@ -4808,6 +4946,7 @@ var TrollModels = (function () {
       if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
       P.btns.appendChild(btn('לַמַּחֲנֶה שֶׁלִּי', nx ? '' : 'nxt', home));
       P.btns.appendChild(btn('לַמַּפָּה', '', back));
+      P.cart();
       var feast = false;
       function party() { if (feast || cur !== el) return; feast = true; var c = center(P.frame); burst(c[0], c[1], 20); confetti(120); sfx.win(); fireworks(6); }
       P.at((D + 0.2) * 1000, party);
@@ -4971,78 +5110,170 @@ var TrollModels = (function () {
     }, fail);
   }
 
-  // ---------- dress-up and shop ----------
-  // A stage with a spotlight for the troll, icon tabs, item cards with a name and a price tag,
-  // try-before-you-buy, a surprise outfit, and a strip of all the trolls.
-  var TABS = [['hair', 'תִּסְרֹקֶת', '✂️'], ['hairColor', 'צֶבַע שֵׂעָר', '🎨'], ['body', 'צֶבַע גּוּף', '🖌️'], ['acc', 'אֲבִיזָרִים', '👑'], ['hat', 'כּוֹבָעִים', '🎩'], ['face', 'מִשְׁקָפַיִם', '🕶️'], ['hand', 'בַּיָּד', '🎈'], ['pet', 'חַיּוֹת מַחְמָד', '🐶']];
-  function dress(idx, tab) {
+  // ---------- the cart: the dressing room and shop of the journey world ----------
+  // The troll that is being dressed stands large in a parchment frame. Every card shows the item itself (the Fluent picture, or
+  // the code-drawn accessory or hairstyle alone), its name, its fixed price and a small icon of what it does. A tap on a card
+  // tries it at once on the troll and offers ONE button: buy, wear or take off; an item that costs more than the child has can
+  // be marked as the one savings goal. Nothing scrolls: the grid holds the cards that fit and two arrows page it, and the
+  // trolls are paged the same way. state.fx (optional) holds the equipped move and celebration and the goal.
+  var TABS = [['hair', 'תִּסְרֹקֶת', '✂️'], ['hairColor', 'צֶבַע שֵׂעָר', '🎨'], ['body', 'צֶבַע גּוּף', '🖌️'], ['acc', 'אֲבִיזָרִים', '👑'], ['hat', 'כּוֹבָעִים', '🎩'], ['face', 'מִשְׁקָפַיִם', '🕶️'], ['hand', 'בַּיָּד', '🎈'], ['pet', 'חַיּוֹת מַחְמָד', '🐶'], ['move', 'תְּנוּעוֹת', '💫'], ['party', 'חֲגִיגוֹת', '✨']];
+  // what an item does: the small icon on its card, and the line under the cards when it is tapped
+  var DOES = { look: ['👗', 'לְבוּשׁ לַטְּרוֹל'], pet: ['🐾', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['💫', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['✨', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
+  function doesOf(it) { return DOES[it.slot] || DOES.look; }
+  function tabOf(it) { for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === it.slot) return i; return 3; }
+  function icoImg(e, cls) { var cp = cpOf(e); return ICO[cp] ? h('img', { class: cls || 'ico', src: 'assets/ico/' + cp + '.png', alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
+  // code-drawn pieces (accessories, hairstyles): the viewBox hugs the drawing, measured once the piece is in the page
+  var PART_BOX = {};
+  function fitPart(root) {
+    [].forEach.call(root.querySelectorAll('svg.part'), function (sv) {
+      var key = sv.getAttribute('data-k'), vb = PART_BOX[key];
+      if (!vb) try { var b = sv.getBBox(); if (b.width > 1 && b.height > 1) vb = PART_BOX[key] = [b.x - 8, b.y - 8, b.width + 16, b.height + 16].map(function (x) { return x.toFixed(1); }).join(' '); } catch (e) {}
+      if (vb) sv.setAttribute('viewBox', vb);
+    });
+  }
+  function partEl(kind, id, color) { var w = h('span', { class: 'ppart', html: A.partSVG(kind, id, color) }); if (w.firstChild) w.firstChild.setAttribute('data-k', kind + '-' + id); return w; }
+  // the picture of a shop item by itself
+  function itemPic(it) { return it.slot === 'acc' ? (it.id === 'none' ? icoImg('🚫', 'pimg') : partEl('acc', it.id)) : icoImg(it.e, 'pimg'); }
+  // the celebration effects of the end-of-stage screen (items of the slot "party"): one shot, built from the particles the game already has
+  function partyFx(id, x, y) {
+    if (id === 'prain') confetti(60);
+    else if (id === 'pgold') confetti(60, [36, 54]);
+    else if (id === 'pheart') burst(x, y, 24, ['♥'], ['#ff4f9a', '#ff8fb5', '#e0245e']);
+    else if (id === 'pstar') burst(x, y, 28, ['★', '✦', '✧'], ['#ffd23f', '#ffb300', '#fff0a8']);
+    else if (id === 'pfire') fireworks(3);
+  }
+  // the savings goal as a small meter: the picture of the item, "coins / price" and a bar; when there are enough coins it says so
+  function goalMeter(gl, long) {
+    return h('span', { class: 'gm' + (gl.ready ? ' ready' : '') }, h('span', { class: 'gpic' }, itemPic(gl.item)),
+      h('b', { class: gl.ready ? 'gtxt' : 'gnum', text: gl.ready ? (long ? 'יֵשׁ מַסְפִּיק מַטְבְּעוֹת!' : 'מוּכָן!') : gl.have + '/' + gl.price }), h('i', { class: 'gbar' }, h('i', { style: 'width:' + Math.round(gl.part * 100) + '%' })));
+  }
+  function goCart(gl) { if (gl) dress(null, tabOf(gl.item), gl.id); else dress(); }
+  // idx: which troll (default: the companion); tab: the category; sel: the id of an item to open on; pg: 'last' opens the last page
+  function dress(idx, tab, sel, pg) {
     var ids = state.owned;
     if (!ids.length) { home(); return; }
-    idx = ((idx == null ? Math.max(0, ids.indexOf(buddyId())) : idx) + ids.length) % ids.length; tab = tab || 0;
+    idx = ((idx == null ? Math.max(0, ids.indexOf(buddyId())) : idx) + ids.length) % ids.length; tab = tab > 0 && tab < TABS.length ? tab : 0;
     setMusic('shop');
-    var id = ids[idx], base = L.trollFromId(id), trying = null; // trying: an unbought item being previewed
+    var id = ids[idx], base = L.trollFromId(id), pick = null, page = 0, per = 0, cols = 1, tpage = -1, tper = 0; // pick: the card that was tapped
     show(function (el) {
+      el.classList.add('rmap', 'cart');
       el.appendChild(topBar(true, home));
-      var prev = h('div', { class: 'prev' }), nameEl = h('div', { class: 'banner' }), opts = h('div', { class: 'opts' }), foot = h('div', { class: 'sfoot' });
-      var tabs = h('div', { class: 'stabs' }), title = h('b'), cnt = h('span', { class: 'cnt' }), bar = h('i');
-      function arrow(t, d) { return h('button', { class: 'icon', text: t, 'aria-label': 'טְרוֹל אַחַר', on: { click: function () { sfx.tap(); go(idx + d); } } }); }
+      var prev = h('div', { class: 'cprev' }), nameEl = h('span', { class: 'cname' }), ths = h('div', { class: 'cths' });
+      var tabs = h('div', { class: 'ctabs' }), gridw = h('div', { class: 'cgridw' }), grid = h('div', { class: 'cgridc' }), msg = h('div', { class: 'kmsg' }), pgEl = h('span', { class: 'cpg' }), act = h('div', { class: 'cact' });
+      gridw.appendChild(grid);
+      function arrow(t, label, fn) { return h('button', { class: 'parr', text: t, 'aria-label': label, on: { click: function () { sfx.tap(); fn(); } } }); }
       function owns(it) { return state.items.indexOf(it.id) >= 0 || (it.slot === 'acc' && base.acc === it.id); }
-      function cur1() { var s = specOf(id); if (trying) { s[trying.key] = trying.val; resolve(s); } return s; }
-      function mini(over) { var s = cur1(), k; for (k in over) s[k] = over[k]; return A.trollSVG(resolve(s)); }
-      function say(text) { foot.innerHTML = ''; foot.textContent = text || ''; }
-      function drawHead() {
-        var key = TABS[tab][0], list = L.ITEMS.filter(function (it) { return it.slot === key; }), have = list.filter(owns).length;
-        title.textContent = TABS[tab][2] + ' ' + TABS[tab][1];
-        cnt.textContent = list.length ? have + '/' + list.length : '';
-        bar.style.width = (list.length ? Math.round(100 * have / list.length) : 100) + '%';
+      function isFx(key) { return key === 'move' || key === 'party'; }
+      function wornVal(key) { if (isFx(key)) return L.fxOf(state, key); var v = specOf(id)[key]; return v == null ? '' : v; }
+      function cur1() { var s = specOf(id); if (pick && !isFx(pick.key)) { s[pick.key] = pick.val; resolve(s); } return s; }
+      function say(text) { msg.textContent = text || ''; }
+      var prevT = 0;
+      function drawPrev(celebrate, move) {
+        var s = cur1(); nameEl.textContent = s.name; clearTimeout(prevT);
+        prev.className = 'cprev' + (move ? ' mv-' + move : '');
+        prev.innerHTML = A.trollSVG(s, { mood: celebrate || move ? 'cheer' : 'happy' });
+        if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 12); }
+        if (celebrate || move) prevT = later(function () { prev.className = 'cprev'; prev.innerHTML = A.trollSVG(cur1()); }, 1100);
       }
-      function drawPrev(celebrate) {
-        var s = cur1(); nameEl.textContent = s.name;
-        prev.innerHTML = A.trollSVG(s, { mood: celebrate ? 'cheer' : 'happy' });
-        if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 12); later(function () { prev.innerHTML = A.trollSVG(cur1()); }, 1000); }
+      // the tapped item at work on the troll: clothes are tried on, a move is danced once, a celebration goes off once
+      function show1(o, celebrate) {
+        if (o.key === 'move' && o.val) drawPrev(false, o.val);
+        else { drawPrev(celebrate); if (o.key === 'party' && o.val) { var c = center(prev); partyFx(o.val, c[0], c[1]); } }
       }
-      function wear(key, val, text) {
-        var d = state.dress[id] || {}; d[key] = val; state.dress[id] = d; trying = null; save();
-        sfx.pop(); say(text); drawPrev(true); drawOpts(); drawThumbs();
-      }
-      function offer(it) { // preview first, then the child decides whether to buy
-        var cost = L.priceOf(state, it.id), need = cost - state.coins;
-        if (need > 0) { say(it.name + ': חֲסֵרִים עוֹד ' + need + ' 🪙. עוֹד שָׁלָב אֶחָד וְתוּכְלִי לִקְנוֹת!'); return; }
-        foot.innerHTML = '';
-        foot.appendChild(h('button', { class: 'btn b3 buy', text: 'לִקְנוֹת: ' + it.name + ' בְּ-🪙 ' + cost, on: { click: function () {
-          var r = L.buy(state, it.id); if (!r.ok) return;
-          state = r.state; sfx.item(); confetti(50); bumpStars(el); wear(it.slot, it.id, 'קָנִית: ' + it.name + '!'); drawHead();
-        } } }));
-      }
-      // o: {lock: {label, why}, item (a shop item), name, tag}
-      function option(pic, key, val, o) {
-        var s = cur1(), it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, cant = it && !own && cost > state.coins;
-        var b = h('button', { class: 'opt' + ((s[key] == null ? '' : s[key]) === val ? ' sel' : '') + (o.lock ? ' locked' : '') + (it && !own ? ' shop' : '') + (cant ? ' cant' : ''), html: pic, 'aria-label': o.name || '' });
-        if (o.name) b.appendChild(h('small', { class: 'oname', text: o.name }));
-        if (o.lock) b.appendChild(h('span', { class: 'otag cant', text: o.lock.label }));
-        else if (it && !own) b.appendChild(h('span', { class: 'otag' + (cant ? ' cant' : ''), text: '🪙 ' + cost }));
-        else if (it && it.price) b.appendChild(h('span', { class: 'otag own', text: '✔' }));
-        b.addEventListener('click', function () {
-          if (o.lock) { restart(b, 'shake'); sfx.wrong(); say(o.lock.why); return; }
-          if (it && !own) { trying = { key: key, val: val }; sfx.tap(); drawPrev(false); drawOpts(); offer(it); return; }
-          wear(key, val, o.name);
-        });
-        opts.appendChild(b);
-      }
-      function drawOpts() {
-        opts.innerHTML = ''; var key = TABS[tab][0], k;
-        var sw = function (c) { return '<span class="sw" style="background:' + c + '"></span>'; };
-        opts.className = 'opts k-' + key;
-        if (key === 'hair') for (k = 0; k < L.HAIR_STYLES; k++) option(mini({ hair: k }), 'hair', k,
-          { lock: state.stars < HAIR_REQ[k] && base.hair !== k ? { label: '🔒 ⭐ ' + HAIR_REQ[k], why: 'צָרִיךְ עוֹד ' + (HAIR_REQ[k] - state.stars) + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ' } : null });
-        else if (key === 'hairColor') L.HAIR_COLORS.forEach(function (c) { option(sw(c), 'hairColor', c, {}); });
-        else if (key === 'body') L.BODIES.forEach(function (c) { option(sw(c), 'body', c, {}); });
+      // the options of the open category. o: {key, val, name, item (a shop item), lock (stars still needed), pic}
+      function options() {
+        var key = TABS[tab][0], list = [], k, s = specOf(id);
+        var sw = function (c) { return h('span', { class: 'sw', style: 'background:' + c }); };
+        if (key === 'hair') for (k = 0; k < L.HAIR_STYLES; k++) list.push({ key: key, val: k, name: '', label: TABS[0][1] + ' ' + (k + 1), pic: partEl('hair', k, s.hairColor), lock: state.stars < HAIR_REQ[k] && base.hair !== k ? HAIR_REQ[k] - state.stars : 0, req: HAIR_REQ[k] });
+        else if (key === 'hairColor') L.HAIR_COLORS.forEach(function (c, i) { list.push({ key: key, val: c, name: '', label: TABS[1][1] + ' ' + (i + 1), pic: sw(c) }); });
+        else if (key === 'body') L.BODIES.forEach(function (c, i) { list.push({ key: key, val: c, name: '', label: TABS[2][1] + ' ' + (i + 1), pic: sw(c) }); });
         else {
-          if (key !== 'acc') option('<span class="emo">🚫</span>', key, '', { name: 'בְּלִי' });
-          L.ITEMS.filter(function (it) { return it.slot === key; }).forEach(function (it) {
-            option(key === 'acc' ? mini({ acc: it.id }) : '<span class="emo">' + it.e + '</span>', key, it.id, { name: it.name, item: it });
-          });
+          if (key !== 'acc') list.push({ key: key, val: '', name: 'בְּלִי', pic: icoImg('🚫', 'pimg') });
+          L.ITEMS.filter(function (it) { return it.slot === key; }).forEach(function (it) { list.push({ key: key, val: it.id, name: it.name, item: it.id === 'none' ? null : it, pic: itemPic(it) }); });
         }
+        return list;
+      }
+      function same(o) { return !!pick && pick.key === o.key && pick.val === o.val; }
+      function put(key, val) { // wear, choose or take off; saved at once
+        if (isFx(key)) state = L.setFx(state, key, val);
+        else { var d = state.dress[id] || {}; d[key] = val; state.dress[id] = d; }
+        save();
+      }
+      // the one button under the cards, for the card that was tapped
+      function drawAct(note) {
+        act.innerHTML = '';
+        var o = pick, it = o && o.item;
+        if (!o) { say(note || 'הַקִּישִׁי עַל פָּרִיט כְּדֵי לִרְאוֹת מָה הוּא עוֹשֶׂה'); return; }
+        if (o.lock) { say('צָרִיךְ עוֹד ' + o.lock + ' כּוֹכָבִים כְּדֵי לִפְתֹּחַ'); return; }
+        if (!it) { say(note || o.name); return; }
+        var does = doesOf(it), fxk = isFx(o.key) || o.key === 'pet', cost = L.priceOf(state, it.id), gl = L.goalOf(state);
+        function one(text, cls, fn) { act.appendChild(h('button', { class: 'btn cbtn ' + cls, text: text, on: { click: fn } })); }
+        if (owns(it)) {
+          say(note || does[0] + ' ' + does[1]);
+          if (wornVal(o.key) === o.val) one(fxk ? 'לְבַטֵּל' : 'לְהוֹרִיד', 'koff', function () { sfx.tap(); put(o.key, o.key === 'acc' ? 'none' : ''); pick = null; drawPrev(false); drawGrid(); drawAct(); });
+          else one(fxk ? 'לִבְחֹר' : 'לִלְבֹּשׁ', 'kgo', function () { sfx.pop(); put(o.key, o.val); show1(o, true); drawGrid(); drawAct(it.name); drawThumbs(); });
+        } else if (cost <= state.coins) {
+          say(note || does[0] + ' ' + does[1]);
+          one('לִקְנוֹת · ' + cost + ' 🪙', 'kgo kbuy', function () {
+            var r = L.buy(state, it.id); if (!r.ok) return;
+            state = r.state; put(o.key, o.val); sfx.item(); confetti(50); bumpStars(el);
+            show1(o, true); drawGrid(); drawAct('קָנִית: ' + it.name + '!'); drawThumbs();
+          });
+        } else if (gl && gl.id === it.id) {
+          say('🎯 הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' 🪙');
+          one('לְבַטֵּל אֶת הַיַּעַד', 'koff', function () { sfx.tap(); state = L.setGoal(state, ''); save(); drawGrid(); drawAct(); });
+        } else {
+          say('חֲסֵרִים עוֹד ' + (cost - state.coins) + ' 🪙');
+          one('🎯 אֲנִי חוֹסֶכֶת לָזֶה', 'kgoal', function () { sfx.pop(); state = L.setGoal(state, it.id); save(); drawGrid(); drawAct(); });
+        }
+      }
+      function markPick() { [].forEach.call(grid.children, function (b) { b.classList.toggle('pick', !!pick && b.getAttribute('data-v') === String(pick.val)); }); }
+      function card(o) {
+        var it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, worn = wornVal(o.key) === o.val, gl = L.goalOf(state);
+        var b = h('button', { class: 'citem' + (worn ? ' worn' : '') + (same(o) ? ' pick' : '') + (o.name ? '' : ' bare'), 'aria-label': o.name || o.label || '', 'data-v': String(o.val) });
+        b.appendChild(h('span', { class: 'cpic' }, o.pic));
+        if (it) b.appendChild(h('span', { class: 'cdo', 'aria-hidden': 'true' }, icoImg(doesOf(it)[0])));
+        if (it && gl && gl.id === it.id) b.appendChild(h('span', { class: 'cgl', 'aria-label': 'הַיַּעַד שֶׁלִּי' }, icoImg('🎯')));
+        if (o.name) b.appendChild(h('span', { class: 'cnm', text: o.name }));
+        if (o.lock) b.appendChild(h('span', { class: 'cpr cant', text: '⭐ ' + o.req }));
+        else if (it && !own) b.appendChild(h('span', { class: 'cpr' + (cost > state.coins ? ' cant' : '') }, h('b', { text: String(cost) }), ' 🪙'));
+        else if (it && it.price) b.appendChild(h('span', { class: 'cpr own', text: '✓ שֶׁלִּי' }));
+        else if (worn) b.appendChild(h('span', { class: 'cpr own', text: '✓' }));
+        b.addEventListener('click', function () {
+          if (!it && !o.lock) { // a colour, a hairstyle, "without": free, so it is simply put on
+            sfx.pop(); put(o.key, o.val); pick = null; drawPrev(true); drawGrid(); drawAct(o.name); drawThumbs(); return;
+          }
+          sfx.tap(); pick = o; show1(o, false); markPick(); drawAct();
+        });
+        return b;
+      }
+      // the cards never scroll: as many as fit, and the arrows turn the page
+      var prevB = arrow('▶', 'הַדַּף הַקּוֹדֵם', function () { page--; drawGrid(); }), nextB = arrow('◀', 'הַדַּף הַבָּא', function () { page++; drawGrid(); });
+      function measure() {
+        var W = gridw.clientWidth, H = gridw.clientHeight, vm = Math.min(window.innerWidth, window.innerHeight) / 100;
+        var mw = Math.max(98, Math.min(170, 19 * vm)), mh = Math.max(76, Math.min(160, 17 * vm)), rows = Math.max(1, Math.floor((H + 8) / (mh + 8)));
+        cols = Math.max(2, Math.floor((W + 8) / (mw + 8)));
+        grid.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
+        grid.style.gridAutoRows = Math.max(40, Math.floor(Math.min(190, (H - 8 * (rows - 1)) / rows))) + 'px';
+        return cols * rows;
+      }
+      function drawGrid() {
+        var list = options(), n = measure();
+        if (n !== per) { per = n; if (pick) list.forEach(function (o, i) { if (same(o)) page = Math.floor(i / per); }); }
+        var pages = Math.max(1, Math.ceil(list.length / per));
+        if (pg === 'last') { page = pages - 1; pg = null; }
+        page = Math.max(0, Math.min(pages - 1, page));
+        grid.innerHTML = '';
+        list.slice(page * per, page * per + per).forEach(function (o) { grid.appendChild(card(o)); });
+        fitPart(grid);
+        [].forEach.call(grid.querySelectorAll('.cnm'), function (nm) { // a name too long for one line: two lines on a tall card, smaller letters on a short one
+          if (nm.scrollWidth <= nm.clientWidth + 1) return;
+          if (nm.parentNode.clientHeight >= 104) { nm.classList.add('two'); return; }
+          var fs = parseFloat(getComputedStyle(nm).fontSize) || 12; while (nm.scrollWidth > nm.clientWidth + 1 && fs > 9) { fs -= 0.5; nm.style.fontSize = fs + 'px'; }
+        });
+        prevB.disabled = page <= 0; nextB.disabled = page >= pages - 1;
+        prevB.classList.toggle('gone', pages < 2); nextB.classList.toggle('gone', pages < 2);
+        pgEl.textContent = pages > 1 ? (page + 1) + ' / ' + pages : '';
       }
       function surprise() { // a random outfit from what the player already owns
         var d = state.dress[id] || {}, hairs = [], k;
@@ -5053,45 +5284,55 @@ var TrollModels = (function () {
         });
         for (k = 0; k < L.HAIR_STYLES; k++) if (state.stars >= HAIR_REQ[k] || base.hair === k) hairs.push(k);
         d.hair = rnd(hairs); d.hairColor = rnd(L.HAIR_COLORS); d.body = rnd(L.BODIES);
-        state.dress[id] = d; trying = null; save();
-        sfx.item(); confetti(30); say('תִּלְבֹּשֶׁת הַפְתָּעָה!'); drawPrev(true); drawOpts();
+        state.dress[id] = d; pick = null; save();
+        sfx.item(); confetti(30); drawPrev(true); drawGrid(); drawAct('תִּלְבֹּשֶׁת הַפְתָּעָה!'); drawThumbs();
       }
       TABS.forEach(function (t, n) {
-        var b = h('button', { class: 'stab' + (n === tab ? ' on' : ''), 'aria-label': t[1] }, h('span', { class: 'ti', text: t[2] }), h('span', { class: 'tl', text: t[1] }));
+        var b = h('button', { class: 'ctab' + (n === tab ? ' on' : ''), 'aria-label': t[1] }, h('span', { class: 'ti', text: t[2] }), h('span', { class: 'tl', text: t[1] }));
         b.addEventListener('click', function () {
-          sfx.tap(); tab = n; trying = null; say('');
+          sfx.tap(); tab = n; pick = null; page = 0;
           [].forEach.call(tabs.children, function (x, m) { x.classList.toggle('on', m === n); });
-          drawPrev(false); drawOpts(); drawHead();
+          drawPrev(false); drawGrid(); drawAct();
         });
         tabs.appendChild(b);
       });
-      var pickB = h('button', { class: 'btn b3 pick' });
-      function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הַטְּרוֹל הַמְּלַוֶּה שֶׁלִּי' : '🤍 שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'; pickB.classList.toggle('is', is); }
+      var pickB = h('button', { class: 'btn pick' });
+      function drawPick() { var is = buddyId() === id; pickB.textContent = is ? '💖 הַמְּלַוֶּה שֶׁלִּי' : '🤍 שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'; pickB.classList.toggle('is', is); }
       pickB.addEventListener('click', function () { state.buddy = id; save(); sfx.giggle(); drawPick(); drawPrev(true); });
       drawPick();
-      var thumbs = h('div', { class: 'sthumbs' });
+      // the trolls: the thumbnails that fit, paged by the two arrows; when there is no room for three, the arrows step from troll to troll
+      var tPrev = arrow('▶', 'הַטְּרוֹלִים הַקּוֹדְמִים', function () { if (tper) { tpage--; drawThumbs(); } else go(idx - 1); });
+      var tNext = arrow('◀', 'הַטְּרוֹלִים הַבָּאִים', function () { if (tper) { tpage++; drawThumbs(); } else go(idx + 1); });
       function drawThumbs() {
-        thumbs.innerHTML = '';
-        ids.slice(-30).forEach(function (tid) {
-          var i = ids.indexOf(tid);
-          thumbs.appendChild(h('button', { class: 'sthumb' + (i === idx ? ' on' : ''), html: A.trollSVG(specOf(tid)), 'aria-label': specOf(tid).name, on: { click: function () { if (i !== idx) { sfx.tap(); go(i); } } } }));
+        if (ids.length < 2) return;
+        var n = Math.floor((ths.clientWidth + 8) / 56);
+        if ((n >= 3 ? n : 0) !== tper) { tper = n >= 3 ? n : 0; tpage = -1; }
+        ths.innerHTML = '';
+        if (!tper) { ths.appendChild(h('span', { class: 'cnt', text: (idx + 1) + ' / ' + ids.length })); tPrev.disabled = tNext.disabled = false; tPrev.classList.remove('gone'); tNext.classList.remove('gone'); return; }
+        var pages = Math.ceil(ids.length / tper);
+        if (tpage < 0) tpage = Math.floor(idx / tper);
+        tpage = Math.max(0, Math.min(pages - 1, tpage));
+        ids.slice(tpage * tper, tpage * tper + tper).forEach(function (tid, k) {
+          var i = tpage * tper + k, s = specOf(tid);
+          ths.appendChild(h('button', { class: 'cth' + (i === idx ? ' on' : ''), html: A.trollSVG(s), 'aria-label': s.name, on: { click: function () { if (i !== idx) { sfx.tap(); go(i); } } } }));
         });
-        var on = thumbs.querySelector('.on');
-        if (on && thumbs.scrollWidth > thumbs.clientWidth) thumbs.scrollLeft = on.offsetLeft - thumbs.clientWidth / 2;
+        tPrev.disabled = tpage <= 0; tNext.disabled = tpage >= pages - 1;
+        tPrev.classList.toggle('gone', pages < 2); tNext.classList.toggle('gone', pages < 2);
       }
-      // another troll steps onto the stage; the screen itself stays put
+      // another troll steps into the frame; the screen itself stays put
       function go(i) {
-        idx = (i + ids.length) % ids.length; id = ids[idx]; base = L.trollFromId(id); trying = null;
-        say(''); drawPrev(true); drawOpts(); drawHead(); drawPick(); drawThumbs();
+        idx = (i + ids.length) % ids.length; id = ids[idx]; base = L.trollFromId(id); pick = null; tpage = -1;
+        drawPrev(true); drawGrid(); drawAct(); drawPick(); drawThumbs();
       }
-      var nav = ids.length > 1 ? h('div', { class: 'snav' }, arrow('▶', -1), nameEl, arrow('◀', 1)) : h('div', { class: 'snav' }, nameEl);
-      el.appendChild(h('div', { class: 'shop' },
-        h('div', { class: 'sstage' }, nav, h('div', { class: 'spot' }, prev),
-          h('div', { class: 'srow' }, pickB, h('button', { class: 'btn b2 pick', text: '🎲 הַפְתָּעָה!', on: { click: surprise } })), thumbs),
-        h('div', { class: 'spanel' }, tabs, h('div', { class: 'shead' }, title, cnt, h('div', { class: 'pbar' }, bar),
-          h('span', { class: 'cnt', text: '🎒 ' + state.items.length + '/' + L.ITEMS.length })), opts, foot)));
-      drawPrev(false); drawOpts(); drawHead();
-      drawThumbs();
+      el.appendChild(h('div', { class: 'cwrap' },
+        h('div', { class: 'cstage' + (ids.length > 1 ? '' : ' solo') },
+          h('div', { class: 'chead' }, h('b', { class: 'ctitle', text: '🛒 הָעֲגָלָה' }), nameEl), prev,
+          ids.length > 1 ? h('div', { class: 'cpickr' }, tPrev, ths, tNext) : null,
+          h('div', { class: 'cacts' }, pickB, h('button', { class: 'btn pick', text: '🎲 הַפְתָּעָה!', on: { click: surprise } }))),
+        h('div', { class: 'kpanel' }, tabs, gridw, h('div', { class: 'cmsgr' }, msg, pgEl), h('div', { class: 'cfoot' }, prevB, act, nextB))));
+      if (sel) options().forEach(function (o) { if (o.item && o.item.id === sel) pick = o; }); // opened on one item (the savings goal, a gift)
+      drawPrev(false); drawGrid(); drawAct(); drawThumbs();
+      if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) { ro.disconnect(); return; } if (measure() !== per) drawGrid(); drawThumbs(); }); ro.observe(gridw); ro.observe(ths); }
     });
   }
 
@@ -5649,6 +5890,14 @@ var TrollModels = (function () {
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
   if (sandbox && /many=1/.test(hash)) { state.owned = []; for (var hm = 0; hm < 30; hm++) state.owned.push(5 + 37 * hm); state.stars = 240; } // layout check: a veteran with 30 trolls
+  if (sandbox) { // layout checks of the cart: &coins=N, &own=id.id (items owned), &fx=id.id (equipped move / celebration), &goal=id (the savings goal), &wear=id.id (on the companion)
+    var hq = function (k) { return ((new RegExp('[#&]' + k + '=([\\w.]+)').exec(hash) || [])[1] || '').split('.').filter(function (x) { return L.ITEM[x]; }); };
+    if (/[#&]coins=(\d+)/.test(hash)) state.coins = +/[#&]coins=(\d+)/.exec(hash)[1];
+    hq('own').concat(hq('fx'), hq('wear')).forEach(function (x) { if (state.items.indexOf(x) < 0) state.items.push(x); });
+    hq('fx').forEach(function (x) { state = L.setFx(state, L.ITEM[x].slot, x); });
+    hq('wear').forEach(function (x) { var hb = state.owned.indexOf(state.buddy) >= 0 ? state.buddy : state.owned[0]; if (hb != null) { state.dress[hb] = state.dress[hb] || {}; state.dress[hb][L.ITEM[x].slot] = x; } });
+    if (hq('goal')[0]) state = L.setGoal(state, hq('goal')[0]);
+  }
   if (sandbox && /[#&]sub=(\w+)/.test(hash)) curSub = /[#&]sub=(\w+)/.exec(hash)[1]; // layout check: the map of another subject
   var hhome = sandbox ? (/[#&]home=(\w+)/.exec(hash) || [])[1] : ''; // debug: states of the big home button (new, mid, next, bridge, done)
   if (hhome) {
@@ -5709,8 +5958,8 @@ var TrollModels = (function () {
     if (scr === 'hint') { var q0 = tv.round.current(), all = cur.querySelectorAll('[data-v]'); for (var n = 0; n < all.length; n++) if (all[n].getAttribute('data-v') !== String(q0.answer)) { all[n].click(); break; }
       if (!all.length && tv.flub) tv.flub(); }
   } else if (scr === 'topics') topics(/&ch/.test(hash));
-  else if (scr === 'dress') dress(null, +((/tab=(\d)/.exec(hash) || [])[1] || 3));
-  else if (scr === 'gift') gift();
+  else if (scr === 'dress') dress(/[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, +((/tab=(\d)/.exec(hash) || [])[1] || 3), (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
+  else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
   else if (scr === 'cloud') cloud();
   else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); if (/open=1/.test(hash)) { var on0 = cur.querySelector('.mnode.rec:not(.boss)') || cur.querySelector('.mnode.open,.mnode.done'); if (on0) on0.click(); } }
@@ -5761,6 +6010,15 @@ var TrollModels = (function () {
       if (r.left < tr.left - 1 || r.right > tr.right + 1 || r.top < tr.top - 1 || r.bottom > tr.bottom + 1 || (lab && lab.scrollWidth > lab.clientWidth + 1) || (top && top.scrollWidth > a.clientWidth + 1)) bad++;
       stops.slice(i + 1).forEach(function (b) { var q = b.getBoundingClientRect(); if (r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1) bad++; });
     });
+    // the cart and the gift: nothing scrolls, so no button and no card may be cut or pushed off the screen, and no name may be clipped
+    if (cur.classList.contains('cart') || cur.classList.contains('giftm')) {
+      var gw = cur.querySelector('.cgridw'), gr = gw && gw.getBoundingClientRect();
+      [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.top < -1 || r.bottom > window.innerHeight + 1)) bad++; });
+      [].forEach.call(cur.querySelectorAll('.citem'), function (b) { var r = b.getBoundingClientRect(), nm = b.querySelector('.cnm'), pc = b.querySelector('.cpic').getBoundingClientRect(); if (r.top < gr.top - 1 || r.bottom > gr.bottom + 1 || r.left < gr.left - 1 || r.right > gr.right + 1 || r.width < 47.5 || r.height < 47.5 || pc.height < 26 || (nm && (nm.scrollWidth > nm.clientWidth + 1 || nm.scrollHeight > nm.clientHeight + 1))) bad++; });
+      [].forEach.call(cur.querySelectorAll('.parr,.ctab,.cth,.cbtn,.cacts .btn'), function (b) { var r = b.getBoundingClientRect(); if (r.width && Math.min(r.width, r.height) < 47.5) bad++; });
+      [].forEach.call(cur.querySelectorAll('.cstage,.kpanel,.kmsg,.chead,.ggrid,.gframe'), function (x) { if (x.scrollHeight > x.clientHeight + 1 || x.scrollWidth > x.clientWidth + 1) bad++; });
+      if (cur.classList.contains('cart') && !cur.querySelector('.citem')) bad++;
+    }
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
       var r = x.getBoundingClientRect(); ovf = Math.max(ovf, x.scrollHeight - x.clientHeight, x.scrollWidth - x.clientWidth, r.bottom - window.innerHeight, -r.top);

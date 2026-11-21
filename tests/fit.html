@@ -10,7 +10,7 @@
 <div id="frames"></div><table id="out"></table>
 <script>
 var SIZES = [[360, 640], [390, 800], [800, 380], [768, 1024], [1024, 768], [1280, 620], [1366, 650], [1920, 950]];
-var SCREENS = ['home', 'topics', 'topics&ch', 'topics&g=3', 'topics&g=4&ch', 'region&g=4&t=g5dec', 'region&g=1&t=g1a', 'round', 'round&t=ord&l=4', 'round&t=num&l=7', 'round&t=add&l=7&fmt=tf', 'round&t=add&l=7&fmt=cmp', 'round&t=add&l=7&fmt=line', 'round&t=add&l=7&fmt=word', 'round&t=add&l=7&fmt=use', 'round&t=add&l=7&fmt=pairs', 'round&t=mul&l=5&fmt=array', 'round&t=mul&l=1&fmt=array', 'round&t=num&l=6&fmt=build', 'round&t=num&l=7&fmt=build', 'end&hatch&t=add', 'end&t=mul', 'bossend&t=add', 'region&t=mul', 'region&t=add', 'region&t=frac', 'region&t=ord', 'dress', 'dress&tab=7', 'who', 'who&linked', 'cloud', 'cloud&linked', 'gift',
+var SCREENS = ['home', 'topics', 'topics&ch', 'topics&g=3', 'topics&g=4&ch', 'region&g=4&t=g5dec', 'region&g=1&t=g1a', 'round', 'round&t=ord&l=4', 'round&t=num&l=7', 'round&t=add&l=7&fmt=tf', 'round&t=add&l=7&fmt=cmp', 'round&t=add&l=7&fmt=line', 'round&t=add&l=7&fmt=word', 'round&t=add&l=7&fmt=use', 'round&t=add&l=7&fmt=pairs', 'round&t=mul&l=5&fmt=array', 'round&t=mul&l=1&fmt=array', 'round&t=num&l=6&fmt=build', 'round&t=num&l=7&fmt=build', 'end&hatch&t=add', 'end&t=mul', 'bossend&t=add', 'region&t=mul', 'region&t=add', 'region&t=frac', 'region&t=ord', 'who', 'who&linked', 'cloud', 'cloud&linked',
   'hint&step=last&t=add&l=5', 'hint&step=last&t=add&l=7', 'hint&step=last&t=add&l=10', 'hint&step=last&t=sub&l=7', 'hint&step=last&t=sub&l=10', 'hint&step=last&t=mul&l=1', 'hint&step=last&t=mul&l=5', 'hint&step=last&t=mul&l=8',
   'hint&step=last&t=div&l=1', 'hint&step=last&t=div&l=6', 'hint&step=last&t=num&l=4', 'hint&step=last&t=num&l=6', 'hint&step=last&t=num&l=8', 'hint&step=last&t=frac&l=4', 'hint&step=last&t=ord&l=4', 'hint&step=last&t=miss&l=5',
   // grade 1
@@ -35,24 +35,40 @@ SCREENS = SCREENS.concat(['home&many=1', 'home&many=1&rbtn=1', 'home&many=1&hour
 ['end&stg=0&stars=1', 'end&stg=1&stars=2', 'end&stg=1', 'end&egg', 'end&hatch', 'end&hatch&fin=1', 'end&home=bridge', 'bossend', 'mixend', 'mixend&hatch'].forEach(function (sc) { SCREENS.push(sc, sc + '&hour=18', sc + '&hour=21'); });
 SCREENS = SCREENS.concat(['end&g=1&hatch', 'end&g=1&stg=0&stars=1&hour=21', 'end&g=1&stg=1&stars=2&hour=18', 'end&g=4&stg=1&stars=2', 'end&g=4&hatch&hour=21', 'end&g=4&egg&hour=18', 'bossend&g=1', 'bossend&g=1&hour=21', 'bossend&g=4&hour=21', 'bossend&g=4&hour=18', 'mixend&g=1&hatch', 'mixend&g=1&hatch&hour=21', 'mixend&g=4&hatch&hour=18', 'mixend&g=4&hatch&stars=1&hour=21',
   'end&hatch&boy=1', 'end&egg&boy=1&hour=21', 'end&stg=0&stars=1&boy=1', 'bossend&boy=1', 'bossend&g=3&boy=1&hour=21', 'mixend&hatch&boy=1', 'end&home=new&stg=0', 'end&home=new&stg=0&g=1&hour=21', 'end&t=geo2poly&hatch', 'end&g=3&t=eng3listen&stg=1&stars=2', 'end&g=4&t=heb4read&hatch&hour=21', 'end&g=4&t=g5dec&stg=1&stars=2', 'bossend&t=mul&g=3', 'end&stg=1&say=1']);
+// the cart (dressing room and shop): every category, the first and the last page of the biggest one, an owned and a worn item tapped, an item that costs too much
+// with and without the savings goal, an item that can be bought, a move and a celebration, a veteran with 30 trolls, grades 1 and 4, a boy, night; the daily gift
+SCREENS = SCREENS.concat(['dress', 'dress&tab=0', 'dress&tab=1', 'dress&tab=2', 'dress&tab=4', 'dress&tab=5', 'dress&tab=6', 'dress&tab=7', 'dress&tab=8', 'dress&tab=9', 'dress&tab=7&pg=last', 'dress&tab=6&pg=last',
+  'dress&tab=4&sel=tophat', 'dress&tab=3&sel=scarf', 'dress&tab=7&sel=dragon', 'dress&tab=7&sel=dragon&goal=dragon', 'dress&tab=6&sel=apple', 'dress&tab=8&sel=spin&fx=spin', 'dress&tab=9&sel=pfire&coins=300', 'dress&tab=0&home=new',
+  'dress&many=1', 'dress&many=1&tab=7&pg=last', 'dress&many=1&tr=29&tab=6', 'dress&g=1', 'dress&g=1&tab=7&sel=dragon&goal=dragon', 'dress&g=4&tab=8&sel=spin&coins=300', 'dress&g=4&tab=4&sel=tophat', 'dress&boy=1&tab=7&sel=dragon', 'dress&boy=1&tab=7&sel=dragon&goal=dragon',
+  'dress&hour=21', 'dress&tab=7&sel=dragon&goal=dragon&hour=21', 'dress&tab=9&sel=pfire&fx=pfire&hour=18', 'dress&race=1', 'dress&inv=1',
+  'gift', 'gift&open=1', 'gift&open=1&hour=21', 'gift&g=1&open=1&boy=1', 'gift&g=4&hour=18']);
+// the savings goal on the camp and on the end screens (not reached, reached: the cart is offered once, as a small button), the pet beside the companion, an equipped move and celebration
+SCREENS = SCREENS.concat(['home&goal=dragon', 'home&goal=ball', 'home&goal=dragon&rbtn=1', 'home&goal=ball&rbtn=1&many=1', 'home&g=1&goal=dragon&hour=21', 'home&g=4&goal=wings&boy=1', 'home&goal=ball&hour=18', 'home&wear=dragon', 'home&home=mid&goal=dragon',
+  'end&stg=1&goal=dragon', 'end&stg=1&goal=ball', 'end&stg=1&stars=2&goal=ball&hour=21', 'end&hatch&goal=ball', 'end&hatch&goal=dragon&hour=21', 'end&egg&goal=ball&hour=18', 'bossend&goal=ball', 'bossend&goal=dragon&hour=21', 'mixend&hatch&goal=ball', 'mixend&hatch&goal=dragon&hour=18',
+  'end&g=1&stg=1&stars=2&goal=ball', 'end&g=4&stg=1&goal=dragon&fx=spin.pfire', 'end&g=4&hatch&goal=ball&fx=flip.pgold&hour=21', 'end&stg=1&goal=ball&boy=1', 'end&stg=0&stars=1&goal=wings&wear=dragon', 'region&t=add&wear=dragon', 'topics&wear=dragon', 'subjects&wear=dragon']);
 var only = /(\d+)x(\d+)/.exec(location.hash);
 if (only) SIZES = [[+only[1], +only[2]]];
 var sky = /sky=(\d+)/.exec(location.hash);
 if (sky) SCREENS = SCREENS.filter(function (sc, i) { return !/hour=/.test(sc) && SCREENS.indexOf(sc) === i; }).map(function (sc) { return sc + '&hour=' + sky[1]; });
 var pick = /only=([^&]+)/.exec(location.hash); // fit.html#360x640&only=race -> just the screens whose name contains that text
-if (pick) SCREENS = SCREENS.filter(function (sc) { return sc.indexOf(decodeURIComponent(pick[1])) >= 0; });
+if (pick) { var pats = decodeURIComponent(pick[1]).split(','); SCREENS = SCREENS.filter(function (sc) { return pats.some(function (p) { return sc.indexOf(p) >= 0; }); }); } // several texts: only=dress,gift
 var small = 0, loops = 0;
 var want = SIZES.length * SCREENS.length, got = 0, fails = [];
-SIZES.forEach(function (s) {
-  SCREENS.forEach(function (sc) {
-    var f = document.createElement('iframe');
-    f.width = s[0]; f.height = s[1];
-    f.src = '../index.html#demo&fit&s=' + sc;
-    document.getElementById('frames').appendChild(f);
-  });
-});
+// A long list is not loaded all at once: with a few hundred frames alive (or 70 of the heavier screens) a hidden browser stalls for minutes. At most LIVE frames
+// are open; a frame that has reported is removed and the next one takes its place. A short list (only=...) stays whole, to look at.
+var queue = [], LIVE = 60, roll = want > LIVE;
+SIZES.forEach(function (s) { SCREENS.forEach(function (sc) { queue.push([s, sc]); }); });
+function open1() {
+  var j = queue.shift(); if (!j) return;
+  var f = document.createElement('iframe');
+  f.width = j[0][0]; f.height = j[0][1];
+  f.src = '../index.html#demo&fit&s=' + j[1];
+  document.getElementById('frames').appendChild(f);
+}
+for (var q0 = roll ? LIVE : want; q0 > 0; q0--) open1();
 addEventListener('message', function (e) {
   var d = e.data; if (!d || !d.id) return;
+  if (roll) { [].some.call(document.querySelectorAll('iframe'), function (f) { if (f.contentWindow !== e.source) return false; f.remove(); return true; }); open1(); }
   got++; small += d.sm || 0; loops += d.inf || 0;
   var bad = d.oh > 1 || d.ow > 1 || d.off > 0 || d.nav < 1 || d.ovf > 1 || (/hint/.test(d.id) && !d.card);
   if (bad) fails.push(d.w + 'x' + d.h + ' ' + d.id.replace('#demo&fit&s=', '') + ' oh=' + d.oh + ' ow=' + d.ow + ' off=' + d.off + ' nav=' + d.nav + ' ovf=' + d.ovf + ' card=' + d.card);

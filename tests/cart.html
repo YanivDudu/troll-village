@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- The cart (dressing room and shop), driven through its real buttons: every category opens, every item of the catalogue is
+     reachable by the paging arrows, a tap tries an item on before it is bought, buying takes the fixed price once, an owned item
+     is worn and taken off, a move and a celebration can be chosen, an item that costs too much becomes the savings goal and the
+     camp shows its meter, and every troll (of 30) is reachable by taps and can wear what the child owns.
+     Result in document.title: CART OK n / CART FAIL ...
+     Run: msedge --headless --disable-gpu --allow-file-access-from-files --virtual-time-budget=60000 --dump-dom tests/cart.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0;
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h, sel) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector(sel || '.screen.cart .citem'); if (s) res({ f: f, d: d, w: f.contentWindow }); else setTimeout(poll, 20); })();
+  });
+}
+function scr(x) { return x.d.querySelector('.screen.cart:not(.out)'); }
+function q(x, s) { return scr(x).querySelector(s); }
+function qa(x, s) { return [].slice.call(scr(x).querySelectorAll(s)); }
+function coins(x) { return +(/\d+/.exec(x.d.querySelector('.screen:not(.out) .coinchip').textContent) || [0])[0]; }
+function cardOf(x, v) { return qa(x, '.citem').filter(function (b) { return b.getAttribute('data-v') === v; })[0]; }
+function arrows(x) { var a = qa(x, '.cfoot .parr'); return { prev: a[0], next: a[1] }; }
+// turn the pages until the card is there (from the first page)
+function find(x, v) {
+  var a = arrows(x), n = 0;
+  while (!a.prev.disabled && !a.prev.classList.contains('gone') && n++ < 40) a.prev.click();
+  n = 0;
+  while (!cardOf(x, v) && !a.next.disabled && !a.next.classList.contains('gone') && n++ < 40) a.next.click();
+  return cardOf(x, v);
+}
+function allCards(x) { // every card of the open category, page by page
+  var a = arrows(x), seen = [], n = 0, inside = true, gr = q(x, '.cgridw').getBoundingClientRect();
+  while (!a.prev.disabled && !a.prev.classList.contains('gone') && n++ < 40) a.prev.click();
+  for (n = 0; n < 40; n++) {
+    qa(x, '.citem').forEach(function (b) { var r = b.getBoundingClientRect(); seen.push(b.getAttribute('data-v')); if (r.top < gr.top - 1 || r.bottom > gr.bottom + 1 || r.width < 48 || r.height < 48) inside = false; });
+    if (a.next.disabled || a.next.classList.contains('gone')) break;
+    a.next.click();
+  }
+  return { seen: seen, inside: inside, pages: n + 1 };
+}
+function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png"],img[src$="' + cp + '.png"]'); }
+(async function () {
+  try {
+    var L = null, x, c, b, before, i;
+    // ---- every category, every item, on a small phone and on a laptop
+    for (var size of [[360, 640], [1366, 650]]) {
+      x = await frame('demo&s=dress&tab=3&coins=1000&many=1', size[0], size[1]); L = x.w.TrollLogic;
+      var tabs = qa(x, '.ctab'), slots = ['hair', 'hairColor', 'body', 'acc', 'hat', 'face', 'hand', 'pet', 'move', 'party'];
+      check(tabs.length === 10, size + ': ten categories');
+      for (i = 0; i < tabs.length; i++) {
+        tabs[i].click();
+        var all = allCards(x), want = L.ITEMS.filter(function (it) { return it.slot === slots[i]; }).map(function (it) { return it.id; });
+        if (i < 3) check(all.seen.length === (i === 0 ? L.HAIR_STYLES : i === 1 ? L.HAIR_COLORS.length : L.BODIES.length) && all.inside, size + ': category ' + slots[i] + ' shows all its ' + all.seen.length + ' choices');
+        else check(want.every(function (id) { return all.seen.indexOf(id) >= 0; }) && all.seen.length === want.length + (slots[i] === 'acc' ? 0 : 1) && all.inside && new Set(all.seen).size === all.seen.length,
+          size + ': category ' + slots[i] + ': all ' + want.length + ' items are reachable by the arrows, in ' + all.pages + ' pages, none cut');
+      }
+      check(scr(x).scrollHeight <= scr(x).clientHeight + 1 && q(x, '.cgridc').scrollHeight <= q(x, '.cgridw').clientHeight + 1, size + ': nothing scrolls');
+      x.f.remove();
+    }
+    // ---- try before buying, buy at the fixed price, take off, wear again
+    x = await frame('demo&s=dress&tab=7&coins=1000');
+    check(L.priceOf({ items: ['none', 'bow'] }, 'unicorn') === 90 && L.priceOf({ items: L.ITEMS.map(function (it) { return it.id; }) }, 'unicorn') === 90, 'the price of an item does not depend on how many items are owned');
+    c = find(x, 'unicorn'); var uni = c.querySelector('.cpr').textContent;
+    c = find(x, 'dragon'); before = coins(x);
+    check(/100/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f409') && !!c.querySelector('.cdo img'), 'the card shows the item itself, its price and the icon of what it does');
+    c.click();
+    check(hasPic(q(x, '.cprev'), '1f409') && coins(x) === before && c.classList.contains('pick'), 'a tap tries the item on the troll, and nothing is paid yet');
+    b = qa(x, '.cbtn'); check(b.length === 1 && /100/.test(b[0].textContent), 'one button: buy, with the price');
+    b[0].click();
+    c = cardOf(x, 'dragon');
+    check(coins(x) === before - 100 && c.classList.contains('worn') && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'bought once for 100: owned and worn');
+    check(find(x, 'unicorn').querySelector('.cpr').textContent === uni, 'the other prices did not move after a purchase');
+    c = find(x, 'dragon'); c.click(); b = qa(x, '.cbtn'); check(b.length === 1, 'an owned and worn item: one button'); b[0].click();
+    check(!cardOf(x, 'dragon').classList.contains('worn') && !hasPic(q(x, '.cprev'), '1f409') && coins(x) === before - 100, 'taken off: still owned, no coins moved');
+    c = cardOf(x, 'dragon'); c.click(); b = qa(x, '.cbtn'); b[0].click();
+    check(cardOf(x, 'dragon').classList.contains('worn') && hasPic(q(x, '.cprev'), '1f409') && coins(x) === before - 100, 'worn again without paying again');
+    // what the demo player already owned is still owned and wearable: the kitten (worn), the top hat (worn), the scarf and the wand
+    check(/שֶׁלִּי/.test(find(x, 'kitty').querySelector('.cpr').textContent), 'an item owned before is still owned (kitten)');
+    qa(x, '.ctab')[3].click(); c = find(x, 'scarf'); check(/שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'an accessory owned before is still owned (scarf)');
+    c.click(); qa(x, '.cbtn')[0].click(); check(cardOf(x, 'scarf').classList.contains('worn'), 'and it can be worn');
+    qa(x, '.ctab')[4].click(); check(find(x, 'tophat').classList.contains('worn'), 'what was worn before is still worn (top hat)');
+    // ---- a move and a celebration: shown on the troll before buying; chosen after
+    qa(x, '.ctab')[8].click(); c = find(x, 'spin'); c.click();
+    check(q(x, '.cprev').classList.contains('mv-spin') && !!q(x, '.cprev .troll.cheer'), 'a tap on a move makes the troll do it');
+    await wait(1300);
+    check(!q(x, '.cprev').classList.contains('mv-spin') && !q(x, '.cprev .troll.cheer'), 'the move is done once and stops');
+    before = coins(x); qa(x, '.cbtn')[0].click();
+    check(coins(x) === before - 70 && cardOf(x, 'spin').classList.contains('worn'), 'the move is bought and chosen');
+    qa(x, '.ctab')[9].click(); c = find(x, 'pstar'); var sparks = x.d.querySelectorAll('#fx .spark').length; c.click();
+    check(x.d.querySelectorAll('#fx .spark').length > sparks, 'a tap on a celebration sets it off once');
+    qa(x, '.cbtn')[0].click(); check(cardOf(x, 'pstar').classList.contains('worn'), 'the celebration is bought and chosen');
+    x.f.remove();
+    // ---- an item that costs too much: no lock, a muted price, and it can become the one savings goal
+    x = await frame('demo&s=dress&tab=7&coins=10');
+    c = find(x, 'dragon'); c.click();
+    check(c.querySelector('.cpr').classList.contains('cant') && !/🔒/.test(c.textContent) && hasPic(q(x, '.cprev'), '1f409'), 'too dear: a normal card with a muted price, and it can still be tried on');
+    b = qa(x, '.cbtn'); check(b.length === 1 && /חוֹסֶכֶת/.test(b[0].textContent), 'one button: I am saving for this');
+    b[0].click();
+    check(!!cardOf(x, 'dragon').querySelector('.cgl') && /10/.test(q(x, '.kmsg').textContent) && /100/.test(q(x, '.kmsg').textContent) && coins(x) === 10, 'the goal is marked on the card, with coins out of price');
+    c = find(x, 'unicorn'); c.click(); qa(x, '.cbtn')[0].click();
+    check(qa(x, '.cgl').length === 1 && !!cardOf(x, 'unicorn').querySelector('.cgl'), 'one goal at a time: the new one replaces the old one');
+    x.d.querySelector('.screen.cart .top .icon[aria-label="חֲזָרָה לַכְּפָר"]').click(); await wait(500);
+    var hb = x.d.querySelector('.screen.camp:not(.out) .dressb.hasgoal');
+    check(!!hb && /10\/90/.test(hb.textContent) && hasPic(hb, '1f984'), 'the camp shows the meter of the goal on the cart button: 10/90 and the picture');
+    hb.click(); await wait(500);
+    c = q(x, '.citem.pick'); check(!!c && c.getAttribute('data-v') === 'unicorn', 'one tap on the meter opens the cart on that item');
+    x.f.remove();
+    // ---- a boy reads the masculine form
+    x = await frame('demo&s=dress&tab=7&coins=10&boy=1'); find(x, 'dragon').click(); await wait(300);
+    check(/חוֹסֵךְ/.test(qa(x, '.cbtn')[0].textContent), 'a boy reads the masculine form on the goal button');
+    x.f.remove();
+    // ---- 30 trolls: every one is reachable by taps only, on a phone (the arrows step) and on a laptop (pages of thumbnails), and wears what the child owns
+    for (size of [[360, 640], [1366, 650]]) {
+      x = await frame('demo&s=dress&tab=4&many=1', size[0], size[1]);
+      var names = {}, pa = qa(x, '.cpickr .parr'), guard = 0, thumbs = qa(x, '.cth').length > 0;
+      names[q(x, '.cname').textContent] = 1;
+      if (thumbs) {
+        while (guard++ < 40) { qa(x, '.cth').forEach(function (t) { names[t.getAttribute('aria-label')] = 1; }); if (pa[1].disabled || pa[1].classList.contains('gone')) break; pa[1].click(); }
+        var lastT = qa(x, '.cth').pop(); lastT.click(); check(q(x, '.cname').textContent === lastT.getAttribute('aria-label') || q(x, '.cname').textContent.length > 0, size + ': a tap on a thumbnail brings that troll');
+      } else for (i = 0; i < 29; i++) { pa[1].click(); names[q(x, '.cname').textContent] = 1; }
+      var wantNames = {}; for (i = 0; i < 30; i++) wantNames[L.trollFromId(5 + 37 * i).name] = 1; // the 30 trolls of &many=1 (two trolls may share a name)
+      check(Object.keys(wantNames).every(function (n) { return names[n]; }) && scr(x).scrollWidth <= scr(x).clientWidth + 1, size + ': all the trolls are reachable by taps (' + Object.keys(names).length + ' names seen), ' + (thumbs ? 'pages of thumbnails' : 'one by one'));
+      check(q(x, '.cths').scrollWidth <= q(x, '.cths').clientWidth + 1, size + ': the strip of trolls does not scroll');
+      c = find(x, 'tophat'); c.click(); b = qa(x, '.cbtn');
+      check(b.length === 1 && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent), size + ': another troll can wear what the child owns');
+      b[0].click(); check(hasPic(q(x, '.cprev'), '1f3a9') && cardOf(x, 'tophat').classList.contains('worn'), size + ': and it is on that troll');
+      qa(x, '.cacts .btn')[1].click(); check(!!q(x, '.cprev svg'), size + ': the surprise outfit works');
+      x.f.remove();
+    }
+    // ---- the chosen move in an exercise: nothing while the child thinks, once after a correct answer; without a chosen move, the one jump of before
+    for (var fxh of ['&fx=spin', '']) {
+      x = await frame('demo&s=round&t=add' + fxh, 390, 800, '.screen .answers');
+      var tb = function () { return x.w.getComputedStyle(x.d.querySelector('.screen:not(.out) .buddy .troll .tb')); }, tvx = x.w.__tv, was = tvx.round.i;
+      check(tb().animationName === 'idle', 'exercise' + fxh + ': while the child thinks the companion only breathes (' + tb().animationName + ')');
+      var ok1 = [].slice.call(x.d.querySelectorAll('.screen:not(.out) [data-v]')).filter(function (a) { return a.getAttribute('data-v') === String(tvx.round.current().answer); })[0];
+      if (ok1) ok1.click(); else if (tvx.solve) tvx.solve();
+      check(tb().animationName === (fxh ? 'mvSpin' : 'jump') && tb().animationIterationCount === '1', 'exercise' + fxh + ': after a correct answer: ' + tb().animationName + ', once');
+      await wait(1700);
+      check(tvx.round.i === was + 1 && tb().animationName === 'idle', 'exercise' + fxh + ': the next exercise comes as before, and the companion is calm again');
+      x.f.remove();
+    }
+    // ---- the chosen celebration and move on the end-of-stage screen: once, after the chest; none when nothing is chosen
+    x = await frame('demo&s=end&stg=1&stars=2&fx=spin.pstar&show=1', 390, 800, '.screen.endm');
+    check(x.d.querySelectorAll('#fx .spark').length === 0, 'end of stage: no celebration at the first moment');
+    await wait(1900);
+    var mb = x.d.querySelector('.endm .mbud');
+    var sp1 = x.d.querySelectorAll('#fx .spark').length; // (a hidden browser draws few frames, so the sparks of a burst may outlive their second here)
+    check(sp1 >= 20, 'end of stage: the chosen celebration goes off when the map changes (' + sp1 + ' sparks)');
+    check(!!mb && mb.classList.contains('mv-spin') && /mvSpin/.test(x.w.getComputedStyle(mb.querySelector('.tb')).animationName), 'end of stage: the companion does the chosen move');
+    await wait(2600);
+    check(x.d.querySelectorAll('#fx .spark').length <= sp1 && x.d.querySelector('.endm').classList.contains('fin') && !!x.d.querySelector('.ebtns .nxt'), 'end of stage: the celebration went off once (no new sparks after it), and the buttons are there');
+    x.f.remove();
+    x = await frame('demo&s=end&stg=1&stars=2&show=1', 390, 800, '.screen.endm'); await wait(1900);
+    check(x.d.querySelectorAll('#fx .spark').length <= 3 && !x.d.querySelector('.endm .mbud[class*="mv-"]'), 'end of stage without chosen items: as before (only the flying coins)');
+    x.f.remove();
+    // ---- the daily gift still gives coins and one free item, and leads to the cart
+    x = await frame('demo&s=gift', 390, 800, '.screen.giftm .gift'); before = coins(x);
+    x.d.querySelector('.gift').click(); await wait(1200);
+    check(coins(x) > before && !!x.d.querySelector('.gframe .gitem .cnm').textContent && x.d.querySelectorAll('.giftm .ebtns .btn').length === 2, 'the daily gift: coins, the item itself with its name, and two buttons');
+    x.d.querySelectorAll('.giftm .ebtns .btn')[1].click(); await wait(500);
+    c = q(x, '.citem.pick'); check(!!c && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'from the gift to the cart: the new item is open and owned');
+    x.f.remove();
+  } catch (e) { fails.push('error ' + (e && e.stack || e)); }
+  document.title = fails.length ? 'CART FAIL ' + fails.join(' | ') : 'CART OK ' + checks;
+})();
+</script>

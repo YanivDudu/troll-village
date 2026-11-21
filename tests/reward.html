@@ -53,8 +53,25 @@ async function egg(hash) { // an egg: tap it after the show, the new troll stand
   check(x.d.querySelectorAll('.ebtns .nxt').length === 1, hash + ': one primary button after the egg');
   x.f.remove();
 }
+async function goal() { // the savings goal: a meter on the end screen; when the coins are enough the cart is offered once, as a small button, never as the primary one
+  var x = await frame('demo&s=end&stg=1&stars=2&goal=dragon&hour=10');
+  check(!!x.d.querySelector('.ecaps .egoal .gnum') && !x.d.querySelector('.ebtns .cartb'), 'goal not reached: a meter, and no offer');
+  x.f.remove();
+  x = await frame('demo&s=end&stg=1&stars=2&goal=ball&fx=spin.pfire&hour=21');
+  var c = x.d.querySelectorAll('.ebtns .cartb'), all = x.d.querySelectorAll('.ebtns .btn');
+  check(c.length === 1 && !c[0].classList.contains('nxt') && x.d.querySelectorAll('.ebtns .nxt').length === 1 && all[0] !== c[0] && all[0].classList.contains('nxt'), 'goal reached: the cart is one small button, after the primary one');
+  check(tappable(x, c[0]) && tappable(x, all[0]), 'goal reached: the buttons are on top');
+  c[0].click(); await wait(500);
+  var k = x.d.querySelector('.screen.cart:not(.out) .citem.pick'), b = x.d.querySelector('.screen.cart:not(.out) .cbtn');
+  check(!!k && k.getAttribute('data-v') === 'ball' && !!b, 'the cart opens on the item of the goal, with its one button');
+  if (b) b.click(); await wait(300);
+  k = x.d.querySelector('.screen.cart:not(.out) .citem.pick .cpr');
+  check(!!k && /שֶׁלִּי/.test(k.textContent), 'the item of the goal is bought');
+  x.f.remove();
+}
 (async function () {
   try {
+    await goal();
     await one('demo&s=end&stg=1&stars=2&hour=21', 14);
     await one('demo&s=end&stg=0&stars=1&hour=18', 8);
     await one('demo&s=end&stg=0&g=4&hour=10', 22);

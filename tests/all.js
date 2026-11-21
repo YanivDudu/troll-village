@@ -36,6 +36,8 @@ job('packs', /^PACKS OK/, () => run('node', ['tests/packs.test.js'], 300000).the
   .forEach(h => job('play ' + h.replace('auto&', ''), /^DONE/, () => edge(page + '/index.html#' + h, 150000).then(t => t.slice(0, 40))));
 // the reward moment of the end screens: blocked for the first 0.9 s, one tap skips to the final state, the buttons work, the egg hatches
 job('reward', /^REWARD OK/, () => edge(page + '/tests/reward.html', 60000));
+// the cart through its real buttons: every item reachable by the arrows, try, buy at the fixed price, wear, take off, the savings goal, 30 trolls
+job('cart', /^CART OK/, () => edge(page + '/tests/cart.html', 90000));
 if (!quick) {
   job('race (real database)', /^RACE OK/, () => run('node', ['tests/run-page.js', 'tests/race.html', '290'], 320000).then(o => o.split('\n')[0]));
   job('sync (real database)', /^SYNC OK/, () => run('node', ['tests/run-page.js', 'tests/sync.html', '240'], 270000).then(o => o.split('\n')[0]));

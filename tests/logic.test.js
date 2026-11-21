@@ -247,7 +247,7 @@ console.log('all ' + n + ' passed (final)');
 t('shop: catalogue, buying, chest rewards', () => {
   assert(L.ITEMS.length >= 60);
   assert.strictEqual(new Set(L.ITEMS.map(i => i.id)).size, L.ITEMS.length);
-  for (const it of L.ITEMS) assert(['acc', 'hat', 'face', 'hand', 'pet'].includes(it.slot) && it.price >= 0 && it.name && (it.slot === 'acc') === (it.e === ''), it.id);
+  for (const it of L.ITEMS) assert(['acc', 'hat', 'face', 'hand', 'pet', 'move', 'party'].includes(it.slot) && it.price >= 0 && it.name && (it.slot === 'acc') === (it.e === ''), it.id);
   for (const a of L.ACCESSORIES) assert(L.ITEM[a] && L.ITEM[a].slot === 'acc', a);
   let s = L.newState(); s.coins = 25;
   assert.strictEqual(L.buy(s, 'unicorn').ok, false);           // too expensive
@@ -259,14 +259,42 @@ t('shop: catalogue, buying, chest rewards', () => {
   for (let st = 0; st <= 10; st++) { const w = L.roundReward(st); assert(w.coins >= prev && w.coins >= 10); prev = w.coins; }
   assert.strictEqual(L.roundReward(10).tier, 'gold'); assert.strictEqual(L.roundReward(6).tier, 'silver'); assert.strictEqual(L.roundReward(0).tier, 'bronze');
   assert(L.roundReward(0).coins >= Math.min(...L.ITEMS.filter(i => i.price > 0).map(i => L.priceOf(L.newState(), i.id))), 'the very first item is within reach of the weakest round');
-  // progressive prices: every purchase makes the rest dearer, and prices are whole fives
+  // fixed prices: an item costs its own price, however many items the player already has (it used to rise 5% with every purchase)
   let p = L.newState(), before = L.priceOf(p, 'dragon'); p.coins = 100000;
   assert.strictEqual(L.priceOf(p, 'bow'), 0); assert.strictEqual(L.priceOf(p, 'nope'), 0); assert.strictEqual(before, 100);
-  let spent = 0, lastCheap = L.priceOf(p, 'apple');
-  for (const it of L.ITEMS.filter(i => i.price > 0 && i.id !== 'dragon' && i.id !== 'apple')) { const c = L.priceOf(p, it.id); assert(c % 5 === 0 && c >= it.price, it.id); const b = L.buy(p, it.id); assert(b.ok && b.state.coins === p.coins - c); p = b.state; spent += c;
-    const now = L.priceOf(p, 'apple'); assert(now >= lastCheap); lastCheap = now; }
-  assert(L.priceOf(p, 'dragon') > before * 5, 'the last items cost much more: ' + L.priceOf(p, 'dragon'));
-  assert(spent > 15000, 'collecting everything takes a long time: ' + spent);
+  const base = { apple: 10, ball: 20, flower: 16, crown: 50, tophat: 40, unicorn: 90, whale: 88, cup: 60 }; // the base prices before the change: nothing got dearer
+  for (const k in base) assert.strictEqual(L.priceOf(p, k), base[k], k);
+  let spent = 0;
+  for (const it of L.ITEMS.filter(i => i.price > 0 && i.id !== 'dragon')) { const c = L.priceOf(p, it.id); assert.strictEqual(c, it.price, it.id); const b = L.buy(p, it.id); assert(b.ok && b.state.coins === p.coins - c); p = b.state; spent += c; }
+  assert.strictEqual(L.priceOf(p, 'dragon'), before, 'the last item costs what it cost at the start');
+  assert.strictEqual(spent, L.ITEMS.filter(i => i.id !== 'dragon').reduce((a, i) => a + i.price, 0));
+  // items that do something: victory moves and celebrations. None of them is a hat, and none touches coins, stars or exercises
+  const acts = L.ITEMS.filter(i => i.slot === 'move' || i.slot === 'party');
+  assert(acts.length >= 8 && acts.length <= 12, 'action items: ' + acts.length);
+  for (const it of acts) { assert(it.price >= 40 && it.e && !L.EMOJI_SLOTS.includes(it.slot), it.id); assert.strictEqual(Object.keys(it).sort().join(), 'e,id,name,price,slot'); }
+  // state.fx is optional: a save without it behaves as before; equipping needs ownership; the field survives a reload and junk in it is dropped
+  let f = L.newState(); assert.strictEqual(f.fx, undefined); assert.strictEqual(L.fxOf(f, 'move'), ''); assert.strictEqual(L.goalOf(f), null);
+  assert.strictEqual(L.loadState(JSON.stringify(f)).fx, undefined, 'an old save gets no new field');
+  assert.strictEqual(L.fxOf(L.setFx(f, 'move', 'spin'), 'move'), '', 'a move that is not owned cannot be equipped');
+  f.coins = 500; f = L.buy(f, 'spin').state; f = L.buy(f, 'pfire').state;
+  const coinsThen = f.coins;
+  f = L.setFx(f, 'move', 'spin'); f = L.setFx(f, 'party', 'pfire');
+  assert.strictEqual(L.fxOf(f, 'move'), 'spin'); assert.strictEqual(L.fxOf(f, 'party'), 'pfire'); assert.strictEqual(f.coins, coinsThen, 'equipping is free');
+  assert.strictEqual(L.fxOf(L.setFx(f, 'move', 'pfire'), 'move'), '', 'a celebration is not a move');
+  assert.strictEqual(L.fxOf(L.setFx(f, 'move', ''), 'move'), '');
+  let back = L.loadState(JSON.stringify(f)); assert.strictEqual(JSON.stringify(back.fx), JSON.stringify({ move: 'spin', party: 'pfire' })); assert(back.items.includes('spin') && back.items.includes('pfire'));
+  assert.strictEqual(JSON.stringify(L.loadState(JSON.stringify(Object.assign({}, f, { fx: { move: 'crown', party: 7, goal: 'zzz', told: 'zzz', x: 1 } }))).fx), '{}');
+  assert.deepStrictEqual(L.loadState(JSON.stringify(Object.assign({}, f, { fx: 'x' }))).fx, undefined);
+  // the savings goal: one item that is not owned; the meter is coins / price; nothing expires; buying it ends the goal
+  let g = L.newState(); g.coins = 30; g = L.setGoal(g, 'dragon');
+  assert.deepStrictEqual([L.goalOf(g).id, L.goalOf(g).price, L.goalOf(g).have, L.goalOf(g).ready], ['dragon', 100, 30, false]); assert.strictEqual(L.goalOf(g).part, 0.3);
+  g = L.setGoal(g, 'unicorn'); assert.strictEqual(L.goalOf(g).id, 'unicorn', 'one goal at a time');
+  assert.strictEqual(L.goalOf(L.setGoal(g, 'bow')), null, 'something owned or free is not a goal'); assert.strictEqual(L.goalOf(L.setGoal(g, '')), null);
+  g = L.setGoal(g, 'dragon'); g.fx.told = 'dragon'; g.coins = 130;
+  assert(L.goalOf(g).ready && L.goalOf(g).part === 1); assert.strictEqual(L.loadState(JSON.stringify(g)).fx.told, 'dragon');
+  assert.strictEqual(L.setGoal(g, 'unicorn').fx.told, undefined, 'a new goal is offered anew');
+  const bought = L.buy(g, 'dragon').state; assert.strictEqual(L.goalOf(bought), null); assert.strictEqual(bought.coins, 30);
+  assert.strictEqual(g.coins, 130, 'setGoal, setFx and buy return new states');
   const ld = L.loadState('{"coins":"x","items":["dragon","zzz"],"owned":[4],"buddy":4,"dress":{"4":{"pet":"dragon","hat":"dragon","hand":"lolly","face":7}}}');
   assert.strictEqual(ld.coins, 0); assert(ld.items.includes('dragon') && !ld.items.includes('zzz')); assert.strictEqual(ld.buddy, 4);
   assert.deepStrictEqual(JSON.parse(JSON.stringify(ld.dress[4])), { pet: 'dragon', hand: 'lolly' });
