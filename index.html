@@ -1272,8 +1272,6 @@ body.toy .rp{box-shadow:0 5px 0 var(--te2)}
 body.toy .rp.me{box-shadow:0 0 0 4px var(--tgold),0 5px 0 4px var(--te2)}
 body.toy .rp .pl{background:var(--ti)}
 body.toy .rp.win .pl{background:#ffb300}
-/* a landscape phone with the race track or the invitation bar: the map of a topic with nine houses has no room for labels of 14 px */
-@media (max-height:420px){body.toy.racing .screen>.tmap .mlab,body.toy.invited .screen>.tmap .mlab{font-size:clamp(12px,calc(12.5px*var(--s)),20px)}}
 /* RESKIN-2B-END */
 /* RESKIN-2A-BEGIN ===== the toy island, part 2a: the screens where the child plays and practises (the exercise, the explanation window)
    and the base components (buttons, round icon buttons, chips, the overlay card). Colours, shadows and the calm ground only: no size changes.
@@ -1391,6 +1389,34 @@ body.toy .ostrip .otile{background:#f3eefb;box-shadow:none}
 .padback{grid-area:b;min-height:52px;padding:0 26px;border-radius:999px;background:#38b872;color:#fff;font-size:clamp(16px,3vmin,22px);font-weight:700;direction:rtl;box-shadow:0 4px 0 #23894f}
 .padbtn b{white-space:nowrap}
 /* PAD-END */
+/* SCROLLMAP-BEGIN ===== task "maps that scroll": the map of a topic, the world map and the challenge map. The island with the trail lies in a scroll
+   area of its own (.mscroll inside .mwrap). A map whose stops fit at their comfortable size looks as before and nothing scrolls. Otherwise (.scrl) the island
+   is taller than its window and moves up and down in it by plain native scrolling; the arrows, the parents' button and everything outside .mwrap stay.
+   .up / .dn: there is more map above / below (set by an IntersectionObserver, never by a scroll handler). .side: a wide map, the arrows keep a lane at its side. */
+.mwrap{position:relative;flex:1 1 0;min-height:0;width:100%;max-width:1240px}
+.mscroll{position:absolute;inset:0;display:block}
+.mscroll>.tmap{display:block;flex:none;width:100%;max-width:none;height:100%}
+.mwrap.scrl>.mscroll{inset:-12px -8px 0;padding:12px 8px 14px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:none}
+.mwrap.scrl>.mscroll::-webkit-scrollbar{display:none}
+.mend{position:absolute;left:0;top:0;width:1px;height:2px;pointer-events:none;visibility:hidden}
+.mend.z{top:auto;bottom:0}
+.mwrap.scrl .mend.a{top:-12px}.mwrap.scrl .mend.z{bottom:-14px}
+body .mwrap .mlab{font-size:clamp(16px,calc(12.5px*var(--s)),20px)}
+.mwrap>.parb{position:absolute;bottom:0;inset-inline-start:0;margin:0;z-index:3}
+.marr{display:none;position:absolute;z-index:4;left:50%;margin-left:-24px;width:48px;height:48px;border-radius:50%;padding:0;align-items:center;justify-content:center;font-size:20px;line-height:1;background:#fffaf0;color:#3b2a15;border:2px solid #b9783a;box-shadow:0 3px 0 #8a5524;transition:transform .12s}
+.marr:active{transform:translateY(3px)}
+.mup{top:4px}.mdn{bottom:4px}
+.mwrap.scrl.up>.mup,.mwrap.scrl.dn>.mdn{display:flex}
+.mwrap.side>.marr{left:0;margin-left:0}.mwrap.side>.mup{top:0}
+.mwrap.scrl.up>.mscroll{-webkit-mask-image:linear-gradient(to bottom,transparent 8px,#000 44px);mask-image:linear-gradient(to bottom,transparent 8px,#000 44px)}
+.mwrap.scrl.dn>.mscroll{-webkit-mask-image:linear-gradient(to top,transparent 0,#000 36px);mask-image:linear-gradient(to top,transparent 0,#000 36px)}
+.mwrap.scrl.up.dn>.mscroll{-webkit-mask-image:linear-gradient(to bottom,transparent 8px,#000 44px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 8px,#000 44px,#000 calc(100% - 36px),transparent 100%)}
+.mwrap.side.up>.mscroll{-webkit-mask-image:linear-gradient(to bottom,transparent 8px,#000 28px);mask-image:linear-gradient(to bottom,transparent 8px,#000 28px)}
+.mwrap.side.dn>.mscroll{-webkit-mask-image:linear-gradient(to top,transparent 0,#000 16px);mask-image:linear-gradient(to top,transparent 0,#000 16px)}
+.mwrap.side.up.dn>.mscroll{-webkit-mask-image:linear-gradient(to bottom,transparent 8px,#000 28px,#000 calc(100% - 16px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 8px,#000 28px,#000 calc(100% - 16px),transparent 100%)}
+body.toy .marr{background:#fff;color:var(--ti);border-color:#fff;box-shadow:0 4px 0 var(--te2),0 7px 10px rgba(0,0,0,.2)}
+body.toy .mwrap>.parb{background:#fff;color:var(--ti);box-shadow:0 4px 0 var(--te2)}
+/* SCROLLMAP-END */
 </style>
 </head>
 <body>
@@ -4864,7 +4890,7 @@ var TrollModels = (function () {
     side: [[9, 26], [91, 50], [9, 80], [91, 24], [9, 52], [91, 80], [50, 42], [50, 68], [30, 58], [70, 34], [70, 72], [30, 32]], // trees along the sides first,
     front: [[63, 98], [38, 98], [82, 98], [18, 98], [50, 98], [72, 91], [28, 91]] }; // flowers and rocks in the foreground
   function decoFit(box, items) {
-    var W = box.clientWidth, H = box.clientHeight, pts = box.__pts || [], sc = parseFloat(box.style.getPropertyValue('--s')) || 1, taken = [], r = 13 * sc + 4, k, j, pb = box.querySelector('.parb');
+    var W = box.clientWidth, H = box.clientHeight, pts = box.__pts || [], sc = parseFloat(box.style.getPropertyValue('--s')) || 1, taken = [], r = 13 * sc + 4, k, j, pb = box.__pb || box.querySelector('.parb');
     function rect(e, p) { taken.push([e.offsetLeft - p, e.offsetTop - p, e.offsetLeft + e.offsetWidth + p, e.offsetTop + e.offsetHeight + p]); }
     items.forEach(function (it) { [].forEach.call(it.el.children, function (c) { taken.push([it.el.offsetLeft + c.offsetLeft - 5, it.el.offsetTop + c.offsetTop - 5, it.el.offsetLeft + c.offsetLeft + c.offsetWidth + 5, it.el.offsetTop + c.offsetTop + c.offsetHeight + 5]); }); }); if (pb) rect(pb, 4); // the picture, the label and the pips of every stop
     for (k = 1; k < pts.length; k++) for (j = 0; j <= 8; j++) { var x = pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * j / 8, y = pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * j / 8; taken.push([x - r, y - r, x + r, y + r]); }
@@ -4909,6 +4935,11 @@ var TrollModels = (function () {
     return b;
   }
   function mapFlag() { return mapImg(ART.flag, 'mflag'); }
+  // the scroll area of a map: only the island with the trail moves in it. The two arrows (shown when there is more map at that edge) and the parents' button stay.
+  function mapWrap(box, parb) {
+    return h('div', { class: 'mwrap' }, h('div', { class: 'mscroll' }, box),
+      h('button', { class: 'marr mup', text: '▲', 'aria-label': 'לְמַעְלָה בַּמַּפָּה' }), h('button', { class: 'marr mdn', text: '▼', 'aria-label': 'לְמַטָּה בַּמַּפָּה' }), parb || null);
+  }
   function mapDeco(box) {
     if (TOY) { if (!box.classList.contains('lands')) ART.deco.forEach(function (d) { var im = mapImg(d[0], 'mdeco deco' + (d[3] ? ' ' + d[3] : '')); im.setAttribute('data-kind', d[1]); im.setAttribute('style', '--z:' + d[2]); box.appendChild(im); }); return; }
     MAP_DECO.forEach(function (d) { var im = mapImg(d[0], 'mdeco'); im.setAttribute('style', 'left:' + d[1] + '%;top:' + d[2] + '%;--z:' + d[3]); box.appendChild(im); });
@@ -4957,16 +4988,20 @@ var TrollModels = (function () {
   // up and down. s is the size of the icons and labels: the biggest that leaves every label free. Every item has its
   // element in `el` (with .mtop and .mic inside) and `reached` (the trail is red up to the last stop that was reached).
   // parb: a button that keeps the bottom corner of the map (or null). Laid out again whenever the size of the map changes.
-  function trailLayout(el, box, trail, items, parb) {
+  // sc: the scroll area of a map (task "maps that scroll"), or null for a picture that never scrolls (the strip of the camp, the end
+  // screens). With sc a stop never gets smaller than its comfortable size: when the stops do not fit the map at that size, the map
+  // grows taller (F) and scrolls up and down inside sc; the arrows and the parents' button stay where they are, over the map.
+  function trailLayout(el, box, trail, items, parbtn, sc) {
+    var wrap = sc ? sc.parentNode : null, F = null, moved = false, hmax = 0, parb = parbtn;
     function place(c, s) {
-      var W = box.clientWidth, H = box.clientHeight, N = items.length, one = c >= N, cw = W / c, off = (c - N % c) % c, xs = [], tops = [], hm = 0, ok = true, i;
+      var W = box.clientWidth, H = box.clientHeight, N = items.length, one = c >= N, x0 = F ? F.l : 0, x1 = W - (F ? F.r : 0), cw = (x1 - x0) / c, off = (c - N % c) % c, xs = [], tops = [], hm = 0, ok = true, i;
       box.style.setProperty('--s', s.toFixed(3));
-      for (i = 0; i < N; i++) xs.push(W - (((i + off) % c) + 0.5) * cw);
+      for (i = 0; i < N; i++) xs.push(x1 - (((i + off) % c) + 0.5) * cw);
       function widths(wide) {
         items.forEach(function (it, i) { // a wide label reaches under its neighbours, but not out of the map and not into the corner of the parents' button
-          it.w = Math.max(40, (wide ? Math.max(cw, Math.min(cw * 1.9, 2 * Math.min(xs[i], W - xs[i] - (parb && i % 2 ? parb.offsetWidth + 8 : 0)))) : cw) - 8); it.el.style.width = it.w + 'px';
+          it.w = Math.max(40, (wide ? Math.max(cw, Math.min(cw * 1.9, 2 * Math.min(xs[i] - x0, x1 - xs[i] - (parb && i % 2 ? parb.offsetWidth + 8 : 0)))) : cw) - 8); it.el.style.width = it.w + 'px';
         });
-        hm = 0; items.forEach(function (it) { hm = Math.max(hm, it.el.offsetHeight); });
+        hm = 0; items.forEach(function (it) { hm = Math.max(hm, it.el.offsetHeight); }); hmax = hm;
       }
       if (one) {
         widths(true);
@@ -4977,7 +5012,8 @@ var TrollModels = (function () {
       } else {
         widths(false);
         var step = (H - hm) / (N - 1);
-        ok = c * step >= hm + 8;
+        if (F) { step = (hm + 8) / c; H = hm + (N - 1) * step + F.pad; box.style.height = H.toFixed(1) + 'px'; } // the map is as tall as its rows need
+        ok = c * step >= hm + 8 - 0.01;
         for (i = 0; i < N; i++) tops.push(i * step);
       }
       var pts = [], last = 0, pl = parb ? parb.offsetLeft : 0, pt = parb ? parb.offsetTop : 0;
@@ -4987,6 +5023,7 @@ var TrollModels = (function () {
         pts.push([x0 + m.offsetLeft + m.offsetWidth / 2, tops[i] + m.offsetTop + m.offsetHeight * 0.6]);
         if (it.reached) last = i;
         if (mt.scrollWidth > it.w + 1) ok = false; // the icon and the troll beside it must fit in the width of the stop
+        if (sc) { var lb = it.el.querySelector('.mlab'); if (lb && lb.scrollWidth > lb.clientWidth + 1) ok = false; } // and no word of the label may be cut
         if (parb && x0 < pl + parb.offsetWidth + 6 && x0 + it.w > pl - 6 && tops[i] + it.el.offsetHeight > pt - 6 && tops[i] < pt + parb.offsetHeight + 6) ok = false; // the parents' button keeps its corner
       });
       function path(to) {
@@ -5001,20 +5038,75 @@ var TrollModels = (function () {
       if (TOY) box.__pts = pts;
       return ok;
     }
+    // ---- a map that scrolls ----
+    var up = wrap && wrap.querySelector('.mup'), dn = wrap && wrap.querySelector('.mdn'), calm = reduced || /fit/.test(hash);
+    function smax() { return Math.max(0, sc.scrollHeight - sc.clientHeight); }
+    function to(v, smooth) { v = Math.max(0, Math.min(smax(), v)); if (smooth && !calm && sc.scrollTo && 'scrollBehavior' in document.documentElement.style) sc.scrollTo({ top: v, behavior: 'smooth' }); else sc.scrollTop = v; }
+    function mid(n) { return n.offsetTop + n.offsetHeight / 2 - wrap.clientHeight / 2; }
+    // the room an arrow takes at its edge of the map, and the soft edge beside it: a stop that was asked for stands clear of both
+    function band(bottom) { if (!F) return 0; if (F.side) return 16; return bottom ? (parseFloat(dn.style.bottom) || 4) + 52 : 56; }
+    function see(n, smooth) {
+      if (!F || !n) return;
+      var t = sc.scrollTop, a = n.offsetTop, b = a + n.offsetHeight, vh = wrap.clientHeight;
+      if (a >= t + (t > 2 ? band(false) : 0) && b <= t + vh - (t < smax() - 2 ? band(true) : 0)) return;
+      to(mid(n), smooth);
+    }
+    if (sc) {
+      [up, dn].forEach(function (b, k) { b.addEventListener('click', function () { sfx.tap(); moved = true; to(sc.scrollTop + (k ? 1 : -1) * Math.max(60, wrap.clientHeight * 0.8), true); }); }); // one screenful
+      ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(function (ev) { sc.addEventListener(ev, function () { moved = true; }, { passive: true }); }); // the child moved the map: it is not moved back
+      var endA = h('i', { class: 'mend a' }), endZ = h('i', { class: 'mend z' }); box.appendChild(endA); box.appendChild(endZ);
+      // is there more map above or below: the browser tells when an end of the map comes into its window or leaves it (not on every scroll event)
+      if (window.IntersectionObserver) {
+        var io = new IntersectionObserver(function () { if (cur !== el) io.disconnect(); else ends(); }, { root: sc });
+        io.observe(endA); io.observe(endZ);
+      }
+      sc.__ends = ends; // the layout check moves the map by itself, in a frame that the browser does not draw
+    }
+    function ends() { var t = sc.scrollTop, on = !!F && !!window.IntersectionObserver; wrap.classList.toggle('up', F ? !on || t > 2 : false); wrap.classList.toggle('dn', F ? !on || t < smax() - 2 : false); }
+    function full(st) {
+      var N = items.length, W = box.clientWidth, vh = box.clientHeight, half = Math.ceil(N / 2), c, k, ok = false, s = st, side = W >= 640;
+      for (c = N; c >= 2 && !ok; c = c === N ? half : c - 1) ok = place(c, st); // first: the comfortable size without scrolling, in one row or in rows
+      if (ok) return;
+      parb = null; wrap.classList.add('scrl'); wrap.classList.toggle('side', side);
+      // a wide map keeps a lane at each side free of stops, for the arrows and for the parents' button; on a narrow one the arrows are in the middle of the edges
+      // and the map goes on under the parents' button for as much as the button is tall. The arrow of the bottom edge stays above the bottom tenth of the screen.
+      F = { side: side, l: side ? 56 : 0, r: side && parbtn ? parbtn.offsetWidth + 8 : 0, pad: !side && parbtn ? parbtn.offsetHeight + 8 : 0 };
+      dn.style.bottom = Math.max(side ? 0 : 4, Math.ceil(wrap.getBoundingClientRect().bottom - window.innerHeight * 0.9)) + 'px';
+      var cap = vh - (side ? 32 : band(false) + band(true) + 8); // a whole stop is seen between the edges
+      for (k = 0; k < 6; k++) {
+        ok = false;
+        for (c = Math.max(2, Math.min(half, Math.floor((W - F.l - F.r) / (104 * s)))); c >= 2 && !ok; c--) ok = place(c, s);
+        if ((ok && hmax <= cap) || s <= 0.8) break;
+        s = Math.max(0.8, s * (ok ? Math.max(0.8, Math.min(0.95, cap / hmax)) : 0.92));
+      }
+    }
     function layout() {
       if (cur !== el) return;
-      var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false;
+      var keep = sc ? sc.scrollTop : 0;
+      if (sc) { box.style.height = ''; wrap.classList.remove('scrl', 'side'); F = null; parb = parbtn; }
+      var W = box.clientWidth, H = box.clientHeight, N = items.length, cands = [], c, i, k, fit = false, sfit = 0;
       if (W < 60 || H < 60 || !N) return;
       for (c = 2; c <= Math.ceil(N / 2); c++) cands.push([c, Math.min(1.9, W / (c * 104), c * H / (100 * (N - 1 + c))), 1]);
       cands.push([N, Math.min(1.9, (W / N - 8) / 86, H / 135), 1.3]); // one row is preferred when it is nearly as big
       cands.sort(function (a, b) { return b[1] * b[2] - a[1] * a[2]; });
-      for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
-      if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
+      for (i = 0; i < Math.min(3, cands.length) && !fit; i++) for (k = 0; k < 3 && !fit; k++) fit = place(cands[i][0], sfit = Math.max(0.5, cands[i][1] * [1, 0.87, 0.75][k]));
+      // the comfortable size of a stop on a map: a picture of 72 px and a label of 16 px on a phone, more on a tablet and a laptop
+      var st = window.innerWidth <= 640 || window.innerHeight <= 520 ? 1.33 : 1.6;
+      if (sc && N > 2 && !(fit && sfit >= st)) full(st);
+      else if (!fit) place(cands[0][0], Math.max(0.5, cands[0][1] * 0.62));
+      box.__pb = parb;
       if (TOY) decoFit(box, items);
+      if (F) { // open at the right place: the house that is open, or the recommended stop in the middle, at once; a map the child has moved stays where it is
+        var sel = box.querySelector('.mnode.sel'), rec = box.querySelector('.mnode.rec'), sy = sandbox && /[#&]sy=([\d.]+)/.exec(hash); // &sy=0.5: layout check, the map at that part of its way down
+        if (sy) to(smax() * sy[1]); else if (!moved && !sel && rec) to(mid(rec)); else to(keep);
+        if (sel) see(sel);
+      }
+      if (sc) ends();
     }
     layout();
-    if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(box); }
+    if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(sc ? wrap : box); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    layout.see = function (n) { see(n, true); };
     return layout;
   }
 
@@ -5096,9 +5188,10 @@ var TrollModels = (function () {
           sfx.wrong(); restart(b, 'shake'); say('🔒 ' + GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
         });
       }
-      el.appendChild(msg); el.appendChild(box);
+      var mw = mapWrap(box, null);
+      el.appendChild(msg); el.appendChild(mw);
       el.appendChild(h('div', { class: 'note', text: TOY ? 'אִיּוּרִים וְאַיְקוֹנִים: Fluent Emoji (Microsoft). צְלִילִים: Kenney.nl. מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' : 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: Kenney.nl (מַפָּה, בָּתִּים, צְלִילִים), CraftPix.net (יַעַר). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
-      trailLayout(el, box, trail, items, null);
+      trailLayout(el, box, trail, items, null, mw.firstChild);
     });
   }
 
@@ -5171,15 +5264,15 @@ var TrollModels = (function () {
         });
         else b.addEventListener('click', function () {
           if (it.far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי הָאֶתְגָּר שֶׁל הַבַּיִת שֶׁלְּפָנָיו'); return; }
-          sfx.pop(); openIt = openIt === it ? null : it; drawSlot();
+          sfx.pop(); openIt = openIt === it ? null : it; drawSlot(); if (openIt && lay) lay.see(b); // the three stages open above the map, and the house stays in sight
         });
         it.el = b; box.appendChild(b);
       });
-      box.appendChild(parb);
-      el.appendChild(msg); el.appendChild(slot); el.appendChild(box);
+      var mw = mapWrap(box, parb), lay = null;
+      el.appendChild(msg); el.appendChild(slot); el.appendChild(mw);
       drawSlot();
 
-      trailLayout(el, box, trail, items, parb);
+      lay = trailLayout(el, box, trail, items, parb, mw.firstChild);
     });
   }
   // For parents: how many houses of the topic are open. Behind a small button, so that it is not among the child's stages.
@@ -7308,7 +7401,8 @@ var TrollModels = (function () {
       if (c.width > window.innerWidth * 0.6 && c.height > window.innerHeight * 0.6) bad++;
     });
     // the treasure map of a topic: no stop of the trail may touch another stop or the parents' button, leave the map, or cut its label
-    var tmap = cur.querySelector('.tmap'), stops = tmap ? [].slice.call(tmap.querySelectorAll('.mnode,.parb')) : [], tr = tmap && tmap.getBoundingClientRect();
+    // (a map that scrolls: the parents' button stays over the moving map, so it is checked against every stop in mapCheck instead)
+    var tmap = cur.querySelector('.tmap'), mwr = cur.querySelector('.mwrap'), stops = tmap ? [].slice.call((mwr && !mwr.classList.contains('scrl') ? mwr : tmap).querySelectorAll('.mnode,.parb')) : [], tr = tmap && tmap.getBoundingClientRect();
     stops.forEach(function (a, i) {
       var r = a.getBoundingClientRect(), lab = a.querySelector('.mlab'), top = a.querySelector('.mtop');
       if (r.left < tr.left - 1 || r.right > tr.right + 1 || r.top < tr.top - 1 || r.bottom > tr.bottom + 1 || (lab && lab.scrollWidth > lab.clientWidth + 1) || (top && top.scrollWidth > a.clientWidth + 1)) bad++;
@@ -7355,10 +7449,65 @@ var TrollModels = (function () {
     });
     if (card) ovf = Math.max(ovf, card.scrollHeight - card.clientHeight, card.scrollWidth - card.clientWidth, md.scrollHeight - md.clientHeight, md.scrollWidth - md.clientWidth, card.getBoundingClientRect().bottom - window.innerHeight);
     if (again !== true && (ovf > 1 || cur.scrollHeight - cur.clientHeight > 1 || cur.scrollWidth - cur.clientWidth > 1)) { setTimeout(function () { fitCheck(true); }, 3000); return; } // measured mid-animation on a busy machine: look once more
+    // Task "maps that scroll". A map may be taller than its window and scroll up and down INSIDE its own scroll area; everything else still fails:
+    // the page does not scroll (oh / ow below, and 'page'), nothing overflows sideways ('mapx'), the fixed controls are on the screen and can be tapped ('fixed'),
+    // the stage panel is whole on the screen ('panel'), right after opening the recommended stop (or the open house) is in view ('recview') and in the middle
+    // ('reccentre'), the arrows are there exactly when there is more map at that edge ('arrows') and are whole touch targets above the bottom tenth ('arrow'),
+    // every stop can be reached: with the map scrolled to it, it is whole in the window and not under an arrow, the parents' button or a soft edge ('reach'),
+    // no stop is under its size ('size', 'label'), a map that does not scroll shows every stop ('cut'), and &zz=1 says that this map must not scroll ('scrolls').
+    function mapCheck(mw, done) {
+      var sc = mw.querySelector('.mscroll'), box = sc.querySelector('.tmap'), up = mw.querySelector('.mup'), dn = mw.querySelector('.mdn'), pb = mw.querySelector('.parb');
+      var nodes = [].slice.call(box.querySelectorAll('.mnode')), on = mw.classList.contains('scrl'), side = mw.classList.contains('side'), max = Math.max(0, sc.scrollHeight - sc.clientHeight), top0 = sc.scrollTop;
+      var ar = document.getElementById('app').getBoundingClientRect(), IW = window.innerWidth;
+      function vis(b) { var r = b && b.getBoundingClientRect(); return !!r && r.width > 0 && r.height > 0; }
+      function hit(b, e) { var r = e.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
+      function view() { var w = mw.getBoundingClientRect(); return { t: Math.max(w.top, 0), b: Math.min(w.bottom, ar.bottom), l: Math.max(w.left, 0), r: Math.min(w.right, IW) }; }
+      function inView(n) { var r = n.getBoundingClientRect(), v = view(); return r.top >= v.t - 1 && r.bottom <= v.b + 1 && r.left >= v.l - 1 && r.right <= v.r + 1; }
+      function clear(n) { // nothing fixed lies over the stop, and it is out of the soft edges
+        var r = n.getBoundingClientRect(), v = view(), ok = hit(n, n.querySelector('.mic')) && hit(n, n.querySelector('.mlab'));
+        [up, dn, pb].forEach(function (b) { if (!vis(b)) return; var q = b.getBoundingClientRect(); if (r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1) ok = false; });
+        if (vis(up) && r.top < v.t + (side ? 16 : 32) - 1) ok = false;
+        if (vis(dn) && r.bottom > v.b - (side ? 16 : 36) + 1) ok = false;
+        return ok;
+      }
+      function arrows() {
+        var t = sc.scrollTop;
+        if (!(t > 1 && t < 3.5) && vis(up) !== (on && t > 2)) no('arrows');
+        if (!(t < max - 1 && t > max - 3.5) && vis(dn) !== (on && t < max - 2)) no('arrows');
+        [up, dn].forEach(function (b) { if (!vis(b)) return; var r = b.getBoundingClientRect(), v = view(); if (r.width < 47.5 || r.height < 47.5 || r.top < v.t - 1 || r.bottom > v.b + 1 || r.left < -1 || r.right > IW + 1 || r.bottom > window.innerHeight * 0.9 + 1 || !hit(b, b)) no('arrow'); });
+        if (vis(up) && vis(dn) && up.getBoundingClientRect().bottom > dn.getBoundingClientRect().top - 3) no('arrow');
+      }
+      if ((on && sc.scrollWidth - sc.clientWidth > 1) || box.getBoundingClientRect().right > IW + 1 || box.getBoundingClientRect().left < -1) no('mapx');
+      if (document.documentElement.scrollHeight > window.innerHeight + 1 || document.documentElement.scrollWidth > IW + 1 || window.scrollY || window.scrollX) no('page');
+      [].forEach.call(cur.querySelectorAll('.top button,.mslot button,.mwrap>.parb'), function (b) { var r = b.getBoundingClientRect(); if (!r.width || r.left < -1 || r.right > IW + 1 || r.top < -1 || r.bottom > ar.bottom + 1 || !hit(b, b)) no('fixed'); });
+      [].forEach.call(cur.querySelectorAll('.h2,.mpanel,.mgo'), function (x) { var r = x.getBoundingClientRect(), v = view(); if (!r.width && x.className === 'h2') return; if (!r.width || r.left < -1 || r.right > IW + 1 || r.top < -1 || r.bottom > ar.bottom + 1) no('panel'); if (x.className !== 'h2' && r.bottom > v.t + 1) no('panel'); });
+      nodes.forEach(function (n) {
+        if (parseFloat(getComputedStyle(n.querySelector('.mlab')).fontSize) < 15.9) no('label');
+        if (nodes.length > 2 && n.querySelector('.mic').offsetWidth < (window.innerHeight >= 600 ? 60 : 46)) no('size');
+      });
+      if (on && max <= 1) no('idle'); // the map says that it scrolls and has nowhere to go
+      if (/[#&]zz=1/.test(hash) && on) no('scrolls');
+      var first = box.querySelector('.mnode.sel') || box.querySelector('.mnode.rec'), rec = box.querySelector('.mnode.rec');
+      if (first && !/[#&]sy=/.test(hash)) {
+        if (!inView(first) || !clear(first)) no('recview');
+        if (on && first === rec && !box.querySelector('.mnode.sel') && Math.abs(top0 - Math.max(0, Math.min(max, rec.offsetTop + rec.offsetHeight / 2 - mw.clientHeight / 2))) > 2) no('reccentre');
+      }
+      arrows();
+      if (!on) { nodes.forEach(function (n) { if (!inView(n) || !clear(n)) no('cut'); }); done(); return; }
+      var spots = nodes.map(function (n) { return [n.offsetTop + n.offsetHeight / 2 - mw.clientHeight / 2, n]; }).concat([[0, null], [max, null], [max / 2, null]]), k = 0;
+      (function step() {
+        if (k > 0) { var was = spots[k - 1]; if (sc.__ends) sc.__ends(); arrows(); if (was[1] && (!inView(was[1]) || !clear(was[1]))) no('reach' + (/[#&]dbg=1/.test(hash) ? ':' + nodes.indexOf(was[1]) + '@' + Math.round(sc.scrollTop) + '/' + Math.round(max) + (inView(was[1]) ? '' : 'out') : '')); }
+        if (k === spots.length) { sc.scrollTop = top0; setTimeout(done, 80); return; }
+        sc.scrollTop = Math.max(0, Math.min(max, spots[k++][0])); setTimeout(step, 80);
+      })();
+    }
+    function post() {
     // reported, not failed (yet): touch targets under 48 px, and endless animations on an exercise screen
     var sm = 0, inf = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && r.height && Math.min(r.width, r.height) < 47.5) sm++; });
     if (/s=round/.test(hash) && document.getAnimations) inf = document.getAnimations().filter(function (x) { var t = x.effect && x.effect.getTiming && x.effect.getTiming(); return t && t.iterations === Infinity; }).length;
     parent.postMessage({ why: why.join('+'), sm: sm, inf: inf, id: hash, ovf: ovf, card: !!card, w: window.innerWidth, h: window.innerHeight, oh: cur.scrollHeight - cur.clientHeight, ow: cur.scrollWidth - cur.clientWidth, off: bad, nav: cur.querySelectorAll('.top .icon').length }, '*');
+    }
+    if (mwr && !document.querySelector('.ovl,.rov')) mapCheck(mwr, post); else post();
   }, 3000);
 })();
 </script>
