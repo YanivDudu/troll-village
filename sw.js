@@ -16,7 +16,7 @@ var TIMEOUT = 4000;
 // OPTIONAL: scripts the page asks for only later, so its text does not name them (task "map3d": the 3D picture of the maps is loaded the first time
 // a map is shown). They are saved at install when they arrive; when one does not, the worker is installed all the same and the game shows its flat map.
 // They follow the rule of every script: the network first, the saved copy when there is no network.
-var OPTIONAL = ['assets/map3d/three.min.js', 'assets/map3d/toy3d.js', 'assets/map3d/toy3d_more.js', 'assets/map3d/map3d.js'];
+var OPTIONAL = ['assets/map3d/three.min.js', 'assets/map3d/toy3d.js', 'assets/map3d/toy3d_more.js', 'assets/map3d/map3d.js', 'assets/map3d/camp3d.js', 'assets/map3d/pets3d.js'];
 var FRESH_EXT = /\.(html?|js|mjs|json|webmanifest)$/i, ASSET_EXT = /\.(png|jpe?g|gif|webp|svg|ico|woff2?|mp3|ogg|wav)$/i;
 
 // Pure: what to do with a request. 'pass' = the worker does not answer, the browser does what it always did.

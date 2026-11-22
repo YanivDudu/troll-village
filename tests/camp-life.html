@@ -6,7 +6,10 @@
 <title>חיי המחנה: מה הטרול עושה באי שלו</title>
 <!-- Task "camp life": the gallery of what the companion does on its island. Every card is the REAL camp of the game (index.html in demo mode,
      nothing is saved) at phone size, with one activity played once by the debug hash &life=<activity>; the button plays it again.
-     A frozen moment for a still picture: add &at=0..1 (the link "תמונה עומדת" of a card). &life=0 switches the life off. -->
+     A frozen moment for a still picture: add &at=0..1 (the link "תמונה עומדת" of a card). &life=0 switches the life off.
+     Task "camp3d": the camp is the 3D island now (on a device with WebGL); the button "שטוח (גיבוי)" shows the same activity on the flat island of the fallback
+     (&flat=1). New cards: poking the fire, watering the flower, the walk behind the tree, a troll with no 3D animal, one, two; and the camp at laptop size.
+     A card that is far out of sight gives its frame back (every card is a whole copy of the game with a 3D picture of its own). -->
 <style>
 html,body{margin:0;background:#cfeefa;color:#2b2140;font-family:Rubik,Arial,sans-serif}
 body{padding:14px 16px 60px}
@@ -32,6 +35,7 @@ code{direction:ltr;unicode-bidi:embed;background:#fff;border-radius:6px;padding:
 <p>כל משבצת היא המחנה האמיתי של המשחק בגודל של טלפון (מצב הדגמה, שום דבר לא נשמר). הכפתור מנגן את הפעילות שוב. במשחק עצמו הטרול בוחר לבד מה לעשות, עם כמה שניות של מנוחה בין פעילות לפעילות.</p>
 <div class="bar">
   <button id="day" class="on">יום</button><button id="dusk" class="q">ערב</button><button id="night" class="q">לילה</button>
+  <span style="width:14px"></span><button id="m3d" class="on">תלת־ממד</button><button id="mflat" class="q">שטוח (גיבוי)</button>
   <span style="flex:1"></span>
   <button id="allb" class="q">לנגן את כל מה שרואים</button>
 </div>
@@ -39,6 +43,14 @@ code{direction:ltr;unicode-bidi:embed;background:#fff;border-radius:6px;padding:
 <h2>החיים עצמם: המחנה חי לבד</h2>
 <p>כאן המנוע רץ חופשי, כמו במשחק. אפשר להקיש על הטרול (הוא עוצר, מגיב וממשיך), על המדורה, על האוהל ועל חיית המחמד (הוא הולך אליהם). בלילה הוא מפהק, יושב ליד האש, והולך לישון באוהל; הקשה על האוהל מעירה אותו.</p>
 <div class="grid" id="free"></div>
+
+<h2>המחשב הנייד</h2>
+<p>אותו מחנה במסך רחב: כל האי עם החוף שלו בים, ליד הכרטיס של המסע.</p>
+<div class="grid" id="wide"></div>
+
+<h2>החיות במחנה</h2>
+<p>כלב, חתול, אריה, תנין, קוף, ציפור ופיל הם דמויות תלת־ממדיות: הולכות אחרי הטרול, יושבות כשהוא יושב ליד האש, מחכות ליד האוהל כשהוא בפנים, ישנות שם בלילה, ועונות להקשה. חיה אחרת נשארת תמונה, כמו קודם.</p>
+<div class="grid" id="pets"></div>
 
 <h2>מה שהילד עשה קובע מה הטרול עושה</h2>
 <p>הפעילות הראשונה אחרי שהמחנה נפתח היא זו שקשורה לבית האחרון ששוחק; אחר כך היא חוזרת לעיתים קרובות.</p>
@@ -88,7 +100,18 @@ var SETS = {
     ['look', 'מסתכל לצדדים', 'תמיד.', ''],
     ['sky', 'מסתכל לשמיים', 'תמיד. הולך אחורה ומרים את הראש.', ''],
     ['stretch', 'מתמתח', 'תמיד; בבוקר (לפני עשר) זו הפעילות הראשונה.', ''],
-    ['wave', 'מנופף לילד', 'תמיד; מחברוּת 2 קצת יותר.', '']
+    ['wave', 'מנופף לילד', 'תמיד; מחברוּת 2 קצת יותר.', ''],
+    ['poke', 'מחטט באש עם מקל', 'תמיד. ניצוצות עפים מהמדורה.', ''],
+    ['water', 'משקה פרח', 'תמיד. הפרח מזדקף וגדל.', ''],
+    ['walk', 'הולך מאחורי העץ', 'הטיול השני: בשביל עד השלט, ומשם אל מאחורי העץ. העץ מסתיר אותו.', '&back=1']
+  ],
+  wide: [['1', 'מסך רחב 1366x650', 'המנוע עצמו.', '&grow=5&setoff=1', 'wide']],
+  pets: [
+    ['1', 'בלי חיה תלת־ממדית', 'החיה נשארת תמונה שעומדת על האי.', '&pets3=0'],
+    ['fire', 'חיה אחת: החתול', 'הטרול יושב ליד האש, והחתול מתיישב לידו.', ''],
+    ['pet', 'שתי חיות: כלב ואריה', 'הטרול הולך לשחק איתן.', '&pets3=dog,lion&grow=5'],
+    ['sleep', 'לילה: החיות ישנות ליד האוהל', 'הטרול נכנס לאוהל, והן נשכבות לידו.', '&hour=21&pets3=cat,elephant'],
+    ['tent', 'מחכות ליד האוהל', 'הטרול בפנים, החיות יושבות ומחכות.', '&pets3=monkey,bird']
   ],
   lv: [
     ['peek', 'מציץ מפתח האוהל', 'מרמה 2.', ''],
@@ -106,19 +129,20 @@ var SETS = {
   ],
   go: [['go', 'ממשיכים!', 'הקשה על הכפתור הגדול: דילוג קצר לכיוונו, ואז נפתח התרגיל.', '&setoff=1']]
 };
-function src(c, at) { return '../index.html#demo&s=home' + (/hour=/.test(c[3]) ? '' : '&hour=' + hour) + c[3] +'&life=' + c[0] + (at != null ? '&at=' + at : ''); }
+var flat = false;
+function src(c, at) { return '../index.html#demo&s=home' + (/hour=/.test(c[3]) ? '' : '&hour=' + hour) + c[3] +'&life=' + c[0] + (at != null ? '&at=' + at : '') + (flat ? '&flat=1' : ''); }
 function make(box, c, big) {
-  var card = document.createElement('div'); card.className = 'card';
-  var v = document.createElement('div'); v.className = 'view'; v.style.height = (big ? 640 : 300) + 'px';
+  var card = document.createElement('div'); card.className = 'card'; var wide = c[4] === 'wide'; if (wide) card.style.width = '830px';
+  var v = document.createElement('div'); v.className = 'view'; v.style.height = (wide ? 390 : big ? 640 : 300) + 'px';
   var b = document.createElement('b'); b.textContent = c[1];
   var s = document.createElement('small'); s.textContent = c[2];
   var row = document.createElement('div'); row.className = 'row';
   var play = document.createElement('button'); play.textContent = 'שוב';
   var still = document.createElement('a'); still.className = 'b'; still.textContent = 'תמונה עומדת'; still.target = '_blank';
-  var f = null, rec = { el: card, play: go };
+  var f = null, rec = { el: card, play: go, stop: function () { if (f) f.remove(); f = null; } };
   function go() {
     if (f) f.remove();
-    f = document.createElement('iframe'); f.width = 360; f.height = 640; f.style.top = (big ? 0 : -56) + 'px'; f.src = src(c); v.appendChild(f);
+    f = document.createElement('iframe'); f.width = wide ? 1366 : 360; f.height = wide ? 650 : 640; f.style.top = (wide || big ? 0 : -56) + 'px'; if (wide) { f.style.transformOrigin = '0 0'; f.style.transform = 'scale(.6)'; } f.src = src(c); v.appendChild(f);
     still.href = src(c, .5);
   }
   play.addEventListener('click', go);
@@ -127,10 +151,12 @@ function make(box, c, big) {
   cards.push(rec);
   return rec;
 }
-Object.keys(SETS).forEach(function (k) { SETS[k].forEach(function (c) { make(document.getElementById(k), c, k === 'free'); }); });
+['free', 'wide', 'pets', 'mem', 'day0', 'lv', 'ngt', 'go'].forEach(function (k) { SETS[k].forEach(function (c) { make(document.getElementById(k), c, k === 'free'); }); });
 // a card starts when it is first seen (every card is a whole copy of the game: they are not all loaded at once)
 function inView(r) { var q = r.el.getBoundingClientRect(); return q.bottom > -100 && q.top < innerHeight + 100; }
-function startSeen() { cards.forEach(function (r) { if (!r.on && inView(r)) { r.on = 1; r.play(); } }); }
+function far(r) { var q = r.el.getBoundingClientRect(); return q.bottom < -1500 || q.top > innerHeight + 1500; }
+function startSeen() { cards.forEach(function (r) { if (!r.on && inView(r)) { r.on = 1; r.play(); } else if (r.on && far(r)) { r.on = 0; r.stop(); } }); }
+[['m3d', false], ['mflat', true]].forEach(function (x) { document.getElementById(x[0]).addEventListener('click', function () { flat = x[1]; document.getElementById('m3d').className = flat ? 'q' : 'on'; document.getElementById('mflat').className = flat ? 'on' : 'q'; cards.filter(inView).forEach(function (r) { r.play(); }); }); });
 addEventListener('scroll', startSeen, { passive: true }); addEventListener('resize', startSeen); startSeen();
 document.getElementById('allb').addEventListener('click', function () { cards.filter(inView).forEach(function (r) { r.play(); }); });
 [['day', 10], ['dusk', 18], ['night', 21]].forEach(function (x) {

@@ -55,6 +55,7 @@ job('village', /^VILLAGE OK/, () => edge(page + '/tests/village.html', 120000));
 job('map3d', /^MAP3D OK/, () => edge(page + '/tests/map3d.html' + (quick ? '#360x640' : ''), 600000)); // task "map3d": the 3D picture of every trail map puts nothing over a label, a badge, the companion or a button (the geometry only, no WebGL)
 job('walk', /^WALK OK/, () => edge(page + '/tests/walk.html', 120000)); // task "mapwalk": the companion walks on the maps: a tap, the walk, then the round; the second tap; a closed house; leaving in the middle; a race and reduced motion at once
 job('life', /^LIFE OK/, () => edge(page + '/tests/life.html', 200000)); // task "camp life": the companion that lives on the island of the camp (its activities, taps, night, the walk before a screen opens)
+job('life3d', /^LIFE OK/, () => edge(page + '/tests/life.html#3d', 240000)); // task "camp3d": the same life of the camp on the 3D ground (the camera and the DOM of the 3D camp, without WebGL)
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine
