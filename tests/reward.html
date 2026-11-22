@@ -101,7 +101,19 @@ async function news() {
   jb.click(); await wait(600);
   check(!x.d.querySelector('.screen.jrn:not(.out) .jhot'), 'and the ring is not shown again');
   x.f.remove();
-  // a stage that completes nothing: no picture buttons; a mixed round: only the new troll
+  // task "rounds": a round that brings the badge of the house to a new look (round 5: the medal) is an achievement: the badge pops in the picture, a caption
+  // says it, and the trophy button opens the journal on the stamp of that house, with a ring around it
+  x = await frame('demo&s=end&rn=5&hour=10'); await wait(300);
+  a = x.d.querySelector('.ebtns .achb'); var bdg = x.d.querySelector('.eframe .mnode[data-n="5"] .hbadge.a5'), key5 = a ? a.getAttribute('data-key') : '';
+  check(!!bdg && bdg.getAttribute('data-n') === '5' && bdg.classList.contains('eup') && !!x.d.querySelector('.ecaps .ebadge'), 'round 5 of a house: its badge shows 5 in the look of the fifth round, and a caption says so');
+  check(!!a && /^h:.*:5$/.test(key5) && !!a.querySelector('.hbadge.a5') && !x.d.querySelector('.ebtns .dressn') && x.d.querySelectorAll('.ebtns .nxt').length === 1, 'the new look is an achievement: the trophy button with that badge (' + key5 + '), no new troll, one main button');
+  if (a) { a.click(); await wait(600); hot = x.d.querySelectorAll('.screen.jrn:not(.out) .jpage .jhot'); check(hot.length === 1 && hot[0].getAttribute('data-key') === key5 && !!hot[0].querySelector('.hbadge.a5'), 'the journal opens on the stamp of that house, with its badge and a ring around it'); }
+  x.f.remove();
+  // a round that was not won (one star): it counts and is rewarded, nothing opens, and the main button offers one more round or the next step
+  x = await frame('demo&s=end&rn=3&stars=1&hour=10'); await wait(300);
+  check(!!x.d.querySelector('.eframe .hbadge.a3') && !x.d.querySelector('.emeet') && x.d.querySelectorAll('.ebtns .nxt').length === 1 && x.d.querySelectorAll('.bigstars .star.on').length === 1, 'a round that was not won: one star, the badge counts it, no egg, one main button');
+  x.f.remove();
+  // a round that changes nothing but the count: no picture buttons; a mixed round: only the new troll
   x = await frame('demo&s=end&stg=1&stars=2&hour=10'); await wait(300);
   check(!x.d.querySelector('.ebtns .newb') && !!x.d.querySelector('.ebtns .nxt'), 'a stage in the middle of a house: nothing new, no picture buttons');
   x.f.remove();
