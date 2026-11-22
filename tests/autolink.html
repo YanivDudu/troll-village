@@ -4,6 +4,7 @@
 <!-- End-to-end check of the automatic cloud save: a device that is linked to nothing makes a code of its own and saves every
      player under it, against the real cloud. Run: node tests/run-page.js tests/autolink.html 240. Expects title "AUTOLINK OK".
      On localhost the game links by itself only when the address has #vlink=1, and this page is the only one that asks for it.
+     It is not part of node tests/all.js (only of: node tests/all.js cloud), because of what it leaves behind:
      Every run makes TWO village documents (their codes are printed in the log; the rules allow no delete, so the test empties
      them at the end and they stay, empty) and one throw-away family account, which is deleted at the end. The test players
      are local players: nothing of them goes to the ranking or to the list of who is online. One line of the ranking is written
@@ -12,13 +13,14 @@
 <iframe id="f" width="420" height="760"></iframe><pre id="log"></pre>
 <script>
 var f = document.getElementById('f'), log = document.getElementById('log'), ONLY_LOCAL = /local/.test(location.search);
-var T0 = Date.now(), LIMIT = 225000, dead = false;
+var T0 = Date.now(), LIMIT = 265000, dead = false;
 function alive() { if (dead || Date.now() - T0 > LIMIT) throw new Error('timeout: the whole test took too long'); }
 function say(t) { log.textContent += t + '\n'; }
 function wait(ms) { alive(); return new Promise(function (r) { setTimeout(r, ms); }); }
 function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { alive(); } catch (e) { no(e); return; } try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 150) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
 // Every request of the game page to the cloud goes through here: the test sees it and can cut the network.
-var net = { log: [], page: { inflight: 0 }, offline: false };
+var net = { log: [], page: { inflight: 0 }, offline: false, holdGet: null };
+function defer() { var d = {}; d.promise = new Promise(function (r) { d.go = r; }); return d; }
 function hook(W) {
   var real = W.fetch, me = net.page = { inflight: 0 }; W.__spied = true;
   W.fetch = function (u, o) {
@@ -26,9 +28,10 @@ function hook(W) {
     if (!fs && !rtdb) return real.call(W, u, o);
     if (net.offline) return Promise.reject(new TypeError('offline (test)'));
     if (rtdb) return real.call(W, u, o);
-    var patch = !!(o && o.method === 'PATCH'), e = { patch: patch, url: String(u), status: 0, done: false };
-    me.inflight++; net.log.push(e);
-    return real.call(W, u, o).then(function (r) { e.status = r.status; e.done = true; me.inflight--; return r; }, function (x) { e.done = true; me.inflight--; throw x; });
+    var patch = !!(o && o.method === 'PATCH'), e = { patch: patch, url: String(u), status: 0, done: false, held: false }, gate = patch ? null : net.holdGet;
+    if (gate) net.holdGet = null;
+    me.inflight++; net.log.push(e); e.held = !!gate;
+    return Promise.resolve(gate && gate.promise).then(function () { return real.call(W, u, o); }).then(function (r) { e.status = r.status; e.done = true; me.inflight--; return r; }, function (x) { e.done = true; me.inflight--; throw x; });
   };
 }
 function open(hash) { // the game, linking by itself as on the live site; the watcher is in before the script of the page runs
@@ -68,9 +71,15 @@ function fields(d) { var o = {}; for (var k in (d && d.fields) || {}) o[k] = d.f
 function village(code) { return fetch(vurl(code)).then(function (r) { return r.status === 404 ? null : r.json().then(fields); }); }
 function family() { if (!/^[A-Za-z0-9]{10,}$/.test(uid)) throw new Error('no test account'); return fetch(FS + 'families/' + uid + '?key=' + KEY, { headers: { Authorization: 'Bearer ' + tok } }).then(function (r) { return r.json(); }).then(fields); }
 function empty(url, keys, hdr) { return fetch(url + keys.map(function (k) { return '&updateMask.fieldPaths=' + k; }).join(''), { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, hdr || {}), body: '{"fields":{}}' }); }
-var RID = 'r9' + String(10000000 + Math.floor(Math.random() * 90000000)); // a made-up race identity of an old player
-function boardRow() { return fetch(RT + 'board/' + RID + '.json').then(function (r) { return r.json(); }); }
+// made-up race identities of old players; rows = every line of the ranking this run may have written (all are removed at the end)
+function rid9() { return 'r9' + String(10000000 + Math.floor(Math.random() * 90000000)); }
+var RID = rid9(), RID2 = rid9(), RID3 = rid9(), rows = [RID, RID2, RID3];
+function row(id) { return fetch(RT + 'board/' + id + '.json').then(function (r) { return r.json(); }); }
+function putRow(id) { if (rows.indexOf(id) < 0) throw new Error('not a line of this test'); return fetch(RT + 'board/' + id + '.json', { method: 'PUT', body: JSON.stringify({ n: 'zz-test', b: 5, g: 2, xp: 0, st: 0, t: { '.sv': 'timestamp' } }) }).then(function (r) { return r.ok; }); }
+function boardRow() { return row(RID); }
+function idmap() { return JSON.parse(ls('idmap') || '{}'); }
 
+var id2G = ''; // the lasting id of the public test player: its ranking line is removed at the end
 async function run() {
   await device({});
   var L, i0, c;
@@ -121,22 +130,41 @@ async function run() {
   restore({ 'trollVillage.v1': rich0 });
   await open();
   await until(function () { return q('.nextb') || q('.pcard .go'); }, 'the game opened without a network');
+  await until(function () { return CODE_RE.test(sync().code); }, 'the device linked itself, about a second after the page opened');
   var p0 = profs();
   check(p0.list.length === 1 && /^p\d{9}$/.test(p0.list[0].id) && norm(st(p0.list[0].id)) === rich0 && !ls('v1') && !ls('p.p1') && CODE_RE.test(sync().code), 'the oldest layout: the progress became one player with a lasting id, nothing lost (' + tell(st(p0.list[0].id)) + '; no network: nothing was sent, no document was made)');
+
+  // ---- two tabs of an old device open in the same moment (a browser that restores its tabs), without a network: one move, one code ----
+  await close();
+  var tw1 = rich(2, 5), tw2 = rich(4, 6), g = document.createElement('iframe'); g.width = 420; g.height = 300; document.body.appendChild(g);
+  restore({ 'trollVillage.profiles': JSON.stringify({ cur: 'p1', list: [{ id: 'p1', name: 'TW1', sex: 'f', loc: true }, { id: 'p2', name: 'TW2', sex: 'm', loc: true }] }), 'trollVillage.r.p1': tw1, 'trollVillage.r.p2': tw2 });
+  [f, g].forEach(function (fr, i) { // (the device links itself more than half a second after the page started: the watcher is in before that)
+    var t = setInterval(function () { try { var W = fr.contentWindow; if (dead) clearInterval(t); else if (W && W.TrollLogic && /index\.html$/.test(W.location.pathname) && !W.__spied) { hook(W); clearInterval(t); } } catch (e) {} }, 3);
+    fr.src = '../index.html?' + (Date.now() + i) + '#vlink=1';
+  });
+  await until(function () { return CODE_RE.test(sync().code) && profs().list.length === 2 && profs().list.every(function (p) { return /^p\d{9}$/.test(p.id); }); }, 'one of the two tabs moved the players and linked the device');
+  var tw = snap(), twCode = sync().code;
+  await wait(6500); // the other tab looks again a few seconds later
+  var twKeys = Object.keys(snap()).filter(function (k) { return /^trollVillage\.[rqp]\.p\d+$/.test(k); }), twp = profs();
+  check(f.contentWindow.__spied && g.contentWindow.__spied && sync().code === twCode && JSON.stringify(twp.list) === JSON.stringify(JSON.parse(tw['trollVillage.profiles']).list) && twKeys.length === 2 && idmap().p1.to === twp.list[0].id && idmap().p2.to === twp.list[1].id && norm(st(twp.list[0].id)) === tw1 && norm(st(twp.list[1].id)) === tw2,
+    'two tabs at once: the players were moved once (two saved states, the same ids, one code), the second tab followed the first');
+  g.src = 'about:blank'; await close(); g.remove();
 
   // ---- (c) + (d) an old unlinked device (short ids, a race identity, a line in the ranking) opens without a network ----
   await close();
   var old1 = rich(2, 2), old2 = rich(4, 3);
-  check((await fetch(RT + 'board/' + RID + '.json', { method: 'PUT', body: JSON.stringify({ n: 'zz-test', b: 5, g: 2, xp: 0, st: 0, t: { '.sv': 'timestamp' } }) })).ok && (await boardRow()).n === 'zz-test', 'an old line of the ranking exists under the race identity ' + RID);
-  restore({ 'trollVillage.profiles': JSON.stringify({ cur: 'p1', list: [{ id: 'p1', name: 'OLD1', sex: 'f', loc: true }, { id: 'p2', name: 'OLD2', sex: 'm', loc: true }] }),
-    'trollVillage.r.p1': old1, 'trollVillage.q.p2': old2, 'trollVillage.rid.p1': RID, 'trollVillage.rev': JSON.stringify({ p1: 500 }) });
+  var OLDLIST = JSON.stringify({ cur: 'p1', list: [{ id: 'p1', name: 'OLD1', sex: 'f', loc: true }, { id: 'p2', name: 'OLD2', sex: 'm' }] }); // OLD2 is a public player (a sibling who is not playing now)
+  check((await putRow(RID)) && (await putRow(RID2)) && (await row(RID)).n === 'zz-test' && (await row(RID2)).n === 'zz-test', 'old lines of the ranking exist under the race identities ' + RID + ' and ' + RID2);
+  restore({ 'trollVillage.profiles': OLDLIST, 'trollVillage.r.p1': old1, 'trollVillage.q.p2': old2, 'trollVillage.rid.p1': RID, 'trollVillage.rid.p2': RID2, 'trollVillage.rev': JSON.stringify({ p1: 500 }) });
   i0 = net.log.length;
   await open();
   await until(function () { return q('.nextb'); }, 'the home screen, without a network');
+  await until(function () { return CODE_RE.test(sync().code); }, 'the old device linked itself');
   var pc = profs(), id1 = pc.list[0].id, id2 = pc.list[1].id, codeC = sync().code;
-  check(pc.list.length === 2 && /^p\d{9}$/.test(id1) && /^p\d{9}$/.test(id2) && id1 !== id2 && pc.cur === id1 && pc.list[0].name === 'OLD1' && pc.list[1].name === 'OLD2' && pc.list[1].sex === 'm' && pc.list[1].loc === true, 'old device: the two players got lasting ids, the same player is still the one who plays, no player twice');
+  check(pc.list.length === 2 && /^p\d{9}$/.test(id1) && /^p\d{9}$/.test(id2) && id1 !== id2 && pc.cur === id1 && pc.list[0].name === 'OLD1' && pc.list[1].name === 'OLD2' && pc.list[1].sex === 'm' && !pc.list[1].loc, 'old device: the two players got lasting ids, the same player is still the one who plays, no player twice');
   check(norm(st(id1)) === old1 && norm(st(id2)) === old2 && !ls('r.p1') && !ls('q.p2') && !ls('r.p2'), 'old device: both saved states moved whole (also the one under an older key), the old copies are gone (' + tell(st(id1)) + ' / ' + tell(st(id2)) + ')');
-  check(rev(id1) === 500 && !('p1' in JSON.parse(ls('rev'))) && !ls('rid.p1') && JSON.parse(ls('ridgone') || '[]').join() === RID, 'old device: the running number moved with the player; the old race identity waits to be taken off the ranking');
+  check(rev(id1) === 500 && !('p1' in JSON.parse(ls('rev'))) && !ls('rid.p1') && !ls('rid.p2') && idmap().p1.to === id1 && idmap().p2.to === id2 && idmap().p1.r.join() === RID && idmap().p2.r.join() === RID2 && idmap().p2.w === 1, 'old device: the running number moved with the player; the move is remembered for good (old id -> lasting id), the old race identities wait to be replaced in the ranking');
+  id2G = id2;
   check(CODE_RE.test(codeC), 'old device: it has a code of its own although there is no network'); made.push(codeC); say('   village code made by this run: ' + codeC);
   var n1 = await save1(id1);
   await wait(5500); // the push that follows a save is tried and fails quietly
@@ -150,10 +178,38 @@ async function run() {
   c = await village(codeC);
   var listC = JSON.parse(c.list), s3 = Object.keys(c).filter(function (k) { return /^s3_/.test(k); });
   check(listC.length === 2 && listC[0].id === id1 && listC[1].id === id2 && s3.length === 2 && c['s3_' + id1] === played && c['s3_' + id2] === old2 && c['r3_' + id1].split(':')[0] === String(n1), 'the network is back: both players are in the cloud once each, with everything, also what was played without a network');
-  await until(function () { return !ls('ridgone'); }, 'the old race identity was taken off');
-  check((await boardRow()) === null && (await (await fetch(RT + 'board/' + id1 + '.json')).json()) === null, 'the old line of the ranking is gone (and no second line was made; on localhost the game writes no ranking line at all)');
+  await until(function () { return !idmap().p1.w && !idmap().p2.w; }, 'the ranking was put in order');
+  var r2 = await row(id2);
+  check((await row(RID)) === null && (await row(RID2)) === null && (await row(id1)) === null && r2 && r2.n === 'OLD2' && r2.xp === JSON.parse(old2).xp && r2.st === JSON.parse(old2).stars, 'the ranking: the sibling who is not playing has ONE line, under the lasting id, with the name and points; both old lines are gone; the local player has none');
   i0 = net.log.length; await openS();
   check(patches(i0).length === 0 && profs().list.length === 2 && norm(st(id1)) === played && norm(st(id2)) === old2 && sync().code === codeC, 'the next opening changes nothing: same players, same progress, same code, nothing written');
+
+  // ---- an older page of the game is still open in another tab (or as the installed app) and knows only the old ids ----
+  await close();
+  var newer1 = JSON.parse(played), ahead2 = JSON.parse(old2), revs = JSON.parse(ls('rev')), sy = sync();
+  newer1.coins += 50; newer1.xp += 3; newer1 = norm(JSON.stringify(newer1)); ahead2.coins += 7; ahead2.xp += 5; ahead2 = norm(JSON.stringify(ahead2));
+  // OLD2 was played in the new page since the move (a new state, a higher number, not sent yet) ...
+  localStorage.setItem('trollVillage.r.' + id2, ahead2); revs[id2] = rev(id2) + 2; sy.d[id2] = 1;
+  // ... and the old page: it saved OLD1's play under the old key (its number starts again from the progress), saved a stale OLD2 the same
+  // way, stored the list with the old ids, made a new race identity for OLD2 and wrote ranking lines under it and under the first one
+  revs.p1 = 2 + JSON.parse(newer1).xp + JSON.parse(newer1).rounds;
+  localStorage.setItem('trollVillage.rev', JSON.stringify(revs)); localStorage.setItem('trollVillage.sync', JSON.stringify(sy));
+  localStorage.setItem('trollVillage.r.p1', newer1); localStorage.setItem('trollVillage.r.p2', old2); localStorage.setItem('trollVillage.profiles', OLDLIST); localStorage.setItem('trollVillage.rid.p2', RID3);
+  check((await putRow(RID2)) && (await putRow(RID3)), 'the older page left: progress under both old ids, the list with the old ids, and two more old lines in the ranking');
+  i0 = net.log.length; await openS();
+  await until(function () { return patches(i0).some(function (e) { return e.done && e.status === 200; }); }, 'the play of the older page was uploaded');
+  await idle(i0);
+  pc = profs(); c = await village(codeC);
+  check(pc.list.length === 2 && pc.list[0].id === id1 && pc.list[1].id === id2 && pc.cur === id1 && pc.list[1].name === 'OLD2' && JSON.parse(c.list).length === 2 && sync().code === codeC, 'older page: still two players, each once, under the lasting ids, here and in the cloud');
+  check(norm(st(id1)) === newer1 && c['s3_' + id1] === newer1 && rev(id1) > n1 && !ls('r.p1') && !('p1' in JSON.parse(ls('rev'))), 'older page: what was played there is not lost: it is now the progress of the player, and it reached the cloud (' + JSON.parse(newer1).coins + ' coins)');
+  check(st(id2) === ahead2 && c['s3_' + id2] === ahead2 && !ls('r.p2') && !ls('rid.p2'), 'older page: its stale copy of the other player did not replace the newer play of the new page');
+  await until(function () { return !idmap().p2.w; }, 'the ranking was put in order again');
+  r2 = await row(id2);
+  check((await row(RID2)) === null && (await row(RID3)) === null && r2 && r2.xp === JSON.parse(ahead2).xp, 'older page: its two lines in the ranking are gone again, the player still has one line');
+  await close(); localStorage.setItem('trollVillage.profiles', OLDLIST); // the older page stores its list once more
+  i0 = net.log.length; await openS();
+  check(profs().list.length === 2 && profs().list[0].id === id1 && profs().list[1].id === id2 && profs().cur === id1 && norm(st(id1)) === newer1 && st(id2) === ahead2 && patches(i0).length === 0, 'and once more: the same two players, nothing lost, nothing written');
+  played = newer1; old2 = ahead2;
   await close(); var C = snap();
 
   // ---- (a) a new player on a device that is linked to nothing: the device makes its own code and the cloud gets the player ----
@@ -169,7 +225,7 @@ async function run() {
   check(c && JSON.parse(c.list).length === 1 && JSON.parse(c.list)[0].id === idA && JSON.parse(c.list)[0].name === 'A1' && c['s3_' + idA] === norm(st(idA)) && c['r3_' + idA] === rev(idA) + ':' + c['t3_' + idA], 'the cloud holds the player and the whole saved state, with its running number');
   // the player makes real progress (written while the page is closed, as a played session leaves it: a new state, a higher number, not sent yet)
   await close();
-  var richA = rich(2, 0), revs = JSON.parse(ls('rev')), sy = sync();
+  var richA = rich(2, 0); revs = JSON.parse(ls('rev')); sy = sync();
   localStorage.setItem('trollVillage.r.' + idA, richA); revs[idA] = rev(idA) + 9; localStorage.setItem('trollVillage.rev', JSON.stringify(revs)); sy.d[idA] = 1; localStorage.setItem('trollVillage.sync', JSON.stringify(sy));
   i0 = net.log.length; await openS();
   c = await village(codeA);
@@ -207,12 +263,35 @@ async function run() {
   await typeCode('ZZZZ' + codeA.slice(4).split('').reverse().join(''));
   await until(function () { return /לֹא מָצָאנוּ/.test(q('.cmsg').textContent); }, 'a wrong code on a linked device');
   check(sync().code === codeC && profs().list.length === 2, 'a wrong code leaves the device on its own code');
-  q('.cinp').value = codeA; q('.cjoin').click();
-  await until(function () { return profs().list.length === 3 && sync().code === codeA; }, 'joined the code of device A');
+  q('.cinp').value = codeA;
+  var gate = net.holdGet = defer(), h0 = net.log.length;
+  doc().dispatchEvent(new Event('visibilitychange')); // a sync starts, and its request stays on the way
+  await until(function () { return net.log.slice(h0).some(function (e) { return e.held; }); }, 'a sync is running');
+  q('.cjoin').click();
+  await until(function () { return sync().code === codeA; }, 'the code was linked while that sync was still running');
+  await wait(400); gate.go();
+  await until(function () { return profs().list.length === 3 && /✓/.test(q('.cmsg').textContent); }, 'joining while a sync is running waits for it and succeeds, without a "no internet" message');
+  check(sync().code === codeA, 'joining while another sync is still running: it waits and then says that it worked');
   await idle(i0);
   c = await village(codeA);
   check(JSON.parse(c.list).map(function (p) { return p.id; }).sort().join() === [idA, id1, id2].sort().join() && c['s3_' + id1] === played && c['s3_' + id2] === old2 && c['s3_' + idA] === stateA, 'joining another code by hand: the players of this device went into it whole, the player that was there is untouched');
   check(norm(st(id1)) === played && norm(st(id2)) === old2 && st(idA) === stateA, 'and the device holds all three');
+
+  // ---- no room: 8 players here and one more there. Nothing is linked and nobody is dropped ----
+  await close();
+  var F = JSON.parse(JSON.stringify(C)), fl = JSON.parse(F['trollVillage.profiles']), xs = [];
+  for (var x = 1; x <= 6; x++) { fl.list.push({ id: 'p70000000' + x, name: 'X' + x, sex: 'f', loc: true }); F['trollVillage.r.p70000000' + x] = rich(1, 10 + x); xs.push('p70000000' + x); }
+  F['trollVillage.profiles'] = JSON.stringify(fl);
+  restore(F); i0 = net.log.length;
+  await openS();
+  var cA = await village(codeA);
+  check(profs().list.length === 8 && sync().code === codeC && JSON.parse(cA.list).length === 3, 'a device with 8 players on its own code; the other code holds 3 players, one of them is not on this device');
+  await typeCode(codeA);
+  await until(function () { return /אֵין מָקוֹם/.test(q('.cmsg').textContent); }, 'the parent is told that there is no room');
+  await wait(1200);
+  check(/8 כָּאן וְעוֹד 1 שָׁם/.test(q('.cmsg').textContent) && /לִמְחֹק/.test(q('.cmsg').textContent) && sync().code === codeC && profs().list.length === 8 && xs.every(function (id) { return st(id) === F['trollVillage.r.' + id]; }) && norm(st(id1)) === played && same(await village(codeA), cA),
+    'no room when a code is typed: "' + q('.cmsg').textContent + '"; the device keeps its own code and all 8 players, the other code is untouched');
+  await close(); F = snap();
 
   // ---- (e) the device that linked itself signs in to a family account: its players move into the account ----
   await device(A); i0 = net.log.length;
@@ -234,8 +313,17 @@ async function run() {
   var half = JSON.parse(JSON.stringify(A)); half['trollVillage.auth'] = signedIn['trollVillage.auth'];
   restore(half); i0 = net.log.length;
   await openS();
-  await until(function () { return profs().list.length === 3; }, 'the players of the account arrived');
+  await until(function () { return profs().list.length === 3 && sync().code === 'acct'; }, 'the players moved to the account');
+  await wait(1500); await idle(i0);
   check(sync().code === 'acct' && st(idA) === stateA && same(await family(), fam), 'a sign-in that was cut in the middle is finished by the next opening; nothing is lost on the device or in the account');
+  // no room in the account: the sign-in is refused, the device stays as it was
+  await device(F); i0 = net.log.length;
+  await openS(); await toCloud();
+  q('.amail').value = mail; q('.apass').value = pw; q('.signin').click();
+  await until(function () { return /אֵין מָקוֹם/.test(q('.cmsg').textContent); }, 'the parent is told that the account has no room');
+  await wait(1200);
+  check(/8 כָּאן וְעוֹד 1 שָׁם/.test(q('.cmsg').textContent) && !acct() && sync().code === codeC && profs().list.length === 8 && xs.every(function (id) { return st(id) === F['trollVillage.r.' + id]; }) && same(await family(), fam),
+    'no room when signing in: the device is not signed in, keeps its own code and all 8 players; the account is untouched');
   // a wiped device signs in: the account alone brings the players back
   await device({}); i0 = net.log.length;
   await open(); await toCloud();
@@ -261,7 +349,8 @@ async function run() {
   finally {
     dead = true; f.onload = null; f.src = 'about:blank'; net.offline = false;
     await new Promise(function (r) { setTimeout(r, 1500); }); // a page that closes may still push
-    try { await fetch(RT + 'board/' + RID + '.json', { method: 'DELETE' }); } catch (e) {}
+    for (var j = 0; j < rows.length; j++) { try { await fetch(RT + 'board/' + rows[j] + '.json', { method: 'DELETE' }); } catch (e) {} } // every ranking line of this run
+    if (/^p\d{9}$/.test(id2G)) { try { await fetch(RT + 'board/' + id2G + '.json', { method: 'DELETE' }); await fetch(RT + 'online/' + id2G + '.json', { method: 'DELETE' }); } catch (e) {} }
     for (var i = 0; i < made.length; i++) { // the rules allow no delete of a village: the two of this run are emptied and stay
       try { var keys = Object.keys((await village(made[i])) || {}); if (keys.length) await empty(vurl(made[i]), keys); say('village ' + made[i] + ' of this run: ' + (keys.length ? 'emptied (' + keys.length + ' fields)' : 'was never written')); } catch (e) { say('cleanup of ' + made[i] + ': ' + e); }
     }

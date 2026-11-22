@@ -5269,7 +5269,7 @@ var TrollModels = (function () {
   function syncNow(done, keep) {
     if (typeof done !== 'function') done = function () {};
     if (!sync.code || !cloudOn()) { done(false); return; }
-    if (syncBusy) { syncAgain = true; done(false); return; }
+    if (syncBusy) { syncAgain = true; if (arguments.length && typeof arguments[0] === 'function') syncWait.push(done); return; } // somebody waits for the answer: it comes from the sync that runs right after this one
     syncBusy = true; clearTimeout(pushTimer);
     var changed = false, tries = 0, code = sync.code, link = linkNow();
     function linked() { return sync.code === code && linkNow() === link; } // still the same village or the same family account as when the sync started
@@ -5283,6 +5283,8 @@ var TrollModels = (function () {
         profiles.list.forEach(function (p) { if (rawOf(p.id)) { a.has[p.id] = true; a.n[p.id] = revOf(p.id, revs); } });
         var hid = {}; (sync.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only
         var before = JSON.stringify(profiles.list), m = L.mergeCloud(a, rem), f = {}, del = [], now = Date.now();
+        // the merged list is full and a player of this device with progress is not in it: nothing is touched, here or in the cloud
+        if (profiles.list.some(function (p) { return a.has[p.id] && !hid[p.id] && m.gone.indexOf(p.id) < 0 && !m.list.some(function (x) { return x.id === p.id; }); })) throw new Error('no room');
         m.pull.forEach(function (id) {
           var raw = rawOf(id);
           if (!raw || JSON.stringify(L.loadState(raw)) !== rem.s[id]) { lsSet(DKEY + id, rem.s[id]); if (id === profiles.cur) changed = true; } // the same progress is not written again
@@ -5334,15 +5336,106 @@ var TrollModels = (function () {
       syncBusy = false;
       if (changed) { if (here === 'who' || (here === 'home' && !profiles.cur)) who(); else if (here === 'home') home(); }
       done(ok, changed);
-      if (syncAgain) { syncAgain = false; syncNow(); }
+      if (syncAgain || syncWait.length) {
+        var waiting = syncWait; syncWait = []; syncAgain = false;
+        if (waiting.length) syncNow(function (ok2, ch2) { waiting.forEach(function (w) { w(ok2, ch2); }); }); else syncNow();
+      }
     }
   }
-  // Players made before linking get ids that cannot clash with another device's players.
-  // The progress is first copied under the new id and read back, then the list of players is stored and read back, and only
-  // then the old copy is deleted: when the storage refuses a write nothing changes and the device stays as it was (returns false).
-  function linkTo(code, keepT, boot) { // keepT: the players keep the time of their last change (a device that moves from a village code to the account); boot: the page is still loading
-    var moves = [], used = {}, fine = true, was = lsGet(PKEY);
+  var syncWait = [];
+  // The list of a device holds 8 players at most. null when the players of this device and of the cloud document fit together,
+  // otherwise [players here, players only there]: then nothing is linked, so that no player is ever dropped without a word.
+  function roomFor(rem) {
+    var gone = {}, have = {}, more = 0, here = 0;
+    ((rem && rem.gone) || []).forEach(function (id) { gone[id] = true; });
+    profiles.list.forEach(function (p) { have[p.id] = true; if (!gone[p.id]) here++; });
+    ((rem && rem.list) || []).forEach(function (p) { if (!have[p.id] && !gone[p.id]) more++; });
+    return here + more > 8 ? [here, more] : null;
+  }
+  function noRoom(full) { return 'אֵין מָקוֹם לְכָל הַשַּׂחְקָנִים: ' + full[0] + ' כָּאן וְעוֹד ' + full[1] + ' שָׁם, וְאֶפְשָׁר עַד 8. צָרִיךְ לִמְחֹק שַׂחְקָן קֹדֶם.'; }
+  // The players of this device move into the family account (the device is signed in). First the account is read: when there
+  // is no room nothing changes. A device with a code takes the newest state of that code along. done('ok' | 'full', [here, there] | 'fail')
+  function toAccount(done) {
+    var uid = auth && auth.uid;
+    cloudGet('acct').then(function (rem) {
+      var full = roomFor(rem);
+      if (full) { done('full', full); return; }
+      var go = function () {
+        if (!auth || auth.uid !== uid || !linkTo('acct', true)) { done('fail'); return; }
+        syncNow(function (ok) { done(ok ? 'ok' : 'fail'); });
+      };
+      if (L.CODE_RE.test(sync.code)) syncNow(go); else go();
+    }, function () { done('fail'); });
+  }
+  // Players made before linking get ids that cannot clash with another device's players (a lasting id: p and nine digits).
+  // MKEY remembers every such move for good: { old id: { to: lasting id, n: the running number of the lasting copy at the last
+  // start, t: when, r: the race identities the player had, w: their lines in the ranking still have to be replaced } }.
+  // An older page that is still open (another tab, the installed app) knows only the old ids: it goes on saving under the
+  // old key, may store the list of players with the old ids again, and writes its ranking line under the old race identity.
+  // reconcile() runs at every start and puts all of that back under the lasting id, as often as needed.
+  var MKEY = 'trollVillage.idmap', LKEY = 'trollVillage.miglock', RID_KEY = 'trollVillage.rid.';
+  function mapAll() {
+    var out = {}, o = null, k;
+    try { o = JSON.parse(lsGet(MKEY) || '{}'); } catch (e) {}
+    if (o && typeof o === 'object' && !Array.isArray(o)) for (k in o) if (/^p\d{1,7}$/.test(k) && o[k] && /^p\d{9}$/.test(o[k].to)) {
+      out[k] = { to: o[k].to, n: Math.max(0, Math.floor(+o[k].n) || 0), t: +o[k].t || 0, r: (Array.isArray(o[k].r) ? o[k].r : []).filter(function (x) { return /^r\d{9}$/.test(x); }).slice(-6) };
+      if (o[k].w) out[k].w = 1;
+    }
+    return out;
+  }
+  function mapSave(map) { lsSet(MKEY, JSON.stringify(map)); }
+  function reconcile() {
+    var map = mapAll(), olds = Object.keys(map);
+    if (sandbox || !olds.length) return;
+    var revs = revAll(), dead = {}, seen = {}, trace = {}, listCh = false, syncCh = false, now = Date.now();
+    (sync.gone || []).concat(sync.hide || []).forEach(function (id) { dead[id] = true; });
+    // the list: a player that came back under the old id is the player with the lasting id, never a second one
+    profiles.list.forEach(function (p) { if (p.id.length >= 9) seen[p.id] = true; });
+    var list = profiles.list.filter(function (p) {
+      var m = p.id.length < 9 ? map[p.id] : null;
+      if (!m) return true;
+      listCh = true; trace[p.id] = true;
+      if (profiles.cur === p.id) profiles.cur = m.to;
+      if (seen[m.to] || dead[m.to]) return false;
+      seen[m.to] = true; p.id = m.to; return true;
+    });
+    if (listCh) { profiles.list = list; if (!list.some(function (p) { return p.id === profiles.cur; })) profiles.cur = null; }
+    olds.forEach(function (old) {
+      var m = map[old], to = m.to, raw = rawOf(old), rid = lsGet(RID_KEY + old);
+      if (rid) { trace[old] = true; if (/^r\d{9}$/.test(rid) && m.r.indexOf(rid) < 0) m.r.push(rid); lsDel(RID_KEY + old); }
+      if (raw) { // progress saved under the old id after the move. Two copies are never merged: the newer one stays.
+        trace[old] = true;
+        if (!dead[to]) {
+          var mine = rawOf(to), nTo = revOf(to, revs), a = L.loadState(raw), b = mine ? L.loadState(mine) : null, take;
+          if (!b) take = true;
+          else if (JSON.stringify(a) === JSON.stringify(b)) take = false;
+          else if (nTo <= m.n) take = true; // nothing was saved under the lasting id since: the copy under the old id is the newer play
+          else take = L.revSeed(a) > L.revSeed(b); // both were played: the copy with more solved exercises and rounds
+          if (take) {
+            lsSet(DKEY + to, raw);
+            if (lsGet(DKEY + to) !== raw) return; // the storage refused: everything stays for the next start
+            revs[to] = Math.max(nTo, m.n, 1) + 1;
+            if (sync.code) { sync.t[to] = Math.max(now, (+sync.t[to] || 0) + 1); sync.d[to] = 1; syncCh = true; }
+          }
+        }
+        lsDel(DKEY + old); lsDel(DKEY_OLD + old); lsDel(DKEY_OLD2 + old);
+      }
+      delete revs[old];
+      m.n = revOf(to, revs);
+      // an older page may put the line of the old race identity back: for a week after the move it is looked for at every start
+      if (m.r.length && (trace[old] || now - m.t < 7 * 864e5)) m.w = 1;
+    });
+    if (listCh) saveProfiles();
+    revSave(revs); mapSave(map);
+    if (syncCh) saveSync();
+  }
+  // The progress is first copied under the new id and read back, then the move and the list of players are stored and read
+  // back, and only then the old copy is deleted: when the storage refuses a write nothing changes (returns false).
+  function moveIds() {
+    reconcile();
+    var map = mapAll(), moves = [], used = {}, fine = true, was = lsGet(PKEY), wasM = lsGet(MKEY), revs = revAll(), k;
     profiles.list.forEach(function (p) { used[p.id] = true; });
+    for (k in map) used[map[k].to] = true;
     profiles.list.forEach(function (p) {
       if (p.id.length >= 9) return;
       var id = rndId(), raw = rawOf(p.id);
@@ -5350,50 +5443,76 @@ var TrollModels = (function () {
       used[id] = true; moves.push({ from: p.id, to: id });
       if (raw) { lsSet(DKEY + id, raw); if (lsGet(DKEY + id) !== raw) fine = false; }
     });
-    if (fine && moves.length) {
+    if (!moves.length) return true;
+    if (fine) {
       var next = { cur: profiles.cur, list: profiles.list.map(function (p) { var o = {}, k; for (k in p) o[k] = p[k]; return o; }) };
-      moves.forEach(function (m) { next.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; }); if (next.cur === m.from) next.cur = m.to; });
-      lsSet(PKEY, JSON.stringify(next));
-      if (lsGet(PKEY) !== JSON.stringify(next)) { fine = false; if (was !== null) lsSet(PKEY, was); }
+      moves.forEach(function (m) {
+        var rid = lsGet(RID_KEY + m.from) || '';
+        next.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; }); if (next.cur === m.from) next.cur = m.to;
+        map[m.from] = { to: m.to, n: revOf(m.from, revs), t: Date.now(), r: /^r\d{9}$/.test(rid) ? [rid] : [] };
+        if (map[m.from].r.length) map[m.from].w = 1;
+      });
+      mapSave(map);
+      if (lsGet(MKEY) !== JSON.stringify(map)) fine = false;
+      else { lsSet(PKEY, JSON.stringify(next)); if (lsGet(PKEY) !== JSON.stringify(next)) fine = false; }
     }
-    if (!fine) { moves.forEach(function (m) { lsDel(DKEY + m.to); }); return false; }
+    if (!fine) {
+      moves.forEach(function (m) { lsDel(DKEY + m.to); });
+      if (was !== null) lsSet(PKEY, was);
+      if (wasM !== null) lsSet(MKEY, wasM); else lsDel(MKEY);
+      return false;
+    }
+    moves.forEach(function (m) {
+      if (map[m.from].n) revs[m.to] = map[m.from].n; // the number moves with the player
+      delete revs[m.from];
+      profiles.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; });
+      if (profiles.cur === m.from) profiles.cur = m.to;
+      lsDel(DKEY + m.from); lsDel(DKEY_OLD + m.from); lsDel(DKEY_OLD2 + m.from); lsDel(RID_KEY + m.from);
+    });
+    revSave(revs); saveProfiles();
+    return true;
+  }
+  function linkTo(code, keepT, boot) { // keepT: the players keep the time of their last change (a device that moves from a village code to the account); boot: the page is still loading
     if (!boot) {
       if (race) quitRace(); // the ids are about to change: leave the race and listen again under the new one
       if (presence) presence.stop();
     }
-    var revs = revAll(), rids = [];
-    moves.forEach(function (m) {
-      if (revs[m.from]) { revs[m.to] = revs[m.from]; delete revs[m.from]; } // the number moves with the player
-      profiles.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; });
-      if (profiles.cur === m.from) profiles.cur = m.to;
-      lsDel(DKEY + m.from); lsDel(DKEY_OLD + m.from); lsDel(DKEY_OLD2 + m.from);
-      // the player is known by the new id from now on, in the ranking too: the line of the old race identity is taken off the server
-      var rid = lsGet('trollVillage.rid.' + m.from); if (rid) rids.push(rid); lsDel('trollVillage.rid.' + m.from);
-    });
-    if (moves.length) revSave(revs);
-    var oldT = keepT ? sync.t : {};
-    sync = { code: code, t: {}, b: {}, d: {}, gone: [], hide: [] };
-    profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = +oldT[p.id] || Date.now(); });
-    saveProfiles(); saveSync();
-    if (rids.length) ridSweep(rids);
+    var moved = moveIds();
+    if (moved) {
+      var oldT = keepT ? sync.t : {};
+      sync = { code: code, t: {}, b: {}, d: {}, gone: [], hide: [] };
+      profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = +oldT[p.id] || Date.now(); });
+      saveProfiles(); saveSync();
+      ridSweep();
+    }
     if (!boot && presence && profiles.cur) presence.start();
-    return true;
+    return moved;
   }
-  // Race identities that are no longer used (their players got a lasting id): their lines in the ranking and in the list of
-  // who is online are deleted on the server. What could not be deleted (no network) is kept and tried again.
-  var GKEY = 'trollVillage.ridgone';
-  function ridList() { try { var l = JSON.parse(lsGet(GKEY) || '[]'); return Array.isArray(l) ? l.filter(function (x) { return /^r\d{9}$/.test(x); }) : []; } catch (e) { return []; } }
-  function ridSweep(add) {
-    var list = ridList();
-    (add || []).forEach(function (x) { if (/^r\d{9}$/.test(x) && list.indexOf(x) < 0) list.push(x); });
-    if (!list.length) return;
-    lsSet(GKEY, JSON.stringify(list.slice(-40)));
-    if (typeof rtOn !== 'function' || !CLOUD.rt || !rtOn()) return;
-    list.forEach(function (rid) {
-      Promise.all([rt.send('DELETE', 'board/' + rid), rt.send('DELETE', 'online/' + rid)]).then(function () {
-        var left = ridList().filter(function (x) { return x !== rid; });
-        if (left.length) lsSet(GKEY, JSON.stringify(left)); else lsDel(GKEY);
-      }, function () {});
+  // The ranking after a move: the line under the old race identity is replaced by a line under the lasting id, written from
+  // the progress saved here, and only when that line is on the server the old one (and the old "is online" line) is deleted.
+  // A player that is local or is not on this device any more only loses the old line. Tried again at every start and when
+  // the network comes back, until it worked.
+  var sweeping = {};
+  function ridSweep() {
+    if (sandbox || typeof rtOn !== 'function' || !CLOUD.rt || !rtOn()) return;
+    var map = mapAll();
+    Object.keys(map).forEach(function (old) {
+      var m = map[old];
+      if (!m.w || !m.r.length || sweeping[old]) return;
+      sweeping[old] = true;
+      Promise.all(m.r.map(function (rid) { return fetch(CLOUD.rt + 'board/' + rid + '.json').then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); })).then(function (rows) {
+        var p = profiles.list.filter(function (x) { return x.id === m.to; })[0], raw = p && !p.loc ? rawOf(m.to) : null, st = raw ? L.loadState(raw) : null, row = null;
+        if (st && st.owned.length && rows.some(function (x) { return !!x; })) {
+          var b = buddyOf(st), d = JSON.stringify(st.dress[b] || {});
+          row = { n: (p.name || 'טְרוֹל').slice(0, 14), b: b == null ? GUIDE.id : b, d: d.length <= 200 ? d : '{}', g: Math.max(1, Math.min(4, st.grade)), xp: st.xp, st: st.stars, t: SV };
+        }
+        return (row ? rt.send('PUT', 'board/' + m.to, row) : Promise.resolve()).then(function () {
+          return Promise.all(m.r.map(function (rid) { return Promise.all([rt.send('DELETE', 'board/' + rid), rt.send('DELETE', 'online/' + rid)]); }));
+        });
+      }).then(function () {
+        delete sweeping[old];
+        var now = mapAll(); if (now[old]) { delete now[old].w; mapSave(now); }
+      }, function () { delete sweeping[old]; });
     });
   }
   // Every device saves its players in the cloud by itself: a device with players that is linked to nothing makes a village
@@ -5401,12 +5520,48 @@ var TrollModels = (function () {
   // by the first sync that gets through, see syncNow). Never in the sandbox; on a developer's machine, from a file and in the
   // tests only when the address asks for it (#vlink=1 on localhost).
   var AUTOLINK = LOCAL ? /[&#]vlink=1/.test(hash) : location.protocol === 'https:';
-  function autoLink(boot) {
-    if (!AUTOLINK || !cloudOn()) return false;
-    if (auth) return sync.code !== 'acct' && linkTo('acct', true, boot); // signed in, and the page was closed before the players moved to the account
-    if (sync.code || !profiles.list.length) return false;
-    return linkTo(rndCode(), false, boot);
+  function needLink() { return AUTOLINK && cloudOn() && (auth ? sync.code !== 'acct' : !sync.code && profiles.list.length > 0); }
+  function linkOwn() {
+    if (!needLink()) return false;
+    if (!auth) return linkTo(rndCode());
+    // signed in, and the page was closed before the players moved to the account. No room there: the device leaves the account and keeps its own code
+    toAccount(function (res) { if (res === 'full') { auth = null; saveAuth(); if (linkOwn()) syncNow(); } });
+    return false;
   }
+  // When the page loads, two tabs of one device may start in the same moment (a browser that restores its tabs): each would
+  // give the players other ids and make another code. So a tab first writes its claim, waits about a second and reads again:
+  // only the tab whose claim is still there goes on; the other one follows what was stored (adopt, also on every "storage" event).
+  function autoLink(boot) {
+    if (!needLink()) return false;
+    if (!boot) return linkOwn();
+    var mine = String(Math.random()).slice(2) + ':' + Date.now();
+    lsSet(LKEY, mine);
+    setTimeout(function () {
+      adopt();
+      if (!needLink()) return;
+      var cur = lsGet(LKEY) || '', t = +cur.split(':')[1] || 0;
+      if (cur !== mine && Math.abs(Date.now() - t) < 8000) { setTimeout(function () { adopt(); autoLink(true); }, 3000 + Math.floor(Math.random() * 2000)); return; } // another tab is at it
+      if (linkOwn()) syncNow();
+    }, 600 + Math.floor(Math.random() * 500));
+    return false;
+  }
+  function adopt() {
+    if (sandbox) return;
+    var map = mapAll(), seen = {}, ch = false;
+    profiles.list.forEach(function (p) { if (p.id.length >= 9) seen[p.id] = true; });
+    var list = profiles.list.filter(function (p) {
+      var m = p.id.length < 9 ? map[p.id] : null;
+      if (!m) return true;
+      ch = true;
+      if (profiles.cur === p.id) profiles.cur = m.to;
+      if (seen[m.to]) return false;
+      seen[m.to] = true; p.id = m.to; return true;
+    });
+    if (ch) profiles.list = list;
+    if (!sync.code) { loadSync(); if (sync.code) ch = true; }
+    if (ch && profiles.cur && presence && !race) presence.start();
+  }
+  addEventListener('storage', function (e) { if (!e.key || e.key === NS + MKEY || e.key === NS + SKEY) adopt(); });
   function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }; saveSync(); }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
@@ -7559,9 +7714,13 @@ var TrollModels = (function () {
         // then the players of the device go into the account and the players of the account come to the device
         function enter1(signing, isNew) {
           busy = true; say('מִתְחַבְּרִים...');
-          signing.then(function () { return L.CODE_RE.test(sync.code) ? new Promise(function (res) { syncNow(function () { res(); }); }) : null; }).then(function () {
-            linkTo('acct', true);
-            syncNow(function (ok) { busy = false; if (!ok) { fail(); return; } if (!profiles.cur) who(false); else cloud(isNew ? 'הַחֶשְׁבּוֹן נוֹצַר, וְהַשַּׂחְקָנִים נִשְׁמְרוּ בּוֹ ✓' : 'מְחֻבָּרִים ✓'); });
+          signing.then(function () {
+            toAccount(function (res, full) {
+              busy = false;
+              if (res === 'full') { auth = null; saveAuth(); say(noRoom(full)); return; } // no room in the account: the device is signed out again and nothing changed on it
+              if (res !== 'ok') { fail(); return; }
+              if (!profiles.cur) who(false); else cloud(isNew ? 'הַחֶשְׁבּוֹן נוֹצַר, וְהַשַּׂחְקָנִים נִשְׁמְרוּ בּוֹ ✓' : 'מְחֻבָּרִים ✓');
+            });
           }, function (e) { busy = false; why(e); });
         }
         pass.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(false); });
@@ -7586,6 +7745,8 @@ var TrollModels = (function () {
     say('מִתְחַבְּרִים...');
     cloudGet(code).then(function (rem) {
       if (!rem) { say('לֹא מָצָאנוּ שַׂחְקָנִים עִם הַקּוֹד הַזֶּה.'); return; }
+      var full = roomFor(rem);
+      if (full) { say(noRoom(full)); return; } // no room for everybody: nothing is linked, the device keeps its own code and all its players
       if (auth || !linkTo(code)) { fail(); return; } // (a device that is signed in to the family account stays with the account)
       syncNow(function (ok) { if (ok) { if (!profiles.cur) who(false); else cloud('הַשַּׂחְקָנִים שֶׁל הַקּוֹד מְחֻבָּרִים ✓'); } else fail(); });
     }, fail);
@@ -8607,7 +8768,7 @@ var TrollModels = (function () {
   }
 
   // ---------- start ----------
-  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadAuth(); loadSync(); autoLink(true); }
+  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadAuth(); loadSync(); if (sync.code) moveIds(); else reconcile(); autoLink(true); }
   if (sandbox && /boy=1/.test(hash)) profiles.list[0].sex = 'm'; // layout check of the masculine wording
   load(); buildBg();
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
@@ -8640,7 +8801,7 @@ var TrollModels = (function () {
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
   document.addEventListener('visibilitychange', function () { if (sync.code) syncNow(null, document.hidden); });
-  addEventListener('online', function () { ridSweep(); if (sync.code) syncNow(); }); // the network is back: what was saved meanwhile goes up
+  addEventListener('online', function () { ridSweep(); autoLink(true); if (sync.code) syncNow(); }); // the network is back: what was saved meanwhile goes up
   ridSweep();
   if (/linked/.test(hash)) { auth = { uid: 'x', email: 'parent@example.com', rt: 'x' }; sync.code = 'acct'; } // layout check of the signed-in screens
   if (sandbox && /vcode=1/.test(hash)) sync.code = 'ABCD2345'; // layout check: a device with its own code (&cj=1 with s=cloud: the screen of the code)
@@ -8741,7 +8902,7 @@ var TrollModels = (function () {
   else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
   else if (scr === 'journal') journal((/[#&]pg=(\w+)/.exec(hash) || [])[1], /[#&]t=/.test(hash) ? ht : null);
-  else if (scr === 'cloud') cloud('', /cj=1/.test(hash) ? 'code' : '');
+  else if (scr === 'cloud') cloud(/noroom=1/.test(hash) ? noRoom([8, 1]) : '', /cj=1/.test(hash) ? 'code' : ''); // &noroom=1: the longest message of the screen
   else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); if (/open=1/.test(hash)) { var on0 = cur.querySelector('.mnode.rec:not(.boss)') || cur.querySelector('.mnode.open,.mnode.done'); if (on0) on0.click(); } }
   else if (scr === 'bossend') { endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g); if (!/show=1/.test(hash)) tv.skip(); if (/then=home/.test(hash)) home(); } // then=home: the camp right after a rescue
   else if (scr === 'end') {
