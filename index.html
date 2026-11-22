@@ -5053,7 +5053,7 @@ var TrollArt = (function () {
     'M58,118 L40,40 L80,70 L100,8 L120,70 L160,40 L142,118 Z',
     circ(64, 82, 32) + circ(136, 82, 32) + circ(100, 52, 40) + circ(100, 96, 36),
     'M56,120 C30,66 62,36 100,36 C130,36 150,14 122,4 C172,0 176,66 144,120 Z',
-    'M74,116 Q10,86 18,18 Q66,44 100,104 Z M126,116 Q190,86 182,18 Q134,44 100,104 Z ' + circ(100, 100, 28),
+    'M100,104 Q66,44 18,18 Q10,86 74,116 Z M126,116 Q190,86 182,18 Q134,44 100,104 Z ' + circ(100, 100, 28), // every part runs the same way round: parts that run opposite ways cut a hole where they overlap
     'M60,120 Q44,32 114,6 Q98,40 142,22 Q128,54 160,60 Q140,86 142,120 Z'
   ];
   function hairSmall(hs, f) { return '<path d="' + HAIRD[hs] + '" fill="' + f + '"' + (hs === 1 ? ' stroke="' + f + '" stroke-width="12" stroke-linejoin="round"' : '') + '/>'; }
