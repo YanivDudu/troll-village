@@ -93,6 +93,20 @@ for (const u of ['file:///C:/Users/x/troll-math/index.html', 'http://localhost:8
   'http://troll-math.web.app/', 'https://troll-math.web.app/#demo&s=home', 'https://troll-math.web.app/#auto&g=2&t=mix', 'https://troll-math.web.app/#fit'])
   assert.strictEqual(registers(u), 0, u);
 
+// task "map3d": the scripts of the 3D map are loaded by the page only when a map is shown, so the worker names them itself: each exists, is a script
+// (network first), is asked for by index.html from exactly that address, and index.html does not load it with a <script src> of its own
+{
+  const { OPTIONAL } = require(path.join(root, 'sw.js'));
+  assert(Array.isArray(OPTIONAL) && OPTIONAL.length === 4);
+  const files = /FILES = \[([^\]]+)\]/.exec(html)[1].split(',').map(x => 'assets/map3d/' + x.trim().replace(/'/g, ''));
+  assert.deepStrictEqual(files, OPTIONAL);
+  for (const p of OPTIONAL) {
+    assert(fs.statSync(path.join(root, p)).size > 1000, p);
+    for (const S of [FB, GH]) assert.strictEqual(r(S + p, S), 'fresh', p);
+    assert(html.indexOf('<script src="' + p) < 0, p + ' must be loaded lazily');
+  }
+}
+
 // the Android package is tied to the site by this file
 const links = JSON.parse(fs.readFileSync(path.join(root, '.well-known', 'assetlinks.json'), 'utf8'));
 assert(Array.isArray(links));

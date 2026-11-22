@@ -2387,6 +2387,14 @@ body.toy .ebtns .btn.growb:active{box-shadow:0 1px 0 var(--accent-edge)}
 body.toy .ebtns .growb .ic{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.ovl .card.vlcard,.ovl.vovl{animation:none}}
 /* VILLAGE-END */
+/* task "map3d": the 3D picture of a trail map is a canvas under the map (.m3c, the first child of .tmap; it scrolls with a map that scrolls and never takes a tap).
+   While it is on (.m3on) the flat island, the flat trail, the flat scenery and the pictures that have a 3D model (.m3k) are hidden, not removed: the layout is the same with and without it. */
+.m3c{position:absolute;z-index:-1;pointer-events:none;display:none}
+.tmap.m3on>.m3c{display:block}
+body.toy .tmap.m3on::before{visibility:hidden}
+.tmap.m3on>.mtrail,.tmap.m3on>.mdeco{visibility:hidden!important}
+body.toy .tmap.m3on .mnode.m3k .mic>img:first-child{opacity:0}
+body.toy .tmap.m3on .mnode.m3k.rec .mic:before{display:none}
 </style>
 </head>
 <body>
@@ -6566,8 +6574,42 @@ var TrollModels = (function () {
     document.body.appendChild(h('div', { id: 'frame', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i')));
   }
 
+  // ---------- task "map3d": the picture of the trail maps (the map of a topic, the map of a subject) in 3D (assets/map3d: three.js, toy3d.js, map3d.js).
+  // The code is asked for the first time a map is shown, never before: the flat map is on the screen at once and is swapped for the 3D picture when
+  // that is ready. Whenever 3D is not possible (no WebGL, a device that was measured as too slow, a lost graphics context, files that did not arrive,
+  // an error, #flat=1) the flat map simply stays, silently. #q=0..4 forces a quality step. Only the picture changes: every label, badge, lock and button is
+  // the same DOM in both. In the layout check (#fit) no WebGL runs: the DOM is put in the state of the 3D map (the flat pictures hidden), because the DOM is
+  // what the check measures and the 3D layer never moves it (#gl=1 runs the real thing there too). #m3chk=1: the geometry only, for tests/map3d.html.
+  var M3 = (function () {
+    var PICS = '26fa,1f6d6,1f3e0,1f3e1,1f3d8,1f3eb,1f3f0,bridge,26e9,1f3db,1f3d7,1f6dd,1f3a1,26f2,1f9ee,1f50d,1f331,1f355,1f3a0,1f3a7,1f3aa,1f3b2,1f3b6,1f3e4,1f3e6,1f3ea,1f3ed,1f3ef,1f4ac,1f4cf,1f4d0,1f4d6,1f4da,1f4dc,1f4e6,1f514,1f522,1f524,1f570,1f58d,1f5fa,1f5fb,1f5fc,1f5ff,1f6a2,1f6cd,1f9ca,1f9e9,1f9f1,1f9f8,1f9fa,1fa81,1fa9e,1faa7,270f'.split(','), FILES = ['three.min.js', 'toy3d.js', 'toy3d_more.js', 'map3d.js']; // PICS: the pictures that have a 3D model (Toy.MODEL)
+    var q = /[#&]q=([0-4])/.exec(hash), plan = /[#&]m3chk=1/.test(hash), domOnly = /fit/.test(hash) && !/[#&]gl=1/.test(hash) && !plan, no = !TOY || /[#&]flat=1/.test(hash), st = 0, inst = null, want = null, t0 = 0;
+    try { var sq = /^5\|(\d+)$/.exec(localStorage.getItem('troll-m3q') || ''); if (sq && !q && !plan && Date.now() - +sq[1] < 2592e5) no = true; } catch (e) {} // this device was measured as too slow: the flat map, and one more try after three days
+    function load(i) {
+      if (i === FILES.length) { st = 2; go(); return; }
+      var s = document.createElement('script'); s.src = 'assets/map3d/' + FILES[i]; s.onload = function () { load(i + 1); }; s.onerror = function () { st = 3; no = true; }; document.head.appendChild(s);
+    }
+    function flat(box) { inst = null; no = true; if (box) box.classList.remove('m3on'); }
+    function go() {
+      var w = want; if (!w || no || cur !== w.el || !w.box.isConnected) return;
+      try {
+        if (!inst || inst.box !== w.box || inst.dead) { drop(); inst = window.TrollMap3D.attach(w.box, { q: q ? +q[1] : null, auto: !sandbox || /[#&]probe=1/.test(hash), rm: reduced, plan: plan, soft: /[#&]m3soft=1/.test(hash), t0: t0, onFlat: function () { flat(); } }); }
+        if (inst) inst.layout(w.items); else flat();
+      } catch (e) { var i = inst; flat(w.box); try { if (i) i.dispose(); } catch (e2) {} }
+    }
+    function sync(el, box, items) { // trailLayout calls this after every layout of a map
+      if (no) return;
+      if (domOnly) { box.classList.add('m3on'); items.forEach(function (it) { var im = it.el.querySelector('.mic>img'); it.el.classList.toggle('m3k', !!im && PICS.indexOf((/([^\/]+)\.png/.exec(im.getAttribute('src')) || [])[1]) >= 0); }); return; }
+      if (!want || want.box !== box) t0 = performance.now();
+      want = { el: el, box: box, items: items };
+      if (st === 0) { st = 1; load(0); } else if (st === 2) go();
+    }
+    function drop() { if (inst) { var i = inst; inst = null; try { i.dispose(true); } catch (e) {} } }
+    return { sync: sync, leave: function () { want = null; drop(); }, pics: PICS };
+  })();
+
   // ---------- screens ----------
   function show(build) {
+    M3.leave(); // the 3D picture of a map belongs to its screen: the graphics memory is given back as soon as the child leaves
     timers.forEach(clearTimeout); timers = []; closeExplain(); hush(); here = null;
     if (onLeave) { var bye = onLeave; onLeave = null; bye(); }
     var old = cur, el = h('div', { class: 'screen' });
@@ -7147,6 +7189,7 @@ var TrollModels = (function () {
         if (sel) see(sel);
       }
       if (sc) { wrap.classList.remove('lay'); ends(); }
+      if (sc && TOY) M3.sync(el, box, items); // task "map3d": the 3D picture is built under what was just laid out
     }
     layout();
     if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(sc ? wrap : box); }
@@ -9954,6 +9997,15 @@ var TrollModels = (function () {
     }
     if (mwr && !document.querySelector('.ovl,.rov')) mapCheck(mwr, post); else post();
   }, 3000);
+  // task "map3d", for tests/map3d.html. #m3list=1: every map of this grade (the map of each subject, its challenge map, the map of each topic).
+  // #m3chk=1: what the 3D picture of this map would put over a label, a badge, the companion or a button (the geometry only, no WebGL).
+  if (sandbox && /[#&]m3list=1/.test(hash)) { var m3l = []; subsHere().forEach(function (x) { var ch = L.challengeFor(state, x) || []; m3l.push('topics&sub=' + x); if (ch.length) m3l.push('topics&sub=' + x + '&ch'); L.topicsFor(state, x).concat(ch).forEach(function (id) { m3l.push('region&t=' + id); }); }); parent.postMessage({ m3list: m3l, g: state.grade }, '*'); }
+  if (sandbox && /[#&]m3chk=1/.test(hash)) setTimeout(function m3chk(n) {
+    n = n | 0; var i = window.TrollMap3D && TrollMap3D.current(), s = i && i.stats(), tm = cur.querySelector('.tmap');
+    if (!s || !s.stops) { if (n < 60) setTimeout(function () { m3chk(n + 1); }, 250); else parent.postMessage({ m3: hash, bad: ['no 3D plan'] }, '*'); return; }
+    var bad = i.check(), mine = TrollMap3D.models().sort().join(); if (mine !== M3.pics.slice().sort().join()) bad.push('the list of models in index.html differs from toy3d.js');
+    parent.postMessage({ m3: hash, bad: bad, stops: s.stops, models: s.models, props: s.props, grow: s.grow, w: window.innerWidth, h: window.innerHeight, scrl: !!cur.querySelector('.mwrap.scrl'), mh: tm ? tm.offsetHeight : 0 }, '*');
+  }, 1200);
 })();
 </script>
 </body>

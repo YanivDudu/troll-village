@@ -52,6 +52,7 @@ job('mute', /^MUTE OK/, () => edge(page + '/tests/mute.html', 60000));
 // documents that nobody can delete: only `node tests/all.js cloud` (the full run plus this check), or by hand: node tests/run-page.js tests/autolink.html 280
 if (process.argv[2] === 'cloud') job('autolink (real database)', /^AUTOLINK OK/, () => run('node', ['tests/run-page.js', 'tests/autolink.html', '280'], 310000).then(o => o.split('\n')[0]));
 job('village', /^VILLAGE OK/, () => edge(page + '/tests/village.html', 120000)); // task "village": the village of the trolls through its real buttons, the levels on the end screens
+job('map3d', /^MAP3D OK/, () => edge(page + '/tests/map3d.html' + (quick ? '#360x640' : ''), 600000)); // task "map3d": the 3D picture of every trail map puts nothing over a label, a badge, the companion or a button (the geometry only, no WebGL)
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine

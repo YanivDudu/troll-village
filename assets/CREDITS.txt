@@ -20,3 +20,7 @@ The toy island skin (toy/*.png): "Fluent Emoji" 3D by Microsoft, trimmed to the 
 Interface icons (the table ICONS in index.html, block DS-ICONS; no files): "Phosphor Icons" by Tobias Fried and Helena Zhang, weights Fill, Bold and Regular, path data copied unchanged
   https://phosphoricons.com  -  license: MIT (the text is in icons/LICENSE-phosphor.txt)
 App icon (app/*.png): the guide troll of the game (drawn by the code of index.html) on the colours of the toy island, photographed from tools/icon.html by tools/make-icons.js. Nothing from outside.
+The 3D picture of the trail maps (map3d/): "three.js" r147 by the three.js authors (map3d/three.min.js, the classic one-file build, unchanged)
+  https://threejs.org  -  license: MIT, Copyright 2010-2022 Three.js Authors (the text is in map3d/LICENSE-three.txt)
+  map3d/toy3d.js and map3d/toy3d_more.js (the houses, landmarks, trees, rocks, flowers and the boat, built in code from rounded shapes) and map3d/map3d.js: own work, no model files and nothing from outside.
+  A stop whose picture has no 3D model keeps its Fluent Emoji picture (toy/*.png, above).
