@@ -3827,12 +3827,12 @@ var TrollLogic = (function () {
     return { state: s, stars: got, gained: gained, opened: opened, clearingDone: !wasDone && rows[level - 1].every(function (x) { return x >= 1; }) };
   }
   function topicStars(state, topicId) { var n = 0; ((state.prog || {})[topicId] || []).forEach(function (r) { (r || []).forEach(function (x) { n += x; }); }); return n; }
-  // Milestone mission of a topic for one grade: ready when every clearing of that grade has all three stages done.
+  // Milestone mission of a topic for one grade: ready when every house of that grade was won once (before the rounds: all three stages done).
   function bossLevels(topicId, grade) { var out = []; BY_ID[topicId].levels.forEach(function (d, i) { if (d.g === grade && !d.enr) out.push(i + 1); }); return out; }
   function bossDone(state, topicId, grade) { return ((state.boss || {})[topicId] || {})[grade] === true; }
   function bossReady(state, topicId, grade) {
     var lv = bossLevels(topicId, grade);
-    return lv.length > 0 && !bossDone(state, topicId, grade) && lv.every(function (l) { return progOf(state, topicId, l).every(function (x) { return x >= 1; }); });
+    return lv.length > 0 && !bossDone(state, topicId, grade) && lv.every(function (l) { return houseWon(state, topicId, l); });
   }
   function createBoss(topicId, grade, rng) {
     rng = rng || Math.random;
@@ -3851,6 +3851,383 @@ var TrollLogic = (function () {
   var HERO_BASE = 20000;
   function oldHero(srcId, grade) { return (grade === 1 || grade === 4 ? 16 : 0) + SRC.indexOf(SRC_ID[srcId]) * 2 + (grade >= 3 ? 1 : 0); } // numbering before version 4
   function heroId(topicId, grade) { var t = BY_ID[topicId]; return HERO_BASE + (t.hero != null ? t.hero : oldHero(topicId, grade)); }
+
+  // ================= rounds: ONE repeatable round per house, a counter, an adaptive difficulty (docs/prompts/rounds-spec.md) =================
+  // Saved data: nothing is removed or reinterpreted. Two OPTIONAL fields (an older page ignores them; missing = derived):
+  //   state.cnt = { tile: [finished rounds of each house] }     state.ab = { tile: ability, 0 .. AB_MAX }
+  // state.prog[tile][house] stays [a, b, c], three slots of 0-3 stars (at most 9 a house). A round that was WON (at least 70% right at the
+  // first try) improves the lowest slot, the last one first; a round that was not won may only fill one of the first two slots. So the third
+  // slot is non-zero exactly when the house was won once: the same thing it meant before ("the challenge stage was finished").
+  var ROUND_SIZE = 8, WIN = 0.7, AB_MAX = 3, JITTER = 0.3;
+  function roundRatio(results) { var ok = 0; (results || []).forEach(function (x) { if (x) ok++; }); return results && results.length ? ok / results.length : 0; }
+  // three stars: at most one miss in a round of eight (85%); two stars: a round that was won (70%); one star for finishing
+  function roundStars(results) { var r = roundRatio(results); return r >= 0.85 ? 3 : r >= WIN ? 2 : 1; }
+  function roundWon(results) { return roundRatio(results) >= WIN; }
+  // How many rounds of a house were finished. Never less than what the stars prove (a slot with a star is a finished round), so a page from
+  // before the counter, or one that lost it, counts on from the stars; the counter never goes down.
+  function houseCount(state, topicId, level) {
+    var n = 0, row = (state.cnt || {})[topicId], c = Array.isArray(row) ? Number(row[level - 1]) : 0;
+    progOf(state, topicId, level).forEach(function (x) { if (x >= 1) n++; });
+    return Math.max(n, isFinite(c) && c > 0 ? Math.min(1000000, Math.floor(c)) : 0);
+  }
+  // A house was won once: its third slot has a star, or it lies below the newest open house and was played (how saves from before the
+  // rounds are read: there the house after it is already open).
+  function houseWon(state, topicId, level) {
+    var pr = progOf(state, topicId, level);
+    return pr[2] >= 1 || (level < (state.levels[topicId] || 1) && (pr[0] >= 1 || pr[1] >= 1));
+  }
+  function houseOpen(state, topicId, level) { return level >= 1 && level <= (state.levels[topicId] || 1); }
+  // The badge over a house: tiers 1-10 are the counts 1-10 (a look for each), tiers 11-19 the round numbers 20, 30 .. 100. 0 = no badge yet.
+  var BADGE_TIERS = 19;
+  function badgeTier(count) { count = Math.floor(count) || 0; return count <= 0 ? 0 : count <= 10 ? count : 9 + Math.floor(Math.min(count, 100) / 10); }
+  // The ability of a player in a tile, in steps of the scale below (0 = the easiest content of a house, AB_MAX = the hardest). Not saved yet:
+  // read from the stars of the tile (an average of three stars a round = 2), or, in a tile that was never played, a little under the
+  // average of the other tiles of the same subject and grade. A new player starts every first tile at 0.
+  function abSaved(state, id) { var a = (state.ab || {})[id]; return typeof a === 'number' && isFinite(a) ? Math.max(0, Math.min(AB_MAX, a)) : null; }
+  function abStars(state, id) { var n = 0, sum = 0; ((state.prog || {})[id] || []).forEach(function (r) { (r || []).forEach(function (x) { if (x >= 1) { n++; sum += Math.min(3, x); } }); }); return n ? sum / n - 1 : null; }
+  function abilityOf(state, topicId) {
+    var a = abSaved(state, topicId), t = BY_ID[topicId], n = 0, sum = 0;
+    if (a == null) a = abStars(state, topicId);
+    if (a == null && t) TOPICS.forEach(function (o) {
+      if (o === t || o.g !== t.g || (o.sub || 'math') !== (t.sub || 'math')) return;
+      var x = abSaved(state, o.id); if (x == null) x = abStars(state, o.id);
+      if (x != null) { n++; sum += x; }
+    });
+    if (a == null) a = n ? 0.75 * sum / n : 0;
+    return Math.round(Math.max(0, Math.min(AB_MAX, a)) * 100) / 100;
+  }
+  // After a round: up a quarter of a step when every exercise was right at the first try, unchanged with one miss (three stars), down
+  // about a third of a step with two stars, a little more with one. Small steps: no round looks different from the one before it.
+  function abilityAfter(ability, results) {
+    var r = roundRatio(results), d = !results || results.length < 4 ? 0 : r >= 1 ? 0.25 : r >= 0.85 ? 0 : r >= WIN ? -0.35 : -0.4;
+    return Math.round(Math.max(0, Math.min(AB_MAX, (Number(ability) || 0) + d)) * 100) / 100;
+  }
+  // Records a finished round of a house (pure). The counter goes up by one, stars only go up, and a won round of the newest open house
+  // opens the next one. Nothing is ever closed or taken back.
+  function finishHouse(state, topicId, level, results, qs) {
+    var s = Object.assign({}, state), t = BY_ID[topicId], got = roundStars(results), won = roundWon(results), k, slot = -1;
+    s.prog = Object.assign({}, state.prog);
+    var rows = (s.prog[topicId] || []).map(function (r) { return Array.isArray(r) ? [r[0] | 0, r[1] | 0, r[2] | 0] : [0, 0, 0]; });
+    while (rows.length < t.levels.length) rows.push([0, 0, 0]);
+    var before = rows[level - 1].slice(), wasWon = houseWon(state, topicId, level), c0 = houseCount(state, topicId, level);
+    if (won) { for (k = 0; k < 3; k++) if (slot < 0 || before[k] <= before[slot]) slot = k; }   // the lowest slot, the last one first
+    else for (k = 0; k < 2 && slot < 0; k++) if (!before[k]) slot = k;                           // never the third: it means "won"
+    if (slot >= 0 && got > before[slot]) rows[level - 1][slot] = got;
+    s.prog[topicId] = rows;
+    var gained = slot >= 0 ? rows[level - 1][slot] - before[slot] : 0, opened = 0;
+    s.stars = (state.stars || 0) + gained;
+    s.cnt = Object.assign({}, state.cnt);
+    s.cnt[topicId] = t.levels.map(function (d, i) { return houseCount(state, topicId, i + 1) + (i === level - 1 ? 1 : 0); });
+    s.ab = Object.assign({}, state.ab);
+    s.ab[topicId] = abilityAfter(abilityOf(state, topicId), results);
+    var sp = span(t, state.grade);
+    if (won && level === (state.levels[topicId] || 1) && level < (sp ? sp.hi : t.levels.length)) {
+      s.levels = Object.assign({}, state.levels); s.levels[topicId] = level + 1; opened = level + 1;
+    }
+    if (qs) s = itemsAfter(s, qs, results); // optional: what the player did with every single item
+    return { state: s, stars: got, gained: gained, won: won, opened: opened, firstWin: !wasWon && houseWon(s, topicId, level),
+      count: c0 + 1, tier: badgeTier(c0 + 1), tierUp: badgeTier(c0 + 1) !== badgeTier(c0) };
+  }
+  // ---- the difficulty scale of a house. Only what exists is used: the generator of the house and of its two neighbours in the tile, and
+  // the activity formats that belonged to the three stages. Every exercise that is drawn gets a SCORE, in steps:
+  //     score = 2 + where it comes from (DIFF.src) + its format (DIFF.fmt) + what is in it (features, DIFF.topic / DIFF.house)
+  //               + what THIS player did with this very item before (itemShift; only items with a stable key)
+  // 2 is a typical exercise of the house with four answers. The features are read from the exercise itself (featOf: the smaller addend,
+  // doubles, crossing a ten, carries, which multiplication table, where the unknown stands, the jump of a sequence ...) and
+  // are counted relative to the average exercise of the same house, so they order the exercises INSIDE a house, also a narrow one
+  // (1 + 1 before 4 + 1 before 3 + 2). A round is then picked from a pool of drawn exercises: for every place of the round, the candidate
+  // whose score is nearest to what that place asks for.
+  // DIFF and the point functions under it are what to edit; they follow docs/research/difficulty-factors.md (sections A, B0, C). The
+  // weights there are proposals, not measurements. All weights here are in steps of the scale.
+  var DIFF = {
+    unit: 0.35, // one point of the research tables (features 0-6, formats -1 .. +3, 4 points between two houses) in steps of this scale
+    // the format (research, section C): "right or not?" -1, hands-on -2 (the research says -1; see the simulation test), four answers 0, pairs / leaning on a solved exercise / < = > +1,
+    // the equals sign on the left and a story +2, a comparison story +3 (wordcmp), putting tiles in order +1 and +1 for each tile above three
+    fmt: { line: -0.7, build: -0.7, array: -0.7, tf: -0.35, choice: 0, pairs: 0.35, use: 0.35, cmp: 0.35, order: 0.35, lefteq: 0.7, word: 0.7 },
+    wordcmp: 0.35, tile: 0.35,
+    // the house before (known material; at most two a round) and the house after (at most two a round, only as a hard exercise, never
+    // in the first round of a house): four points
+    src: { prev: -1.4, next: 1.4 },
+    cap: 1.2, // the features of one exercise never move it more than this from the average of its house
+    // weight of each feature (featOf). fact: the points of the research tables (0-6); form: where the unknown stands (0-3);
+    // rem: a remainder; mag and words only order exercises that have no table of their own
+    feat: { fact: 0.35, form: 0.35, rem: 0.35, mag: 0.4, words: 0.05 },
+    topic: {}, // weights for one source list (add, sub, mul, div, num, frac, ord, miss) that replace DIFF.feat
+    house: {}  // weights for ONE house, by source list and level: { add7: { fact: 0.5 } }
+  };
+  function carries(a, b) { var n = 0, c = 0; while (a > 0 || b > 0) { c = (a % 10) + (b % 10) + c >= 10 ? 1 : 0; n += c; a = Math.floor(a / 10); b = Math.floor(b / 10); } return n; }
+  function borrows(a, b) { var n = 0, c = 0, z = 0; while (a > 0 || b > 0) { if (c && a % 10 === 0) z = 1; c = (a % 10) - c < (b % 10) ? 1 : 0; n += c; a = Math.floor(a / 10); b = Math.floor(b / 10); } return { n: n, zero: z }; }
+  function mulCarries(a, d) { var n = 0, c = 0; while (a > 0) { c = Math.floor(((a % 10) * d + c) / 10); if (c) n++; a = Math.floor(a / 10); } return n; }
+  // ---- the points of single facts, as in the research (section B0). 0 = the easiest, 6 = the hardest.
+  // adding: +0 and +1 first (4 + 1 before 1 + 4), doubles, pairs that make ten, then by the smaller addend; over ten is harder
+  function addFact(a, b) {
+    var m = Math.min(a, b), M = Math.max(a, b), s = a + b;
+    if (m === 0) return 1;
+    if (a === 1 && b === 1) return 0;
+    if (m === 1) return a >= b ? 1 : 2;
+    if (a === b) return s <= 10 ? 1 : 3;
+    if (s === 10) return 2;
+    if (s < 10) return Math.min(m, 4) + (a < b ? 1 : 0);
+    return 4 + (m >= 4 && M !== 9 && M - m !== 1 ? 1 : 0) + (a < b ? 1 : 0);
+  }
+  // taking away: -0, all of it, -1 first; a difference of one; from ten and halves; then by the smaller of what is taken and what is left
+  function subFact(a, b) {
+    var d = a - b;
+    if (b === 0 || d === 0 || b === 1) return 1;
+    if (d === 1) return 2;
+    if (a <= 10) return a === 10 || a === 2 * b ? 2 : 1 + Math.min(b, d);
+    if (b <= a - 10) return Math.min(5, subFact(a - 10, b) + 1);
+    return a === 2 * b ? 4 : b <= 3 || d <= 3 || b === 9 ? 5 : 6;
+  }
+  // the tables: x10, x2, x5, squares, then 3-4, then 6-9 (the order inside 6-9 is not verified)
+  function mulFact(a, b) {
+    var lo = Math.min(a, b), hi = Math.max(a, b);
+    if (lo <= 1) return 0;
+    if (hi === 10) return 1;
+    if (lo === 2) return hi <= 5 ? 1 : 2;
+    if (lo === 5 || hi === 5) return 2 + ((lo === 5 ? hi : lo) >= 6 ? 1 : 0);
+    if (a === b) return { 3: 3, 4: 3, 6: 4, 9: 4, 7: 5, 8: 5 }[a] || 5;
+    if (lo === 3 || lo === 4) return 3 + (hi >= 6 ? 1 : 0);
+    return hi === 9 ? 5 : 6;
+  }
+  function divFact(c, b) { return Math.min(6, mulFact(b, Math.round(c / b)) + 1); }
+  function byCarry(n, round) { return Math.max(0, (n <= 0 ? 1 : n === 1 ? 3 : n === 2 ? 5 : 6) - (round ? 1 : 0)); }
+  function addPts(a, b) {
+    while (a >= 10 && b >= 10 && a % 10 === 0 && b % 10 === 0) { a /= 10; b /= 10; } // 2,300 + 1,400 is 23 + 14
+    var big = Math.max(a, b), sm = Math.min(a, b), u = big % 10;
+    if (big <= 10) return addFact(a, b);
+    if (sm <= 9) return u + sm < 10 ? (u === 0 ? 0 : Math.min(3, addFact(u, sm))) : u + sm === 10 ? 1 : Math.max(0, addFact(u, sm) - 1);
+    return byCarry(carries(a, b), a % 10 === 0 || b % 10 === 0);
+  }
+  function subPts(a, b) {
+    while (a >= 10 && b >= 10 && a % 10 === 0 && b % 10 === 0) { a /= 10; b /= 10; }
+    var u = a % 10, br;
+    if (a <= 20 && b <= 10) return subFact(a, b);
+    if (b <= 9) return u >= b ? Math.min(3, subFact(u, b)) : u === 0 ? 1 + (b >= 6 ? 1 : 0) : Math.max(0, subFact(10 + u, b) - 1);
+    br = borrows(a, b);
+    return Math.max(br.zero ? 5 : 0, byCarry(br.n, b % 10 === 0));
+  }
+  function mulPts(a, b) {
+    while (a >= 10 && a % 10 === 0 && a > 10) a /= 10;
+    while (b >= 10 && b % 10 === 0 && b > 10) b /= 10;
+    var lo = Math.min(a, b), hi = Math.max(a, b);
+    if (hi <= 10) return mulFact(a, b);
+    return lo <= 10 ? byCarry(mulCarries(hi, lo % 10 || 1), lo === 10) : 6;
+  }
+  function divPts(a, b) {
+    var q = a / b;
+    if (b >= 2 && b <= 10 && q === Math.floor(q) && q <= 10) return divFact(a, b);
+    return Math.min(6, 3 + (String(Math.floor(q)).length - 1) + (b > 10 ? 1 : 0) + (/0/.test(String(Math.floor(q)).slice(1)) ? 2 : 0));
+  }
+  function opPts(op, a, b) { return op === '+' ? addPts(a, b) : op === '−' ? subPts(a, b) : op === '×' ? mulPts(a, b) : b ? divPts(a, b) : 0; }
+  // what is written in an exercise of arithmetic, without marks: for an activity format, the exercise it was made from
+  function srcText(q) {
+    var fm = q.fmt || 'choice', src = fm !== 'choice' && typeof q.key === 'string' && q.key.indexOf(fm + '|') === 0 ? q.key.slice(fm.length + 1) : q.text;
+    return plain(src).replace(/[‎‏‪-‮]/g, '').replace(/\|.*$/, '').trim();
+  }
+  // What is in an exercise, read from what is written in it (the generators are not touched and do not say it themselves). Never the
+  // answer buttons. fact: the points of the calculation (see above; for a number sequence: the jump, a start off the multiples, going
+  // down; for a neighbour: after / between / before, crossing a ten); form: where the unknown stands (a + [] = c: 0, c - [] = a: 1,
+  // [] + b = c: 2, [] - b = a: 3; the equals sign on the left counts the same way); rem: a remainder is asked for; and, only for an
+  // exercise that none of this fits (questions in words): mag (the size of the largest number, as its logarithm) and words (words to read
+  // beyond four).
+  function featOf(q) {
+    var f = { fact: 0, form: 0, rem: 0, mag: 0, words: 0, known: false }, m, a, b, c, i;
+    if (!q || q.pack) return f;
+    var T = srcText(q), nums = (T.match(/\d+/g) || []).map(Number), big = 0, hit = true;
+    nums.forEach(function (x) { if (x > big) big = x; });
+    if (/שארית/.test(T)) f.rem = 1; // the word "remainder"
+    if ((m = /^(\d+) ([+−×:]) (\d+) = \?$/.exec(T))) f.fact = opPts(m[2], +m[1], +m[3]);
+    else if ((m = /^(\d+) ([+−]) (\d+) \2 (\d+) = \?$/.exec(T))) { // three addends, a chain of subtractions: two points for each carry
+      a = +m[1]; b = +m[3]; c = +m[4];
+      f.fact = m[2] === '+' ? 2 * (carries(a, b) ? 1 : 0) + 2 * (carries(a + b, c) ? 1 : 0) : 2 * (borrows(a, b).n ? 1 : 0) + 2 * (borrows(a - b, c).n ? 1 : 0);
+      [a, b, c].forEach(function (x, k) { if ((m[2] === '+' || k) && (x < 10 || x % 10 === 0)) f.fact--; });
+      f.fact = Math.max(0, Math.min(6, f.fact + 1));
+    } else if ((m = /^(□|\d+) ([+−×:]) (□|\d+) = (\d+)$/.exec(T)) && (m[1] === '□') !== (m[3] === '□')) {
+      c = +m[4]; var first = m[1] === '□'; a = first ? +m[3] : +m[1];
+      if (m[2] === '+') { f.form = first ? 2 : 0; f.fact = addPts(first ? c - a : a, first ? a : c - a) / 2; }
+      else if (m[2] === '−') { f.form = first ? 3 : 1; f.fact = (first ? addPts(c, a) : subPts(a, a - c)) / 2; }
+      else if (m[2] === '×') { f.form = first ? 1 : 0; f.fact = a ? mulPts(a, Math.round(c / a)) : 0; }
+      else { f.form = first ? 2 : 1; f.fact = first ? mulPts(a, c) : c ? mulPts(c, Math.round(a / c)) : 0; }
+    } else if ((m = /^(\d+) = (□|\d+) ([+−]) (□|\d+)$/.exec(T)) && (m[2] === '□') !== (m[4] === '□')) { // the equals sign on the left
+      c = +m[1]; a = m[2] === '□' ? +m[4] : +m[2];
+      f.form = m[3] === '−' ? 2 : m[2] === '□' ? 1 : 0; f.fact = (m[3] === '−' ? subPts(a, c) : addPts(a, Math.max(0, c - a))) / 2 + (c > 10 || a > 10 ? 1 : 0);
+    } else if (T.indexOf('→') >= 0 && nums.length >= 2) { // a number sequence, a neighbour
+      var parts = T.split('→').map(function (x) { return x.trim(); }), at = parts.indexOf('?'), st = 0;
+      for (i = 1; i < parts.length; i++) if (parts[i] !== '?' && parts[i - 1] !== '?') st = +parts[i] - +parts[i - 1];
+      if (!st && parts.length >= 3) st = (+parts[parts.length - 1] - +parts[0]) / (parts.length - 1) || 1;
+      var ab = Math.abs(st), start = +(parts[0] === '?' ? +parts[1] - st : parts[0]);
+      if (ab === 1) f.fact = (at === parts.length - 1 ? 0 : at === 0 ? 2 : 1) + (st < 0 ? 1 : 0) + (nums.some(function (x) { return x % 10 === 0 || x % 10 === 9; }) ? 1 : 0);
+      else f.fact = (ab % 10 === 0 ? 0 : ab === 5 || ab === 2 ? 1 : 2) + (ab && start % ab ? 2 : 0) + (st < 0 ? 2 : 0);
+    } else hit = false;
+    f.known = hit;
+    if (!hit) { // no table for this kind of question: larger numbers and more to read count a little
+      f.mag = Math.log(big + 1) / Math.LN10; f.ops = Math.max(0, (T.match(/[+−×:]/g) || []).length - 1);
+      f.fact = Math.min(6, 2 * (f.ops || 0));
+      if (q.rtl) f.words = Math.max(0, Math.min(8, T.split(/\s+/).length - 4));
+    }
+    return f;
+  }
+  var FEAT_MEAN = {};
+  function featW(srcRef) { return srcRef ? DIFF.house[srcRef[0] + srcRef[1]] || DIFF.topic[srcRef[0]] || DIFF.feat : null; }
+  function featSum(q, W) { var f = featOf(q), n = 0, k; for (k in W) n += W[k] * (f[k] || 0); return n; }
+  // how far the features put an exercise from the average exercise of its own house, in steps (0 for a house without a feature table)
+  function featRel(q) {
+    var t = BY_ID[q.topic], ref = t && t.src ? t.src[q.level - 1] : null, W = featW(ref), key = q.topic + '.' + q.level, i, sum = 0;
+    if (!W) return 0;
+    if (FEAT_MEAN[key] == null) { // the average of the house: forty draws of its generator, always the same ones
+      var r = seeded(7919 * (q.level + 1) + key.length);
+      for (i = 0; i < 40; i++) sum += featSum(makeQuestion(q.topic, q.level, r), W);
+      FEAT_MEAN[key] = sum / 40;
+    }
+    return Math.max(-DIFF.cap, Math.min(DIFF.cap, featSum(q, W) - FEAT_MEAN[key]));
+  }
+  // ---- what THIS player did with single items (third optional field, approved by the owner): for content with a stable identity (every
+  // exercise of the subject packs: an English word, a Hebrew item ...; and the basic FACTS of arithmetic: 7 x 8, 12 - 5, [] + 4 = 10)
+  //   state.it = { tile: 'kkkknr kkkknr ...' without the spaces }   kkkk: 24 bits of a hash of the item, n: times shown (0-9),
+  //   r: times right at the first try (0-9). At nine both are halved, so old answers fade. At most IT_TILE items a tile and IT_ALL in
+  //   all (6 characters an item: about 9 KB for a player who met everything); beyond that the best known items are forgotten first.
+  // An item that was never shown has only its features. With evidence its score moves: often missed = harder, known = easier.
+  var IT_W = 2, IT_TILE = 120, IT_ALL = 1500, IT_ABC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_', IT_RE = /^(?:[0-9a-zA-Z_-]{4}[0-9]{2})*$/;
+  function itemKey(q) {
+    var s = null, m, h = 2166136261, i, out = '';
+    if (!q) return null;
+    if (q.pack) s = 'p|' + q.key;
+    else {
+      var T = srcText(q), nums = (T.match(/\d+/g) || []).map(Number).sort(function (a, b) { return a - b; });
+      if ((m = /^(\d+|□) ([+−×:]) (\d+|□) = (\?|\d+)$/.exec(T)) && nums.length >= 2 && (/[+−]/.test(m[2]) ? nums[nums.length - 1] <= 20 : m[2] === '×' && m[4] === '?' ? nums[nums.length - 1] <= 10 : nums[nums.length - 1] <= 100 && nums[nums.length - 2] <= 10)) s = T;
+    }
+    if (s == null) return null;
+    for (i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    h >>>= 0;
+    for (i = 0; i < 4; i++) out += IT_ABC.charAt((h >>> (6 * i)) & 63);
+    return out;
+  }
+  function itemMap(state, tile) { // { key: [shown, right] } and the order of the keys
+    var s = (state.it || {})[tile], map = {}, keys = [], i;
+    if (typeof s === 'string' && IT_RE.test(s)) for (i = 0; i + 6 <= s.length; i += 6) { var k = s.substr(i, 4); if (!map[k]) keys.push(k); map[k] = [+s.charAt(i + 4), Math.min(+s.charAt(i + 4), +s.charAt(i + 5))]; }
+    return { map: map, keys: keys };
+  }
+  // how many steps the player's own answers move an item: 0 without evidence; a blend of the expected rate (from the features) with the
+  // observed one, the prior counting as IT_W answers. Missed once: about +1.4 (hard); right five times of five: about -0.5 (easy).
+  function itemShift(n, r, rel) {
+    if (!(n > 0)) return 0;
+    var p0 = Math.max(0.6, Math.min(0.95, 0.85 - 0.1 * (rel || 0)));
+    return Math.max(-1.2, Math.min(2, 5 * n * (p0 - r / n) / (n + IT_W)));
+  }
+  function itemStat(state, q) { var k = itemKey(q), rec = k ? itemMap(state, q.topic).map[k] : null; return rec ? { n: rec[0], r: rec[1], shift: itemShift(rec[0], rec[1], featRel(q)) } : { n: 0, r: 0, shift: 0 }; }
+  // after a round: every item of it that has a key was shown once more, and was right or not at the first try (pure)
+  function itemsAfter(state, qs, results) {
+    var by = {}, s = Object.assign({}, state), id, total = 0, rows = {};
+    (qs || []).forEach(function (q, i) { var k = i < (results || []).length ? itemKey(q) : null; if (k && tileOk(q.topic)) (by[q.topic] = by[q.topic] || []).push([k, !!results[i]]); });
+    s.it = {};
+    for (id in (state.it || {})) if (tileOk(id) && typeof state.it[id] === 'string' && IT_RE.test(state.it[id])) s.it[id] = state.it[id];
+    function known(rec) { return rec[1] * 2 - rec[0]; } // right minus missed
+    function drop(row) { var worst = 0, i; for (i = 1; i < row.keys.length; i++) if (known(row.map[row.keys[i]]) > known(row.map[row.keys[worst]])) worst = i; delete row.map[row.keys[worst]]; row.keys.splice(worst, 1); }
+    function text(row) { return row.keys.map(function (k) { return k + row.map[k][0] + row.map[k][1]; }).join(''); }
+    for (id in by) {
+      var row = itemMap(s, id);
+      by[id].forEach(function (e) {
+        var rec = row.map[e[0]]; if (!rec) { rec = row.map[e[0]] = [0, 0]; row.keys.push(e[0]); }
+        if (rec[0] >= 9) { rec[0] = 4; rec[1] = Math.floor(rec[1] / 2); }
+        rec[0]++; if (e[1]) rec[1]++;
+      });
+      while (row.keys.length > IT_TILE) drop(row);
+      rows[id] = row; s.it[id] = text(row);
+    }
+    for (id in s.it) total += s.it[id].length / 6;
+    while (total > IT_ALL) { // the whole memory is full: the longest list forgets the item it knows best
+      var big = null; for (id in s.it) if (!big || s.it[id].length > s.it[big].length) big = id;
+      var rw = rows[big] || (rows[big] = itemMap(s, big)); drop(rw); s.it[big] = text(rw); total--;
+    }
+    return s;
+  }
+  // the score of an exercise as it would be shown in a format (fmt: the format it would get; from: 'prev' / 'next' for a neighbour house)
+  function scoreOf(q, fmt, from) { return 2 + (DIFF.src[from] || 0) + (DIFF.fmt[fmt || q.fmt || 'choice'] || 0) + featRel(q); }
+  // The plan of one round for an ability: about 40% easy (one step under the ability), 40% medium (at it), one or two hard (one step
+  // over it). The whole round is moved by a small random amount (JITTER), and the first two rounds of a house are a step / half a step
+  // easier. Order: from easy to medium; the hard ones stand in the second half, never first.
+  function planRound(ability, count, rng, size) {
+    size = size || ROUND_SIZE;
+    var ease = count <= 0 ? 1 : count === 1 ? 0.5 : 0, jit = (rng() * 2 - 1) * JITTER;
+    var base = Math.max(0, Math.min(AB_MAX, (Number(ability) || 0) - ease)) + jit;
+    var nh = size >= 8 && rng() < 0.5 ? 2 : 1, ne = Math.round(size * 0.4), nm = size - ne - nh, slots = [], rest = [], i, half = Math.ceil(size / 2), at = [];
+    for (i = 0; i < ne; i++) rest.push({ k: 'e', x: base - 1 });
+    for (i = 0; i < nm; i++) rest.push({ k: 'm', x: base });
+    for (i = half; i < size; i++) at.push(i);
+    at = shuffle(at, rng).slice(0, nh);
+    for (i = 0; i < size; i++) slots.push(at.indexOf(i) >= 0 ? { k: 'h', x: base + 1 } : rest.shift());
+    return { base: base, jit: jit, slots: slots };
+  }
+  // One round of a house for this player. Every exercise carries q.d (its score on the scale) and q.slot ('e', 'm', 'h').
+  // Items the player missed before (itemShift of a step or more) are looked for and come back, only in the one or two hard places
+  // (q.back); items the player knows well are picked less often.
+  function createHouseRound(state, topicId, level, rng, avoid) {
+    rng = rng || Math.random;
+    var t = BY_ID[topicId]; level = clampLevel(topicId, level);
+    var count = houseCount(state, topicId, level), plan = planRound(abilityOf(state, topicId), count, rng), seen = {}, inPool = {}, pool = [], qs = [], nPrev = 0, nNext = 0, usedF = {};
+    var mem = itemMap(state, topicId).map, missed = 0, k0;
+    for (k0 in mem) if (itemShift(mem[k0][0], mem[k0][1], 0) >= 1) missed++;
+    (avoid || []).forEach(function (k) { seen[k] = true; });
+    function add(q, from) {
+      var kinds = [q.fmt || 'choice'], rel = featRel(q) + (q.parts ? DIFF.tile * Math.max(0, q.parts.length - 3) : 0), ik = itemKey(q), rec = ik ? mem[ik] : null, sh = rec ? itemShift(rec[0], rec[1], rel) : 0;
+      if (!from && q.fmt === 'choice') formatsFor(q, 0, true).concat(formatsFor(q, 1, true)).forEach(function (k) { if (kinds.indexOf(k) < 0) kinds.push(k); });
+      inPool[q.key] = true;
+      pool.push({ q: q, from: from || '', kinds: kinds, rel: rel + sh, sh: sh, back: !from && sh >= 1, known: sh <= -0.5, used: false });
+    }
+    function draw(lv, n, from) {
+      for (var i = 0; i < n; i++) {
+        var q, tries = 0; do { q = makeQuestion(topicId, lv, rng); } while ((seen[q.key] || inPool[q.key]) && ++tries < 30);
+        if (inPool[q.key] || (seen[q.key] && pool.length >= ROUND_SIZE)) continue;
+        add(q, from);
+      }
+    }
+    draw(level, 3 * ROUND_SIZE);
+    if (missed) for (var bi = 0, found = 0; bi < 60 && found < 3; bi++) { // look for items of this house that were missed (also when they were shown a moment ago)
+      var bq = makeQuestion(topicId, level, rng), bk = inPool[bq.key] ? null : itemKey(bq);
+      if (bk && mem[bk] && itemShift(mem[bk][0], mem[bk][1], 0) >= 1) { add(bq); found++; }
+    }
+    if (level > 1) draw(level - 1, 3, 'prev');
+    if (level < t.levels.length && count > 0) draw(level + 1, 3, 'next');
+    function more() { return makeQuestion(topicId, level, rng); }
+    plan.slots.forEach(function (sl) {
+      var best, bestV, tried = 0;
+      for (;;) {
+        best = null; bestV = 1e9;
+        pool.forEach(function (c) {
+          if (c.used) return;
+          if (c.from === 'prev' && (nPrev >= 2 || sl.k === 'h')) return;
+          if (c.from === 'next' && (nNext >= 2 || sl.k !== 'h')) return;
+          if (c.back && sl.k !== 'h') return; // what was missed comes back gently: only where a hard exercise stands anyway
+          c.kinds.forEach(function (k) {
+            if (c.bad && c.bad[k]) return;
+            if (k === 'pairs' && usedF.pairs) return;
+            if (c.back && k !== c.q.fmt) return; // and as it was
+            var d = 2 + (DIFF.src[c.from] || 0) + (DIFF.fmt[k] || 0) + c.rel;
+            // the same format again and again costs a little;
+            // a well-known item is taken less often; a missed one is taken first
+            var v = Math.abs(d - sl.x) + rng() * 0.2 + (k !== 'choice' ? 0.15 * (usedF[k] || 0) : 0) + (c.known ? 0.3 : 0);
+            if (c.back) v = rng() * 0.2 - 1;
+            if (v < bestV) { bestV = v; best = { c: c, k: k, d: d }; }
+          });
+        });
+        if (!best) break;
+        var q = best.k === (best.c.q.fmt || 'choice') ? best.c.q : toFmt(best.c.q, best.k, rng, more);
+        if (q) {
+          best.c.used = true; usedF[best.k] = (usedF[best.k] || 0) + 1;
+          if (best.c.from === 'prev') { nPrev++; q.review = true; } else if (best.c.from === 'next') { nNext++; q.ahead = true; }
+          if (best.c.back) q.back = true;
+          if (q.fmt === 'word' && /\u05d9\u05d5\u05ea\u05e8\?$/.test(plain(q.text))) best.d += DIFF.wordcmp; // a comparison story ("how many more?")
+          q.d = Math.round(best.d * 100) / 100; q.sh = Math.round(best.c.sh * 100) / 100; q.slot = sl.k; qs.push(q); return; // q.sh: the part of the score that comes from the player's own answers
+        }
+        (best.c.bad = best.c.bad || {})[best.k] = true; // this exercise does not take that format after all
+        if (++tried > 40) break;
+      }
+      var fb = makeQuestion(topicId, level, rng); fb.d = 2; fb.slot = sl.k; qs.push(fb); // never reached with a pool of this size
+    });
+    var r = roundOf(topicId, qs); r.plan = plan;
+    return r;
+  }
 
   function dayNum(s) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
@@ -4096,11 +4473,9 @@ var TrollLogic = (function () {
     var last = state.last && BY_ID[state.last.t] ? state.last : null, grade = state.grade;
     var lsub = last ? BY_ID[last.t].sub || 'math' : 'math';
     if (!topicsFor(state, lsub).length) lsub = 'math';
-    function full(id, lv) { return progOf(state, id, lv).every(function (x) { return x >= 1; }); }
-    function stageIn(id, lv) { // the first stage of a house that has no star yet, when it is open
-      var pr = progOf(state, id, lv);
-      for (var k = 0; k < 3; k++) if (!(pr[k] >= 1)) return stageOpen(state, id, lv, k) ? { sub: BY_ID[id].sub || 'math', topic: id, level: lv, stage: k } : null;
-      return null;
+    function full(id, lv) { return houseWon(state, id, lv); }
+    function stageIn(id, lv) { // a house that is open and was not won yet
+      return houseOpen(state, id, lv) && !full(id, lv) ? { sub: BY_ID[id].sub || 'math', topic: id, level: lv } : null;
     }
     function tile(id) {
       var sp = span(id, grade), cur = state.levels[id] || 1, lv, r;
@@ -4110,7 +4485,7 @@ var TrollLogic = (function () {
       for (lv = sp.lo; lv < cur; lv++) if (!full(id, lv)) { r = stageIn(id, lv); if (r) { r.bridge = true; return r; } } // what the bridge waits for
       if (bossReady(state, id, grade)) return { sub: BY_ID[id].sub || 'math', topic: id, boss: grade };
       // a house after the newest one is still closed (a parent closed it): the challenge of the newest open house opens it
-      if (cur < sp.hi && stageOpen(state, id, cur, 2)) return { sub: BY_ID[id].sub || 'math', topic: id, level: cur, stage: 2 };
+      if (cur < sp.hi) return { sub: BY_ID[id].sub || 'math', topic: id, level: cur };
       return null;
     }
     function inSubject(sub, after) {
@@ -4218,6 +4593,17 @@ var TrollLogic = (function () {
     if (typeof fx.goal === 'string' && ITEM[fx.goal] && ITEM[fx.goal].price) { fxo.goal = fx.goal; if (fx.told === fx.goal) fxo.told = fx.goal; }
     if (o.fx && typeof o.fx === 'object') s.fx = fxo;
     if (o.mem && typeof o.mem === 'object' && Array.isArray(o.mem.ev)) s.mem = { ev: memList(o.mem) }; // optional (see memAdd): what the companion remembers
+    // optional (see finishHouse): the counter of every house, the ability in every tile, what was done with single items. Kept only when
+    // they are there and sound; missing or broken = derived again from the stars (houseCount, abilityOf) or simply unknown (items)
+    var cn = obj(o.cnt), ab = obj(o.ab), itm = obj(o.it), cno = {}, abo = {}, ito = {};
+    TOPICS.forEach(function (t) {
+      if (Array.isArray(cn[t.id])) { var row = t.levels.map(function (d, i) { return int(cn[t.id][i], 0, 1000000, 0); }); if (row.some(function (x) { return x > 0; })) cno[t.id] = row; }
+      if (typeof ab[t.id] === 'number' && isFinite(ab[t.id])) abo[t.id] = Math.round(Math.max(0, Math.min(AB_MAX, ab[t.id])) * 100) / 100;
+      if (typeof itm[t.id] === 'string' && itm[t.id] && itm[t.id].length <= IT_TILE * 6 && IT_RE.test(itm[t.id])) ito[t.id] = itm[t.id];
+    });
+    if (o.cnt && typeof o.cnt === 'object') s.cnt = cno;
+    if (o.ab && typeof o.ab === 'object') s.ab = abo;
+    if (o.it && typeof o.it === 'object') s.it = ito;
     if (Array.isArray(o.owned)) {
       var seen = {};
       o.owned.forEach(function (x) {
@@ -4273,7 +4659,7 @@ var TrollLogic = (function () {
     s.mem = { ev: ev.slice(-MEM_MAX) };
     return s;
   }
-  function houseDone(state, id, lv) { var pr = progOf(state, id, lv); return Array.isArray(pr) && pr[0] >= 1 && pr[1] >= 1 && pr[2] >= 1; }
+  function houseDone(state, id, lv) { return houseWon(state, id, lv); } // a house counts once it was won (before the rounds: once its three stages were done, which is a won house too)
   // The journey so far, over every tile of every grade and subject: complete houses and crossed bridges. Only learning counts
   // (no coins, days, streak or purchases), and it can only grow: stars never go down and a bridge flag is never cleared.
   function journey(state) {
@@ -4327,8 +4713,8 @@ var TrollLogic = (function () {
   }
   // Before a stage starts: 'again' (this stage was played and never without a miss: it has 1 or 2 stars), 'run5' (the last
   // five answers of this tile were all right at the first try), or null.
-  function stageMemo(state, topicId, level, stage) {
-    var st = progOf(state, topicId, level)[stage], hs = (state.hists || {})[topicId];
+  function stageMemo(state, topicId, level) {
+    var pr = progOf(state, topicId, level), st = Math.max(pr[0], pr[1], pr[2]), hs = (state.hists || {})[topicId];
     if (st === 1 || st === 2) return 'again';
     return Array.isArray(hs) && hs.length === 5 && hs.every(function (x) { return x === true; }) ? 'run5' : null;
   }
@@ -4417,9 +4803,9 @@ var TrollLogic = (function () {
     function page(t) {
       if (seen[t.id]) return; seen[t.id] = true;
       var p = { t: t.id, stamps: [], cards: [], next: null }, lv, g;
-      for (lv = 1; lv <= t.levels.length; lv++) if (houseDone(state, t.id, lv)) { var pr = progOf(state, t.id, lv); p.stamps.push({ l: lv, stars: pr[0] + pr[1] + pr[2], d: dateOf('h', t.id, lv) }); }
+      for (lv = 1; lv <= t.levels.length; lv++) if (houseCount(state, t.id, lv) > 0) { var pr = progOf(state, t.id, lv), n = houseCount(state, t.id, lv); p.stamps.push({ l: lv, stars: pr[0] + pr[1] + pr[2], d: dateOf('h', t.id, lv), n: n, tier: badgeTier(n), won: houseWon(state, t.id, lv) }); }
       for (g = 1; g <= 4; g++) if (bossDone(state, t.id, g)) p.cards.push({ g: g, hero: heroId(t.id, g), d: dateOf('b', t.id, g) });
-      if (nx && nx.topic === t.id) p.next = nx.boss ? { boss: nx.boss } : { level: nx.level, stage: nx.stage };
+      if (nx && nx.topic === t.id) p.next = nx.boss ? { boss: nx.boss } : { level: nx.level };
       if (p.stamps.length || p.cards.length || p.next) pages.push(p);
     }
     SUBS.forEach(function (sub) { topicsFor(state, sub).forEach(function (id) { page(BY_ID[id]); }); });
@@ -4479,6 +4865,9 @@ var TrollLogic = (function () {
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, linkKey: linkKey, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
+    ROUND_SIZE: ROUND_SIZE, AB_MAX: AB_MAX, JITTER: JITTER, BADGE_TIERS: BADGE_TIERS, roundStars: roundStars, roundWon: roundWon, houseCount: houseCount, houseWon: houseWon, houseOpen: houseOpen, badgeTier: badgeTier,
+    abilityOf: abilityOf, abilityAfter: abilityAfter, finishHouse: finishHouse, planRound: planRound, createHouseRound: createHouseRound, DIFF: DIFF, featOf: featOf, featRel: featRel, scoreOf: scoreOf,
+    IT_TILE: IT_TILE, IT_ALL: IT_ALL, itemKey: itemKey, itemStat: itemStat, itemShift: itemShift, itemsAfter: itemsAfter,
     STAGE_SIZE: STAGE_SIZE, stageStars: stageStars, stageReward: stageReward, progOf: progOf, stageOpen: stageOpen, finishStage: finishStage,
     topicStars: topicStars, bossLevels: bossLevels, bossDone: bossDone, bossReady: bossReady, createBoss: createBoss, heroId: heroId, HEROES: HEROES, HERO_BASE: HERO_BASE,
     TOPICS: TOPICS, maxLevel: maxLevel, clampLevel: clampLevel, fmt: fmt,

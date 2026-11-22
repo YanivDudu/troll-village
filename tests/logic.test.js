@@ -584,22 +584,23 @@ t('players: boy or girl wording, public or local, experience points', () => {
 });
 t('next step: always forward, from the newest open house; a ready bridge; never locked, never another grade, never an earlier house', () => {
   const j = x => JSON.parse(JSON.stringify(x));
-  const finishHouse = (s, id, lv) => { for (let k = 0; k < 3; k++) s = L.finishStage(s, id, lv, k, [true]).state; s.last = { t: id, l: lv }; return s; };
-  const check = (s, st) => { // whatever is offered is open by the existing rules and belongs to the player's grade
+  const WON = Array(8).fill(true), LOST = Array(8).fill(false);
+  const finishHouse = (s, id, lv) => { s = L.finishHouse(s, id, lv, WON).state; s.last = { t: id, l: lv }; return s; };
+  const check = (s, st) => { // whatever is offered is open and belongs to the player's grade
     if (!st || st.challenge) return;
     const tl = L.TOPICS.find(x => x.id === st.topic);
     assert.strictEqual(tl.g, s.grade, 'own grade: ' + JSON.stringify(st)); assert.strictEqual(tl.sub || 'math', st.sub);
     assert(L.topicsFor(s, st.sub).includes(st.topic));
     if (st.boss) assert(L.bossReady(s, st.topic, st.boss) && st.boss === s.grade, JSON.stringify(st));
-    else { assert(L.stageOpen(s, st.topic, st.level, st.stage), 'open: ' + JSON.stringify(st)); assert.strictEqual(L.progOf(s, st.topic, st.level)[st.stage], 0, 'a stage without a star'); }
+    else { assert(L.houseOpen(s, st.topic, st.level), 'open: ' + JSON.stringify(st)); assert.strictEqual(st.stage, undefined, 'a house has no stages any more'); }
   };
-  // a brand-new player of every grade starts where the game starts them: the start-level house of the first tile, first stage
+  // a brand-new player of every grade starts where the game starts them: the start-level house of the first tile
   for (const g of [1, 2, 3, 4]) {
     const s = L.newState(g), id = L.topicsFor(s)[0], st = j(L.nextStep(s));
-    assert.deepStrictEqual(st, { sub: 'math', topic: id, level: L.startLevel(L.TOPICS.find(x => x.id === id), g), stage: 0 }, 'grade ' + g); check(s, st);
+    assert.deepStrictEqual(st, { sub: 'math', topic: id, level: L.startLevel(L.TOPICS.find(x => x.id === id), g) }, 'grade ' + g); check(s, st);
     assert.strictEqual(st.level, s.levels[id]);
   }
-  assert.deepStrictEqual(j(L.nextStep(L.newState(2))), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  assert.deepStrictEqual(j(L.nextStep(L.newState(2))), { sub: 'math', topic: 'g2add', level: 3 });
   // a save without the optional field (every save made before this change) loads and gets a step
   assert.strictEqual(L.loadState(JSON.stringify(L.newState(2))).last, undefined);
   assert.strictEqual(L.newState(2).last, undefined); assert.strictEqual(L.newState(2).v, 4);
@@ -607,47 +608,46 @@ t('next step: always forward, from the newest open house; a ready bridge; never 
   assert.strictEqual(L.loadState({ v: 4, grade: 2, last: { t: 'nope', l: 2 } }).last, undefined);
   assert.strictEqual(L.loadState({ v: 4, grade: 2, last: 'x' }).last, undefined);
   assert.deepStrictEqual(j(L.loadState({ v: 4, grade: 2, last: { t: 'g2sub', l: 99 } }).last), { t: 'g2sub', l: 4 });
-  // continue the house the child played last (also an earlier house the child chose in the map), while it has a stage without a star
+  // continue the house the child played last (also an earlier house the child chose in the map), until it is won
   let s = L.newState(2); s.last = { t: 'g2sub', l: 2 };
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 2, stage: 0 });
-  s = L.finishStage(s, 'g2sub', 2, 0, [true]).state;
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 2, stage: 1 });
-  // that house is finished: the newest open house of the same tile, not house 1
-  s = finishHouse(s, 'g2sub', 2);
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3, stage: 0 });
-  // after the newest house is finished the step is the house that has just opened
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 2 });
+  // an earlier house that was played (also without success) counts for the bridge, as in every save from before the rounds: the step moves on
+  s = L.finishHouse(s, 'g2sub', 2, LOST).state; s.last = { t: 'g2sub', l: 2 };
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3 });
+  // the newest house: a round that was not won keeps the step there, nothing is closed and nothing opens
+  s = L.newState(2); s = L.finishHouse(s, 'g2add', 3, LOST).state; s.last = { t: 'g2add', l: 3 };
+  assert.strictEqual(s.levels.g2add, 3); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 }); check(s, L.nextStep(s));
+  // after the newest house is won the step is the house that has just opened
   s = finishHouse(L.newState(2), 'g2add', 3);
-  assert.strictEqual(s.levels.g2add, 4); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 4, stage: 0 }); check(s, L.nextStep(s));
-  // the last house of a tile is finished, houses 1-2 were never played: the bridge waits for them, so they come now (marked), then the bridge, then the next tile
+  assert.strictEqual(s.levels.g2add, 4); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 4 }); check(s, L.nextStep(s));
+  // the last house of a tile is won, houses 1-2 were never played: the bridge waits for them, so they come now (marked), then the bridge, then the next tile
   s = finishHouse(s, 'g2add', 4);
-  assert(!L.bossReady(s, 'g2add', 2)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 1, stage: 0, bridge: true }); check(s, L.nextStep(s));
-  s = L.finishStage(s, 'g2add', 1, 0, [true]).state; s.last = { t: 'g2add', l: 1 };
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 1, stage: 1, bridge: true });
-  s = finishHouse(s, 'g2add', 1); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 2, stage: 0, bridge: true });
+  assert(!L.bossReady(s, 'g2add', 2)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 1, bridge: true }); check(s, L.nextStep(s));
+  s = finishHouse(s, 'g2add', 1); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 2, bridge: true });
   s = finishHouse(s, 'g2add', 2); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', boss: 2 });
-  s = j(s); s.boss.g2add[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3, stage: 0 });
-  // an earlier house the child chose in the map while the newest house is not finished is not marked as bridge work
+  s = j(s); s.boss.g2add[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2sub', level: 3 });
+  // an earlier house the child chose in the map while the newest house is not won is not marked as bridge work
   s = L.newState(2); s.last = { t: 'g2add', l: 1 }; assert.strictEqual(L.nextStep(s).bridge, undefined);
-  // the newest house: a stage opens only after the one before it
-  s = L.newState(2); s.last = { t: 'g2add', l: 3 }; s = L.finishStage(s, 'g2add', 3, 0, [true]).state;
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 1 }); check(s, L.nextStep(s));
   // a house that is still closed is never offered, even when it was written as the last one
   s = L.newState(2); s.last = { t: 'g2add', l: 4 };
-  assert(!L.stageOpen(s, 'g2add', 4, 0)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  assert(!L.houseOpen(s, 'g2add', 4)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 });
   // a tile of another grade is never offered, also when the child played there last (the challenge map)
   s = L.newState(2); s.last = { t: 'g3mul', l: 1 };
-  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 });
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 });
   s = L.setGrade(Object.assign(L.newState(2), { last: { t: 'g2add', l: 1 } }), 3);
   assert.strictEqual(L.nextStep(s).topic, 'g3add');
   // a bridge mission that is ready comes when the tile has no next house, before another tile
   s = L.newState(2); s.levels.g2mul = 1; for (let lv = 1; lv <= 4; lv++) s = finishHouse(s, 'g2mul', lv);
   assert(L.bossReady(s, 'g2mul', 2)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2mul', boss: 2 }); check(s, L.nextStep(s));
-  s.last = { t: 'g2add', l: 3 }; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3, stage: 0 }); // but the open house is finished first
-  s.last = { t: 'g2mul', l: 4 }; s.boss.g2mul[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2div', level: 3, stage: 0 }); // then the tile after it
+  s.last = { t: 'g2add', l: 3 }; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 }); // but the open house is finished first
+  s.last = { t: 'g2mul', l: 4 }; s.boss.g2mul[2] = true; assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2div', level: 3 }); // then the tile after it
+  // a parent closed a house that was open: the newest open house (already won) is offered, and a won round opens the next one again
+  s = L.newState(2); for (const lv of [1, 2, 3]) s = finishHouse(s, 'g2add', lv); s.levels.g2add = 3; s.last = { t: 'g2add', l: 3 };
+  assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 }); assert.strictEqual(L.finishHouse(s, 'g2add', 3, WON).opened, 4);
   // the subject that was used last; arithmetic when nothing was played
   s = L.newState(2); const geo = L.topicsFor(s, 'geo');
   if (geo.length) { s = finishHouse(s, geo[0], s.levels[geo[0]]); const st = L.nextStep(s); assert.strictEqual(st.sub, 'geo'); check(s, st); }
-  // playing on by the recommended step alone never dead-ends: every house and every bridge of the grade, each stage once,
+  // playing on by the recommended step alone never dead-ends: every house and every bridge of the grade, each house won once,
   // an earlier house only as bridge work after the end of its tile, then the challenge map, and null only when that is finished too
   for (const g of [1, 2, 3, 4]) {
     let p = L.newState(g), steps = 0, bosses = 0, houses = 0;
@@ -658,20 +658,22 @@ t('next step: always forward, from the newest open house; a ready bridge; never 
       if (st.boss) { p = j(p); p.boss[st.topic][st.boss] = true; bosses++; continue; }
       const tl = L.TOPICS.find(x => x.id === st.topic);
       if (st.level < p.levels[st.topic]) { assert(st.bridge, 'an earlier house only toward the bridge: ' + JSON.stringify(st)); assert.strictEqual(p.levels[st.topic], tl.levels.length);
-        for (let lv = L.startLevel(tl, g); lv <= tl.levels.length; lv++) assert(L.progOf(p, st.topic, lv).every(x => x >= 1)); }
+        for (let lv = L.startLevel(tl, g); lv <= tl.levels.length; lv++) assert(L.houseWon(p, st.topic, lv)); }
       else assert(!st.bridge);
-      p = L.finishStage(p, st.topic, st.level, st.stage, [true]).state; p.last = { t: st.topic, l: st.level };
+      p = L.finishHouse(p, st.topic, st.level, WON).state; p.last = { t: st.topic, l: st.level };
     }
     for (const sub of L.SUBS) for (const id of L.topicsFor(p, sub)) { const tl = L.TOPICS.find(x => x.id === id); houses += tl.levels.length;
-      assert(L.bossDone(p, id, g), id); tl.levels.forEach((d, i) => assert(L.progOf(p, id, i + 1).every(x => x >= 1), id + ' ' + (i + 1))); }
-    assert.strictEqual(steps, houses * 3 + bosses, 'every stage exactly once, grade ' + g);
+      assert(L.bossDone(p, id, g), id); tl.levels.forEach((d, i) => assert(L.houseWon(p, id, i + 1), id + ' ' + (i + 1))); }
+    assert.strictEqual(steps, houses + bosses, 'every house exactly once, grade ' + g);
     assert(L.challengeOpen(p, L.nextStep(p).sub));
     for (const sub of L.SUBS) for (const id of L.challengeFor(p, sub)) p.prog[id] = L.TOPICS.find(x => x.id === id).levels.map(() => [1, 1, 1]);
     assert.strictEqual(L.nextStep(p), null, 'the grade and its challenge are finished, grade ' + g);
   }
-  // the unlock rules themselves did not move
+  // a save from before the rounds: three finished stages are a won house, two are not (in the newest house), and the step is that house
+  s = L.newState(2); for (const k of [0, 1]) s = L.finishStage(s, 'g2add', 3, k, [true]).state;
+  assert(!L.houseWon(s, 'g2add', 3)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 3 });
+  s = L.finishStage(s, 'g2add', 3, 2, [true]).state; assert(L.houseWon(s, 'g2add', 3)); assert.deepStrictEqual(j(L.nextStep(s)), { sub: 'math', topic: 'g2add', level: 4 });
   s = L.newState(2);
-  assert(L.stageOpen(s, 'g2add', 1, 2) && L.stageOpen(s, 'g2add', 3, 0) && !L.stageOpen(s, 'g2add', 3, 1) && !L.stageOpen(s, 'g2add', 4, 0));
   const before = JSON.stringify(s); L.nextStep(s); assert.strictEqual(JSON.stringify(s), before, 'pure');
 });
 // ---------- stage 6: what the companion remembers (state.mem), the friendship level, the travel journal ----------
@@ -761,7 +763,8 @@ t('friendship: only houses and bridges count, it never goes down, and level 6 is
   }
   assert.strictEqual(L.friend(withHouses(F[5] + 20)).level, 6);
   s = withHouses(3); assert.strictEqual(L.friend(s).points, 3);
-  s.prog.g2add = [[1, 1, 0], [0, 3, 3], [3, 0, 3]]; const two = L.journey(s).houses; s.prog.g2add = [[1, 1, 1], [0, 3, 3]]; assert.strictEqual(L.journey(s).houses, two + 1, 'a house counts only with a star in all three stages');
+  s.prog.g2add = [[0, 0, 0], [0, 0, 0], [3, 1, 0], [3, 3, 3]]; const two = L.journey(s).houses; s.prog.g2add = [[0, 0, 0], [0, 0, 0], [3, 1, 1], [3, 3, 3]]; assert.strictEqual(L.journey(s).houses, two + 1, 'the newest open house counts once it was won (a star in its third slot); a closed house never');
+  s.prog.g2add = [[0, 0, 0], [1, 0, 0], [0, 0, 0]]; assert.strictEqual(L.journey(s).houses, two, 'a house below the newest one counts once it was played: the house after it is already open');
   s = withHouses(3); s.boss.g2add[2] = true; assert.deepStrictEqual(J6(L.journey(s)), { houses: 3, bridges: 1, points: 5 }, 'a bridge is worth two houses');
   const base = JSON.stringify(L.friend(s));
   const other = J6(s); Object.assign(other, { coins: 99999, xp: 5000, streak: 400, rounds: 900, stars: 3, lastDay: TODAY, lastGift: TODAY, owned: [1, 2, 3, 4, 5, 6, 7, 8, 9], items: L.ITEMS.map(x => x.id), buddy: 3 });
@@ -826,7 +829,7 @@ t('memory: what the companion may say in the camp (triggers, order, the first ex
   tg = Array.from(L.memTriggers(dl, dago(-1))).find(x => x.key === 'doneLast'); assert(tg && tg.yest === false, 'two days ago: "last time"');
   assert(keysOf(dl, dago(1)).indexOf('doneLast') < 0, 'the flag is from today');
   assert(keysOf(ev(dl, [['p', 'g2add', 4, 0]])).indexOf('doneLast') < 0, 'played again since');
-  const undone = J6(dl); undone.prog.g2add[2] = [3, 3, 0]; assert(keysOf(undone).indexOf('doneLast') < 0, 'only what is still true in the save');
+  const undone = J6(dl); undone.prog.g2add[2] = [0, 0, 0]; assert(keysOf(undone).indexOf('doneLast') < 0, 'only what is still true in the save');
   // goal: the coins are enough for the savings goal
   s = ev(played(2), [['p', 'g2add', 3, 1]]); s.last = { t: 'g2add', l: 3 };
   let g1 = L.setGoal(s, item.id); g1.coins = item.price;
@@ -848,18 +851,18 @@ t('memory: what the companion may say in the camp (triggers, order, the first ex
   let o = tileDone(L, tileDone(L, played(2), 'g2add'), 'g2sub'); o.boss.g2add[2] = true; o.owned = [5, heroA]; o.last = { t: 'g2sub', l: L.TOPICS.find(x => x.id === 'g2sub').levels.length };
   o = L.setGoal(o, item.id); o.coins = item.price + 5; o = ev(o, [['p', 'g2sub', o.last.l, 1], ['b', 'g2add', 2, 1]]);
   assert.deepStrictEqual(keysOf(o), ['hero', 'bridgeReady', 'goal', 'yesterday', 'generic']);
-  // 11. the first exercise of a stage
-  s = played(2); s.prog.g2add = [[0, 0, 0], [0, 0, 0], [3, 1, 2], [3, 0, 0]];
-  assert.strictEqual(L.stageMemo(s, 'g2add', 3, 1), 'again'); assert.strictEqual(L.stageMemo(s, 'g2add', 3, 2), 'again');
-  assert.strictEqual(L.stageMemo(s, 'g2add', 3, 0), null, 'three stars: nothing to say'); assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null, 'never played');
-  s.hists.g2add = [true, true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), 'run5'); assert.strictEqual(L.stageMemo(s, 'g2add', 3, 1), 'again', 'again comes first');
-  s.hists.g2add = [true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null); s.hists.g2add = [true, true, false, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4, 1), null);
+  // 11. the first exercise of a round: a house that was played and never earned three stars; five right in a row in the tile
+  s = played(2); s.prog.g2add = [[0, 0, 0], [3, 0, 0], [2, 1, 0], [0, 0, 0]];
+  assert.strictEqual(L.stageMemo(s, 'g2add', 3), 'again');
+  assert.strictEqual(L.stageMemo(s, 'g2add', 2), null, 'three stars: nothing to say'); assert.strictEqual(L.stageMemo(s, 'g2add', 4), null, 'never played');
+  s.hists.g2add = [true, true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4), 'run5'); assert.strictEqual(L.stageMemo(s, 'g2add', 3), 'again', 'again comes first');
+  s.hists.g2add = [true, true, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4), null); s.hists.g2add = [true, true, false, true, true]; assert.strictEqual(L.stageMemo(s, 'g2add', 4), null);
   // 12. the journal
   let j = L.journal(L.newState(2));
-  assert.strictEqual(j.pages.length, 1); assert.deepStrictEqual(J6(j.pages[0].stamps), []); assert.deepStrictEqual(J6(j.pages[0].cards), []); assert(j.pages[0].next && j.pages[0].next.stage === 0); assert.deepStrictEqual(J6(j.recent), []);
+  assert.strictEqual(j.pages.length, 1); assert.deepStrictEqual(J6(j.pages[0].stamps), []); assert.deepStrictEqual(J6(j.pages[0].cards), []); assert(j.pages[0].next && j.pages[0].next.level === 3 && j.pages[0].next.stage === undefined); assert.deepStrictEqual(J6(j.recent), []);
   s = houseOf(L, played(2), 'g2add', 3); s = L.finishStage(s, 'g2add', 4, 0, [true]).state; s = L.finishStage(s, 'g2add', 4, 1, [true]).state; s.last = { t: 'g2add', l: 4 };
   j = L.journal(s); let pg = Array.from(j.pages).find(x => x.t === 'g2add');
-  assert.deepStrictEqual(J6(pg.stamps), [{ l: 3, stars: 9, d: '' }], 'one stamp; a house with two stages is not a stamp; no date without an event'); assert.deepStrictEqual(J6(pg.next), { level: 4, stage: 2 });
+  assert.deepStrictEqual(J6(pg.stamps), [{ l: 3, stars: 9, d: '', n: 3, tier: 3, won: true }, { l: 4, stars: 6, d: '', n: 2, tier: 2, won: false }], 'every house that was played has its badge and its count; no date without an event'); assert.deepStrictEqual(J6(pg.next), { level: 4 });
   s.prog.g2add[2] = [1, 2, 3]; assert.strictEqual(Array.from(L.journal(s).pages).find(x => x.t === 'g2add').stamps[0].stars, 6);
   s = ev(s, [['h', 'g2add', 3, 4], ['p', 'g2add', 4, 4]]);
   assert.strictEqual(Array.from(L.journal(s).pages).find(x => x.t === 'g2add').stamps[0].d, dago(4)); assert.deepStrictEqual(J6(L.journal(s).recent), [{ k: 'h', t: 'g2add', l: 3, d: dago(4) }]);
@@ -1250,3 +1253,212 @@ console.log('all ' + n + ' passed (pad)');
   });
 }
 console.log('all ' + n + ' passed (sync number)');
+
+// ---------- rounds: one repeatable round per house, the counter and its badge, the adaptive difficulty (docs/prompts/rounds-spec.md) ----------
+const RR = (ok, n) => Array.from({ length: n || 8 }, (_, i) => i < ok);
+const fakeQ = (text, fmt, topic, level) => ({ text, fmt: fmt || 'choice', key: (fmt && fmt !== 'choice' ? fmt + '|' : '') + text, topic: topic || 'g1a', level: level || 1 });
+t('rounds: stars, the counter, what a won round opens, nothing ever goes down; old saves are read as before', () => {
+  assert.strictEqual(L.ROUND_SIZE, 8);
+  assert.deepStrictEqual([8, 7, 6, 5, 0].map(k => L.roundStars(RR(k))), [3, 3, 2, 1, 1], 'three stars tolerate one miss; two stars = a won round');
+  assert.deepStrictEqual([8, 7, 6, 5, 0].map(k => L.roundWon(RR(k))), [true, true, true, false, false], '70% at the first try');
+  assert.deepStrictEqual([RR(10, 10), RR(9, 10), RR(8, 10), RR(7, 10), RR(6, 10)].map(L.roundStars), [3, 3, 2, 2, 1]);
+  let s = L.newState(2); const s0 = JSON.stringify(s);
+  assert.strictEqual(L.houseCount(s, 'g2add', 3), 0); assert(L.houseOpen(s, 'g2add', 3) && L.houseOpen(s, 'g2add', 1) && !L.houseOpen(s, 'g2add', 4)); assert(!L.houseWon(s, 'g2add', 3));
+  // a round that was not won: it counts, it earns its star, it opens nothing and closes nothing
+  let r = L.finishHouse(s, 'g2add', 3, RR(3));
+  assert.strictEqual(JSON.stringify(s), s0, 'pure');
+  assert.deepStrictEqual([r.stars, r.gained, r.won, r.opened, r.firstWin, r.count, r.tier, r.tierUp], [1, 1, false, 0, false, 1, 1, true]);
+  s = r.state; assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [1, 0, 0]); assert.strictEqual(s.levels.g2add, 3); assert.strictEqual(L.houseCount(s, 'g2add', 3), 1); assert.strictEqual(s.stars, 1);
+  s = L.finishHouse(s, 'g2add', 3, RR(5)).state; assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [1, 1, 0]);
+  r = L.finishHouse(s, 'g2add', 3, RR(0)); s = r.state;
+  assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [1, 1, 0], 'the third slot is kept for a won round'); assert.strictEqual(r.gained, 0); assert.strictEqual(L.houseCount(s, 'g2add', 3), 3); assert(!L.houseWon(s, 'g2add', 3)); assert(!L.houseOpen(s, 'g2add', 4));
+  // a won round opens the next house; later rounds only add
+  r = L.finishHouse(s, 'g2add', 3, RR(6)); s = r.state;
+  assert.deepStrictEqual([r.stars, r.gained, r.won, r.opened, r.firstWin, r.count, r.tier, r.tierUp], [2, 2, true, 4, true, 4, 4, true]);
+  assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [1, 1, 2]); assert(L.houseWon(s, 'g2add', 3) && L.houseOpen(s, 'g2add', 4)); assert.strictEqual(s.stars, 4);
+  r = L.finishHouse(s, 'g2add', 3, RR(8)); s = r.state; assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [1, 3, 2], 'the lowest slot, the last one first'); assert.strictEqual(r.opened, 0); assert.strictEqual(r.firstWin, false);
+  r = L.finishHouse(s, 'g2add', 3, RR(2)); assert.strictEqual(r.gained, 0); assert.deepStrictEqual(Array.from(L.progOf(r.state, 'g2add', 3)), [1, 3, 2], 'a weaker round takes nothing'); assert.strictEqual(r.state.levels.g2add, 4); s = r.state;
+  for (let i = 0; i < 30; i++) { const b = s; s = L.finishHouse(s, 'g2add', 3, RR(i % 9)).state; assert(s.stars >= b.stars && L.houseCount(s, 'g2add', 3) === L.houseCount(b, 'g2add', 3) + 1 && s.levels.g2add >= b.levels.g2add); }
+  assert.deepStrictEqual(Array.from(L.progOf(s, 'g2add', 3)), [3, 3, 3]); assert.strictEqual(L.topicStars(s, 'g2add'), 9, 'a house holds at most nine stars'); assert.strictEqual(s.stars, 9); assert.strictEqual(L.houseCount(s, 'g2add', 3), 36);
+  assert.deepStrictEqual(Array.from(L.progOf(L.finishHouse(L.newState(2), 'g2add', 3, RR(8)).state, 'g2add', 3)), [0, 0, 3], 'a first round that is won writes the slot that means "won"');
+  const last = L.maxLevel('g2add'); let f = L.newState(2); f.levels.g2add = last; assert.strictEqual(L.finishHouse(f, 'g2add', last, RR(8)).opened, 0, 'nothing opens after the last house');
+  // the badge: a look for each of the counts 1-10, then one for each round number up to 100
+  assert.deepStrictEqual([0, 1, 2, 9, 10, 11, 19, 20, 29, 30, 99, 100, 101, 5000].map(L.badgeTier), [0, 1, 2, 9, 10, 10, 10, 11, 11, 12, 18, 19, 19, 19]); assert.strictEqual(L.BADGE_TIERS, 19);
+  for (let c = 1, was = 0; c < 300; c++) { const tr = L.badgeTier(c); assert(tr >= was && tr <= L.BADGE_TIERS); was = tr; }
+  // ---- saves from before the rounds: the counter is the number of slots with a star, a house is won as it was complete or passed
+  let o = L.loadState({ v: 4, grade: 2, levels: { g2add: 3 }, prog: { g2add: [[3, 0, 0], [0, 0, 0], [2, 3, 1], [0, 0, 0]], g2sub: [[1, 1, 1], [1, 1, 1], [1, 1, 0]] }, stars: 15 });
+  assert.strictEqual(o.cnt, undefined); assert.strictEqual(o.ab, undefined); assert.strictEqual(o.it, undefined); assert.strictEqual(o.v, 4);
+  assert.deepStrictEqual([1, 2, 3, 4].map(l => L.houseCount(o, 'g2add', l)), [1, 0, 3, 0]);
+  assert.deepStrictEqual([1, 2, 3, 4].map(l => L.houseWon(o, 'g2add', l)), [true, false, true, false], 'below the newest house: played; the newest house: its third slot');
+  assert.deepStrictEqual([1, 2, 3].map(l => L.houseWon(o, 'g2sub', l)), [true, true, false]);
+  // the bridge: every house of the grade won once; a bridge that was ready before (three stages in every house) is ready
+  let b = L.newState(2); b.levels.g2div = 3; b.prog.g2div = [[1, 1, 1], [2, 1, 1], [1, 1, 3]]; assert(L.bossReady(b, 'g2div', 2));
+  b.prog.g2div = [[1, 0, 0], [0, 2, 0], [0, 0, 2]]; assert(L.bossReady(b, 'g2div', 2)); b.prog.g2div[2] = [3, 3, 0]; assert(!L.bossReady(b, 'g2div', 2)); b.prog.g2div = [[0, 0, 0], [1, 1, 1], [1, 1, 1]]; assert(!L.bossReady(b, 'g2div', 2));
+  // ---- the three optional fields: kept when sound, cleaned when not, never needed
+  s = L.finishHouse(L.newState(2), 'g2mul', 3, RR(8), L.createHouseRound(L.newState(2), 'g2mul', 3, L.seeded(3), []).qs).state;
+  assert.deepStrictEqual(Array.from(s.cnt.g2mul), [0, 0, 1, 0]); assert.strictEqual(s.ab.g2mul, 0.25); assert(typeof s.it.g2mul === 'string' && s.it.g2mul.length % 6 === 0 && s.it.g2mul.length > 0);
+  const back = L.loadState(JSON.stringify(s));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify([back.cnt, back.ab, back.it])), JSON.parse(JSON.stringify([s.cnt, s.ab, s.it])), 'a round trip keeps them');
+  const older = JSON.parse(JSON.stringify(s)); delete older.cnt; delete older.ab; delete older.it; const lo = L.loadState(older); // an older page saved the state without them
+  assert.strictEqual(lo.cnt, undefined); assert.strictEqual(L.houseCount(lo, 'g2mul', 3), 1, 'derived again from the stars'); assert.strictEqual(L.abilityOf(lo, 'g2mul'), 2); assert.strictEqual(L.itemStat(lo, fakeQ('5 × 4 = ?', 'choice', 'g2mul', 3)).shift, 0);
+  const junk = L.loadState({ v: 4, grade: 2, prog: { g2add: [[1, 1, 1]] }, cnt: { g2add: [0, 'x', -4, 2.9, 1e12], nope: [5], g2sub: 'a' }, ab: { g2add: 99, g2sub: 'x', g2mul: -3, nope: 1 }, it: { g2add: 'abcd12zz', g2sub: 'abcd53', g2mul: 5, nope: 'abcd11' } });
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(junk.cnt)), { g2add: [0, 0, 0, 2] }); assert.deepStrictEqual(JSON.parse(JSON.stringify(junk.ab)), { g2add: 3, g2mul: 0 }); assert.deepStrictEqual(JSON.parse(JSON.stringify(junk.it)), { g2sub: 'abcd53' });
+  assert.strictEqual(L.houseCount(junk, 'g2add', 1), 3, 'a counter smaller than what the stars prove is not trusted'); assert.strictEqual(L.houseCount(junk, 'g2add', 4), 2);
+  for (const bad of [null, 7, 'x', [], { g2add: null }]) { const q = L.loadState({ v: 4, grade: 2, cnt: bad, ab: bad, it: bad }); assert.strictEqual(L.houseCount(q, 'g2add', 1), 0); assert.strictEqual(L.abilityOf(q, 'g2add'), 0); L.createHouseRound(q, 'g2add', 3, L.seeded(1), []); L.finishHouse(q, 'g2add', 3, RR(8)); }
+  // ---- the ability: 0 for a new player; from the stars of a tile; a little under the other tiles of the subject in a new tile; small steps
+  assert.strictEqual(L.abilityOf(L.newState(2), 'g2add'), 0);
+  let a = L.newState(2); a.prog.g2add = [[3, 3, 3], [3, 2, 0]]; assert.strictEqual(L.abilityOf(a, 'g2add'), 1.8); assert.strictEqual(L.abilityOf(a, 'g2sub'), 1.35); a.ab = { g2add: 0.5 }; assert.strictEqual(L.abilityOf(a, 'g2add'), 0.5);
+  assert.deepStrictEqual([8, 7, 6, 5, 0].map(k => L.abilityAfter(1, RR(k))), [1.25, 1, 0.65, 0.6, 0.6]);
+  assert.strictEqual(L.abilityAfter(0.1, RR(0)), 0); assert.strictEqual(L.abilityAfter(2.9, RR(8)), L.AB_MAX); assert.strictEqual(L.abilityAfter(1, [true]), 1, 'too short to tell');
+});
+t('difficulty: the score of an exercise is read from what is in it, and orders the exercises inside every house', () => {
+  const pt = (text, fmt) => L.featOf(fakeQ(text, fmt)).fact;
+  const inc = (list, msg) => { for (let i = 1; i < list.length; i++) assert(pt(list[i - 1]) < pt(list[i]), (msg || '') + ': ' + list[i - 1] + ' (' + pt(list[i - 1]) + ') before ' + list[i] + ' (' + pt(list[i]) + ')'); };
+  // the owner: "adding 1 is easier than adding 2; 3 + 2 is much harder than 1 + 1 or 4 + 1"
+  inc(['1 + 1 = ?', '4 + 1 = ?', '1 + 4 = ?'], 'plus one'); inc(['4 + 1 = ?', '3 + 2 = ?', '2 + 3 = ?', '3 + 6 = ?', '4 + 5 = ?'], 'the smaller addend'); assert(pt('3 + 2 = ?') - pt('1 + 1 = ?') >= 2);
+  assert(pt('3 + 3 = ?') < pt('3 + 4 = ?') && pt('6 + 0 = ?') < pt('6 + 3 = ?') && pt('6 + 4 = ?') < pt('6 + 3 = ?'), 'doubles, plus nothing, pairs that make ten');
+  inc(['12 + 3 = ?', '8 + 5 = ?'], 'crossing ten'); inc(['6 + 6 = ?', '9 + 4 = ?', '5 + 8 = ?']);
+  // taking away: -0, -1 and all of it, a difference of one, then the rest
+  for (const e of ['6 − 0 = ?', '6 − 6 = ?', '9 − 1 = ?']) assert(pt(e) < pt('9 − 8 = ?') + 1 && pt(e) < pt('8 − 2 = ?'), e);
+  inc(['9 − 8 = ?', '8 − 2 = ?', '9 − 4 = ?']); inc(['14 − 4 = ?', '17 − 2 = ?', '13 − 6 = ?']); inc(['14 − 7 = ?', '11 − 3 = ?', '13 − 6 = ?']);
+  // the tables: x10, x2, x5, squares, 3-4, 6-9; a quotient is a little harder than its product
+  inc(['10 × 4 = ?', '5 × 4 = ?', '4 × 3 = ?', '4 × 7 = ?', '7 × 8 = ?']); assert(pt('6 × 6 = ?') < pt('6 × 7 = ?') && pt('2 × 3 = ?') < pt('2 × 8 = ?') + 1 && pt('1 × 7 = ?') === 0);
+  assert(pt('24 : 6 = ?') > pt('6 × 4 = ?') && pt('20 : 10 = ?') < pt('36 : 4 = ?') && pt('30 : 5 = ?') < pt('56 : 7 = ?'));
+  // several digits: carries and borrows, whole tens, a zero to borrow through
+  inc(['30 + 25 = ?', '23 + 45 = ?', '38 + 47 = ?']); inc(['47 + 3 = ?', '59 + 4 = ?', '36 + 8 = ?']); assert.strictEqual(pt('2,300 + 1,400 = ?'), pt('23 + 14 = ?'));
+  inc(['75 − 30 = ?', '68 − 25 = ?', '83 − 57 = ?']); assert(pt('304 − 58 = ?') > pt('563 − 27 = ?')); inc(['12 × 3 = ?', '47 × 6 = ?']);
+  inc(['20 + 10 + 5 = ?', '24 + 13 + 6 = ?', '27 + 38 + 19 = ?']);
+  // where the unknown stands; number sequences
+  const form = text => L.featOf(fakeQ(text)).form;
+  assert.deepStrictEqual(['3 + □ = 7', '7 − □ = 3', '□ + 4 = 7', '□ − 3 = 4'].map(form), [0, 1, 2, 3]); assert(form('□ × 4 = 28') > form('4 × □ = 28'));
+  inc(['10 → 20 → ? → 40 → 50', '15 → 20 → 25 → ? → 35', '6 → 9 → 12 → ? → 18', '35 → 31 → 27 → ? → 19']); inc(['3 → 4 → ?', '11 → ? → 13', '? → 10 → 11']);
+  // the exercise an activity format was made from is what counts; a question in words has no table and gets the two general features
+  assert.strictEqual(pt('7 × 8 = ?', 'tf'), pt('7 × 8 = ?')); assert.strictEqual(pt('7 × 8 = ?', 'word'), 6);
+  assert.strictEqual(L.featOf(fakeQ('7 × 8 = ?')).known, true); const wq = L.makeQuestion('g4frac', 3, L.seeded(1)); assert.strictEqual(L.featOf(wq).known, false); assert(L.featOf(wq).mag > 0);
+  assert.strictEqual(JSON.stringify(L.featOf({ pack: true, text: 'x', key: 'k' })), JSON.stringify(L.featOf(null)));
+  // inside a house the scores are spread around 2 (a typical exercise with four answers), also in the narrowest house of grade 1
+  let flat = [];
+  for (const tp of L.TOPICS) tp.levels.forEach((d, i) => {
+    const rnd = L.seeded(11 + i), ds = []; for (let k = 0; k < 150; k++) ds.push(L.scoreOf(L.makeQuestion(tp.id, i + 1, rnd)));
+    const mean = ds.reduce((x, y) => x + y, 0) / ds.length, spread = Math.max(...ds) - Math.min(...ds);
+    assert(Math.abs(mean - 2) < 0.5, tp.id + ' ' + (i + 1) + ' mean ' + mean); assert(Math.max(...ds) <= 2 + L.DIFF.cap + 1e-9 && Math.min(...ds) >= 2 - L.DIFF.cap - 1e-9);
+    if (spread < 0.3) flat.push(tp.id + '.' + (i + 1));
+  });
+  for (const id of ['g1a', 'g1b', 'g1c', 'g2add', 'g2sub', 'g2mul', 'g2div', 'g2miss']) assert(!flat.some(x => x.indexOf(id + '.') === 0), 'every house of ' + id + ' has easier and harder exercises: ' + flat.join(' '));
+  assert(flat.length <= 14, 'houses of arithmetic whose exercises all score alike: ' + flat.length + ' (' + flat.join(' ') + ')');
+  const q1 = L.scoreOf(fakeQ('1 + 1 = ?')), q2 = L.scoreOf(fakeQ('4 + 1 = ?')), q3 = L.scoreOf(fakeQ('3 + 2 = ?')), q4 = L.scoreOf(fakeQ('4 + 5 = ?'));
+  assert(q1 < q2 && q2 < q3 && q3 < q4 && q4 - q1 >= 1, 'addition to 10: ' + [q1, q2, q3, q4].join(' '));
+  // the format moves the score: hands-on and "right or not?" under four answers, a story and the equals sign on the left over it
+  const F = L.DIFF.fmt; assert(F.line < F.tf && F.tf < F.choice && F.choice < F.cmp && F.cmp <= F.pairs && F.pairs < F.word && F.word <= F.lefteq && F.array === F.line && F.build === F.line);
+  assert(L.DIFF.src.prev < 0 && L.DIFF.src.next > 0);
+});
+t('a round of a house: 40% easy, 40% medium, one or two hard in the second half, at most two of each neighbour house', () => {
+  const houses = [['g1a', 1], ['g1a', 3], ['g2add', 2], ['g2add', 4], ['g2mul', 2], ['g2num', 2], ['g4frac', 3], ['g4big', 1], ['g3ord', 2]];
+  for (const [id, lv] of houses) for (const ab of [0, 1, 2, 3]) for (const cnt of [0, 1, 5]) for (let seed = 1; seed <= 6; seed++) {
+    const s = L.newState(L.TOPICS.find(x => x.id === id).g); s.ab = { [id]: ab }; s.cnt = { [id]: L.TOPICS.find(x => x.id === id).levels.map((d, i) => i === lv - 1 ? cnt : 0) };
+    const r = L.createHouseRound(s, id, lv, L.seeded(seed * 31 + ab * 7 + cnt), []), qs = Array.from(r.qs), tag = id + ' ' + lv + ' ability ' + ab + ' count ' + cnt + ' seed ' + seed;
+    assert.strictEqual(qs.length, 8, tag); assert.strictEqual(new Set(qs.map(q => q.key)).size, 8, 'no exercise twice: ' + tag);
+    const hard = qs.filter(q => q.slot === 'h').length; assert(hard === 1 || hard === 2, tag); assert.strictEqual(qs.filter(q => q.slot === 'e').length, 3, tag); assert.strictEqual(qs.filter(q => q.slot === 'm').length, 5 - hard, tag);
+    qs.forEach((q, i) => { if (q.slot === 'h') assert(i >= 4, 'a hard exercise in the first half: ' + tag); assert(typeof q.d === 'number' && isFinite(q.d), tag); assert.strictEqual(q.topic, id);
+      assert.strictEqual(q.level, q.review ? lv - 1 : q.ahead ? lv + 1 : lv, tag); if (q.ahead) assert(q.slot === 'h' && cnt > 0, 'the next house only as a hard exercise, never in the first round: ' + tag); if (q.review) assert(q.slot !== 'h', tag);
+      assert.strictEqual(q.options.filter(x => x === q.answer).length, 1, tag); });
+    assert(qs.filter(q => q.review).length <= 2 && qs.filter(q => q.ahead).length <= 2 && qs.filter(q => q.fmt === 'pairs').length <= 1, tag);
+    const firstM = qs.findIndex(q => q.slot === 'm'), lastE = qs.map(q => q.slot).lastIndexOf('e'); assert(lastE < firstM, 'easy before medium: ' + tag);
+    assert(Math.abs(r.plan.base - Math.max(0, ab - (cnt === 0 ? 1 : cnt === 1 ? 0.5 : 0))) <= L.JITTER + 1e-9, 'the whole round moves by a little: ' + tag);
+    if (id.indexOf('g1') === 0) assert(qs.every(q => q.fmt !== 'cmp'), 'no < > signs in grade 1');
+  }
+  // the three kinds really differ, in a wide house and in the narrowest one; a higher ability gets a harder round
+  for (const [id, lv] of [['g2add', 2], ['g1a', 1]]) {
+    const mean = ab => { const m = { e: [0, 0], m: [0, 0], h: [0, 0], all: [0, 0] }; for (let seed = 1; seed <= 40; seed++) { const s = L.newState(L.TOPICS.find(x => x.id === id).g); s.ab = { [id]: ab }; s.cnt = { [id]: [9, 9, 9, 9, 9] };
+      for (const q of L.createHouseRound(s, id, lv, L.seeded(seed), []).qs) { m[q.slot][0] += q.d; m[q.slot][1]++; m.all[0] += q.d; m.all[1]++; } } return { e: m.e[0] / m.e[1], m: m.m[0] / m.m[1], h: m.h[0] / m.h[1], all: m.all[0] / m.all[1] }; };
+    const lo = mean(0.5), mid = mean(1.5), hi = mean(2.5);
+    for (const x of [mid, hi]) assert(x.m - x.e >= 0.3 && x.h - x.m >= 0.3, id + ': easy ' + x.e.toFixed(2) + ', medium ' + x.m.toFixed(2) + ', hard ' + x.h.toFixed(2));
+    assert(lo.e <= lo.m && lo.m < lo.h && lo.all < mid.all && mid.all < hi.all, id + ': ' + [lo.all, mid.all, hi.all].map(x => x.toFixed(2)).join(' < '));
+  }
+  // the first round of a house: the easiest content of that house; a tile of a subject pack gets a round too
+  const first = L.createHouseRound(L.newState(1), 'g1a', 1, L.seeded(4), []); assert(first.qs.every(q => q.level === 1 && q.d <= 2.4), 'first round: ' + first.qs.map(q => q.d).join(' '));
+  for (const tp of LP.TOPICS.filter(x => x.sub)) for (const lv of [1, tp.levels.length]) { const s = LP.newState(Math.min(4, tp.g)); s.ab = { [tp.id]: 2 }; s.cnt = { [tp.id]: tp.levels.map(() => 3) };
+    const r = LP.createHouseRound(s, tp.id, lv, LP.seeded(lv + tp.id.length), []); assert.strictEqual(r.qs.length, 8, tp.id); assert(r.qs.every(q => q.pack && q.topic === tp.id), tp.id); }
+});
+t('simulation: children of different true abilities settle at the same first-try success, with three stars in most rounds', () => {
+  // A simulated child answers an exercise right at the first try with a probability that falls with its score on the scale; p2 is the
+  // child's success on a typical plain exercise of the house (score 2), and one step of the scale changes the odds by e^0.9.
+  const logit = p => Math.log(p / (1 - p)), sig = x => 1 / (1 + Math.exp(-x)), BETA = 0.9, table = [];
+  function child(id, lv, p2, seed) {
+    const rng = L.seeded(seed); let s = L.newState(L.TOPICS.find(x => x.id === id).g); s.levels[id] = lv; const out = [];
+    for (let n = 0; n < 30; n++) {
+      const r = L.createHouseRound(s, id, lv, rng, []), res = Array.from(r.qs).map(q => rng() < sig(logit(p2) + BETA * (2 - (q.d - q.sh))));
+      const f = L.finishHouse(s, id, lv, res, r.qs); s = f.state;
+      out.push({ ab: s.ab[id], ok: res.filter(Boolean).length / 8, stars: f.stars, hard: Array.from(r.qs).filter(q => q.slot === 'h').length, md: Array.from(r.qs).reduce((a, q) => a + q.d - q.sh, 0) / 8 });
+    }
+    return out;
+  }
+  function settle(id, lv, p2) {
+    let ok = 0, s3 = 0, n = 0, ab1 = 0, ab2 = 0, hard = 0, swing = 0, sw = 0, nsw = 0;
+    for (let seed = 1; seed <= 6; seed++) {
+      const o = child(id, lv, p2, seed * 17 + Math.round(p2 * 1000));
+      o.forEach((x, i) => { assert(x.hard === 1 || x.hard === 2); if (i && i < 30) assert(Math.abs(x.ab - o[i - 1].ab) <= 0.4 + 1e-9, 'the ability moves in small steps'); });
+      o.slice(12).forEach((x, i) => { ok += x.ok; s3 += x.stars === 3 ? 1 : 0; n++; hard += x.hard; if (i < 9) ab1 += x.ab / 9; else ab2 += x.ab / 9; });
+      for (let i = 13; i < 30; i++) { const d = Math.abs(o[i].md - o[i - 1].md); swing = Math.max(swing, d); sw += d; nsw++; }
+    }
+    const row = { house: id + '.' + lv, p2, ability: ab2 / 6, drift: Math.abs(ab2 - ab1) / 6, first: ok / n, three: s3 / n, hard: hard / n, swing: sw / nsw, swingMax: swing };
+    table.push(row); return row;
+  }
+  for (const [id, lv, from] of [['g2add', 2, 0.65], ['g1a', 1, 0.75]]) { // a wide house; the narrowest house of grade 1 (addition to 10)
+    let was = -1;
+    for (const p2 of [0.55, 0.65, 0.75, 0.85, 0.92, 0.97]) {
+      const x = settle(id, lv, p2), tag = id + ' p2 ' + p2 + ': ' + JSON.stringify(x);
+      assert(x.ability >= was - 0.15, 'a stronger child settles higher: ' + tag); was = x.ability;
+      assert(x.drift < 0.45, 'the ability has settled: ' + tag);
+      assert(x.hard > 1.3 && x.hard < 1.7, tag); assert(x.swing < 0.45 && x.swingMax < 1.3, 'consecutive rounds do not swing: ' + tag);
+      if (p2 >= from && p2 <= 0.92) { assert(x.first >= 0.82 && x.first <= 0.93, 'first-try success in the band: ' + tag); assert(x.three >= 0.58 && x.three <= 0.9, 'three stars in most rounds: ' + tag); }
+      if (p2 > 0.92) { assert(x.first >= 0.9 && x.ability > 2.5, 'the top of the scale: ' + tag); }
+      if (p2 < from) { assert(x.ability < 0.5 && x.first >= 0.6, 'the bottom of the scale: the easiest content the house has: ' + tag); }
+    }
+  }
+  console.log('   house    true  ability  first-try  3 stars  hard/round  swing'); table.forEach(x => console.log('   ' + x.house.padEnd(8) + ' ' + x.p2.toFixed(2) + '  ' + x.ability.toFixed(2) + '     ' + (100 * x.first).toFixed(0) + '%        ' + (100 * x.three).toFixed(0) + '%      ' + x.hard.toFixed(2) + '        ' + x.swing.toFixed(2)));
+});
+t('items: what a player did with a single item makes it easier or harder for that player; missed items come back; the memory stays small', () => {
+  // stable keys: every item of a pack, and the basic facts of arithmetic (the same key in every activity format); nothing else
+  const k = L.itemKey(fakeQ('7 × 8 = ?')); assert(/^[0-9a-zA-Z_-]{4}$/.test(k)); assert.strictEqual(L.itemKey(fakeQ('7 × 8 = ?', 'tf')), k); assert.strictEqual(L.itemKey(fakeQ('7 × 8 = ?', 'word')), k);
+  assert.notStrictEqual(L.itemKey(fakeQ('8 × 7 = ?')), k); assert(L.itemKey(fakeQ('12 − 5 = ?')) && L.itemKey(fakeQ('□ + 4 = 10')) && L.itemKey(fakeQ('56 : 7 = ?')));
+  for (const big of ['38 + 47 = ?', '47 × 6 = ?', '10 → 20 → ? → 40', '24 + 13 + 6 = ?']) assert.strictEqual(L.itemKey(fakeQ(big)), null, big);
+  // the shift: nothing without evidence; a miss makes an item hard at once, right answers make it easy step by step; bounded
+  assert.strictEqual(L.itemShift(0, 0, 0), 0); assert(L.itemShift(1, 0, 0) >= 1 && L.itemShift(2, 0, 0) > L.itemShift(1, 0, 0)); assert(L.itemShift(1, 1, 0) < 0 && L.itemShift(5, 5, 0) <= -0.5 && L.itemShift(5, 5, 0) < L.itemShift(2, 2, 0));
+  assert(L.itemShift(4, 2, 0) > 0.5 && L.itemShift(9, 0, 0) <= 2 && L.itemShift(9, 9, 0) >= -1.2); assert(L.itemShift(2, 1, 1) < L.itemShift(2, 1, -1), 'an item that is hard for everyone counts less against the player');
+  // a child who knows half of the English words of a house
+  const tile = LP.TOPICS.find(x => x.id === 'eng2words'), lv = 1; assert(tile, 'the pack of English words');
+  const bank = {}; { const r = LP.seeded(1); for (let i = 0; i < 3000; i++) { const q = LP.makeQuestion(tile.id, lv, r); bank[LP.itemKey(q)] = true; } }
+  const keys = Object.keys(bank), knows = {}; keys.forEach((x, i) => { knows[x] = i % 2 === 0; }); assert(keys.length >= 8, 'items in the house: ' + keys.length);
+  let s = LP.newState(2), rng = LP.seeded(5), backs = 0, backRounds = 0, shown = {};
+  for (let n = 0; n < 16; n++) {
+    const r = LP.createHouseRound(s, tile.id, lv, rng, []), qs = Array.from(r.qs), nb = qs.filter(q => q.back).length;
+    assert(nb <= 2 && qs.filter(q => q.back).every(q => q.slot === 'h' && shown[LP.itemKey(q)] < 0), 'what was missed comes back only in the hard places');
+    backs += nb; if (nb) backRounds++;
+    const res = qs.map(q => { const ik = LP.itemKey(q), ok = rng() < (knows[ik] === false ? 0.1 : 1); if (!ok) shown[ik] = -1; return ok; }); // shown: -1 once an item was missed
+    s = LP.finishHouse(s, tile.id, lv, res, qs).state;
+  }
+  let easy = 0, hard = 0, nk = 0, nu = 0;
+  const one = {}; { const r = LP.seeded(9); for (let i = 0; i < 3000; i++) { const q = LP.makeQuestion(tile.id, lv, r), ik = LP.itemKey(q); if (!one[ik]) one[ik] = q; } }
+  keys.forEach(ik => { const st = LP.itemStat(s, one[ik]); if (st.n < 2) return; if (knows[ik]) { nk++; if (st.shift < 0) easy++; } else { nu++; if (st.shift >= 1) hard++; } });
+  assert(nk >= 3 && nu >= 3, 'items seen twice or more: ' + nk + ' known, ' + nu + ' unknown');
+  assert(easy / nk >= 0.9, 'the known half is easy: ' + easy + ' of ' + nk); assert(hard / nu >= 0.9, 'the unknown half is hard: ' + hard + ' of ' + nu);
+  assert(backRounds >= 10 && backs >= 12, 'missed items are shown again: ' + backs + ' times in ' + backRounds + ' rounds of 16');
+  assert(/^([0-9a-zA-Z_-]{4}[0-9]{2})+$/.test(s.it[tile.id])); assert.deepStrictEqual(Object.keys(s.it), [tile.id]);
+  // without the field (an older page dropped it): the items are simply unknown again, and a round is built as for a new player
+  const lost = JSON.parse(JSON.stringify(s)); delete lost.it; assert.strictEqual(LP.itemStat(LP.loadState(lost), one[keys[0]]).n, 0); assert.strictEqual(LP.createHouseRound(LP.loadState(lost), tile.id, lv, LP.seeded(2), []).qs.filter(q => q.back).length, 0);
+  // counters stay one digit (old answers fade), and the memory is capped: a tile, and the whole
+  let c = L.newState(2); const q78 = Object.assign(fakeQ('7 × 8 = ?', 'choice', 'g3mul', 3));
+  for (let i = 0; i < 40; i++) c = L.itemsAfter(c, [q78], [true]); assert.strictEqual(c.it.g3mul.length, 6); assert(L.itemStat(c, q78).n <= 9 && L.itemStat(c, q78).r <= L.itemStat(c, q78).n);
+  for (let i = 0; i < 6; i++) c = L.itemsAfter(c, [q78], [false]); assert(L.itemStat(c, q78).shift > 0, 'new misses outweigh old successes');
+  let big = LP.newState(4), nItems = 0, worst = 0;
+  for (const tp of LP.TOPICS) { const qs = []; for (let i = 0; i < L.IT_TILE + 30; i++) qs.push({ pack: true, key: tp.id + ' item ' + i, topic: tp.id, level: 1, fmt: 'choice', text: '' }); big = LP.itemsAfter(big, qs, qs.map((q, i) => i % 3 > 0)); }
+  for (const id in big.it) { assert(big.it[id].length <= L.IT_TILE * 6, id); nItems += big.it[id].length / 6; }
+  assert(nItems <= L.IT_ALL, 'items remembered: ' + nItems); worst = JSON.stringify(big.it).length;
+  assert(worst < 12000, 'the item memory of a player who met everything: ' + worst + ' bytes');
+  const whole = JSON.stringify(Object.assign(LP.loadState(JSON.stringify(big)), { cnt: Object.fromEntries(LP.TOPICS.map(tp => [tp.id, tp.levels.map(() => 100)])), ab: Object.fromEntries(LP.TOPICS.map(tp => [tp.id, 2.25])) })).length;
+  assert(whole * 8 < 400000, 'eight such players: ' + whole * 8 + ' bytes of 1,048,576');
+  console.log('   item memory at its cap: ' + worst + ' bytes; a whole saved state with it: ' + whole + ' bytes; eight players: ' + whole * 8 + ' bytes (the limit of a document is 1,048,576)');
+  assert(JSON.stringify(LP.loadState(JSON.stringify(big)).it) === JSON.stringify(big.it), 'the capped memory survives loading');
+});
+console.log('all ' + n + ' passed (rounds)');
