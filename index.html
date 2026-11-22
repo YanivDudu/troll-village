@@ -1329,7 +1329,8 @@ body.toy .tdeco.d2{left:14%;height:4.5vh;bottom:1.5vh}body.toy .tdeco.d3{right:1
 body.toy.night .tdeco{filter:brightness(.72) saturate(.85)}
 @media (min-height:700px){body.toy[data-k="calm"]:has(.answers) .tdeco.d0,body.toy[data-k="calm"]:has(.answers) .tdeco.d1{display:block}}
 @media (min-width:1000px) and (min-height:521px){body.toy[data-k="calm"]:has(.answers) .tdeco{display:block;height:11vh;bottom:3vh}body.toy[data-k="calm"]:has(.answers) .tdeco.d2{height:5vh;bottom:2vh}body.toy[data-k="calm"]:has(.answers) .tdeco.d3{height:4.5vh;bottom:2vh}}
-@media (min-width:1200px) and (min-height:521px){body.toy[data-k="calm"]:has(.answers) .tsun{display:block;left:2.5%;top:16%}body.toy[data-k="calm"]:has(.answers) .tcloud:not(.c2){display:block;left:87%;top:17%}}
+@media (min-width:1200px) and (min-height:521px){body.toy[data-k="calm"]:has(.answers) .tsun{display:block;left:2.5%;top:16%}body.toy[data-k="calm"]:has(.answers) .tcloud:not(.c2){display:block;left:87%;top:17%}
+}
 /* ---- the exercise: stepping stones, chips, the card, the answers ---- */
 body.toy .node,body.toy .node.done{background:#fff;color:var(--ti);box-shadow:0 3px 0 var(--te2)}
 body.toy .node.cur{background:var(--tgold);color:var(--ti);box-shadow:0 0 0 4px #fff,0 4px 0 4px var(--te2)}
@@ -2097,6 +2098,38 @@ body.toy .cdress:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
 body.toy .camp .top .coinchip.tap{position:relative;cursor:pointer}
 body.toy .camp .top .coinchip.tap::after{content:"";position:absolute;inset:-8px 0}
 /* FLOWHOME-END */
+/* FLOWFIX-END-BEGIN task "flowfix-end": the picture buttons of the end screens (dress the new troll, the new thing of the journal), the ring around a new
+   stamp or postcard in the journal, the badge on the journal button of the camp. Only tokens of the design system. */
+body.toy .ebtns .btn.newb{flex:1 1 auto;min-height:56px;padding:var(--sp1) var(--sp2);gap:var(--sp1);white-space:nowrap}
+body.toy .ebtns .btn.achb{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12);animation:achpop var(--d-slow) var(--spring) 1}
+body.toy .ebtns .btn.achb:active{box-shadow:0 1px 0 var(--accent-edge)}
+body.toy .ebtns .newb .ic{flex:0 0 auto}
+body.toy .ebtns .dressn .ic{color:var(--primary)}
+body.toy .ebtns .newb .nl{flex:0 0 auto}
+body.toy .npic{position:relative;flex:0 0 auto;display:block;width:44px;height:44px}
+body.toy .npic.ntroll svg{width:100%;height:100%;display:block}
+body.toy .npic .troll .tb,body.toy .npic .troll .hair,body.toy .npic .troll .eyes,body.toy .npic .troll .pet,body.toy .npic .troll .pup{animation:none}
+body.toy .npic.nstamp{display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:2px;border-radius:var(--r-full);background:var(--surface);border:2px dashed var(--edge)}
+body.toy .npic.nstamp>img:first-child{width:68%;height:68%;object-fit:contain;display:block}
+body.toy .npic.nstamp .mflag{position:absolute;top:-10%;inset-inline-start:-8%;width:44%;height:44%}
+body.toy .ebtns .newb .nn{flex:0 0 auto;min-width:24px;height:24px;padding:0 var(--sp1);border-radius:var(--r-full);background:var(--primary);color:#fff;font-size:var(--t-cap);line-height:24px;font-weight:var(--w-black)}
+@keyframes achpop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+@media (max-height:520px){body.toy .ebtns .btn.newb{min-height:48px}body.toy .npic{width:40px;height:40px}body.toy .npic.nstamp{width:36px;height:36px}}
+/* A short phone, upright or lying down (the map of the end screen needs every pixel it had): the picture buttons stand in the ONE row under the main button. The buttons that only
+   repeat the back and home buttons of the top bar step aside, "again" and the cart become square picture buttons; with both of them (x2) the trophy button
+   keeps its pictures and drops its word. */
+@media (orientation:portrait) and (max-height:700px),(max-height:520px){body.toy .endm.hasnews .ebtns .btn.navb{display:none}
+  body.toy .endm.hasnews .ebtns .btn.newb{min-height:48px;min-width:0}body.toy .endm.hasnews .npic{width:40px;height:40px}body.toy .endm.hasnews .npic.nstamp{width:36px;height:36px}
+  body.toy .endm.hasnews .ebtns .btn:not(.nxt):not(.newb){flex:0 0 48px;min-width:48px;padding:0;gap:0;font-size:0}
+  body.toy .endm.hasnews.x1 .ebtns .newb,body.toy .endm.hasnews.x2 .ebtns .newb{font-size:var(--t-cap)}
+  body.toy .endm.hasnews.x2 .ebtns .newb{padding:var(--sp1)}body.toy .endm.hasnews.x2 .ebtns .achb .nl,body.toy .endm.hasnews .ebtns .achb.many .nl{display:none}}
+body.toy .stp.jhot .sdisc{box-shadow:0 0 0 3px var(--surface),0 0 0 7px var(--primary)}
+body.toy .jcard.jhot{box-shadow:0 0 0 4px var(--primary)}
+body.toy .jhot{animation:jhot .9s var(--ease) 1}
+@keyframes jhot{0%{transform:scale(1)}35%{transform:scale(1.12)}70%{transform:scale(.97)}100%{transform:scale(1)}}
+body.toy .camp .hrow .btn .jbadge{position:absolute;top:2px;inset-inline-end:max(2px,calc(50% - 30px));min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-full);background:var(--primary);color:#fff;font-size:12px;line-height:20px;font-weight:var(--w-black);text-align:center;box-shadow:0 0 0 2px var(--surface);pointer-events:none}
+body.toy .camp .hrow .btn.jrnb .ic{color:var(--accent-edge)}
+/* FLOWFIX-END-END */
 </style>
 </head>
 <body>
@@ -5147,6 +5180,8 @@ var TrollModels = (function () {
     share: 'M212,200a36,36,0,1,1-69.85-12.25l-53-34.05a36,36,0,1,1,0-51.4l53-34a36.09,36.09,0,1,1,8.67,13.45l-53,34.05a36,36,0,0,1,0,24.5l53,34.05A36,36,0,0,1,212,200Z'
   };
   ICONS.right = ICONS.back; ICONS.speaker = ICONS.sound; ICONS['music-off'] = ICONS.music; ICONS.prev = ICONS.next; ICONS.settings = ICONS.gear; ICONS.pencil = ICONS.practice; ICONS.search = ICONS.discover;
+  ICONS.shirt = ICONS.shirt || ICONS.dress; // task "flowfix-end": the t-shirt of "dress this troll" (Phosphor t-shirt, the same path as dress)
+  ICONS.ranking = ICONS.ranking || 'M240,200h-8V144a16,16,0,0,0-16-16H176V56a16,16,0,0,0-16-16H96A16,16,0,0,0,80,56V88H40a16,16,0,0,0-16,16v96H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM80,200H40V104H80Zm60-64a8,8,0,0,1-16,0V107.1l-1.47.49a8,8,0,0,1-5.06-15.18l12-4A8,8,0,0,1,140,96Zm76,64H176V144h40Z'; // task "flowfix-end": the podium of the ranking (the trophy now marks the journal)
   var IC_FLIP = { next: 1 }, IC_MISS = {}; // mirrored for right-to-left: "next" points left ("prev" is the same glyph, not mirrored)
   function iconHTML(name, size) {
     if (!ICONS[name] && !IC_MISS[name]) { IC_MISS[name] = 1; try { console.warn('icon: no "' + name + '"'); } catch (e) {} }
@@ -5588,7 +5623,7 @@ var TrollModels = (function () {
         });
         jour.insertBefore(sbar, jour.firstChild);
       } else if (nb) more('map', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
-      more('journal', 'יוֹמָן', 'יוֹמַן הַמַּסָּע', 'b2 jrnb', function () { journal(0); }); // the travel journal: one of the smaller choices
+      more('trophy', 'יוֹמָן', 'יוֹמַן הַמַּסָּע', 'b2 jrnb', function () { journal(0); }); jBadge(row.lastChild); // the travel journal: one of the smaller choices
       if (state.lastGift !== L.todayStr()) more('gift', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
       if (state.owned.length) { // the cart; with a savings goal the button carries its meter, and one tap opens the cart on that item
         var gl = L.goalOf(state);
@@ -5602,7 +5637,7 @@ var TrollModels = (function () {
       }
       if (state.owned.length && (raceDbg || (rtOn() && isPub()))) {
         more('flag', 'מֵרוֹץ', 'מֵרוֹץ', 'b2 raceb', function () { pool(); });
-        more('trophy', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
+        more('ranking', 'דֵּרוּג', 'דֵּרוּג', 'b2 boardb', function () { board(); });
         pushBoard(true);
       }
       row.classList.add('n' + row.children.length);
@@ -6171,15 +6206,46 @@ var TrollModels = (function () {
   function tileIcon(t) { var list = L.TOPICS.filter(function (x) { return x.g === t.g && (x.sub || 'math') === (t.sub || 'math'); }); return worldIcons(list)[list.indexOf(t)] || (TOY ? ART.spare[0] : WORLD_BLD[0]); }
   function houseIco(t, lv) { var sp = L.span(t, state.grade) || { lo: 1, hi: t.levels.length }; return stopIco(lv - sp.lo, sp.hi - sp.lo + 1); } // the icon this house has on the map of its topic
   function dayEl(d) { var m = /^\d{4}-(\d\d)-(\d\d)$/.exec(d || ''); return m ? h('span', { class: 'jd', dir: 'ltr', text: +m[2] + '.' + +m[1] }) : null; }
-  function journal(pg, tile) {
+  // Task "flowfix-end": what is NEW in the journal. What exists is read from the saved progress (a stamp for a complete house, a postcard for a crossed
+  // bridge); what this device has already shown is kept apart, in a key of its own for every player (not saved in the state, not synced). A player
+  // without that key has seen everything there is: the children who already play get no flood of badges.
+  var JSKEY = 'trollVillage.jseen.', JSEEN = {};
+  function jKeys() { var out = []; L.journal(state).pages.forEach(function (p) { p.stamps.forEach(function (s) { out.push('h:' + p.t + ':' + s.l); }); p.cards.forEach(function (c) { out.push('b:' + p.t + ':' + c.g); }); }); return out; }
+  function jPut(id, s) { JSEEN[id] = s; lsSet(JSKEY + id, JSON.stringify(Object.keys(s))); }
+  function jSeen() {
+    var id = profiles.cur || '', s = JSEEN[id], raw = null;
+    if (s) return s;
+    try { raw = JSON.parse(lsGet(JSKEY + id) || 'null'); } catch (e) {}
+    s = {};
+    if (Array.isArray(raw)) { raw.forEach(function (k) { s[k] = 1; }); JSEEN[id] = s; } else { jKeys().forEach(function (k) { s[k] = 1; }); jPut(id, s); }
+    return s;
+  }
+  function jNew() { var s = jSeen(); return jKeys().filter(function (k) { return !s[k]; }); } // not looked at yet, in the order of the journal
+  function jSeeAll() { var s = jSeen(), n = 0; jKeys().forEach(function (k) { if (!s[k]) { s[k] = 1; n++; } }); if (n) jPut(profiles.cur || '', s); }
+  function jBefore() { var o = {}; jSeen(); jKeys().forEach(function (k) { o[k] = 1; }); return o; } // before a prize is recorded: what the journal holds now
+  function jEarned(before) { return jKeys().filter(function (k) { return !before[k]; }); } // after it: what has just entered the journal
+  function jPic(key) { // the picture of a stamp (the house with its flag) or of a postcard (the troll that was rescued)
+    var m = key.split(':'), t = topicOf(m[1]);
+    if (m[0] === 'b') return h('span', { class: 'npic ntroll', 'aria-hidden': 'true', html: A.trollSVG(resolve(L.trollFromId(L.heroId(m[1], +m[2])))) });
+    return h('span', { class: 'npic nstamp', 'aria-hidden': 'true' }, mapImg(houseIco(t, +m[2])), mapFlag());
+  }
+  function jBadge(b) { // the button of the journal in the camp: how many things were not looked at yet
+    var n = jNew().length; if (!n || !b) return;
+    b.classList.add('hasnew'); b.appendChild(h('span', { class: 'jbadge', dir: 'ltr', text: n > 9 ? '9+' : String(n) }));
+    b.setAttribute('aria-label', b.getAttribute('aria-label') + ': ' + (n === 1 ? 'דָּבָר חָדָשׁ אֶחָד' : n + ' דְּבָרִים חֲדָשִׁים'));
+  }
+  // focus: the key of the item to open on (default: the newest thing that was not looked at yet)
+  function journal(pg, tile, focus) {
     setMusic('home');
+    var hot = {}, hotList = jNew(), turned = false; hotList.forEach(function (k) { hot[k] = 1; }); if (focus) hot[focus] = 1; else focus = hotList[hotList.length - 1] || '';
+    jSeeAll(); // looked at: the badge of the camp is cleared; the ring stays on the new items for this visit
     var J = L.journal(state), nx = L.nextStep(state), isNew = !J.journey.houses && !J.journey.bridges, fresh = !state.rounds && !state.stars && !state.last;
     show(function (el) {
       here = 'journal';
       el.classList.add('rmap', 'jrn');
       el.appendChild(topBar(true, function () { home(); }));
       var list = [], at = 0, cols = 3, rows = 1, sized = '';
-      function arrow(txt, label, d) { return h('button', { class: 'parr', text: txt, 'aria-label': label, on: { click: function () { sfx.tap(); at = Math.max(0, Math.min(list.length - 1, at + d)); draw(); } } }); }
+      function arrow(txt, label, d) { return h('button', { class: 'parr', text: txt, 'aria-label': label, on: { click: function () { sfx.tap(); at = Math.max(0, Math.min(list.length - 1, at + d)); turned = true; draw(); } } }); }
       var prev = arrow('▶', 'הָעַמּוּד הַקּוֹדֵם', -1), next = arrow('◀', 'הָעַמּוּד הַבָּא', 1), num = h('small', { class: 'jnum', dir: 'ltr' });
       var body = h('div', { class: 'jpage' });
       el.appendChild(h('div', { class: 'jhead' }, prev, h('div', { class: 'jtitle' }, h('h2', { class: 'h2', text: 'יוֹמַן הַמַּסָּע' }), num), next));
@@ -6197,9 +6263,9 @@ var TrollModels = (function () {
         list = [{ first: true }];
         if (!isNew) J.pages.forEach(function (p) {
           var t = topicOf(p.t), cells = [], page = null, used = 0;
-          p.stamps.forEach(function (s) { cells.push({ stamp: s }); });
+          p.stamps.forEach(function (s) { cells.push({ stamp: s, key: 'h:' + p.t + ':' + s.l }); });
           if (p.next) cells.push({ next: p.next });
-          p.cards.forEach(function (c) { cells.push({ card: c }); });
+          p.cards.forEach(function (c) { cells.push({ card: c, key: 'b:' + p.t + ':' + c.g }); });
           cells.forEach(function (c) {
             var w = c.card ? 2 : 1;
             if (page && w === 2 && used % cols === cols - 1) used++; // a postcard is not cut by the end of a row
@@ -6239,7 +6305,7 @@ var TrollModels = (function () {
         p.cells.forEach(function (c) {
           if (c.stamp) {
             var s = c.stamp;
-            grid.appendChild(h('div', { class: 'stp' }, h('span', { class: 'sdisc', style: '--a:' + ((s.l * 37) % 11 - 5) + 'deg' }, mapImg(houseIco(t, s.l)), mapFlag()),
+            grid.appendChild(h('div', { class: 'stp' + (hot[c.key] ? ' jhot' : ''), 'data-key': c.key }, h('span', { class: 'sdisc', style: '--a:' + ((s.l * 37) % 11 - 5) + 'deg' }, mapImg(houseIco(t, s.l)), mapFlag()),
               h('span', { class: 'sname', text: t.levels[s.l - 1].name }), h('span', { class: 'sst', dir: 'ltr' }, icon('star', 's'), h('span', { class: 'num', text: s.stars + '/9' })), dayEl(s.d)));
           } else if (c.next) { // the one open slot: the next step, started by a tap
             grid.appendChild(h('button', { class: 'stp snext', 'data-next': t.id, 'aria-label': c.next.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : 'הַחוֹתֶמֶת הַבָּאָה: ' + t.levels[c.next.level - 1].name, on: { click: function () { sfx.pop(); goStep(nx); } } },
@@ -6247,7 +6313,7 @@ var TrollModels = (function () {
               h('span', { class: 'sname' }, h('span', { text: c.next.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : 'הַחוֹתֶמֶת הַבָּאָה' }), icon('next', 's'))));
           } else {
             var hero = resolve(L.trollFromId(c.card.hero));
-            grid.appendChild(h('div', { class: 'jcard' }, h('span', { class: 'phero', 'aria-hidden': 'true', html: A.trollSVG(hero) }),
+            grid.appendChild(h('div', { class: 'jcard' + (hot[c.key] ? ' jhot' : ''), 'data-key': c.key }, h('span', { class: 'phero', 'aria-hidden': 'true', html: A.trollSVG(hero) }),
               h('span', { class: 'ptxt' }, jart('bridge'), h('b', { text: 'חָצִינוּ אֶת הַגֶּשֶׁר: ' + hero.name }), dayEl(c.card.d))));
           }
         });
@@ -6262,8 +6328,10 @@ var TrollModels = (function () {
         body.appendChild(p.first ? (isNew ? firstNew() : firstPage()) : regionPage(p));
         el.setAttribute('data-page', at + '/' + list.length);
       }
+      function seek() { for (var n = 0; n < list.length; n++) if (list[n].cells && list[n].cells.some(function (c) { return c.key === focus; })) return n; return -1; } // the page that holds the new item
       build();
       if (tile) for (var i = 0; i < list.length; i++) if (list[i].t && list[i].t.id === tile) { at = i; break; }
+      if (!tile && focus && seek() >= 0) at = seek();
       at = pg === 'last' ? list.length - 1 : Math.max(0, Math.min(list.length - 1, at + (+pg || 0)));
       draw();
       sized = body.clientWidth + 'x' + body.clientHeight;
@@ -6272,6 +6340,7 @@ var TrollModels = (function () {
         var sz = body.clientWidth + 'x' + body.clientHeight; if (sz === sized) return;
         sized = sz; var was = list[at] && list[at].t; build();
         at = Math.min(at, list.length - 1); if (was) for (var k = 0; k < list.length; k++) if (list[k].t === was) { at = k; break; }
+        if (!turned && !tile && !pg && focus && seek() >= 0) at = seek();
         draw();
       }); ro.observe(body); }
     });
@@ -6748,7 +6817,19 @@ var TrollModels = (function () {
     P.cart = function () {
       if (!gl || !gl.ready || (state.fx && state.fx.told === gl.id)) return;
       state.fx.told = gl.id; save(true);
-      P.btns.appendChild(h('button', { class: 'btn cartb offer', 'aria-label': 'לָעֲגָלָה: ' + gl.item.name, on: { click: function () { sfx.tap(); goCart(gl); } } }, '🛒 לָעֲגָלָה'));
+      P.btns.appendChild(h('button', { class: 'btn cartb offer', 'aria-label': 'לָעֲגָלָה: ' + gl.item.name, on: { click: function () { sfx.tap(); goCart(gl); } } }, icon('cart', 'm'), 'לָעֲגָלָה'));
+    };
+    // task "flowfix-end": what is new, as two picture buttons right after the main button. The new troll with a t-shirt opens the dressing room on
+    // THAT troll; the trophy with the new stamp or postcard opens the journal on the page of that item, with a ring around it. Both can be ignored.
+    P.news = function (troll, earned) {
+      var main = P.btns.querySelector('.nxt'), ref = main ? main.nextSibling : P.btns.firstChild, n = earned ? earned.length : 0;
+      if (troll) P.btns.insertBefore(h('button', { class: 'btn newb dressn', 'aria-label': 'לְהַלְבִּישׁ אֶת ' + troll.name, on: { click: function () { sfx.tap(); dress({ id: troll.id }); } } },
+        h('span', { class: 'npic ntroll', 'aria-hidden': 'true', html: A.trollSVG(specOf(troll.id)) }), icon('shirt', 'm'), h('span', { class: 'nl', text: 'לְהַלְבִּישׁ' })), ref);
+      if (n) { var key = earned[n - 1];
+        P.btns.insertBefore(h('button', { class: 'btn newb achb' + (n > 1 ? ' many' : ''), 'data-key': key, 'aria-label': n > 1 ? n + ' דְּבָרִים חֲדָשִׁים בַּיּוֹמָן' : key.charAt(0) === 'b' ? 'גְּלוּיָה חֲדָשָׁה בַּיּוֹמָן' : 'חוֹתֶמֶת חֲדָשָׁה בַּיּוֹמָן', on: { click: function () { sfx.tap(); journal(0, null, key); } } },
+          icon('trophy', 'm'), jPic(key), n > 1 ? h('b', { class: 'nn', dir: 'ltr', text: String(n) }) : null, h('span', { class: 'nl', text: 'לַיּוֹמָן' })), ref); }
+      if (troll || n) el.classList.add('hasnews', 'x' + P.btns.querySelectorAll('.btn:not(.nxt):not(.navb):not(.newb)').length); // x1, x2: how many other small buttons share the row on a short phone
+      tv.ach = n; tv.dressn = !!troll;
     };
     P.at = function (ms, f) { later(function () { if (!fin && cur === el) f(); }, ms); }; // a step of the show: dropped when the show was skipped
     P.cap = function (text, cls, d) { var b = h('div', { class: 'banner ea ' + (cls || ''), style: '--d:' + d + 's', text: text }); P.caps.appendChild(b); return b; };
@@ -6825,8 +6906,9 @@ var TrollModels = (function () {
         if (ups.length) later(function () { sfx.levelup(); }, 600);
         if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
         P.btns.appendChild(ibtn('repeat', 'עוֹד סִבּוּב', nx ? '' : 'nxt', function () { startRound(round.topic); }));
-        P.btns.appendChild(btn('לַמַּפָּה', '', function () { topics(); }));
-        P.btns.appendChild(btn('🛒 לָעֲגָלָה', 'cartb', function () { var g = L.goalOf(state); if (g && g.ready) goCart(g); else dress(null, 4); }));
+        P.btns.appendChild(ibtn('map', 'לַמַּפָּה', 'navb', function () { topics(); }));
+        P.btns.appendChild(ibtn('cart', 'לָעֲגָלָה', 'cartb', function () { var g = L.goalOf(state); if (g && g.ready) goCart(g); else dress(null, 4); }));
+        P.news(troll, null);
         tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
       });
       P.caps.appendChild(eg.msg); P.frame.appendChild(eg.slot); P.frame.parentNode.classList.add('small');
@@ -6838,7 +6920,7 @@ var TrollModels = (function () {
   // ---------- end of a stage, end of a milestone mission ----------
   function endStage(round, topicId, cfg) {
     var t = topicOf(topicId), first = state.rounds === 0; // the very first finished stage also hatches an egg
-    var f0 = L.friend(state).level, was = L.progOf(state, topicId, cfg.level)[cfg.stage]; // before this stage is recorded
+    var f0 = L.friend(state).level, was = L.progOf(state, topicId, cfg.level)[cfg.stage], jb0 = jBefore(); // before this stage is recorded
     var r = L.finishStage(state, topicId, cfg.level, cfg.stage, round.results), rw = L.stageReward(r.stars);
     state = r.state; state.rounds++; state.coins += rw.coins;
     state = L.updateStreak(state, L.todayStr());
@@ -6846,7 +6928,7 @@ var TrollModels = (function () {
     if (troll) { state.owned.push(troll.id); if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; }
     if (r.clearingDone) state = L.memAdd(state, 'h', topicId, cfg.level, L.todayStr());
     save(); tv.round = null;
-    var bossG = readyBoss(topicId);
+    var bossG = readyBoss(topicId), earned = jEarned(jb0); // earned: what has just entered the journal
     // the friendship level rose with this house; or: this stage had a miss in every earlier attempt (1 or 2 stars) and none now
     var f1 = L.friend(state).level, clean = (was === 1 || was === 2) && r.stars === 3;
     var nx = t.g === state.grade ? L.nextStep(state) : null; // the same step the home button offers; a tile of the challenge map keeps its own order
@@ -6900,8 +6982,8 @@ var TrollModels = (function () {
         else if (cfg.stage < 2 && L.stageOpen(state, topicId, cfg.level, cfg.stage + 1)) P.btns.appendChild(btn('הַשָּׁלָב הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: cfg.level, stage: cfg.stage + 1 }); }));
         else if (r.opened) P.btns.appendChild(btn('לַבַּיִת הַבָּא ◀', 'nxt', function () { startRound(topicId, { level: r.opened, stage: 0 }); }));
         if (r.stars < 3) P.btns.appendChild(ibtn('repeat', 'שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, cfg); }));
-        P.btns.appendChild(btn('לַמַּפָּה', P.btns.firstChild ? '' : 'nxt', back));
-        P.cart();
+        P.btns.appendChild(ibtn('map', 'לַמַּפָּה', P.btns.firstChild ? 'navb' : 'nxt', back));
+        P.cart(); P.news(troll, earned);
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll;
       }
       var relay = null; // the buttons that come after the egg take room from the picture: the trail is laid out again at once
@@ -6919,7 +7001,7 @@ var TrollModels = (function () {
     });
   }
   function endBoss(round, topicId, g) {
-    var hero = resolve(L.trollFromId(L.heroId(topicId, g))), t = topicOf(topicId), f0 = L.friend(state).level;
+    var hero = resolve(L.trollFromId(L.heroId(topicId, g))), t = topicOf(topicId), f0 = L.friend(state).level, jb0 = jBefore(), got = state.owned.indexOf(hero.id) < 0;
     state.boss[topicId][g] = true;
     if (state.owned.indexOf(hero.id) < 0) state.owned.push(hero.id);
     if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0];
@@ -6927,7 +7009,7 @@ var TrollModels = (function () {
     state = L.updateStreak(state, L.todayStr());
     state = L.memAdd(state, 'b', topicId, g, L.todayStr());
     save(); tv.round = null;
-    var f1 = L.friend(state).level;
+    var f1 = L.friend(state).level, earned = jEarned(jb0);
     var nx = t.g === state.grade ? L.nextStep(state) : null;
     show(function (el) {
       var back = function () { region(topicId); };
@@ -6954,9 +7036,9 @@ var TrollModels = (function () {
       P.cap(CHEST.gold + ': 30+ 🪙', 'chest gold', END_T.chest);
       P.cap('הִצַּלְתְּ אֶת ' + hero.name + '! עַכְשָׁו ' + hero.name + ' בַּמַּחֲנֶה שֶׁלָּךְ', '', D + 0.2);
       if (nx) P.btns.appendChild(btn(stepText(nx), 'nxt', function () { goStep(nx); }));
-      P.btns.appendChild(btn('לַמַּחֲנֶה שֶׁלִּי', nx ? '' : 'nxt', home));
-      P.btns.appendChild(btn('לַמַּפָּה', '', back));
-      P.cart();
+      P.btns.appendChild(ibtn('home', 'לַמַּחֲנֶה שֶׁלִּי', nx ? 'navb' : 'nxt', home));
+      P.btns.appendChild(ibtn('map', 'לַמַּפָּה', 'navb', back));
+      P.cart(); P.news(got ? hero : null, earned);
       var feast = false;
       function party() { if (feast || cur !== el) return; feast = true; var c = center(P.frame); burst(c[0], c[1], 20); confetti(120); sfx.win(); fireworks(6); }
       P.at((D + 0.2) * 1000, party);
@@ -7165,11 +7247,14 @@ var TrollModels = (function () {
       h('b', { class: gl.ready ? 'gtxt' : 'gnum', text: gl.ready ? (long ? 'יֵשׁ מַסְפִּיק מַטְבְּעוֹת!' : 'מוּכָן!') : gl.have + '/' + gl.price }), h('i', { class: 'gbar' }, h('i', { style: 'width:' + Math.round(gl.part * 100) + '%' })));
   }
   function goCart(gl) { if (gl) dress(null, tabOf(gl.item), gl.id); else dress(); }
-  // idx: which troll (default: the companion); tab: the category; sel: the id of an item to open on; pg: 'last' opens the last page
+  // idx: which troll: nothing = the companion, a number = its place in state.owned, { id: } = that troll (task "flowfix-end": a troll that was just
+  // received is dressed at once); tab: the category; sel: the id of an item to open on; pg: 'last' opens the last page.
+  // The trolls are shown the companion first and then newest first, so a new troll is on the first page of the thumbnails.
   function dress(idx, tab, sel, pg) {
-    var ids = state.owned;
-    if (!ids.length) { home(); return; }
-    idx = ((idx == null ? Math.max(0, ids.indexOf(buddyId())) : idx) + ids.length) % ids.length; tab = tab > 0 && tab < TABS.length ? tab : 0;
+    var own = state.owned;
+    if (!own.length) { home(); return; }
+    var bud0 = buddyId(), ids = own.filter(function (x) { return x === bud0; }).concat(own.filter(function (x) { return x !== bud0; }).reverse()), open = idx && typeof idx === 'object' ? idx.id : idx == null ? buddyId() : own[((idx % own.length) + own.length) % own.length];
+    idx = Math.max(0, ids.indexOf(open)); tab = tab > 0 && tab < TABS.length ? tab : 0;
     setMusic('shop');
     var id = ids[idx], base = L.trollFromId(id), pick = null, page = 0, per = 0, cols = 1, tpage = -1, tper = 0; // pick: the card that was tapped
     show(function (el) {
@@ -8216,6 +8301,9 @@ var TrollModels = (function () {
       hfill(L.FRIEND[hN - 1] - hoff, ht, false);
     }
   }
+  // task "flowfix-end", layout checks: &jnew=N (the first N things of the journal were not looked at yet), &jnew=b (the first postcard), s=dress&new=1 (opens on the newest troll)
+  var hjn = sandbox ? (/[#&]jnew=(\w+)/.exec(hash) || [])[1] : '';
+  if (hjn) { var hjs = jSeen(), hjk = jKeys(); (hjn === 'b' ? hjk.filter(function (k) { return k.charAt(0) === 'b'; }).slice(0, 1) : hjk.slice(0, +hjn || 1)).forEach(function (k) { delete hjs[k]; }); }
   if (/auto/.test(hash)) { // self-test: plays one round through the real click handlers
     window.onerror = function (m) { document.title = 'ERR ' + m; };
     if (/tap=1/.test(hash)) { // one tap on the big button of the home screen must put an exercise on the screen
@@ -8257,7 +8345,7 @@ var TrollModels = (function () {
     if (scr === 'hint') { tv.born = 0; var q0 = tv.round.current(), all = cur.querySelectorAll('[data-v]'); for (var n = 0; n < all.length; n++) if (all[n].getAttribute('data-v') !== String(q0.answer)) { all[n].click(); break; }
       if (!all.length && tv.flub) tv.flub(); }
   } else if (scr === 'topics') topics(/&ch/.test(hash));
-  else if (scr === 'dress') dress(/[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, +((/tab=(\d)/.exec(hash) || [])[1] || 3), (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
+  else if (scr === 'dress') dress(/[#&]new=1/.test(hash) ? { id: state.owned[state.owned.length - 1] } : /[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, +((/tab=(\d)/.exec(hash) || [])[1] || 3), (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
   else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
   else if (scr === 'journal') journal((/[#&]pg=(\w+)/.exec(hash) || [])[1], /[#&]t=/.test(hash) ? ht : null);
@@ -8363,6 +8451,11 @@ var TrollModels = (function () {
       [].forEach.call(jp.querySelectorAll('.jrow span:last-child,.jrh b'), function (x) { if (x.scrollWidth > x.clientWidth + 1) no('text'); });
       [].forEach.call(cur.querySelectorAll('.parr:not(.gone),.snext,.jgo'), function (b) { var r = b.getBoundingClientRect(), min = b.classList.contains('parr') ? 47.5 : 59.5; if (r.width < 47.5 || r.height < (b.classList.contains('jgo') ? 47.5 : min) || (!b.classList.contains('parr') && r.bottom > window.innerHeight * 0.9 + 1)) no('target'); });
     }
+    // task "flowfix-end": the picture buttons of the end screens are whole touch targets with their picture inside; the demo states really show what they are for
+    [].forEach.call(cur.querySelectorAll('.ebtns .newb'), function (b) { var r = b.getBoundingClientRect(), p = b.querySelector('.npic').getBoundingClientRect(); if (r.width < 47.5 || r.height < 47.5 || p.width < 28 || p.height < 28 || p.left < r.left - 1 || p.right > r.right + 1 || p.top < r.top - 1 || p.bottom > r.bottom + 1 || b.scrollWidth > b.clientWidth + 1 || r.bottom > window.innerHeight + 1) no('newb'); });
+    [].forEach.call(cur.querySelectorAll('.jbadge'), function (x) { var r = x.getBoundingClientRect(), q = x.parentNode.getBoundingClientRect(); if (r.width < 14 || r.left < q.left - 1 || r.right > q.right + 1 || r.top < q.top - 1) no('badge'); });
+    if (sandbox && hjn && ((here === 'journal' && !cur.querySelector('.jpage .jhot')) || (cur.classList.contains('camp') && !cur.querySelector('.jrnb .jbadge')))) no('nonew');
+    if (sandbox && /[#&]news=2/.test(hash) && cur.classList.contains('endm') && (!cur.querySelector('.ebtns .dressn') || !cur.querySelector('.ebtns .achb'))) no('nonews');
     if (/pad=1/.test(hash)) padCheck(no); // task "pad": the calculation sheet
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
