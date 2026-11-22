@@ -2268,6 +2268,125 @@ body.toy .ccode{background:var(--surface-2);border-radius:var(--r-s);color:var(-
 @media (min-width:700px) and (min-height:521px){.bdemo .bbig .hbadge{transform:scale(1.8)}}
 @media (max-height:520px){.bdemo .bgrid{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}.bdemo .bcell{min-height:60px;padding:6px 2px;gap:6px}.bdemo .bbig{height:34px}.bdemo .bbig .hbadge{transform:scale(1.25)}}
 /* ROUNDS-END */
+/* VILLAGE-BEGIN ===== task "village": the screen "my troll village" (.vil) with the card of a troll (.vlcard), its door on the camp (.vilb), and the
+   level-up on the end screens (.egrow, .growb). The island scrolls with the parts of the maps (.mwrap .mscroll .marr); nothing in the crowd moves. */
+.gstars{display:inline-flex;align-items:center;justify-content:center;gap:1px;direction:rtl;flex:0 0 auto}
+.gstars .ic{color:var(--c-star)}
+.gstars .ic.e{color:#d3cce6}
+/* the screen */
+.vil>.h2{flex:0 0 auto;margin:0;font-size:var(--t-h2);line-height:var(--lh-h2);white-space:nowrap}
+@media (min-width:900px){.vil>.h2{position:absolute;top:clamp(8px,2vmin,20px);left:0;right:0;margin:0 auto;width:max-content;height:48px;line-height:48px;font-size:28px;pointer-events:none}}
+@media (max-width:899px) and (max-height:520px){.vil>.h2{display:none}}
+.vil .mwrap{max-width:1240px}
+.vil .mscroll{display:flex;flex-direction:column;justify-content:center;overflow-x:clip}
+.vil .mwrap.scrl>.mscroll{display:block}
+.vil .mwrap.scrl .vmap{overflow-x:clip}
+.vil .mscroll>.vmap{flex:none;width:auto;height:auto;max-width:none;display:flex;flex-direction:column;justify-content:center;gap:var(--sp3);margin:0 var(--sp1);padding:var(--sp4) var(--sp2) 44px;--u:48px;--n:1}
+.vil.vsome .vmap,.vil.vmany .vmap{min-height:calc(100% - 8px)}
+.vil.vfew .vmap{gap:var(--sp4);padding-top:var(--sp5);padding-bottom:56px}
+body.toy .vil .vmap::before{inset:0 0 16px;border-radius:56px}
+.vil .mwrap.scrl.side .vmap{margin-left:60px}
+@media (min-width:900px){.vil .mscroll>.vmap{gap:var(--sp4);padding:var(--sp5) var(--sp6) 64px;margin:0 var(--sp3)}body.toy .vil .vmap::before{inset:0 0 30px;border-radius:120px}.vil.vfew .mscroll>.vmap{width:820px;max-width:100%;align-self:center}}
+.vrow{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:var(--sp3) var(--sp2)}
+@media (min-width:900px){.vrow{gap:var(--sp4)}}
+.vrow.vbk{gap:var(--sp1);margin-bottom:calc(-1*var(--sp2));flex-wrap:nowrap}
+.vil .vdeco{display:block;flex:0 0 auto;height:var(--h);width:auto;pointer-events:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+.vrow.vbk .vdeco{--h:calc(var(--u)*1.25)}.vrow.vbk .vdeco.vtree{--h:calc(var(--u)*.85)}
+.vrow .vdeco.vin{--h:calc(var(--u)*.95);margin:0 var(--sp1)}
+/* one troll: a button. --u: the width of a troll of level 1, --f: the growth by level, --n: the bonus when there are only a few trolls (set by the code) */
+.vtr{--f:1;--w:calc(var(--u)*var(--f)*var(--n));position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:48px;min-height:48px;padding:0 2px;background:none;border-radius:var(--r-m);color:var(--ink);transition:transform var(--d-fast) var(--ease)}
+.vtr:active{transform:scale(.95)}
+.vtr.l2{--f:1.16}.vtr.l3{--f:1.34}.vtr.l4{--f:1.54}.vtr.l5{--f:1.78}
+.vtr .vta{position:relative;display:block;width:var(--w);isolation:isolate}
+.vtr .vta .troll{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+.vtr .troll *{animation:none!important}
+/* a big crowd scrolls: no shadow filters on its trolls and houses */
+.vil.vmany .vtr .vta .troll,.vil.vmany .vdeco{filter:none}
+/* level 3 and up: a still glow and sparkles; level 5: a crown of rays. Nothing here moves, and none of it takes a tap from a neighbour. */
+.vtr.vglow .vta::before,.vbig.vglow .vart::before{content:"";position:absolute;z-index:-1;inset:-10% -20% -4%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,250,200,.9),rgba(255,228,110,.5) 58%,rgba(255,228,110,0))}
+.vtr.vrays .vta::after,.vbig.vrays .vart::after{content:"";position:absolute;z-index:-2;inset:-20% -32% -10%;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from -6deg,rgba(255,255,255,.9) 0 12deg,rgba(255,255,255,0) 12deg 30deg);
+  -webkit-mask-image:radial-gradient(closest-side,#000 40%,rgba(0,0,0,.7) 62%,transparent 100%);mask-image:radial-gradient(closest-side,#000 40%,rgba(0,0,0,.7) 62%,transparent 100%)}
+.vil svg.ic.vspk,.vlcard svg.ic.vspk{position:absolute;color:#fff;filter:drop-shadow(0 1px 0 #e79b00) drop-shadow(0 0 3px rgba(255,200,0,.9));width:calc(var(--w)*.26);height:calc(var(--w)*.26)}
+.vil.vmany svg.ic.vspk{filter:drop-shadow(0 1px 0 #e79b00)}
+.vil svg.ic.vspk.s1,.vlcard svg.ic.vspk.s1{top:-4%;inset-inline-start:-16%}
+.vil svg.ic.vspk.s2,.vlcard svg.ic.vspk.s2{top:26%;inset-inline-end:-20%;width:calc(var(--w)*.2);height:calc(var(--w)*.2)}
+.vil svg.ic.vspk.s3,.vlcard svg.ic.vspk.s3{top:-12%;inset-inline-end:-6%;width:calc(var(--w)*.16);height:calc(var(--w)*.16)}
+.vtr .gstars{height:20px;padding:0 5px;background:var(--surface);border-radius:var(--r-full);box-shadow:0 2px 0 rgba(46,35,80,.18)}
+.vtr .gstars .ic{width:12px;height:12px}
+@media (min-width:900px){.vtr .gstars{height:22px;padding:0 6px}.vtr .gstars .ic{width:14px;height:14px}}
+.vmine{position:absolute;top:-6px;inset-inline-start:-4px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:var(--surface);box-shadow:0 2px 0 var(--edge),0 0 0 3px var(--heart);color:var(--heart);z-index:2;pointer-events:none}
+.vmine .ic{width:16px;height:16px}
+/* the card of one troll */
+.ovl.vovl{padding:var(--sp3)}
+.ovl.vovl.vstill,.ovl .card.vlcard.vstill{animation:none}
+.ovl .card.vlcard{position:relative;width:min(100%,380px);max-width:none;max-height:100%;overflow:visible;display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp3);justify-items:center;padding:var(--sp3) var(--sp4) var(--sp4);background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e3);animation:vpop var(--d-base) var(--spring)}
+@keyframes vpop{from{transform:scale(.92);opacity:0}}
+.vx{position:absolute;top:var(--sp2);inset-inline-end:var(--sp2);width:48px;height:48px;padding:0;display:grid;place-items:center;border-radius:50%;background:var(--surface-2);color:var(--ink);z-index:2}
+.vx:active{transform:scale(.94)}
+.vstage{position:relative;width:100%;display:flex;align-items:center;justify-content:space-around;padding-top:var(--sp4)}
+.vnav{position:relative;z-index:1;flex:none;width:48px;height:56px;padding:0;display:grid;place-items:center;border-radius:var(--r-m);background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+.vnav:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+.vnav .ic{width:26px;height:26px}
+.vbig{position:relative;--w:132px;width:var(--w);margin:var(--sp3) 0 0;isolation:isolate}
+.vbig::before{content:"";position:absolute;z-index:-3;left:50%;bottom:-6%;width:150%;height:26%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,#8fe05a,#5fcb49 70%,#49b943);box-shadow:0 4px 0 #f6d27a}
+.vart{position:relative;isolation:isolate}
+.vart .troll{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 4px 0 rgba(0,0,0,.1))}
+/* the one troll that may move: it breathes and blinks in its card */
+.vart .troll.happy:not([data-act]) .tb{animation:tBreath 3.8s ease-in-out infinite}
+.vart .troll.happy .eyes{animation:blink 4.6s infinite}
+.vbig.vglow .vart::before{inset:-10% -24% 0;background:radial-gradient(closest-side,rgba(255,244,170,1),rgba(255,214,64,.55) 58%,rgba(255,214,64,0))}
+.vbig.vrays .vart::after{inset:-26% -46% -12%;background:repeating-conic-gradient(from -6deg,rgba(255,200,61,.75) 0 12deg,rgba(255,200,61,0) 12deg 30deg)}
+.vlcard svg.ic.vspk{color:var(--accent);filter:drop-shadow(0 1px 0 var(--accent-edge))}
+.vinfo{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp3);justify-items:center;width:100%;min-width:0}
+.vname{max-width:100%;margin:var(--sp1) 0 0;font-size:var(--t-h2);line-height:var(--lh-h2);font-weight:var(--w-black);text-align:center;white-space:nowrap;overflow:hidden}
+.vlvl{gap:var(--sp1)}
+.vlvl .ic{width:36px;height:36px;filter:drop-shadow(0 2px 0 #c98600)}
+.vlvl .ic.e{color:#d9d3ea;filter:none}
+/* the rounds on the way to the next star: go, the dots, the star */
+.vway{display:flex;align-items:center;gap:var(--sp2);min-height:48px;padding:0 var(--sp3);background:var(--surface-2);border-radius:var(--r-full);direction:rtl}
+.vgo{flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--primary);color:#fff}
+.vdot{flex:none;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px rgba(46,35,80,.45)}
+.vdot.on{display:grid;place-items:center;background:var(--success);box-shadow:none;color:#fff}
+.vdot.on .ic{width:10px;height:10px}
+.vway .vto{flex:none;color:var(--ink-2)}
+.vway .vgoal{flex:none;width:30px;height:30px;color:var(--line);stroke:var(--c-star);stroke-width:14;paint-order:stroke}
+.vway.max{padding:0 var(--sp4);background:linear-gradient(#fff6cf,#ffe39a);color:var(--accent-edge)}
+.vway.max .ic{width:28px;height:28px}
+.vacts{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp3);width:100%}
+.vlcard .btn{display:flex;align-items:center;justify-content:center;gap:var(--sp2);width:100%;min-height:60px;padding:0 var(--sp4);font-size:var(--t-lead);line-height:var(--lh-lead);white-space:nowrap}
+.vlcard .btn .ic{width:28px;height:28px}
+.vlcard .btn.b2{min-height:56px}
+.vmineb{display:flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:48px;border-radius:var(--r-full);background:#fde7ef;color:var(--primary);font-size:var(--t-body);font-weight:var(--w-bold)}
+.vmineb .ic{width:22px;height:22px}
+@media (max-height:680px){.vbig{--w:104px}.ovl .card.vlcard{gap:var(--sp2);padding-bottom:var(--sp3)}.vlcard .btn{min-height:56px}.vlcard .btn.b2{min-height:52px}.vlvl .ic{width:32px;height:32px}.vinfo,.vacts{gap:var(--sp2)}}
+/* a wide screen, and a phone on its side: the card lies on its side */
+@media (min-width:700px){
+  .ovl .card.vlcard{width:min(100%,720px);grid-template-columns:260px minmax(0,1fr);align-items:center;gap:var(--sp5);padding:var(--sp5) var(--sp6) var(--sp6)}
+  .vbig{--w:150px}
+}
+@media (min-width:700px) and (min-height:681px){.vlvl .ic{width:40px;height:40px}.vname{font-size:28px}}
+@media (min-width:700px) and (max-height:520px){.ovl .card.vlcard{padding:var(--sp3) var(--sp5) var(--sp4);gap:var(--sp4)}.vbig{--w:112px}.vstage{padding-top:0}}
+/* the camp: the door to the village at the end of the strip of the residents */
+.vilb{flex:0 0 auto;align-self:center;width:max(56px,var(--rs));min-height:48px;padding:2px 2px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:var(--surface);color:var(--ink);border-radius:var(--r-m);box-shadow:var(--e1);transition:transform var(--d-fast) var(--ease)}
+.vilb:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+.vilb img{display:block;height:calc(var(--rs)*.62);min-height:30px;width:auto}
+.vilb .cl{font-size:13px;line-height:16px;font-weight:var(--w-bold);white-space:nowrap}
+@media (min-width:640px) and (min-height:521px){.vilb{padding:var(--sp1) var(--sp1) var(--sp2)}.vilb .cl{font-size:var(--t-cap);line-height:var(--lh-cap)}}
+/* the camp: the level stars of the companion, a small pill under the heart of the friendship */
+.fheart .gchip{position:absolute;top:calc(100% + 4px);inset-inline-end:0;height:20px;padding:0 5px;background:var(--surface);border-radius:var(--r-full);box-shadow:0 2px 0 rgba(46,35,80,.18)}
+body.toy .fheart .gchip .ic{width:12px;height:12px}
+/* the end of a round that raised the level of the companion: the companion with its new stars among the captions, and the button to the village */
+body.toy .endm .ecaps .banner.egrow{display:inline-flex;align-items:center;gap:var(--sp1);padding:0 var(--sp2);background:#fff6cf;border-radius:var(--r-s);vertical-align:middle}
+.egrow .gtp{display:block;flex:0 0 auto;width:22px;height:28px}
+.egrow .gtp svg{display:block;width:100%;height:100%}
+.egrow .troll *{animation:none!important}
+.egrow .gstars .ic{width:16px;height:16px}
+body.toy .ebtns .btn.growb{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge),0 4px 10px rgba(46,35,80,.12)}
+body.toy .ebtns .btn.growb:active{box-shadow:0 1px 0 var(--accent-edge)}
+body.toy .ebtns .growb .ic{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ovl .card.vlcard,.ovl.vovl{animation:none}}
+/* VILLAGE-END */
 </style>
 </head>
 <body>
@@ -4662,6 +4781,7 @@ var TrollLogic = (function () {
       });
     }
     if (s.owned.indexOf(o.buddy) >= 0) s.buddy = o.buddy; // the companion troll must be one the player owns
+    var gw = growClean(o.grow, s.owned); if (gw) s.grow = gw; // optional (task "village", see growAdd): the points of the trolls
     var dr = obj(o.dress);
     Object.keys(dr).forEach(function (k) {
       var d = dr[k]; if (!d || typeof d !== 'object') return;
@@ -4674,6 +4794,39 @@ var TrollLogic = (function () {
       s.dress[k] = e;
     });
     return s;
+  }
+
+  // ---------- task "village": a troll grows with the rounds it went through as the companion (all pure) ----------
+  // ONE optional saved field: state.grow = { trollId: points }. A troll gets a point for every round that ended on an end screen
+  // (a house round, a bridge, a mixed round; not a race) while it was the companion. Missing = 0 for everybody. It is not in
+  // newState and state.v does not change; an older page ignores it and drops it at its next save, and then every troll is simply
+  // at level 1 again. It is written only by growAdd (which only adds) and cleaned by growClean (only trolls the player owns,
+  // whole points from 1 to GROW_MAX). Levels 1 to 5: the next level costs GROW_STEP more points (3, 4, 5, 6: 18 rounds to the top).
+  // Nothing else reads it: not the exercises, not the coins, not what is open.
+  var GROW_STEP = [3, 4, 5, 6], GROW_MAX = 18;
+  function growPts(x) { return typeof x === 'number' && isFinite(x) && x >= 1 ? Math.min(GROW_MAX, Math.floor(x)) : 0; }
+  function growOf(state, id) { var g = state && state.grow; return g && typeof g === 'object' && !Array.isArray(g) ? growPts(g[id]) : 0; }
+  // level: 1..5 · done / need: the points gathered towards the next level and how many it costs (0 / 0 at level 5)
+  function growLevel(points) {
+    var p = growPts(points), all = p, lv = 1;
+    while (lv < 5 && p >= GROW_STEP[lv - 1]) { p -= GROW_STEP[lv - 1]; lv++; }
+    return { level: lv, points: all, done: lv < 5 ? p : 0, need: lv < 5 ? GROW_STEP[lv - 1] : 0 };
+  }
+  function growClean(raw, owned) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(owned)) return null;
+    var out = {}, any = false;
+    owned.forEach(function (id) { var p = growPts(raw[id]); if (p) { out[id] = p; any = true; } });
+    return any ? out : null;
+  }
+  // one finished round with this troll as the companion. Returns { state (a new one), was, level, up: the level rose }
+  function growAdd(state, id) {
+    var was = growLevel(growOf(state, id)).level;
+    if (!state || !Array.isArray(state.owned) || state.owned.indexOf(id) < 0) return { state: state, was: was, level: was, up: false };
+    var s = {}, k, g = growClean(state.grow, state.owned) || {};
+    for (k in state) s[k] = state[k];
+    g[id] = Math.min(GROW_MAX, growOf(state, id) + 1); s.grow = g;
+    var now = growLevel(g[id]).level;
+    return { state: s, was: was, level: now, up: now > was };
   }
 
   // ---------- stage 6: the companion remembers, the friendship level and the travel journal (all pure) ----------
@@ -4926,6 +5079,7 @@ var TrollLogic = (function () {
     loadState: loadState, newState: newState, shuffle: shuffle, seeded: seeded, dayNum: dayNum,
     MEM_MAX: MEM_MAX, memEv: memEv, memAdd: memAdd, memFacts: memFacts, memTriggers: memTriggers, memLines: memLines, stageMemo: stageMemo, MEMO: MEMO,
     houseDone: houseDone, journey: journey, FRIEND: FRIEND, friend: friend, friendLines: friendLines, journal: journal,
+    GROW_STEP: GROW_STEP, GROW_MAX: GROW_MAX, growOf: growOf, growLevel: growLevel, growClean: growClean, growAdd: growAdd,
     BODIES: BODIES, HAIR_COLORS: HAIR_COLORS, HAIR_STYLES: HAIR_STYLES, ACCESSORIES: ACCESSORIES
   };
 })();
@@ -6519,6 +6673,7 @@ var TrollModels = (function () {
       var fr = L.friend(state), tricks = reduced || fresh ? [] : TRICKS.filter(function (x) { return fr.level >= x[0]; }), taps = 0;
       var bs0 = noPet(bs), bud = h('button', { class: 'cbud', 'aria-label': bs.name + (fresh ? '' : ', חֲבֵרוּת ' + fr.level + ' מִתּוֹךְ 6') }); // the pet stands beside the companion
       var heart = fresh ? null : h('span', { class: 'fheart', 'aria-hidden': 'true' }, jart('heart'), h('b', { text: String(fr.level) })); // the friendship level, on the companion
+      if (heart && mine != null) heart.appendChild(growChip(mine)); // task "village": the level stars of the companion, under its heart
       function paint(mood) { bud.innerHTML = A.trollSVG(bs0, { mood: mood || campMood() }); if (heart) bud.appendChild(heart); }
       function trick(name) { bud.classList.add('tr-' + name); later(function () { bud.classList.remove('tr-' + name); }, 1200); }
       paint();
@@ -6610,7 +6765,7 @@ var TrollModels = (function () {
           var s = specOf(id), b = h('button', { class: 'rt', 'aria-label': s.name, html: A.trollSVG(s) + '<b>' + s.name + '</b>' });
           b.addEventListener('click', function () {
             if (!seen(b)) return; // a troll that is half outside the window of the strip is not chosen by accident
-            state.buddy = id; save(); sfx.giggle(); // exactly what the button "my companion" of the dressing room does
+            makeBuddy(id); // exactly what the button "my companion" of the dressing room does
             var c = center(b); burst(c[0], c[1], 9);
             swapped = true; home();
           });
@@ -6619,13 +6774,14 @@ var TrollModels = (function () {
         fsc.addEventListener('scroll', ends);
         folk.appendChild(fprev); folk.appendChild(fsc); folk.appendChild(fnext);
         lay = function () { // the window of the strip holds whole trolls: all of them when there is room, otherwise as many as fit between the two arrows
-          var room = folk.clientWidth, all = others.length * (slot + GAP) - GAP, n;
+          var room = folk.clientWidth - vilRoom(folk), all = others.length * (slot + GAP) - GAP, n;
           if (!room) return;
           if (all <= room) { folk.classList.remove('more'); fsc.style.width = all + 'px'; }
           else { n = Math.max(1, Math.floor((room - 2 * (48 + GAP) + GAP) / (slot + GAP))); folk.classList.add('more'); fsc.style.width = (n * (slot + GAP) - GAP) + 'px'; }
           ends();
         };
       }
+      vilEntry(folk); // task "village": the door to the village of all the trolls, at the end of the strip
       grid.appendChild(folk);
       el.appendChild(grid);
       if (lay && sandbox && /[#&]fend=1/.test(hash)) { lay(); fsc.style.scrollSnapType = 'none'; fsc.scrollLeft = -99999; if (!fsc.scrollLeft) fsc.scrollLeft = 99999; } // layout check: the strip of the residents at its far end
@@ -7859,6 +8015,7 @@ var TrollModels = (function () {
     var troll = L.rollTroll(state.owned, Math.random), rw = L.roundReward(st);
     state.owned.push(troll.id); state.coins += rw.coins;
     if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; // the first troll becomes the companion
+    var gup = growBuddy(); // task "village": the companion grows with every finished round
     save(); // saved before the reveal, so closing early never loses the prizes
     tv.round = null;
     var nx = L.nextStep(state);
@@ -7883,6 +8040,7 @@ var TrollModels = (function () {
         P.btns.appendChild(ibtn('map', 'לַמַּפָּה', 'navb', function () { topics(); }));
         P.btns.appendChild(ibtn('cart', 'לָעֲגָלָה', 'cartb', function () { var g = L.goalOf(state); if (g && g.ready) goCart(g); else dress(null, 4); }));
         P.news(troll, null);
+        growShow(P, el, gup);
         tv.done = true; tv.ups = ups.length; tv.tier = rw.tier;
       });
       P.caps.appendChild(eg.msg); P.frame.appendChild(eg.slot); P.frame.parentNode.classList.add('small');
@@ -7919,6 +8077,7 @@ var TrollModels = (function () {
     if (troll) { state.owned.push(troll.id); if (state.owned.indexOf(state.buddy) < 0) state.buddy = state.owned[0]; }
     if (r.firstWin) state = L.memAdd(state, 'h', topicId, cfg.level, L.todayStr());
     calibAdd(round);
+    var gup = growBuddy(); // task "village": the companion grows with every finished round
     save(); tv.round = null;
     var bossG = readyBoss(topicId), earned = jEarned(jb0); // earned: what has just entered the journal (a new look of the badge is an achievement)
     // the friendship level rose with this house; or: this house had a miss in every earlier round (1 or 2 stars) and none now
@@ -7977,6 +8136,7 @@ var TrollModels = (function () {
         if (r.stars < 3 && !same) P.btns.appendChild(ibtn('repeat', 'שׁוּב, לְעוֹד כּוֹכָבִים', '', function () { startRound(topicId, { level: cfg.level }); }));
         P.btns.appendChild(ibtn('map', 'לַמַּפָּה', P.btns.firstChild ? 'navb' : 'nxt', back));
         P.cart(); P.news(troll, earned);
+        growShow(P, el, gup);
         tv.done = true; tv.tier = rw.tier; tv.sstars = r.stars; tv.opened = r.opened; tv.egg = !!troll; tv.count = r.count; tv.won = r.won;
       }
       var relay = null; // the buttons that come after the egg take room from the picture: the trail is laid out again at once
@@ -8001,6 +8161,7 @@ var TrollModels = (function () {
     state.coins += 30; state.rounds++;
     state = L.updateStreak(state, L.todayStr());
     state = L.memAdd(state, 'b', topicId, g, L.todayStr());
+    var gup = growBuddy(); // task "village": the companion grows with every finished round
     save(); tv.round = null;
     var f1 = L.friend(state).level, earned = jEarned(jb0);
     var nx = t.g === state.grade ? L.nextStep(state) : null;
@@ -8032,6 +8193,7 @@ var TrollModels = (function () {
       P.btns.appendChild(ibtn('home', 'לַמַּחֲנֶה שֶׁלִּי', nx ? 'navb' : 'nxt', home));
       P.btns.appendChild(ibtn('map', 'לַמַּפָּה', 'navb', back));
       P.cart(); P.news(got ? hero : null, earned);
+      growShow(P, el, gup);
       var feast = false;
       function party() { if (feast || cur !== el) return; feast = true; var c = center(P.frame); burst(c[0], c[1], 20); confetti(120); sfx.win(); fireworks(6); }
       P.at((D + 0.2) * 1000, party);
@@ -8278,7 +8440,7 @@ var TrollModels = (function () {
     var id = ids[idx], base = L.trollFromId(id), pick = null, page = 0, per = 0, cols = 1, tpage = -1, tper = 0; // pick: the card that was tapped
     show(function (el) {
       el.classList.add('rmap', 'cart');
-      el.appendChild(topBar(true, home));
+      el.appendChild(topBar(true, dressBack()));
       var prev = h('div', { class: 'cprev' }), nameEl = h('span', { class: 'cname' }), ths = h('div', { class: 'cths' });
       var tabs = h('div', { class: 'ctabs' }), gridw = h('div', { class: 'cgridw' }), grid = h('div', { class: 'cgridc' }), msg = h('div', { class: 'kmsg' }), pgEl = h('span', { class: 'cpg' }), act = h('div', { class: 'cact' });
       gridw.appendChild(grid);
@@ -8420,7 +8582,7 @@ var TrollModels = (function () {
       });
       var pickB = h('button', { class: 'btn pick' });
       function drawPick() { var is = buddyId() === id; pickB.textContent = ''; pickB.appendChild(icon(is ? 'heart' : 'heart-off', 't')); pickB.appendChild(document.createTextNode(is ? ' הַמְּלַוֶּה שֶׁלִּי' : ' שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי')); pickB.classList.toggle('is', is); }
-      pickB.addEventListener('click', function () { state.buddy = id; save(); sfx.giggle(); drawPick(); drawPrev(true); });
+      pickB.addEventListener('click', function () { makeBuddy(id); drawPick(); drawPrev(true); });
       drawPick();
       // the trolls: the thumbnails that fit, paged by the two arrows; when there is no room for three, the arrows step from troll to troll
       var tPrev = arrow('caret-right', 'הַטְּרוֹלִים הַקּוֹדְמִים', function () { if (tper) { tpage--; drawThumbs(); } else go(idx - 1); });
@@ -8456,6 +8618,233 @@ var TrollModels = (function () {
       drawPrev(false); drawGrid(); drawAct(); drawThumbs();
       if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) { ro.disconnect(); return; } if (measure() !== per) drawGrid(); drawThumbs(); }); ro.observe(gridw); ro.observe(ths); }
     });
+  }
+
+  // ---------- task "village": "כְּפַר הַטְּרוֹלִים שֶׁלִּי" ----------
+  // Every troll the child owns stands on one island, in a size that grows with its level (L.growLevel of the optional field state.grow:
+  // a point for every round that ended on an end screen while the troll was the companion). Stars under a troll are its level, the
+  // heart marks the companion, level 3 glows and level 5 has rays. Nobody in the crowd moves. A tap opens the card of a troll: its
+  // picture, name, five stars, a picture meter of the rounds to the next star, and two buttons: the heart makes it the companion
+  // (makeBuddy: the one way, also used by the camp and the dressing room) and the shirt opens the dressing room on it.
+  // The island scrolls up and down in its own area when the trolls need more room: the same .mwrap / .mscroll / .marr parts, classes
+  // (.scrl, .side, .up, .dn) and rules as the maps, so the layout check of the maps (mapCheck) checks this screen too.
+  // Layout checks (sandbox): s=village · &vn=N (N trolls at mixed levels) · &vlv=5.3.1 (the levels of the first trolls) ·
+  // &vcard=1 | main | N (the card of a troll that is not the companion / of the companion / of the troll at place N) ·
+  // &grow=N on an end screen (s=end, mixend, bossend): this round raises the companion to level N (2 to 5).
+  function makeBuddy(id) { state.buddy = id; save(); sfx.giggle(); } // the one way a troll becomes the companion
+  // A round has just ended on an end screen: the companion gets its point. Returns { id, level } when its level rose, otherwise null.
+  function growBuddy() {
+    var id = buddyId(); if (id == null) return null;
+    var r = L.growAdd(state, id); state = r.state; tv.gpts = L.growOf(state, id);
+    return r.up ? { id: id, level: r.level } : null;
+  }
+  function growStars(lv, all, size) { // the level as stars to count (all: the missing ones too, pale)
+    var s = h('span', { class: 'gstars', 'aria-hidden': 'true' }), i, st;
+    for (i = 1; i <= 5; i++) if (i <= lv || all) { st = icon('star', size || 's'); if (i > lv) st.classList.add('e'); s.appendChild(st); }
+    return s;
+  }
+  function growChip(id) { var c = growStars(L.growLevel(L.growOf(state, id)).level); c.classList.add('gchip'); return c; } // the camp: the stars of the companion, a small pill under the heart of the friendship
+  function growSay(s, lv) { return s.name + ', רָמָה ' + lv + ' מִתּוֹךְ 5'; }
+  // The end screen of a round that raised the companion's level (up: what growBuddy returned). The companion with its new stars comes in
+  // once with the other captions (the show of the end screen: under a second, a tap skips it, nothing moves with reduced motion), and a
+  // picture button beside the other news leads to the village with the card of that troll open. The main button stays the main button.
+  function growShow(P, el, up) {
+    if (!up || !P || cur !== el) return;
+    var s = specOf(up.id), news = P.btns.querySelectorAll('.newb'), main = P.btns.querySelector('.nxt'), after = news.length ? news[news.length - 1] : main;
+    P.caps.appendChild(h('div', { class: 'banner ea egrow', style: '--d:' + (END_T.map + 0.3) + 's', role: 'img', 'aria-label': growSay(s, up.level) },
+      h('span', { class: 'gtp', 'aria-hidden': 'true', html: A.trollSVG(noPet(s), { size: 44 }) }), growStars(up.level, true, 'm')));
+    if (news.length < 2) { // two picture buttons already (a new troll and a new stamp): the row is full, the caption is enough
+      P.btns.insertBefore(h('button', { class: 'btn newb growb', 'aria-label': 'לַכְּפָר: ' + growSay(s, up.level), on: { click: function () { sfx.tap(); village(up.id); } } },
+        h('span', { class: 'npic ntroll', 'aria-hidden': 'true', html: A.trollSVG(noPet(s)) }), icon('star', 'm'), h('span', { class: 'nl', text: 'לַכְּפָר' })), after ? after.nextSibling : P.btns.firstChild);
+      if (!el.classList.contains('hasnews')) el.classList.add('hasnews', 'x' + P.btns.querySelectorAll('.btn:not(.nxt):not(.navb):not(.newb)').length);
+    }
+    tv.grow = up.level;
+  }
+  // the camp: the door to the village, at the end of the strip of the residents (vilRoom: the room it takes from the strip)
+  function vilEntry(folk) {
+    if (!TOY || !state.owned.length) return null;
+    var b = h('button', { class: 'vilb', 'aria-label': 'כְּפַר הַטְּרוֹלִים שֶׁלִּי', on: { click: function () { sfx.tap(); village(); } } },
+      h('img', { src: 'assets/toy/1f3d8.png', alt: '', draggable: 'false' }), h('span', { class: 'cl', text: 'הַכְּפָר' }));
+    folk.appendChild(b);
+    return b;
+  }
+  function vilRoom(folk) { var b = folk.querySelector('.vilb'); return b ? b.offsetWidth + 8 : 0; }
+  var dressFrom = null; // the dressing room was opened from the card of this troll: its back button returns to the village
+  function dressBack() { var id = dressFrom; dressFrom = null; return id == null ? home : function () { village(id); }; }
+  var VIL_F = [1, 1.16, 1.34, 1.54, 1.78]; // how much wider a troll of level 1..5 stands
+  var VIL_BACK = ['1f3e1', '1f333', '1f3e0', '1f332', '1f6d6', '1f333', '1f3d8', '1f334', '1f3e1'], VIL_IN = ['1f333', '1f3e0', '1f334', '1f6d6', '1f332', '1f3e1'];
+  function village(openId, back) {
+    if (!state.owned.length) { home(); return; }
+    setMusic('home');
+    show(function (el) {
+      here = 'village';
+      el.classList.add('rmap', 'vil');
+      el.appendChild(topBar(true, back || home));
+      el.appendChild(h('h2', { class: 'h2', text: 'כְּפַר הַטְּרוֹלִים שֶׁלִּי' }));
+      var N = state.owned.length, wide = window.innerWidth >= 900;
+      function lvOf(id) { return L.growLevel(L.growOf(state, id)); }
+      // the companion first, then the highest levels; nobody changes place while the child is looking
+      var first = buddyId(), order = state.owned.map(function (id, i) { return [id, i]; }).sort(function (a, b) {
+        return (b[0] === first) - (a[0] === first) || lvOf(b[0]).level - lvOf(a[0]).level || a[1] - b[1]; }).map(function (x) { return x[0]; });
+      el.classList.add(N <= 6 ? 'vfew' : N <= 16 ? 'vsome' : 'vmany');
+      var box = h('div', { class: 'tmap vmap' }), backRow = h('div', { class: 'vrow vbk', 'aria-hidden': 'true' }), row = h('div', { class: 'vrow' });
+      function deco(n, cls) { return h('img', { class: 'vdeco ' + cls, src: 'assets/toy/' + n + '.png', alt: '', draggable: 'false' }); }
+      function sizes() { // --u: the width of a troll of level 1; --n: the bonus when there are only a few trolls
+        var W = window.innerWidth, H = window.innerHeight, w = W >= 900, low = H <= 520;
+        return { u: w && !low ? 62 : W <= 370 ? 44 : 48, n: N <= 6 ? (low ? 1.15 : w ? 1.9 : W <= 370 ? 1.6 : 1.7) : N <= 16 ? (low ? 1 : 1.18) : 1 };
+      }
+      function fx(lv) { return (lv >= 3 ? ' vglow' : '') + (lv >= 5 ? ' vrays' : ''); }
+      function sparks(lv) { // level 3 and up: still sparkles of the icon family
+        var out = [], k;
+        for (k = 0; k < (lv >= 5 ? 3 : lv >= 4 ? 2 : lv >= 3 ? 1 : 0); k++) { var sp = icon('sparkle'); sp.classList.add('vspk', 's' + (k + 1)); out.push(sp); }
+        return out;
+      }
+      function heart() { return h('span', { class: 'vmine', 'aria-hidden': 'true' }, icon('heart', 's')); }
+      var z0 = sizes(), btnOf = {};
+      VIL_BACK.slice(0, wide ? 9 : 5).forEach(function (n, i) { backRow.appendChild(deco(n, i % 2 ? 'vtree' : '')); });
+      order.forEach(function (id, i) {
+        var lv = lvOf(id).level, s = specOf(id), every = wide ? 9 : 7;
+        var art = h('span', { class: 'vta', html: A.trollSVG(s, { size: Math.round(z0.u * VIL_F[lv - 1] * z0.n * 1.3) }) });
+        sparks(lv).forEach(function (x) { art.appendChild(x); });
+        var b = h('button', { class: 'vtr l' + lv + fx(lv), 'data-id': id, 'aria-label': growSay(s, lv), on: { click: function () { sfx.pop(); openCard(id); } } }, art, growStars(lv));
+        if (id === first) b.appendChild(heart());
+        btnOf[id] = b; row.appendChild(b);
+        if (N > 6 && i % every === every - 3 && i < order.length - 2) row.appendChild(deco(VIL_IN[Math.floor(i / every) % VIL_IN.length], 'vin'));
+      });
+      box.appendChild(backRow); box.appendChild(row);
+      var wrap = mapWrap(box), sc = wrap.querySelector('.mscroll'), up = wrap.querySelector('.mup'), dn = wrap.querySelector('.mdn'), calm = reduced || /fit/.test(hash);
+      up.setAttribute('aria-label', 'לְמַעְלָה'); dn.setAttribute('aria-label', 'לְמַטָּה');
+      el.appendChild(wrap);
+      function smax() { return Math.max(0, sc.scrollHeight - sc.clientHeight); }
+      function ends() { var on = wrap.classList.contains('scrl'), t = sc.scrollTop; wrap.classList.toggle('up', on && t > 2); wrap.classList.toggle('dn', on && t < smax() - 2); }
+      function to(v, smooth) { v = Math.max(0, Math.min(smax(), v)); if (smooth && !calm && sc.scrollTo && 'scrollBehavior' in document.documentElement.style) sc.scrollTo({ top: v, behavior: 'smooth' }); else sc.scrollTop = v; var was = sc.scrollTop; later(function () { if (sc.scrollTop === was && Math.abs(was - v) > 2) sc.scrollTop = v; ends(); }, 300); later(ends, 60); later(ends, 450); later(ends, 900); } // a browser that did not glide: jump
+      [up, dn].forEach(function (b, k) { b.addEventListener('click', function () { sfx.tap(); to(sc.scrollTop + (k ? 1 : -1) * Math.max(60, wrap.clientHeight * 0.8), true); }); }); // one screenful
+      var endA = h('i', { class: 'mend a' }), endZ = h('i', { class: 'mend z' }); box.appendChild(endA); box.appendChild(endZ);
+      if (window.IntersectionObserver) { var io = new IntersectionObserver(function () { if (cur !== el) io.disconnect(); else ends(); }, { root: sc }); io.observe(endA); io.observe(endZ); }
+      sc.addEventListener('scroll', ends, { passive: true }); // two classes that change only at the two ends of the way
+      sc.__ends = ends; // the layout check moves the island by itself
+      function lay() { // the island as it is when it fits; otherwise it scrolls, with the arrows of the maps
+        if (cur !== el) return;
+        var keep = sc.scrollTop, z = sizes();
+        wrap.classList.remove('scrl', 'side', 'up', 'dn');
+        box.style.setProperty('--u', z.u + 'px'); box.style.setProperty('--n', z.n);
+        if (box.offsetHeight > wrap.clientHeight + 1) {
+          wrap.classList.add('scrl'); wrap.classList.toggle('side', wrap.clientWidth >= 640);
+          dn.style.bottom = Math.max(wrap.classList.contains('side') ? 0 : 4, Math.ceil(wrap.getBoundingClientRect().bottom - window.innerHeight * 0.9)) + 'px'; // the arrow stays above the bottom tenth
+          sc.scrollTop = Math.min(keep, smax());
+        }
+        ends();
+      }
+      lay();
+      if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else lay(); }); ro.observe(wrap); }
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(lay);
+
+      function markMain() { // the heart moves to the new companion
+        var now = buddyId();
+        order.forEach(function (id) { var b = btnOf[id], m = b.querySelector('.vmine'); if (id === now && !m) b.appendChild(heart()); else if (id !== now && m) m.remove(); });
+      }
+      function meter(g) { // the rounds on the way to the next star: go, a dot for every round (the played ones are ticked), the star
+        if (g.level >= 5) return h('div', { class: 'vway max', role: 'img', 'aria-label': 'הָרָמָה הֲכִי גְּבוֹהָה' }, icon('crown'), icon('sparkle'));
+        var m = h('div', { class: 'vway', role: 'img', 'aria-label': g.done + ' מִתּוֹךְ ' + g.need + ' סִבּוּבִים עַד הַכּוֹכָב הַבָּא' }, h('span', { class: 'vgo' }, icon('next', 's'))), k, goal = icon('star'), arrow = icon('caret-left', 'm');
+        for (k = 0; k < g.need; k++) m.appendChild(h('i', { class: 'vdot' + (k < g.done ? ' on' : '') }, k < g.done ? icon('check', 's') : null));
+        arrow.classList.add('vto'); goal.classList.add('vgoal'); m.appendChild(arrow); m.appendChild(goal);
+        return m;
+      }
+      function closeCard() { closeExplain(); }
+      function openCard(id, yay, still) { // yay: it was just made the companion; still: another troll steps into the open card
+        closeExplain();
+        var g = lvOf(id), s = specOf(id), is = buddyId() === id, i = order.indexOf(id);
+        var art = h('div', { class: 'vart', html: A.trollSVG(s, { mood: 'happy' }) }), big = h('div', { class: 'vbig' + fx(g.level) }, art);
+        sparks(g.level).forEach(function (x) { art.appendChild(x); });
+        function nav(d, ic, label) { return h('button', { class: 'vnav', 'aria-label': label, on: { click: function () { sfx.tap(); openCard(order[(i + d + order.length) % order.length], false, true); } } }, icon(ic)); }
+        var dressB = h('button', { class: 'btn vdress' + (is ? '' : ' b2'), on: { click: function () { sfx.tap(); closeExplain(); dressFrom = id; dress({ id: id }); } } }, icon('dress'), 'לְהַלְבִּישׁ');
+        var acts = h('div', { class: 'vacts' },
+          is ? h('div', { class: 'vmineb' }, icon('heart'), 'הַמְּלַוֶּה שֶׁלִּי')
+            : h('button', { class: 'btn vmain', on: { click: function () { makeBuddy(id); markMain(); openCard(id, true, true); } } }, icon('heart'), 'שֶׁיִּהְיֶה הַמְּלַוֶּה שֶׁלִּי'), dressB);
+        var lvl = growStars(g.level, true, 'xl'); lvl.classList.add('vlvl'); lvl.removeAttribute('aria-hidden'); lvl.setAttribute('role', 'img'); lvl.setAttribute('aria-label', 'רָמָה ' + g.level + ' מִתּוֹךְ 5');
+        var card = h('div', { class: 'card vlcard' + (still ? ' vstill' : ''), role: 'dialog', 'aria-label': s.name, 'data-id': id },
+          h('button', { class: 'vx', 'aria-label': 'סְגִירָה', on: { click: function () { sfx.tap(); closeCard(); } } }, icon('close')),
+          h('div', { class: 'vstage' }, N > 1 ? nav(-1, 'caret-right', 'הַטְּרוֹל הַקּוֹדֵם') : null, big, N > 1 ? nav(1, 'caret-left', 'הַטְּרוֹל הַבָּא') : null),
+          h('div', { class: 'vinfo' }, h('b', { class: 'vname', text: s.name }), lvl, meter(g), acts));
+        ovl = h('div', { class: 'ovl vovl' + (still ? ' vstill' : ''), on: { click: function (e) { if (e.target === ovl) closeCard(); } } }, card);
+        document.body.appendChild(ovl);
+        if (yay) { trollAct(art, 'jump'); var c = center(big); burst(c[0], c[1], 9); }
+      }
+      if (openId != null && btnOf[openId]) {
+        if (wrap.classList.contains('scrl')) sc.scrollTop = Math.max(0, Math.min(smax(), btnOf[openId].offsetTop + btnOf[openId].offsetHeight / 2 - wrap.clientHeight / 2));
+        ends(); openCard(openId);
+      }
+    });
+  }
+  // layout checks (sandbox only): &vn=N puts N trolls at mixed levels in the village (&vlv=5.3.1: the levels of the first ones), some of them dressed;
+  // &grow=N: the companion is one round under level N, so the end screen that follows raises it
+  function vilDemo() {
+    var m = /[#&]vn=(\d+)/.exec(hash), CUM = [0, 3, 7, 12, 18], g;
+    if (m) {
+      var n = Math.max(1, Math.min(60, +m[1])), r = L.seeded(91), ids = [], lv = ((/[#&]vlv=([\d.]+)/.exec(hash) || [])[1] || '').split('.').filter(Boolean);
+      var PTS = [13, 5, 1, 18, 9, 0, 3, 14, 7, 2, 0, 12, 18, 4, 8, 1, 0, 13, 6, 3, 0, 10, 2, 17, 0, 5, 7, 1, 15, 0, 3, 8, 0, 2, 4, 0, 11, 1], bySlot = {};
+      while (ids.length < n) ids.push(L.rollTroll(ids, r).id);
+      if (n >= 12) { ids[7] = L.HERO_BASE; ids[3] = L.HERO_BASE + 5; } // heroes rescued at the bridges
+      L.ITEMS.forEach(function (it) { if (L.EMOJI_SLOTS.indexOf(it.slot) >= 0) (bySlot[it.slot] = bySlot[it.slot] || []).push(it.id); });
+      state.owned = ids; state.buddy = ids[0]; state.grow = {}; state.dress = {};
+      ids.forEach(function (id, i) {
+        var p = lv.length ? CUM[Math.max(1, Math.min(5, +lv[i] || 1)) - 1] : PTS[i % PTS.length], d = {};
+        if (p) state.grow[id] = p;
+        L.shuffle(Object.keys(bySlot), r).slice(0, i % 4).forEach(function (k) { d[k] = bySlot[k][Math.floor(r() * bySlot[k].length)]; if (state.items.indexOf(d[k]) < 0) state.items.push(d[k]); });
+        state.dress[id] = d;
+      });
+    }
+    g = /[#&]grow=(\d)/.exec(hash);
+    if (g && buddyOf(state) != null) { state.grow = state.grow || {}; state.grow[buddyOf(state)] = CUM[Math.max(2, Math.min(5, +g[1])) - 1] - 1; }
+  }
+  function vilDemoCard() { // &vcard=1: a troll on its way that is not the companion; main: the companion; a number: the troll at that place of state.owned
+    var c = (/[#&]vcard=(\w+)/.exec(hash) || [])[1], mine = buddyId(), pick;
+    if (!c) return null;
+    if (c === 'main') return mine;
+    if (+c > 1) return state.owned[Math.min(state.owned.length, +c) - 1];
+    pick = state.owned.filter(function (id) { var l = L.growLevel(L.growOf(state, id)).level; return id !== mine && l >= 3 && l < 5; })[0];
+    return pick != null ? pick : state.owned.length > 1 ? state.owned.filter(function (id) { return id !== mine; })[0] : mine;
+  }
+  // layout check of the village (called from fitCheck; no: reports a failure by name). The scrolling itself, the arrows and the fixed buttons are
+  // checked by mapCheck. Here: every troll is a whole touch target that touches no other troll and can be reached (with the island scrolled to
+  // it, it is whole in the window, on top, and not under an arrow); exactly one heart; the stars of every troll are its level; the card is whole.
+  function vilCheck(no) {
+    var wrap = cur.querySelector('.mwrap'), sc = wrap.querySelector('.mscroll'), box = sc.querySelector('.vmap'), ts = [].slice.call(box.querySelectorAll('.vtr'));
+    var card = document.querySelector('.ovl .vlcard'), on = wrap.classList.contains('scrl'), top0 = sc.scrollTop, IW = window.innerWidth, IH = window.innerHeight, vn = /[#&]vn=(\d+)/.exec(hash);
+    var rects = ts.map(function (b) { return b.getBoundingClientRect(); }), br = box.getBoundingClientRect();
+    if (!ts.length || ts.length !== state.owned.length || (vn && ts.length !== Math.max(1, Math.min(60, +vn[1])))) no('vcount');
+    if (box.querySelectorAll('.vtr .vmine').length !== 1) no('vheart');
+    if (!on && br.height > wrap.clientHeight + 1) no('vtall');
+    ts.forEach(function (b, i) {
+      var r = rects[i], lv = L.growLevel(L.growOf(state, +b.getAttribute('data-id'))).level, st = b.querySelector('.gstars'), a = b.querySelector('.vta svg');
+      if (r.width < 47.5 || r.height < 47.5) no('vsize');
+      if (r.left < Math.max(0, br.left) - 1 || r.right > Math.min(IW, br.right) + 1 || r.top < br.top - 1 || r.bottom > br.bottom + 1) no('vout');
+      if (!st || st.querySelectorAll('.ic').length !== lv || st.getBoundingClientRect().width < lv * 10 || !b.classList.contains('l' + lv)) no('vstars');
+      if (!a || a.getBoundingClientRect().width < 40) no('vart');
+      rects.slice(i + 1).forEach(function (q) { if (r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1) no('vtouch'); });
+    });
+    if (!card) ts.forEach(function (b) {
+      var r = b.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+      if (on) { sc.scrollTop = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, sc.scrollTop + r.top + r.height / 2 - (w.top + w.height / 2))); sc.__ends(); r = b.getBoundingClientRect(); }
+      var t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      if (!t || !(t === b || b.contains(t))) no('vreach');
+      if (r.top < Math.max(0, w.top) - 1 || r.bottom > Math.min(IH, w.bottom) + 1) no('vcut');
+      [].forEach.call(wrap.querySelectorAll('.marr'), function (x) { var q = x.getBoundingClientRect(); if (q.width && r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1) no('vunder'); });
+    });
+    if (on) { sc.scrollTop = top0; sc.__ends(); }
+    if (/[#&]vcard=/.test(hash) && !card) no('vnocard');
+    if (card) {
+      var cr = card.getBoundingClientRect(), nm = card.querySelector('.vname'), pic = card.querySelector('.vart svg').getBoundingClientRect();
+      if (cr.left < -1 || cr.right > IW + 1 || cr.top < -1 || cr.bottom > IH + 1) no('vcard');
+      if (card.querySelectorAll('.vlvl .ic').length !== 5 || !card.querySelector('.vway') || card.querySelectorAll('.vacts .btn').length < 1 || !card.querySelector('.vdress')) no('vparts');
+      if (nm.scrollWidth > nm.clientWidth + 1 || pic.height < 80 || pic.top < cr.top - 1 || pic.bottom > cr.bottom + 1) no('vpic');
+      [].forEach.call(card.querySelectorAll('button'), function (b) {
+        var r = b.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2), min = b.classList.contains('btn') ? 51.5 : 47.5;
+        if (r.width < 47.5 || r.height < min || r.left < cr.left - 1 || r.right > cr.right + 1 || r.top < cr.top - 1 || r.bottom > cr.bottom + 1 || b.scrollWidth > b.clientWidth + 1 || !t || !(t === b || b.contains(t))) no('vbtn');
+      });
+      var bs = [].slice.call(card.querySelectorAll('button')).map(function (b) { return b.getBoundingClientRect(); });
+      bs.forEach(function (r, i) { bs.slice(i + 1).forEach(function (q) { if (r.left < q.right + 7 && q.left < r.right + 7 && r.top < q.bottom + 7 && q.top < r.bottom + 7) no('vgap'); }); });
+    }
   }
 
   // ---------- the calculation sheet (task "pad", docs/prompts/pad-spec.md) ----------
@@ -9245,6 +9634,7 @@ var TrollModels = (function () {
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
   if (sandbox && /many=1/.test(hash)) { state.owned = []; for (var hm = 0; hm < 30; hm++) state.owned.push(5 + 37 * hm); state.stars = 240; } // layout check: a veteran with 30 trolls
   if (sandbox && /[#&]nt=\d/.test(hash)) state.owned = state.owned.slice(0, Math.max(1, +/[#&]nt=(\d+)/.exec(hash)[1])); // layout check: the first N trolls only (task "flowfix home")
+  if (sandbox) vilDemo(); // task "village": &vn=N trolls at mixed levels, &grow=N the end screen that follows raises the companion to level N
   if (sandbox) { // layout checks of the cart: &coins=N, &own=id.id (items owned), &fx=id.id (equipped move / celebration), &goal=id (the savings goal), &wear=id.id (on the companion)
     var hq = function (k) { return ((new RegExp('[#&]' + k + '=([\\w.]+)').exec(hash) || [])[1] || '').split('.').filter(function (x) { return L.ITEM[x]; }); };
     if (/[#&]coins=(\d+)/.test(hash)) state.coins = +/[#&]coins=(\d+)/.exec(hash)[1];
@@ -9373,6 +9763,7 @@ var TrollModels = (function () {
   else if (scr === 'dress') dress(/[#&]new=1/.test(hash) ? { id: state.owned[state.owned.length - 1] } : /[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, +((/tab=(\d)/.exec(hash) || [])[1] || 3), (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
   else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
+  else if (scr === 'village') village(vilDemoCard());
   else if (scr === 'journal') journal((/[#&]pg=(\w+)/.exec(hash) || [])[1], /[#&]t=/.test(hash) ? ht : null);
   else if (scr === 'cloud') cloud(/noroom=1/.test(hash) ? noRoom([8, 1]) : '', /cj=1/.test(hash) ? 'code' : ''); // &noroom=1: the longest message of the screen
   else if (scr === 'badges') badgeDemo();
@@ -9492,6 +9883,8 @@ var TrollModels = (function () {
     if (sandbox && hjn && ((here === 'journal' && !cur.querySelector('.jpage .jhot')) || (cur.classList.contains('camp') && !cur.querySelector('.jrnb .jbadge')))) no('nonew');
     if (sandbox && /[#&]news=2/.test(hash) && cur.classList.contains('endm') && (!cur.querySelector('.ebtns .dressn') || !cur.querySelector('.ebtns .achb'))) no('nonews');
     if (/pad=1/.test(hash)) padCheck(no); // task "pad": the calculation sheet
+    if (cur.classList.contains('vil')) vilCheck(no); // task "village"
+    if (sandbox && /[#&]grow=\d/.test(hash) && cur.classList.contains('endm') && !cur.querySelector('.egg') && (!cur.querySelector('.ecaps .egrow') || !tv.grow)) no('nogrow');
     var card = document.querySelector('.ovl .card'), md = document.querySelector('.ovl .mdl') || card, ovf = 0;
     [].forEach.call(document.querySelectorAll('[data-fit]'), function (x) { // the layers of a race: invitation, launch, track, results
       var r = x.getBoundingClientRect(); ovf = Math.max(ovf, x.scrollHeight - x.clientHeight, x.scrollWidth - x.clientWidth, r.bottom - window.innerHeight, -r.top);
