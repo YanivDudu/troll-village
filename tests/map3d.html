@@ -8,6 +8,10 @@
        a tree, a mountain, a bush, a rock or the boat over any card, picture, badge, companion or button.
      It also fails when the list of pictures that have a model in index.html (M3.PICS) differs from toy3d.js, or when a map gives no plan at all.
      The layout of the DOM itself (labels against labels, buttons, scrolling) is the business of tests/fit.html, which runs every map in both modes.
+     Task "camp3d": the 3D camp of the home screen too (grades 1, 2, 4; day and night; these three sizes and 800x380): nothing of the island under the button of
+     the dressing room, the card, the buttons or the residents; the picture inside the screen; tap places of 48 px; and the DOM troll put on nine ground points
+     (home, the log, the door, inside the tent, the back, behind the tree, the pebbles, the sand, the flower) stands within 2 px of where the camera sees each,
+     at the size the camera gives, never under 70% of its size at home.
      Result in document.title: MAP3D OK ... / MAP3D FAIL ...     map3d.html#390x800 runs one size; &only=<text> only the maps whose name contains the text.
      Run: msedge --headless --mute-audio --disable-gpu --allow-file-access-from-files --window-size=2000,1400 --virtual-time-budget=400000 --dump-dom tests/map3d.html -->
 <style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}td{padding:2px 8px;border:1px solid #777}.bad{background:#a00}</style>
@@ -21,7 +25,7 @@ function frame(w, h, src) { var f = document.createElement('iframe'); f.width = 
 function done() { document.title = 'MAP3D ' + (fails.length ? 'FAIL ' + fails.length + ': ' + fails.slice(0, 12).join(' | ') : 'OK ' + maps.length + ' maps x ' + SIZES.length + ' sizes = ' + got + ' pictures, ' + sum.stops + ' stops (' + sum.models + ' as 3D models), ' + sum.props + ' pieces of scenery, ' + sum.scrl + ' that scroll'); }
 function next() {
   var j = queue.shift(); if (!j) return;
-  var f = frame(j[0][0], j[0][1], '../index.html#demo&g=' + j[1][0] + '&s=' + j[1][1] + '&hour=10&m3chk=1');
+  var f = frame(j[0][0], j[0][1], '../index.html#demo&g=' + j[1][0] + '&s=' + j[1][1] + (/hour=/.test(j[1][1]) ? '' : '&hour=10') + '&m3chk=1');
   var rec = { f: f, name: j[0].join('x') + ' g' + j[1][0] + ' ' + j[1][1] };
   rec.t = setTimeout(function () { if (rec.over) return; finish(rec, { bad: ['no answer in 60 s'] }); }, 60000);
   open.push(rec);
@@ -42,7 +46,9 @@ addEventListener('message', function (e) {
     [].some.call(document.querySelectorAll('iframe'), function (f) { if (f.contentWindow !== e.source) return false; f.remove(); return true; });
     if (++lists < GRADES.length) return;
     maps.sort(function (a, b) { return a[0] - b[0]; });
-    SIZES.forEach(function (s) { maps.forEach(function (m) { queue.push([s, m]); }); }); want = queue.length;
+    SIZES.forEach(function (s) { maps.forEach(function (m) { queue.push([s, m]); }); });
+    var camps = [[1, 'home'], [2, 'home'], [2, 'home&many=1&hour=21'], [4, 'home&boy=1'], [2, 'home&pets3=dog,lion']].filter(function (m) { return !pick || m[1].indexOf(decodeURIComponent(pick[1])) >= 0; });
+    (one ? SIZES : SIZES.concat([[800, 380]])).forEach(function (s) { camps.forEach(function (m) { queue.push([s, m]); }); }); maps = maps.concat(camps); want = queue.length;
     if (!want) { fails.push('the game listed no maps'); done(); return; }
     for (var i = 0; i < LIVE; i++) next();
     return;
