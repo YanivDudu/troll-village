@@ -7652,7 +7652,7 @@ var TrollModels = (function () {
     state = L.memAdd(state, stageRound ? 'p' : 'm', topicId, stageRound ? cfg.level : 0, L.todayStr()); // optional field: what the companion remembers
     save();
     var buddy = buddySpec(), combo = 0;
-    tv.round = round; tv.done = false; tv.born = Date.now(); // the screen opens now: a second tap of a double tap on the button that led here must not answer
+    tv.round = round; tv.done = false; tv.born1 = false; tv.born = Date.now(); // the screen opens now: a second tap of a double tap on the button that led here must not answer
     show(function (el) {
       if (cfg.race) raceRound = true; // leaving this screen while the race runs means leaving the race
       el.appendChild(topBar(true, backTo));
@@ -7738,6 +7738,7 @@ var TrollModels = (function () {
         answers.innerHTML = ''; answers.className = 'answers f-' + q.fmt;
         tv.solve = tv.flub = null;
         (WIDGET[q.fmt] || WIDGET.choice)(q);
+        if (round.i === 0 && !round.results.length && !tv.born1) { tv.born1 = true; tv.born = Date.now(); } // the 0.4 s without answers counts from the moment the first exercise is on the screen: building it can take that long on a slow device
         roomFit();
         if (autoSay()) speak(sayQ()); else hush();
       }
@@ -7831,6 +7832,7 @@ var TrollModels = (function () {
             if (!pickL || !pickR) return;
             var a = pickL, b = pickR; pickL = pickR = null;
             a.el.classList.remove('sel'); b.el.classList.remove('sel');
+            if (Date.now() - tv.born < 400) return; // the screen has only just opened: the second tap of a double tap must not count as a wrong pair
             if (a.r === b.r) {
               a.el.classList.add('ok'); b.el.classList.add('ok'); a.el.disabled = b.el.disabled = true; sfx.pop();
               if (++done === q.pairs.length) onAnswer(b.el, 'ok', q);
@@ -9730,7 +9732,7 @@ var TrollModels = (function () {
       // the second tap of a double tap lands on an answer of the screen that has just opened: it must not answer
       var dt1 = [].filter.call(cur.querySelectorAll('[data-v]'), function (x) { return x.getAttribute('data-v') !== String(tv.round.current().answer); })[0];
       if (dt1) dt1.click(); else if (tv.flub) tv.flub();
-      if (cur.querySelector('.wrong') || document.querySelector('.ovl') || tv.hintQ || tv.round.solved) { document.title = 'ERR a double tap on the home button answered the first exercise'; throw new Error('double tap'); }
+      if (cur.querySelector('.wrong') || document.querySelector('.ovl') || tv.hintQ || tv.round.solved) { var dtw = 'double tap: ' + (cur.querySelector('.wrong') ? 'wrong ' : '') + (document.querySelector('.ovl') ? 'ovl ' : '') + (tv.hintQ ? 'hint ' : '') + (tv.round.solved ? 'solved ' : '') + 'fmt=' + (tv.round.current().fmt || 'choice') + (dt1 ? ' btn' : ' flub'); document.title = 'ERR ' + dtw; throw new Error(dtw); }
     } else
     startRound(ht, ht === 'mix' ? null : /boss=/.test(hash) ? { boss: +(/boss=(\d)/.exec(hash)[1]) } : { level: state.levels[ht] });
     var flubbed = {};
