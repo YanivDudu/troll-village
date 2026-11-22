@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Task "village": the screen "my troll village" through its real buttons.
+     The door on the camp opens it; every troll stands there with the stars of its level and one heart on the companion; a tap opens the card;
+     the heart button makes that troll the companion (the heart moves, nobody changes place, the camp shows it); the shirt opens the dressing room
+     on that troll and its back button returns to the card; a finished round gives the companion one point, a round that raises its level shows
+     it on the end screen with a button to the village, the main button stays alone; the points change no prize.
+     Result in document.title: VILLAGE OK n / VILLAGE FAIL ...
+     Run: msedge --headless --mute-audio --disable-gpu --allow-file-access-from-files --virtual-time-budget=60000 --dump-dom tests/village.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0;
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen'); if (s && f.contentWindow.__tv) res({ f: f, d: d, w: f.contentWindow, tv: f.contentWindow.__tv }); else setTimeout(poll, 20); })();
+  });
+}
+function scr(x, cls) { return x.d.querySelector('.screen.' + cls + ':not(.out)'); }
+function tappable(x, b) { var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
+function ids(v) { return [].map.call(v.querySelectorAll('.vtr'), function (b) { return b.getAttribute('data-id'); }); }
+function full(el) { return el.querySelectorAll('.ic-star:not(.e)').length; }
+function coins(x) { return +x.d.querySelector('.coinchip').getAttribute('data-n'); }
+
+async function door() { // the camp -> the village -> a card -> my companion -> the dressing room and back -> the camp
+  var x = await frame('demo&s=home&vn=12&hour=10'); await wait(400);
+  var b = x.d.querySelector('.camp .folk .vilb');
+  check(!!b && tappable(x, b) && !!b.querySelector('img') && b.getBoundingClientRect().height >= 47.5, 'the camp has the door to the village, a whole touch target with a picture');
+  b.click(); await wait(500);
+  var v = scr(x, 'vil'), ts = v ? v.querySelectorAll('.vtr') : [];
+  check(!!v && ts.length === 12, 'the door opens the village, with all 12 trolls');
+  check(v.querySelectorAll('.top .tgroup .icon').length >= 2, 'the village has back and home');
+  check(v.querySelectorAll('.vmine').length === 1 && !!ts[0].querySelector('.vmine'), 'one heart, on the companion, who stands first');
+  var lv = [].map.call(ts, function (t) { return +/\bl(\d)\b/.exec(t.className)[1]; });
+  check(lv.slice(1).every(function (l, i) { return i === 0 || l <= lv[i]; }), 'after the companion the trolls stand from the highest level down: ' + lv.join(''));
+  check([].every.call(ts, function (t, i) { return full(t.querySelector('.gstars')) === lv[i] && t.querySelectorAll('.gstars .ic').length === lv[i]; }), 'the stars under every troll are its level');
+  check([].every.call(ts, function (t, i) { return t.classList.contains('vglow') === lv[i] >= 3 && t.classList.contains('vrays') === (lv[i] === 5); }), 'a glow from level 3, rays at level 5');
+  var w = [].map.call(ts, function (t) { return t.querySelector('.vta').getBoundingClientRect().width; });
+  check(lv.every(function (l, i) { return lv.every(function (m, k) { return l <= m || w[i] > w[k] + 2; }); }), 'a higher level stands larger');
+  check(x.d.getAnimations().filter(function (a) { return a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('.vtr'); }).length === 0, 'nobody in the crowd moves');
+  var before = ids(v), t2 = ts[4], id2 = t2.getAttribute('data-id');
+  t2.click(); await wait(300);
+  var c = x.d.querySelector('.ovl .vlcard');
+  check(!!c && c.getAttribute('data-id') === id2, 'a tap on a troll opens its card');
+  check(c.querySelectorAll('.vlvl .ic').length === 5 && full(c.querySelector('.vlvl')) === lv[4], 'the card: five stars, the level of the troll is full');
+  check(!!c.querySelector('.vname').textContent && !!c.querySelector('.vart svg.troll') && !!c.querySelector('.vway'), 'the card: the picture, the name, the meter to the next star');
+  var mainB = c.querySelector('.vmain'), dressB = c.querySelector('.vdress');
+  check(!!mainB && !!dressB && tappable(x, mainB) && tappable(x, dressB) && !!mainB.querySelector('.ic-heart') && !!dressB.querySelector('.ic-dress'), 'the card: the heart button and the shirt button, both on top');
+  mainB.click(); await wait(300);
+  c = x.d.querySelector('.ovl .vlcard');
+  check(!!c && c.getAttribute('data-id') === id2 && !c.querySelector('.vmain') && !!c.querySelector('.vmineb'), 'the heart button: the card now says that this is my companion');
+  check(v.querySelectorAll('.vmine').length === 1 && !!t2.querySelector('.vmine'), 'the heart moved to that troll');
+  check(ids(v).join() === before.join(), 'nobody changed place');
+  c.querySelector('.vnav').click(); await wait(200);
+  c = x.d.querySelector('.ovl .vlcard');
+  check(!!c && c.getAttribute('data-id') !== id2 && !!c.querySelector('.vmain'), 'the arrow of the card steps to another troll');
+  c.querySelector('.vx').click(); await wait(200);
+  check(!x.d.querySelector('.ovl'), 'the cross closes the card');
+  t2.click(); await wait(300);
+  var name = x.d.querySelector('.ovl .vname').textContent;
+  x.d.querySelector('.ovl .vdress').click(); await wait(600);
+  var cart = scr(x, 'cart');
+  check(!!cart && !x.d.querySelector('.ovl') && cart.querySelector('.cname').textContent === name, 'the shirt button opens the dressing room on that troll');
+  cart.querySelector('.top .tgroup .icon').click(); await wait(600);
+  v = scr(x, 'vil'); c = x.d.querySelector('.ovl .vlcard');
+  check(!!v && !!c && c.getAttribute('data-id') === id2, 'back from the dressing room returns to the village, on the card of that troll');
+  check(!!v.querySelector('.vtr[data-id="' + id2 + '"] .vmine'), 'the village that is drawn again keeps the heart on the new companion');
+  c.querySelector('.vx').click(); await wait(100);
+  v.querySelectorAll('.top .tgroup .icon')[1].click(); await wait(600);
+  var camp = scr(x, 'camp');
+  check(!!camp && camp.querySelector('.cbud').getAttribute('aria-label').indexOf(name) === 0, 'home: the camp shows the new companion');
+  x.f.remove();
+}
+async function scroll() { // many trolls: the island scrolls in its own area by the two arrows; the page itself never scrolls
+  var x = await frame('demo&s=village&vn=38&hour=10', 360, 640); await wait(600);
+  var v = scr(x, 'vil'), mw = v.querySelector('.mwrap'), sc = mw.querySelector('.mscroll'), up = mw.querySelector('.mup'), dn = mw.querySelector('.mdn');
+  var shown = function (b) { return x.w.getComputedStyle(b).display !== 'none'; };
+  check(v.querySelectorAll('.vtr').length === 38 && mw.classList.contains('scrl') && sc.scrollHeight > sc.clientHeight + 20, '38 trolls on a small phone: the island is taller than its window');
+  check(v.scrollHeight <= v.clientHeight + 1 && x.d.documentElement.scrollHeight <= x.w.innerHeight + 1, 'the screen itself does not scroll');
+  check(shown(dn) && !shown(up) && tappable(x, dn), 'at the top: only the arrow down');
+  dn.click(); await wait(1100);
+  check(sc.scrollTop > 100 && shown(up), 'the arrow down moves the island a screenful, and the arrow up comes');
+  for (var k = 0; k < 15 && shown(dn); k++) { dn.click(); await wait(1100); } // (a hidden test browser sends no scroll events: the arrows are followed through their own taps)
+  check(!shown(dn) && shown(up) && sc.scrollTop >= sc.scrollHeight - sc.clientHeight - 2, 'the arrow down leads to the bottom, where only the arrow up is left');
+  var last = v.querySelectorAll('.vtr')[37]; last.click(); await wait(300);
+  check(!!x.d.querySelector('.ovl .vlcard') && x.d.querySelector('.ovl .vlcard').getAttribute('data-id') === last.getAttribute('data-id'), 'the last troll can be reached and opened');
+  x.f.remove();
+  x = await frame('demo&s=village&vn=3&hour=10', 360, 640); await wait(500);
+  v = scr(x, 'vil');
+  check(v.querySelectorAll('.vtr').length === 3 && !v.querySelector('.mwrap').classList.contains('scrl') && !shown(v.querySelector('.mdn')), '3 trolls: nothing scrolls, no arrows');
+  x.f.remove();
+  x = await frame('demo&s=village&vn=1&vcard=main&hour=10', 360, 640); await wait(500);
+  var c = x.d.querySelector('.ovl .vlcard');
+  check(!!c && !c.querySelector('.vnav') && !c.querySelector('.vmain') && !!c.querySelector('.vmineb') && !!c.querySelector('.vdress'), 'one troll: its card has no arrows, it is the companion, and it can be dressed');
+  x.f.remove();
+}
+async function grow() { // a finished round: one point for the companion; the round that raises its level shows it and offers the village
+  var plain = [['demo&s=end&stg=1&hour=10', 'a house round'], ['demo&s=mixend&hatch&hour=10', 'a mixed round'], ['demo&s=bossend&hour=10', 'a bridge']], i, x;
+  for (i = 0; i < plain.length; i++) {
+    x = await frame(plain[i][0]); await wait(1300);
+    check(x.tv.done && x.tv.gpts === 1 && !x.tv.grow, plain[i][1] + ': the companion has one point, and its level did not rise');
+    check(!x.d.querySelector('.egrow') && !x.d.querySelector('.growb') && x.d.querySelectorAll('.ebtns .nxt').length === 1, plain[i][1] + ': nothing about levels on the end screen');
+    x.f.remove();
+  }
+  x = await frame('demo&s=end&stg=1&grow=3&hour=10'); await wait(600);
+  var cap = x.d.querySelector('.ecaps .egrow'), b = x.d.querySelector('.ebtns .growb'), all = x.d.querySelectorAll('.ebtns .btn');
+  check(x.tv.grow === 3 && x.tv.gpts === 7, 'the seventh round as the companion: level 3');
+  check(!!cap && cap.querySelectorAll('.ic-star').length === 5 && full(cap) === 3 && !!cap.querySelector('svg.troll'), 'the end screen shows the companion with its three stars');
+  check(!!b && tappable(x, b) && !b.classList.contains('nxt') && x.d.querySelectorAll('.ebtns .nxt').length === 1 && all[0].classList.contains('nxt') && tappable(x, all[0]), 'a button to the village, after the one main button');
+  b.click(); await wait(600);
+  var v = scr(x, 'vil'), c = x.d.querySelector('.ovl .vlcard');
+  check(!!v && !!c && full(c.querySelector('.vlvl')) === 3 && !!c.querySelector('.vmineb') && !!v.querySelector('.vtr[data-id="' + c.getAttribute('data-id') + '"] .vmine'), 'it opens the village on the card of the companion, with its three stars');
+  check(c.querySelectorAll('.vway .vdot').length === 5 && c.querySelectorAll('.vway .vdot.on').length === 0, 'the meter starts again: five rounds to the next star, none played');
+  x.f.remove();
+  x = await frame('demo&s=end&stg=1&grow=3&show=1&hour=10');
+  var s = x.d.querySelector('.screen.endm'), nxt = x.d.querySelector('.ebtns .nxt');
+  nxt.click();
+  check(!s.classList.contains('fin') && !!x.d.querySelector('.ecaps .egrow.ea'), 'the level-up comes in with the show of the end screen; a tap in the first moment does nothing');
+  await wait(1000); s.querySelector('.eframe').click();
+  check(s.classList.contains('fin') && x.w.getComputedStyle(x.d.querySelector('.ecaps .egrow')).animationName === 'none', 'a tap after one second skips the show, the level-up with it');
+  x.f.remove();
+  x = await frame('demo&s=end&hatch&news=2&grow=2&hour=10'); await wait(1500);
+  check(!!x.d.querySelector('.ecaps .egrow') && !x.d.querySelector('.growb') && x.d.querySelectorAll('.ebtns .newb').length === 2, 'two picture buttons already: the level-up is a caption only');
+  x.f.remove();
+  // the points change no prize: the same round with a companion at level 1 and at level 5
+  var a = await frame('demo&s=end&stg=1&stars=2&hour=10'), z = await frame('demo&s=end&stg=1&stars=2&grow=5&hour=10'); await wait(600);
+  check(coins(a) === coins(z) && a.d.querySelector('.starchip').getAttribute('data-n') === z.d.querySelector('.starchip').getAttribute('data-n') && a.d.querySelector('.ebtns .nxt').textContent === z.d.querySelector('.ebtns .nxt').textContent,
+    'the level of the companion changes no coin, no star and no next step (' + coins(a) + ' = ' + coins(z) + ')');
+  a.f.remove(); z.f.remove();
+}
+(async function () {
+  try { await door(); await scroll(); await grow(); } catch (e) { fails.push('threw: ' + e.message); }
+  document.title = fails.length ? 'VILLAGE FAIL ' + fails.join(' | ') : 'VILLAGE OK ' + checks;
+})();
+</script>

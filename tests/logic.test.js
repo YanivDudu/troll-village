@@ -674,6 +674,62 @@ t('next step: always forward, from the newest open house; a ready bridge; never 
   assert(L.stageOpen(s, 'g2add', 1, 2) && L.stageOpen(s, 'g2add', 3, 0) && !L.stageOpen(s, 'g2add', 3, 1) && !L.stageOpen(s, 'g2add', 4, 0));
   const before = JSON.stringify(s); L.nextStep(s); assert.strictEqual(JSON.stringify(s), before, 'pure');
 });
+// ---------- task "village": the levels of the trolls (the optional field state.grow) ----------
+t('village: a troll grows by finished rounds as the companion; state.grow is optional, cleaned, only grows, and touches nothing else', () => {
+  const JV = x => JSON.parse(JSON.stringify(x));
+  // 1. the ladder: 3, 4, 5, 6 more points; 18 rounds to level 5; nothing above it
+  assert.deepStrictEqual(Array.from(L.GROW_STEP), [3, 4, 5, 6]); assert.strictEqual(L.GROW_MAX, 18);
+  const lv = p => L.growLevel(p).level;
+  assert.deepStrictEqual([0, 1, 2, 3, 6, 7, 11, 12, 17, 18, 19, 1e9].map(lv), [1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5]);
+  assert.deepStrictEqual(JV(L.growLevel(0)), { level: 1, points: 0, done: 0, need: 3 });
+  assert.deepStrictEqual(JV(L.growLevel(8)), { level: 3, points: 8, done: 1, need: 5 });
+  assert.deepStrictEqual(JV(L.growLevel(18)), { level: 5, points: 18, done: 0, need: 0 });
+  for (const junk of [null, undefined, 'x', NaN, -4, {}, [], Infinity, -Infinity, true]) assert(lv(junk) >= 1 && lv(junk) <= 5, String(junk));
+  assert.strictEqual(lv(2.9), 1); assert.strictEqual(lv('7'), 1, 'only numbers count');
+  // 2. missing: stays missing, everybody is at level 1, the version does not change
+  assert.strictEqual(L.newState(2).grow, undefined); assert.strictEqual(L.newState(2).v, 4);
+  const plain = L.loadState(JSON.stringify(L.newState(2)));
+  assert(!('grow' in JV(plain))); assert.strictEqual(L.growOf(plain, 5), 0); assert.strictEqual(L.growOf(null, 5), 0); assert.strictEqual(L.growOf({ grow: 'x' }, 5), 0);
+  // 3. loading: kept for owned trolls, clamped, everything else dropped
+  let o = JV(L.newState(2)); o.owned = [5, 42, 79, 1000]; o.buddy = 42;
+  o.grow = { 5: 4, 42: 999, 79: 2.7, 1000: '6', 116: 9, x: 3, constructor: 5, '-1': 2 };
+  let s = L.loadState(JSON.stringify(o));
+  assert.deepStrictEqual(JV(s.grow), { 5: 4, 42: 18, 79: 2 });
+  o.grow = { 5: 0, 42: -3, 79: 'a', 1000: null }; assert.strictEqual(L.loadState(JSON.stringify(o)).grow, undefined, 'nothing valid: the field stays missing');
+  for (const junk of [null, 5, 'x', true, [], [1, 2], { 5: {} }, { 5: [3] }, { 5: NaN }]) { o.grow = junk; const g = L.loadState(JSON.stringify(o)); assert.strictEqual(g.grow, undefined, JSON.stringify(junk)); assert.strictEqual(g.v, 4); }
+  o.grow = { 5: 4 }; o.owned = []; assert.strictEqual(L.loadState(JSON.stringify(o)).grow, undefined, 'a troll that is not owned has no points');
+  // 4. a round trip (save, load, load) and a sync leave it as it is; an older page drops it and nothing breaks
+  o = JV(L.newState(2)); o.owned = [5, 42]; o.buddy = 5; o.grow = { 5: 7, 42: 1 };
+  const one = L.loadState(JSON.stringify(o)), two = L.loadState(JSON.stringify(one));
+  assert.deepStrictEqual(JV(two), JV(one)); assert.deepStrictEqual(JV(two.grow), { 5: 7, 42: 1 });
+  const A = { list: [{ id: 'p111111111', name: 'a' }], gone: [], n: { p111111111: 9 }, t: { p111111111: 9 }, has: { p111111111: true } }, B = { list: A.list, gone: [], n: { p111111111: 4 }, t: { p111111111: 4 }, has: { p111111111: true } };
+  const cloud = { list: A.list, gone: [], n: { p111111111: 9 }, t: { p111111111: 9 }, st: { p111111111: '9:9|9' }, has: { p111111111: true }, s: { p111111111: JSON.stringify(one) } };
+  const down = L.mergeCloud(B, cloud); assert.deepStrictEqual(Array.from(down.pull), ['p111111111']);
+  assert.deepStrictEqual(JV(L.loadState(cloud.s[down.pull[0]])), JV(one));
+  const dropped = JV(one); delete dropped.grow; const back = L.loadState(JSON.stringify(dropped));
+  assert.strictEqual(back.grow, undefined); assert.strictEqual(L.growLevel(L.growOf(back, 5)).level, 1);
+  const noGrow = JV(one); delete noGrow.grow; assert.deepStrictEqual(JV(back), noGrow, 'without the field the rest of the state is the same');
+  // 5. growAdd: the one writer. Pure, one point for the troll it names, only for an owned troll, never down, never above the top
+  let st = L.loadState(JSON.stringify(o)); const frozen = JSON.stringify(st);
+  let r = L.growAdd(st, 42); assert.strictEqual(JSON.stringify(st), frozen, 'pure');
+  assert.deepStrictEqual(JV(r.state.grow), { 5: 7, 42: 2 }); assert.strictEqual(r.up, false); assert.strictEqual(r.level, 1);
+  r = L.growAdd(r.state, 42); assert.strictEqual(r.up, true); assert.strictEqual(r.was, 1); assert.strictEqual(r.level, 2); assert.strictEqual(r.state.grow[5], 7, 'the other troll is not touched');
+  r = L.growAdd(st, 999); assert.strictEqual(r.state, st, 'not owned: nothing happens'); assert.strictEqual(r.up, false);
+  r = L.growAdd(st, null); assert.strictEqual(r.state, st); r = L.growAdd(null, 5); assert.strictEqual(r.up, false);
+  let cur = L.newState(2), ups = []; cur.owned = [5]; cur.buddy = 5;
+  for (let i = 1; i <= 30; i++) { const before = L.growOf(cur, 5); r = L.growAdd(cur, 5); cur = r.state; assert(L.growOf(cur, 5) >= before, 'never down'); if (r.up) ups.push(i); }
+  assert.deepStrictEqual(ups, [3, 7, 12, 18], 'the level rises after 3, 7, 12 and 18 rounds'); assert.strictEqual(L.growOf(cur, 5), 18); assert.strictEqual(lv(L.growOf(cur, 5)), 5);
+  const dirty = JV(L.newState(2)); dirty.owned = [5]; dirty.grow = { 5: 3, 77: 9, junk: 'x' }; // not normalised by loadState
+  assert.deepStrictEqual(JV(L.growAdd(dirty, 5).state.grow), { 5: 4 }, 'what is written is clean');
+  // 6. the points change nothing but themselves: the same state with and without them gives the same game
+  const a = L.loadState(JSON.stringify(o)), b = JV(a); delete b.grow; const bb = L.loadState(JSON.stringify(b)), same = x => { const c = JV(x); delete c.grow; return c; };
+  assert.deepStrictEqual(same(L.growAdd(a, 5).state), same(a), 'growAdd touches only state.grow');
+  assert.deepStrictEqual(JV(L.nextStep(a)), JV(L.nextStep(bb))); assert.deepStrictEqual(JV(L.friend(a)), JV(L.friend(bb)));
+  assert.deepStrictEqual(JV(L.finishStage(a, 'g2add', 1, 0, [true, true]).state.prog), JV(L.finishStage(bb, 'g2add', 1, 0, [true, true]).state.prog));
+  assert.deepStrictEqual(JV(L.stageReward(3)), JV(L.stageReward(3))); assert.strictEqual(L.finishStage(a, 'g2add', 1, 0, [true]).state.grow[5], 7, 'the points are carried through a finished stage');
+  assert.strictEqual(L.setGrade(a, 3).grow[5], 7); assert.strictEqual(L.memAdd(a, 'p', 'g2add', 1, '2026-11-22').grow[5], 7);
+});
+
 // ---------- stage 6: what the companion remembers (state.mem), the friendship level, the travel journal ----------
 // a second copy of the logic with the subject packs loaded (geometry, Hebrew, English), for the counts of whole grades
 const ctxP = {}; vm.createContext(ctxP); ctxP.window = ctxP;
