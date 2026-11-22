@@ -96,6 +96,42 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     check(x.d.querySelectorAll('#fx .spark').length > sparks, 'a tap on a celebration sets it off once');
     qa(x, '.cbtn')[0].click(); check(cardOf(x, 'pstar').classList.contains('worn'), 'the celebration is bought and chosen');
     x.f.remove();
+    // ---- task "pets": the living pets come first and show the animal itself; a troll has up to two pets, a third takes the place of the older one
+    x = await frame('demo&s=dress&tab=7&coins=1000');
+    var worn = function () { return qa(x, '.citem.worn').map(function (b) { return b.getAttribute('data-v'); }).sort().join(); }, paws = function () { return qa(x, '.kmsg .ppips .ic:not(.e)').length + '/' + qa(x, '.kmsg .ppips .ic').length; };
+    var beside = function () { return [].map.call(q(x, '.cprev').querySelectorAll('svg.troll .p3'), function (g) { return g.getAttribute('data-k'); }).join(); }, tap1 = function () { b = qa(x, '.cbtn'); b[0].click(); };
+    check(qa(x, '.citem').slice(0, 8).map(function (b) { return b.getAttribute('data-v'); }).join() === ',chick,puppy,kitty,monkey,croc,lion,elephant', 'pets: the seven living animals are the first cards, by price');
+    check(['chick:bird', 'puppy:dog', 'kitty:cat', 'monkey:monkey', 'croc:croc', 'lion:lion', 'elephant:elephant'].every(function (p) { p = p.split(':'); var im = cardOf(x, p[0]).querySelector('img.p3s'); return im && new RegExp('assets/pets/' + p[1] + '_s\\.webp$').test(im.getAttribute('src')); }), 'pets: each of them shows its own picture');
+    check(/^64/.test(cardOf(x, 'croc').querySelector('.cpr').textContent.trim()) && /^50/.test(cardOf(x, 'puppy').querySelector('.cpr').textContent.trim()) && /^76/.test(cardOf(x, 'lion').querySelector('.cpr').textContent.trim()), 'pets: the crocodile costs 64, the puppy 50 and the lion 76 as before');
+    check(worn() === 'kitty' && beside() === 'cat' && paws() === '1/2', 'pets: the kitten of before is the cat now, and one of the two places is taken (' + worn() + ' ' + beside() + ' ' + paws() + ')');
+    before = coins(x); cardOf(x, 'puppy').click();
+    check(beside() === 'cat,dog' && coins(x) === before && !!q(x, '.cprev .pstage .pt3[data-pet="puppy"]'), 'pets: a tap tries the dog on beside the cat, alive, and nothing is paid (' + beside() + ')');
+    tap1();
+    check(worn() === 'kitty,puppy' && coins(x) === before - 50 && paws() === '2/2' && beside() === 'cat,dog', 'pets: bought: the troll has two pets (' + worn() + ' ' + paws() + ')');
+    cardOf(x, 'lion').click();
+    check(beside() === 'dog,lion' && worn() === 'kitty,puppy', 'pets: a third one is tried on in the place of the older one (' + beside() + ')');
+    tap1();
+    check(worn() === 'lion,puppy' && coins(x) === before - 126 && paws() === '2/2' && /שֶׁלִּי/.test(cardOf(x, 'kitty').querySelector('.cpr').textContent), 'pets: the lion took the place of the cat; the cat is still owned (' + worn() + ')');
+    cardOf(x, 'lion').click(); check(qa(x, '.cbtn').length === 1, 'pets: a chosen pet: one button'); tap1();
+    check(worn() === 'puppy' && beside() === 'dog' && coins(x) === before - 126 && paws() === '1/2', 'pets: sent away: the dog stays, no coins moved (' + worn() + ' ' + beside() + ')');
+    cardOf(x, 'kitty').click(); tap1();
+    check(worn() === 'kitty,puppy' && beside() === 'dog,cat' && coins(x) === before - 126, 'pets: an owned pet joins again for free, as the newer of the two (' + beside() + ')');
+    c = find(x, 'fox'); c.click(); tap1(); find(x, 'kitty');
+    check(worn() === 'kitty' && coins(x) === before - 186 && hasPic(q(x, '.cprev'), '1f98a') && beside() === 'cat', 'pets: a flat pet and a living one together (the fox took the place of the dog)');
+    cardOf(x, '').click();
+    check(worn() === '' && beside() === '' && !q(x, '.cprev .pet') && paws() === '0/2', 'pets: "without" sends both away (' + worn() + ')');
+    x.f.remove();
+    // the two pets beside the companion at the camp (living pictures), on a map, and sitting on the exercise screen
+    x = await frame('demo&wear=puppy.lion', 390, 800, '.screen.camp .cground');
+    check(x.d.querySelectorAll('.camp .cground .cpet.pt3').length === 2 && !!x.d.querySelector('.cground .cpet.p2[data-pet="lion"] .psp') && !x.d.querySelector('.cbud svg .pet'), 'pets: the camp shows both pets as living pictures beside the companion');
+    x.f.remove();
+    x = await frame('demo&s=region&t=add&flat=1&wear=fox.croc', 390, 800, '.screen .mbud');
+    check(x.d.querySelectorAll('.mbud .mpet').length === 2 && !!x.d.querySelector('.mbud img.mpet') && !!x.d.querySelector('.mbud .mpet.pt3.p2[data-pet="croc"]'), 'pets: a map shows both pets, the flat one as before');
+    x.f.remove();
+    x = await frame('demo&s=round&t=add&wear=puppy.lion', 390, 800, '.screen .answers');
+    var sit = [].map.call(x.d.querySelectorAll('.screen:not(.out) .buddy svg.troll .p3 svg'), function (s) { return s.getAttribute('viewBox').split(' ')[0]; }).join();
+    check(sit === '2,3', 'pets: on the exercise screen both pets sit, each turned to the companion (' + sit + ')');
+    x.f.remove();
     // ---- an item that costs too much: no lock, a muted price, and it can become the one savings goal
     x = await frame('demo&s=dress&tab=7&coins=10');
     c = find(x, 'dragon'); c.click();

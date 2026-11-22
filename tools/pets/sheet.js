@@ -1,0 +1,28 @@
+// sheet.js: the contact sheet of one animal (every angle, the walk cycle, the poses, the signature move, small and large), drawn through Pets.draw.
+(function () {
+  'use strict';
+  var T = 190, G = 16, PI = Math.PI;
+  function tile(x, c, X, Y, S, label, o, bg) { x.fillStyle = bg || '#eef2fb'; x.beginPath(); x.roundRect(X + 2, Y + 2, S - 4, S - 4, 12); x.fill(); o.kind = c.kind; o.variant = o.variant == null ? c.variant : o.variant; o.size = S; Pets.draw(x, X, Y, o); x.fillStyle = '#4a3560'; x.font = '11px Segoe UI, Arial'; x.fillText(label, X + 8, Y + S + 11); }
+  window.makeSheet = function (kind, variant) { var c = { kind: kind, variant: variant || 0 }, W = T * 8, H = 6 * (T + G) + 380 + G + 26, cv = document.createElement('canvas'), x, i, Y = 26;
+    cv.width = W; cv.height = H; x = cv.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H); x.fillStyle = '#2e2350'; x.font = 'bold 15px Segoe UI, Arial';
+    var p = Pets.create(kind, { shadow: false }); x.fillText(kind + '   ' + p.tris + ' triangles, ' + p.skeleton.bones.length + ' bones, 1 skinned mesh (+1 soft shadow)', 8, 18); p.dispose();
+    for (i = 0; i < 8; i++) tile(x, c, i * T, Y, T, 'turn ' + i * 45 + ' deg', { angle: i * PI / 4, pose: { t: 0.5 } }); Y += T + G;
+    for (i = 0; i < 6; i++) tile(x, c, i * T, Y, T, 'walk, side, phase ' + (i / 6).toFixed(2), { angle: PI / 2, pose: { gait: 1, phase: i / 6, t: i / 6 } });
+    tile(x, c, 6 * T, Y, T, 'run, side, phase 0.10', { angle: PI / 2, pose: { gait: 1, run: 1, phase: 0.1 } }); tile(x, c, 7 * T, Y, T, 'run, side, phase 0.60', { angle: PI / 2, pose: { gait: 1, run: 1, phase: 0.6 } }); Y += T + G;
+    for (i = 0; i < 6; i++) tile(x, c, i * T, Y, T, 'walk, from behind, phase ' + (i / 6).toFixed(2), { angle: PI, pose: { gait: 1, phase: i / 6, t: i / 6 } });
+    tile(x, c, 6 * T, Y, T, 'walk, 3/4 front, 0.25', { angle: 0.6, pose: { gait: 1, phase: 0.25 } }); tile(x, c, 7 * T, Y, T, 'walk, 3/4 back, 0.75', { angle: PI - 0.7, pose: { gait: 1, phase: 0.75 } }); Y += T + G;
+    [['sit, 3/4', 0.6, { sit: 1, t: 1 }], ['sit, from behind', PI - 0.6, { sit: 1, t: 1 }], ['sit, side', PI / 2, { sit: 1, t: 1 }], ['lie down', 0.6, { lie: 1, t: 1 }], ['sleep', 0.6, { sleep: 1, t: 1 }], ['sleep, from behind', PI + 0.6, { sleep: 1, t: 1 }], ['jump, crouch', 0.6, { act: 'jump', u: 0.15 }], ['jump, top', 0.6, { act: 'jump', u: 0.47 }]].forEach(function (r, j) { tile(x, c, j * T, Y, T, r[0], { angle: r[1], pose: r[2], lift: /jump, top/.test(r[0]) ? 0.45 : 0, zoom: /jump/.test(r[0]) ? 0.8 : 1 }); }); Y += T + G;
+    [0.08, 0.2, 0.32, 0.45, 0.58, 0.7, 0.82, 0.94].forEach(function (u, j) { tile(x, c, j * T, Y, T, 'signature, u = ' + u, { angle: 0.5, pose: { act: 'signature', u: u, up: 0 }, zoom: kind === 'bird' ? 0.5 : 0.8, lift: kind === 'bird' ? 0.5 : 0.15 }); }); Y += T + G;
+    [['happy', { act: 'happy', u: 0.5 }], ['surprised', { act: 'surprised', u: 0.4 }], ['sleepy (yawn)', { act: 'sleepy', u: 0.33 }], ['shy', { act: 'shy', u: 0.5 }], ['look left', { look: [0.9, 0], t: 1 }], ['look right and up', { look: [-0.9, 0.5], t: 1 }], ['jump, landing', { act: 'jump', u: 0.8 }], ['mood happy, night', { mood: 'happy', t: 1 }]].forEach(function (r, j) { tile(x, c, j * T, Y, T, r[0], { angle: 0.35, pose: r[1], night: j === 7 }, j === 7 ? '#27305c' : null); }); Y += T + G;
+    x.fillStyle = '#7fd45a'; x.beginPath(); x.roundRect(2, Y + 2, 376, 376, 12); x.fill();
+    for (i = 0; i < 4; i++) { Pets.draw(x, 14 + i * 90, Y + 14, { kind: kind, variant: c.variant, size: 56, angle: [0.5, PI / 2, PI, PI + 0.9][i], pose: { t: 1 } }); Pets.draw(x, 14 + i * 90, Y + 90, { kind: kind, variant: c.variant, size: 56, angle: [0.5, PI / 2, PI, PI + 0.9][i], pose: { gait: 1, phase: 0.3 }, outline: false });
+      Pets.draw(x, 14 + i * 90, Y + 166, { kind: kind, variant: c.variant, size: 40, angle: [0, PI / 2, PI, -PI / 2][i], pose: { t: 1 } }); Pets.draw(x, 14 + i * 90, Y + 220, { kind: kind, variant: (i + 1) % 3, size: 72, angle: [0.5, -0.5, PI - 0.5, 0.5][i], pose: [{ sit: 1 }, { t: 1 }, { t: 1 }, { sleep: 1 }][i] }); }
+    x.fillStyle = '#1f5a2a'; x.font = '11px Segoe UI, Arial'; x.fillText('56 px with outline (as on a phone map)', 12, Y + 84); x.fillText('56 px walking, no outline', 12, Y + 160); x.fillText('40 px', 12, Y + 216); x.fillText('72 px, the other colours', 12, Y + 304);
+    for (i = 0; i < 4; i++) Pets.draw(x, 14 + i * 90, Y + 312, { kind: kind, variant: c.variant, size: 56, angle: i * PI / 2 + 0.4, pose: { t: 1 }, night: true });
+    tile(x, c, 380, Y, 380, 'large, day', { angle: 0.55, pose: { t: 1.2 } }); tile(x, c, 760, Y, 380, 'large, from behind', { angle: PI - 0.6, pose: { t: 1.2 } }); tile(x, c, 1140, Y, 380, 'large, night', { angle: -0.5, pose: { t: 1.2, mood: 'happy' }, night: true }, '#27305c');
+    return cv; };
+  window.sheetURL = function (kind, variant) { return window.makeSheet(kind, variant).toDataURL('image/png'); };
+  window.petStats = function () { var out = {}; Pets.KINDS.forEach(function (k) { var t0 = performance.now(), p = Pets.create(k, { shadow: false }), ms = performance.now() - t0; Pets.render({ kind: k, size: 96 }); var a = Pets.info().calls; Pets.render({ kind: k, size: 48 }); out[k] = { tris: p.tris, verts: p.verts, bones: p.skeleton.bones.length, buildMs: +ms.toFixed(1), calls: a, callsOutlined: Pets.info().calls }; p.dispose(); }); return out; };
+  var m = /[?&]kind=(\w+)/.exec(location.search); if (m) { document.getElementById('msg').remove(); document.body.appendChild(window.makeSheet(m[1], +(/[?&]v=(\d)/.exec(location.search) || [0, 0])[1])); }
+  window.__ready = true;
+})();

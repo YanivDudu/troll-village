@@ -1,0 +1,88 @@
+{
+ "cols": 8,
+ "rows": [
+  "stand",
+  "walk0",
+  "walk1",
+  "walk2",
+  "walk3",
+  "sit",
+  "sleep",
+  "happy"
+ ],
+ "kinds": [
+  "dog",
+  "cat",
+  "lion",
+  "croc",
+  "monkey",
+  "bird",
+  "elephant"
+ ],
+ "cell": 112,
+ "still": 144,
+ "ground": 0.86,
+ "stills": [
+  "stand right",
+  "stand left",
+  "sit right",
+  "sit left"
+ ],
+ "variant": {
+  "dog": 0,
+  "cat": 0,
+  "lion": 0,
+  "croc": 0,
+  "monkey": 0,
+  "bird": 2,
+  "elephant": 0
+ },
+ "zoom": {
+  "dog": [
+   0.74,
+   1.02
+  ],
+  "cat": [
+   0.7,
+   0.86
+  ],
+  "lion": [
+   0.74,
+   0.9
+  ],
+  "croc": [
+   0.86,
+   1.06
+  ],
+  "monkey": [
+   0.82,
+   1.06
+  ],
+  "bird": [
+   0.78,
+   0.98
+  ],
+  "elephant": [
+   0.7,
+   0.98
+  ]
+ },
+ "bytes": {
+  "dog": 79754,
+  "cat": 74646,
+  "lion": 77072,
+  "croc": 54282,
+  "monkey": 72374,
+  "bird": 78688,
+  "elephant": 72522
+ },
+ "stillBytes": {
+  "dog": 16910,
+  "cat": 14144,
+  "lion": 13416,
+  "croc": 10184,
+  "monkey": 14200,
+  "bird": 14744,
+  "elephant": 16006
+ }
+}
