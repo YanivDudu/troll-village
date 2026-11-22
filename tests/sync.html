@@ -293,7 +293,7 @@ async function run() {
   check(sync().t[idA] === tA && rev(idA) === nA8 && r3(c, idA).n === nA8 && JSON.parse(c['s3_' + idA]).coins === coins8, 'the progress, its time and its number did not change with it');
   var del = await until(function () { return doc().querySelectorAll('.screen:not(.out) .pdel')[profs().list.findIndex(function (p) { return p.id === idB; })]; }, 'who A');
   i0 = net.log.length;
-  del.click(); (await until(function () { return q('.sure .btn.b2'); }, 'confirm')).click();
+  del.click(); (await until(function () { return q('.sure .btn.b2:not(.onlyhere)'); }, 'confirm')).click();
   await idle(i0);
   c = await cloudDoc();
   check(JSON.parse(c.gone).indexOf(idB) >= 0 && !('s3_' + idB in c) && !('t3_' + idB in c) && !('r3_' + idB in c) && !rev(idB), 'deleted from everywhere: the player is marked as deleted and its fields left the document');
