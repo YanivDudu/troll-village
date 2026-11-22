@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Task "map3d": the overlap check of the 3D picture of EVERY trail map of the game (the map of each subject, each challenge map, the map of each topic,
+     grades 1 to 4), at 360x640, 390x800 and 1366x650. The game itself lists its maps (#m3list=1) and, for each map, builds the plan of the 3D picture without
+     WebGL (#m3chk=1: the same code that places the houses, the landmarks and the scenery under the DOM) and reports what would lie over what:
+       a house or a landmark over the card, the picture, the badge or the companion of another stop, or over the parents' button; out of the picture;
+       a tree, a mountain, a bush, a rock or the boat over any card, picture, badge, companion or button.
+     It also fails when the list of pictures that have a model in index.html (M3.PICS) differs from toy3d.js, or when a map gives no plan at all.
+     The layout of the DOM itself (labels against labels, buttons, scrolling) is the business of tests/fit.html, which runs every map in both modes.
+     Result in document.title: MAP3D OK ... / MAP3D FAIL ...     map3d.html#390x800 runs one size; &only=<text> only the maps whose name contains the text.
+     Run: msedge --headless --mute-audio --disable-gpu --allow-file-access-from-files --window-size=2000,1400 --virtual-time-budget=400000 --dump-dom tests/map3d.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}td{padding:2px 8px;border:1px solid #777}.bad{background:#a00}</style>
+<div id="frames"></div><table id="out"></table>
+<script>
+var SIZES = [[360, 640], [390, 800], [1366, 650]], GRADES = [1, 2, 3, 4], LIVE = 10;
+var one = /(\d+)x(\d+)/.exec(location.hash); if (one) SIZES = [[+one[1], +one[2]]];
+var pick = /only=([^&]+)/.exec(location.hash);
+var maps = [], lists = 0, queue = [], want = 0, got = 0, fails = [], open = [], sum = { stops: 0, models: 0, props: 0, scrl: 0 };
+function frame(w, h, src) { var f = document.createElement('iframe'); f.width = w; f.height = h; f.src = src; document.getElementById('frames').appendChild(f); return f; }
+function done() { document.title = 'MAP3D ' + (fails.length ? 'FAIL ' + fails.length + ': ' + fails.slice(0, 12).join(' | ') : 'OK ' + maps.length + ' maps x ' + SIZES.length + ' sizes = ' + got + ' pictures, ' + sum.stops + ' stops (' + sum.models + ' as 3D models), ' + sum.props + ' pieces of scenery, ' + sum.scrl + ' that scroll'); }
+function next() {
+  var j = queue.shift(); if (!j) return;
+  var f = frame(j[0][0], j[0][1], '../index.html#demo&g=' + j[1][0] + '&s=' + j[1][1] + '&hour=10&m3chk=1');
+  var rec = { f: f, name: j[0].join('x') + ' g' + j[1][0] + ' ' + j[1][1] };
+  rec.t = setTimeout(function () { if (rec.over) return; finish(rec, { bad: ['no answer in 60 s'] }); }, 60000);
+  open.push(rec);
+}
+function finish(rec, d) {
+  rec.over = true; clearTimeout(rec.t); rec.f.remove(); open.splice(open.indexOf(rec), 1); got++;
+  if (d.bad && d.bad.length) fails.push(rec.name + ': ' + d.bad.slice(0, 4).join(', '));
+  sum.stops += d.stops || 0; sum.models += d.models || 0; sum.props += d.props || 0; sum.scrl += d.scrl ? 1 : 0;
+  var tr = document.createElement('tr'); if (d.bad && d.bad.length) tr.className = 'bad';
+  tr.innerHTML = '<td>' + rec.name + '</td><td>stops ' + (d.stops || 0) + '</td><td>models ' + (d.models || 0) + '</td><td>scenery ' + (d.props || 0) + '</td><td>grow ' + (d.grow || '') + '</td><td>' + (d.scrl ? 'scrolls, ' + d.mh + ' px' : '') + '</td><td>' + (d.bad || []).join(', ') + '</td>';
+  document.getElementById('out').appendChild(tr);
+  if (got === want) done(); else next();
+}
+addEventListener('message', function (e) {
+  var d = e.data; if (!d) return;
+  if (d.m3list) {
+    d.m3list.forEach(function (sc) { if (!pick || sc.indexOf(decodeURIComponent(pick[1])) >= 0) maps.push([d.g, sc]); });
+    [].some.call(document.querySelectorAll('iframe'), function (f) { if (f.contentWindow !== e.source) return false; f.remove(); return true; });
+    if (++lists < GRADES.length) return;
+    maps.sort(function (a, b) { return a[0] - b[0]; });
+    SIZES.forEach(function (s) { maps.forEach(function (m) { queue.push([s, m]); }); }); want = queue.length;
+    if (!want) { fails.push('the game listed no maps'); done(); return; }
+    for (var i = 0; i < LIVE; i++) next();
+    return;
+  }
+  if (d.m3) open.some(function (rec) { if (rec.f.contentWindow !== e.source) return false; finish(rec, d); return true; });
+});
+GRADES.forEach(function (g) { frame(200, 200, '../index.html#demo&g=' + g + '&s=home&m3list=1'); });
+setTimeout(function () { if (lists < GRADES.length) { fails.push('the game did not list its maps'); done(); } }, 30000);
+</script>
