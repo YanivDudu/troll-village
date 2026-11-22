@@ -120,7 +120,7 @@ var TrollCamp3D = (function () {
       var t0 = performance.now(), i, j;
       world = new THREE.Group(); scene.add(world);
       // the terrain
-      var RINGS = 20, SEG = 84, FMAX = 1.12, P = [0, 0, 0], idx = [];
+      var RINGS = 20, SEG = 84, FMAX = 1.06, P = [0, 0, 0], idx = [];
       for (j = 1; j <= RINGS; j++) { var f = FMAX * (1 - Math.pow(1 - j / RINGS, 1.6)); ringPts(f, SEG).forEach(function (p) { P.push(p[0], hgt(p[0], p[1]), p[1]); }); }
       for (i = 0; i < SEG; i++) idx.push(0, 1 + i, 1 + (i + 1) % SEG);
       for (j = 0; j < RINGS - 1; j++) for (i = 0; i < SEG; i++) { var a0 = 1 + j * SEG + i, b0 = 1 + j * SEG + (i + 1) % SEG, c0 = a0 + SEG, d0 = b0 + SEG; idx.push(a0, c0, b0, b0, c0, d0); }

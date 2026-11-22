@@ -97,7 +97,7 @@ for (const u of ['file:///C:/Users/x/troll-math/index.html', 'http://localhost:8
 // (network first), is asked for by index.html from exactly that address, and index.html does not load it with a <script src> of its own
 {
   const { OPTIONAL } = require(path.join(root, 'sw.js'));
-  assert(Array.isArray(OPTIONAL) && OPTIONAL.length === 4);
+  assert(Array.isArray(OPTIONAL) && OPTIONAL.length === 6);
   const files = /FILES = \[([^\]]+)\]/.exec(html)[1].split(',').map(x => 'assets/map3d/' + x.trim().replace(/'/g, ''));
   assert.deepStrictEqual(files, OPTIONAL);
   for (const p of OPTIONAL) {

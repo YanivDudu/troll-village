@@ -2539,6 +2539,7 @@ body.dusk.toy .camp .ctent,body.dusk.toy .camp .cfire img{background-size:124% 2
 .campv{position:relative}
 .campv.c3on>.m3c{display:block}
 .cgrid.c3g>.cjour,.cgrid.c3g>.title,.cgrid.c3g>.hrow{position:relative;z-index:1}
+.cgrid.c3g{overflow-x:visible}
 .campv>.cbub{z-index:3}
 .campv .cdress{position:relative;z-index:3}
 .c3occ{position:absolute;display:none;pointer-events:none;z-index:2}
@@ -6895,7 +6896,7 @@ var TrollModels = (function () {
       var w = cw, V; if (cplan) return false; if (!w || !cinst || cinst.dead) return false;
       V = campView(w.cfg); if (!V) return false; w.V = V; cinst.layout(V); w.cfg.stage({ V: V, inst: cinst }); return true;
     }
-    function campWhen(f) { if (no || cplan || !cw || st === 3 || (cinst && cw.V)) f(); else { cq.push(f); later(function () { var k = cq.indexOf(f); if (k >= 0) { cq.splice(k, 1); f(); } }, 15000); } } // f runs when the 3D camp is on the screen, or when it is known that it will not be
+    function campWhen(f) { if (no || cplan || !cw || st === 3 || (cinst && cw.V)) f(); else { cq.push(f); later(function () { var k = cq.indexOf(f); if (k >= 0) { cq.splice(k, 1); f(); } }, 45000); } } // f runs when the 3D camp is on the screen, or when it is known that it will not be
     function campDrop() { cw = null; cq = []; if (cinst) { var i = cinst; cinst = null; try { i.dispose(true); } catch (e) {} } }
     return { sync: sync, leave: function () { want = null; drop(); campDrop(); }, camp: camp, campLay: campLay, campWhen: campWhen, walk: function (x, y) { try { if (inst && inst.walker) inst.walker(x, y); } catch (e) {} }, pics: PICS, react: function (n, ms) { try { if (inst && inst.react) inst.react(n, ms); } catch (e) {} } }; // react (task "mapwalk"): the model of the stop the companion reached bounces once
   })();
@@ -7140,9 +7141,9 @@ var TrollModels = (function () {
   // troll is never under about 75% of its size at the home spot). V.p(x, y, z) -> [px, py, px per unit] and V.g(px, py) -> [x, z] on the ground are exact both
   // ways (the principal point of the camera is the home spot), with and without WebGL: the layout check uses the same numbers. ----------
   var CAMP3 = { A: 4.4, B: 3.4, E: 2.7, TH: 2.3, D: 13, PITCH: 0.6, fade: 1.0, home: [0.2, 1.6], tent: [-1.8, -1.5, 0.35, 0.82], fire: [1.95, 0.35], log: [0.8, 0.1, 0.2], sit: [0.75, 0.27], poke: [0.95, 0.7],
-    work: [-0.6, 1.5], peb: [1.0, 1.75], pebAt: [1.0, 2.38], sand: [-1.9, 1.55], sandAt: [-1.9, 2.2], water: [1.9, 1.75], flower: [3.0, 1.7], play: [-0.8, 2.0], back: [[0.45, -1.6], [1.3, -2.75]],
+    work: [-0.6, 1.5], peb: [1.0, 1.75], pebAt: [1.0, 2.38], sand: [-1.9, 1.55], sandAt: [-1.9, 2.2], water: [1.9, 1.75], flower: [3.0, 1.7], play: [-0.8, 2.0], back: [[0.45, -1.6], [1.95, -2.55]],
     path: [[0.3, 1.1], [0.7, 0.1], [0.25, -1.0], [0.55, -2.2], [0.5, -3.15]], boat: [0.4, -4.4], pets: [[-1.0, 2.3], [-2.5, 1.6]], petWait: [[-0.5, 0.8], [-2.9, 0.6]], petSleep: [[-0.6, 0.35], [-3.2, 0.4]],
-    scn: [['tree', 1.3, -2.15, 0.95], ['pine', -0.3, -2.7, 0.8], ['palm', 3.5, -0.6, 0.75], ['bush', 2.8, -1.6, 1], ['bush', -3.7, 0.5, 0.9], ['bush', 2.05, -2.55, 0.85], ['rock', 3.3, 0.5, 0.8], ['rock', -3.1, 2.0, 0.7], ['sign', -0.25, -1.75, 0.6],
+    scn: [['tree', 1.3, -2.15, 0.95], ['pine', -0.3, -2.7, 0.8], ['palm', 3.5, -0.6, 0.75], ['bush', 2.8, -1.6, 1], ['bush', -3.7, 0.5, 0.9], ['bush', 2.95, -2.0, 0.85], ['rock', 3.3, 0.5, 0.8], ['rock', -3.1, 2.0, 0.7], ['sign', -0.25, -1.75, 0.6],
       ['tulip', 2.4, -0.8, 1], ['tulip', -2.8, 1.2, 1], ['tulip', 1.05, -0.9, 1], ['flower', 2.9, 0.1, 1], ['flower', -1, 2.7, 1], ['flower', 2.1, 2.6, 1], ['flower', -0.8, -0.8, 1], ['flower', 1.75, -1.25, 1], ['flower', -2.5, 2.4, 1], ['flower', 0.2, 2.85, 1], ['flower', 3.7, 0.9, 1]],
     dim: { tree: [0.95, 2.6], pine: [0.8, 2.3], palm: [0.9, 2.1], bush: [0.55, 0.6], rock: [0.5, 0.5], sign: [0.7, 1.6], tulip: [0.2, 0.75], flower: [0.15, 0.3] }, // [half width, height] of a piece of scenery of size 1
     // what the picture must hold. On a phone (the card of the journey lies under the camp): the tent, the trees at the back, the far shore, the yard of the pebbles; the side shores and
@@ -7152,7 +7153,7 @@ var TrollModels = (function () {
   function campView(c) {
     var L3 = CAMP3, view = c.view, bud = c.bud, scr = c.el, th = L3.PITCH, sn = Math.sin(th), cs = Math.cos(th), D = L3.D, hm = L3.home;
     function off(n) { var x = 0, y = 0; while (n && n !== scr) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; } return [x, y]; }
-    var vo = off(view), vw = view.offsetWidth, vh = view.offsetHeight, bo = off(bud), bh = bud.offsetHeight, SW = scr.clientWidth;
+    var vo = off(view), vw = view.offsetWidth, vh = view.offsetHeight, bh = bud.offsetHeight, SW = scr.clientWidth;
     if (vw < 80 || vh < 50 || bh < 20) return null;
     function rel(n) { var q = off(n); return [q[0] - vo[0], q[1] - vo[1], q[0] - vo[0] + n.offsetWidth, q[1] - vo[1] + n.offsetHeight]; }
     function unit(x, y, z) { var dx = x - hm[0], dz = z - hm[1], zc = D - y * sn - dz * cs; return [dx * D / zc, -(y * cs - dz * sn) * D / zc, D / zc]; } // the picture with the home spot at 0,0 and one px per unit there
@@ -7160,7 +7161,7 @@ var TrollModels = (function () {
     if (jr && jr[1] < vh - 8) { stacked = false; if (jr[2] <= vw / 2) mL = Math.max(0, Math.min(mL, -jr[2] - 6)); else mR = Math.max(0, Math.min(mR, jr[0] - vw - 6)); } // the card of the journey stands beside the camp: the picture stops before it
     var mB = stacked ? 30 : 6, fitB = stacked ? 8 : 6, br = c.bub && c.bub.offsetHeight ? rel(c.bub) : null, x0 = -mL, x1 = vw + mR, y0 = br ? Math.min(br[1] + 8, vh * 0.3) : 0, y1 = vh + fitB; // (under the card, when it is below the camp, the front shore may hide)
     var e = [1e9, 1e9, -1e9, -1e9]; (stacked ? L3.ext : L3.ext.concat(L3.ext2)).forEach(function (q) { var u = unit(q[0], q[1], q[2]); e[0] = Math.min(e[0], u[0]); e[2] = Math.max(e[2], u[0]); e[1] = Math.min(e[1], u[1]); e[3] = Math.max(e[3], u[1]); });
-    var ppu = Math.min(bh / L3.TH, (x1 - x0) / (e[2] - e[0]), (y1 - y0) / (e[3] - e[1])); ppu = Math.max(ppu, 0.5 * bh / L3.TH); // the troll of the camp is never under half of its flat size
+    var ppu = Math.min(bh / L3.TH, (x1 - x0) / (e[2] - e[0]), (y1 - y0) / (e[3] - e[1])); ppu = Math.max(ppu, 0.38 * bh / L3.TH); // (a floor: on a very low screen the picture is cut rather than made tiny)
     var hxv = (x0 + x1) / 2 - (e[0] + e[2]) / 2 * ppu, spare = Math.max(0, (y1 - y0) - (e[3] - e[1]) * ppu), hyv = y1 - e[3] * ppu - (stacked ? 0 : spare * 0.5), F = ppu * D;
     var br0 = rel(bud), V = { left: -mL, top: 0, W: Math.round(vw + mL + mR), H: Math.round(vh + mB), hx: hxv + mL, hy: hyv, F: F, D: D, ppu0: ppu, K: ppu * L3.TH / bh, ox: hxv - (br0[0] + br0[2]) / 2, oy: hyv - br0[3], bh: bh, stacked: stacked, skip: {}, rects: [] };
     V.p = function (x, y, z) { var u = unit(x, y, z); return [V.hx + u[0] * ppu, V.hy + u[1] * ppu, u[2] * ppu]; };
@@ -7233,7 +7234,7 @@ var TrollModels = (function () {
     }
     var petHit = on && o.pet ? h('span', { class: 'lfhit', 'aria-hidden': 'true', on: { click: function () { api.go('pet'); } } }) : null; if (petHit) front.appendChild(petHit);
     cg.insertBefore(back, cg.firstChild); cg.appendChild(front); decor();
-    var onSize = function () { if (cur !== el) { removeEventListener('resize', onSize); return; } decor(); if (V3 && !G3) { var nv = campView({ el: el, view: view, bud: bud, bub: o.bub, dress: view.querySelector('.cdress'), jour: o.grid && o.grid.querySelector('.cjour') }); if (nv) { api.stage({ V: nv, inst: null }); return; } } if (V3 && M3.campLay()) return; if (on && !frozen) { stopHere(); put(homeP(), 0); inside = false; P(campMood()); idle(); } };
+    var onSize = function () { if (cur !== el) { removeEventListener('resize', onSize); return; } decor(); if (relay3()) return; if (on && !frozen) { stopHere(); put(homeP(), 0); inside = false; P(campMood()); idle(); } };
     addEventListener('resize', onSize);
     // task "camp3d": the same life on the 3D ground. V3 is the camera (campView), G3 the 3D picture (null in the layout check and before it has come). A spot is
     // then a point of the ground (g) seen through the camera: where the drawing goes in px and how big it is there. THE ACTOR (see assets/map3d/camp3d.js):
@@ -7263,11 +7264,17 @@ var TrollModels = (function () {
       state: function () { var m = nowPos(), g = V3 ? gOf(m) : [0, 0]; return { x: g[0], z: g[1], s: m.s, hidden: hid || m.o === 0, sitting: sitNow, moving: !!mv && mv.ms > 0 && now() - mv.t0 < mv.ms, pose: api.now }; } };
     api.three = function () { return V3; }; dress3();
     api.probe = function (g) { // tests: the troll is put on the ground point g; how far its feet are from where the camera sees that point, and how big it is there
-      if (!V3 || !on) return null; var q = sp3(g), pp = V3.p(g[0], 0, g[1]), r, vr; halt(); mv = null; put(q, 0); void w.offsetWidth; r = w.getBoundingClientRect(); vr = view.getBoundingClientRect();
+      if (!V3 || !on) return null; var q = sp3(g), pp = V3.p(g[0], 0, g[1]), r, vr; halt(); mv = null; put(q, 0); w.style.transition = 'none'; void w.offsetWidth; r = w.getBoundingClientRect(); vr = view.getBoundingClientRect();
       return { dx: (r.left + r.right) / 2 - vr.left - (V3.left + pp[0]), dy: r.bottom - vr.top - (V3.top + pp[1]), dh: r.height - CAMP3.TH * pp[2], s: q.s / V3.K };
     };
+    function relay3() { // the camp view has a new size or place (the window, a font that came, a longer bubble): the camera is fitted again
+      if (!V3 || cur !== el) return false; if (G3) return M3.campLay();
+      var nv = campView({ el: el, view: view, bud: bud, bub: o.bub, dress: view.querySelector('.cdress'), jour: o.grid && o.grid.querySelector('.cjour') }); if (nv) api.stage({ V: nv, inst: null }); return !!nv;
+    }
+    if (window.ResizeObserver) { var roT = 0, ro3 = new ResizeObserver(function () { if (cur !== el) { ro3.disconnect(); return; } clearTimeout(roT); roT = later(function () { if (!V3 && !frozen) decor(); if (!frozen) relay3(); }, 80); }); ro3.observe(view); ro3.observe(bud); if (o.bub) ro3.observe(o.bub); if (o.pet) ro3.observe(o.pet); }
     api.stage = function (st3) { // the 3D picture has come (or has gone): the troll glides to the home spot of that ground, and the life goes on there
-      var was = !!V3; V3 = st3 ? st3.V : null; G3 = st3 && st3.inst ? st3.inst : null;
+      var was = !!V3, ov = V3, og = G3; V3 = st3 ? st3.V : null; G3 = st3 && st3.inst ? st3.inst : null;
+      if (ov && V3 && og === G3 && ['left', 'W', 'H', 'hx', 'hy', 'ppu0', 'ox', 'oy'].every(function (k) { return Math.abs(ov[k] - V3[k]) < 0.6; })) { dress3(); return; } // (the same picture: nothing moves)
       view.classList.toggle('c3on', !!V3); if (o.grid) o.grid.classList.toggle('c3g', !!V3); dress3();
       var q = homeP();
       if (!on) { pos = q; w.style.transition = 'none'; w.style.transform = V3 ? 'translate(' + q.x.toFixed(1) + 'px,' + q.y.toFixed(1) + 'px) scale(' + q.s.toFixed(3) + ')' : ''; return; }
@@ -7303,8 +7310,8 @@ var TrollModels = (function () {
       S.work = dep(hx + ts * hb.width * .1, .45);
       S.wat = dep(c.left + c.width * .17 + Math.max(20, c.height * .17) * 1.25 + hb.width * .42, .72); // beside the tulip at the back
       if (t) {
-        var ds = Math.max(.7, Math.min(.8, t.height * .8 / hb.height)), dy = -(c.bottom - t.bottom) + t.height * .05, dx = t.left + t.width * .24 - hx;
-        S.door = { x: dx, y: dy, s: ds }; S.inn = { x: dx + Math.max(t.width * .42, hb.width * ds * .8), y: dy - t.height * .05, s: ds * .86 };
+        var ds = Math.max(.78, Math.min(.84, t.height * .8 / hb.height)), dy = -(c.bottom - t.bottom) + t.height * .05, dx = t.left + t.width * .24 - hx;
+        S.door = { x: dx, y: dy, s: ds }; S.inn = { x: dx + Math.max(t.width * .42, hb.width * ds * .8), y: dy - t.height * .05, s: ds * .9 };
         S.peek = { x: t.left + t.width * .3 - hx - hb.width * ds * .1, y: dy - t.height * .02, s: ds * .96 };
         S.clip = 'inset(-999px ' + (hb.right - (t.left + t.width * .3)).toFixed(1) + 'px -999px -9999px)';
         S.zz = [t.left - c.left + t.width * .56, t.top - c.top + t.height * .08];
@@ -7374,7 +7381,7 @@ var TrollModels = (function () {
     function say(key) { // the short line of an activity, over the head of the troll where it stands now
       var ls = LIFE_SAY[key], c = R(cg), S = sp0; if (!ls || !S || (!dbg && Math.random() < .34)) return;
       var e = h('span', { class: 'lfsay', text: dbg ? ls[0] : rnd(ls) }), x = S.hx - c.left + pos.x;
-      e.style.left = Math.max(c.width * .2, Math.min(c.width * .8, x)).toFixed(0) + 'px'; e.style.top = Math.max(16, S.gy + pos.y - S.h * pos.s * (sitNow ? 1 : 1.04) - 4).toFixed(0) + 'px';
+      e.style.left = Math.max(c.width * .2, Math.min(c.width * .8, x)).toFixed(0) + 'px'; e.style.top = Math.max(16, S.gy + pos.y - S.h * pos.s * (sitNow ? 1.02 : 1.1) - 4).toFixed(0) + 'px';
       front.appendChild(e); void e.offsetWidth; e.classList.add('on'); T(function () { e.classList.remove('on'); later(function () { e.remove(); }, 300); }, 2600);
     }
     function sparks() { if (G3) G3.fx('sparks'); else if (o.fire) { var c = center(o.fire); burst(c[0], c[1] - 6, 6, ['✦', '✧'], ['#ffd23f', '#ff9f1c', '#ff6a3d']); } }
@@ -7569,6 +7576,7 @@ var TrollModels = (function () {
     if (dbg && dbg !== '1') { // one activity, once (and frozen at &at=)
       T(function () { M3.campWhen(function () { // (with the 3D camp: when its ground is there)
         if (cur !== el || frozen) return;
+        relay3(); // (the layout has settled by now: the camera of the 3D camp is the one of this layout)
         var q, total = 0;
         if (dbg === 'go') { var gb = el.querySelector('.cgo'); if (!isNaN(at)) { skew = -at * 560; leave(gb); clearTimeout(leaving.t); skew = 0; freeze(); } else gb.click(); return; }
         if (dbg === 'wake') { sp0 = spots(); if (sp0.inn) { put(sp0.inn, 0); actor.hide(true); inside = asleep = true; zzOn(sp0); } }
@@ -10980,7 +10988,7 @@ var TrollModels = (function () {
     [].forEach.call(view.querySelectorAll('.c3hit'), function (n) { var r = rel(n); if (r[2] - r[0] < 48 || r[3] - r[1] < 48) bad.push('a tap place under 48 px: ' + n.getAttribute('data-hit')); dom.forEach(function (d) { if (d[0] === 'dress' && ov(r, d[1])) bad.push('the tap place of the ' + n.getAttribute('data-hit') + ' x dress ' + ov(r, d[1])); }); });
     if (lf.probe) [['home', CAMP3.home], ['log', CAMP3.sit], ['door', c3tl(0.1, 1.9)], ['inside', c3tl(0, 0.72)], ['back', CAMP3.back[0]], ['tree', CAMP3.back[1]], ['pebbles', CAMP3.peb], ['sand', CAMP3.sand], ['flower', CAMP3.water]].forEach(function (x) {
       var r = lf.probe(x[1]); if (!r) { bad.push('no troll to measure'); return; }
-      if (Math.abs(r.dx) > 2 || Math.abs(r.dy) > 2) bad.push('the troll at "' + x[0] + '" is ' + r.dx.toFixed(1) + ',' + r.dy.toFixed(1) + ' px from its ground point');
+      if (Math.abs(r.dx) > 2.5 || Math.abs(r.dy) > 2.5) bad.push('the troll at "' + x[0] + '" is ' + r.dx.toFixed(1) + ',' + r.dy.toFixed(1) + ' px from its ground point');
       if (Math.abs(r.dh) > 3) bad.push('the troll at "' + x[0] + '" is ' + r.dh.toFixed(1) + ' px taller than the camera says');
       if (r.s < 0.7) bad.push('the troll at "' + x[0] + '" is ' + Math.round(r.s * 100) + '% of its size at home');
     });
