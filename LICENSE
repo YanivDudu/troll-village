@@ -1,0 +1,24 @@
+Copyright (c) 2026 Yaniv Dudu. All rights reserved.
+
+This repository holds the game "Olam HaTrolim" ("the world of the trolls"): its
+code, its exercises and texts, and its original graphic works (the code-drawn
+trolls, the 3D models built in code, the badges, the design of the screens and
+the maps).
+
+No permission is granted to any person to use, copy, modify, merge, publish,
+distribute, sublicense or sell any part of it, in any form, without the prior
+written permission of the copyright holder. The repository is public only so
+that the game can be served from it; viewing it, or receiving a copy of it, does
+not grant a licence of any kind.
+
+The work is provided "as is", without warranty of any kind.
+
+Third-party material. Some files are not the owner's original work (pictures,
+icons, a font, sounds, music and the three.js library). They are listed in
+assets/CREDITS.txt with their own licences and remain under those licences;
+nothing in this file changes them or claims ownership of that material.
+
+How the work was made. It was created with an AI assistant (Claude, by Anthropic)
+at the owner's direction and under his decisions and review. The copyright status
+of AI-assisted works differs between jurisdictions; this file states the owner's
+claim and intent and is not a legal opinion.
