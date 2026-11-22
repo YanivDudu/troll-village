@@ -56,6 +56,7 @@ job('map3d', /^MAP3D OK/, () => edge(page + '/tests/map3d.html' + (quick ? '#360
 job('walk', /^WALK OK/, () => edge(page + '/tests/walk.html', 120000)); // task "mapwalk": the companion walks on the maps: a tap, the walk, then the round; the second tap; a closed house; leaving in the middle; a race and reduced motion at once
 job('life', /^LIFE OK/, () => edge(page + '/tests/life.html', 200000)); // task "camp life": the companion that lives on the island of the camp (its activities, taps, night, the walk before a screen opens)
 job('pets', /^all \d+ passed/m, () => run('node', ['tests/pets.test.js'], 60000).then(o => o.trim().split('\n').pop())); // task "pets": the living pets as items, two pets per troll, loading old data
+job('onboard', /^ONBOARD OK/, () => process.argv[2] === 'cloud' ? run('node', ['tests/run-page.js', 'tests/onboard.html', '240'], 270000).then(o => o.split('\n')[0]) : edge(page + '/tests/onboard.html?local', 150000)); // task "onboard": the invitation to the family account. Default: when it appears, "not now", the reminders (nothing is made in the cloud); `cloud`: also sign-up and sign-in against the real database (one throw-away account, deleted)
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- End-to-end check of the invitation to the family account (task "onboard"), through the real buttons of the game and against
+     the real cloud. Run: node tests/run-page.js tests/onboard.html 240. Expects title "ONBOARD OK".
+     On localhost the game shows the invitation only when the address has #onboard=1, and this page is the only one that asks.
+     The devices of this test are linked to no village code (no #vlink=1), so the run makes NO village document. It makes one
+     throw-away family account (zz-onb-...@example.com), which is deleted at the end; its family document is emptied first and
+     stays, empty (the rules allow no delete). The test players are local players: nothing goes to the ranking.
+     tests/onboard.html?local runs only the part without an account (when it appears, "not now", the reminders): nothing is made. -->
+<iframe id="f" width="360" height="640"></iframe><pre id="log"></pre>
+<script>
+var f = document.getElementById('f'), log = document.getElementById('log'), ONLY_LOCAL = /local/.test(location.search);
+var T0 = Date.now(), LIMIT = 230000, dead = false;
+function alive() { if (dead || Date.now() - T0 > LIMIT) throw new Error('timeout: the whole test took too long'); }
+function say(t) { log.textContent += t + '\n'; }
+function wait(ms) { alive(); return new Promise(function (r) { setTimeout(r, ms); }); }
+function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { alive(); } catch (e) { no(e); return; } try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 200) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
+function open(hash) { // the game with the invitation switched on, as on the live site
+  alive();
+  return new Promise(function (r) {
+    f.onload = null; f.src = 'about:blank';
+    setTimeout(function () { f.onload = function () { r(); }; f.src = '../index.html?' + Date.now() + '#onboard=1' + (hash || ''); }, 60);
+  });
+}
+function doc() { return f.contentDocument; }
+function q(sel) { return doc().querySelector('.screen:not(.out) ' + sel); }
+function scr(cls) { return doc().querySelector('.screen.' + cls + ':not(.out)'); }
+function onb(step) { var e = scr('onb'); return e && (!step || e.getAttribute('data-step') === step) ? e : null; }
+function camp() { return scr('camp') && q('.chip.who'); }
+function snap() { var o = {}; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^trollVillage/.test(k)) o[k] = localStorage.getItem(k); } return o; }
+function restore(o) { Object.keys(snap()).forEach(function (k) { localStorage.removeItem(k); }); for (var k in o) localStorage.setItem(k, o[k]); }
+function ls(k) { return localStorage.getItem('trollVillage.' + k); }
+function put(k, v) { localStorage.setItem('trollVillage.' + k, typeof v === 'string' ? v : JSON.stringify(v)); }
+function seen() { return JSON.parse(ls('onb') || '{}'); }
+function sync() { return JSON.parse(ls('sync') || '{}'); }
+function profs() { return JSON.parse(ls('profiles') || '{"list":[]}'); }
+function acct() { return JSON.parse(ls('auth') || 'null'); }
+async function close() { f.onload = null; f.src = 'about:blank'; await wait(150); }
+async function device(o) { await close(); restore(o); }
+function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
+var KEY = 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0', mail = 'zz-onb-' + Date.now() + '@example.com', pw = 'pw' + Date.now(), uid = '', tok = '';
+var IDT = 'https://identitytoolkit.googleapis.com/v1/accounts:', FS = 'https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/';
+function post(url, body) { return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+function fields(d) { var o = {}; for (var k in (d && d.fields) || {}) o[k] = d.fields[k].stringValue; return o; }
+// only ever the document of the account this run made
+function family() { if (!/^[A-Za-z0-9]{10,}$/.test(uid) || !tok) throw new Error('no test account'); return fetch(FS + 'families/' + uid + '?key=' + KEY, { headers: { Authorization: 'Bearer ' + tok } }).then(function (r) { return r.json(); }).then(fields); }
+function empty(url, keys, hdr) { return fetch(url + keys.map(function (k) { return '&updateMask.fieldPaths=' + k; }).join(''), { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, hdr || {}), body: '{"fields":{}}' }); }
+function yesterday(L) { var d = new Date(); d.setDate(d.getDate() - 1); return L.todayStr(d); }
+
+async function run() {
+  await device({});
+  var L;
+  function norm(raw) { return JSON.stringify(L.loadState(raw)); }
+  function st(id) { return ls('r.' + id); }
+  function rich(g, k) { // progress worth losing (today's visit is already counted, so opening the game does not change it)
+    var s = L.newState(g), t = L.topicsFor(s)[0], lv = s.levels[t];
+    [0, 1, 2].forEach(function (stg) { s = L.finishStage(s, t, lv, stg, [true, true, true, true]).state; });
+    s.owned = [5, 42, 79 + k]; s.buddy = 42; s.items = s.items.concat(['wand', 'scarf']); s.coins = 123 + k; s.xp += 40 + k; s.rounds += 6; s.last = { t: t, l: lv };
+    s = L.updateStreak(s, L.todayStr());
+    return norm(norm(JSON.stringify(s)));
+  }
+  async function newPlayer(name, grade, then) {
+    var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
+    inp.value = name; q('.pnew .gbtn[data-g="' + grade + '"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .vrow .gbtn[data-v="loc"]').click(); q('.pnew .btn').click();
+    await until(then, 'after the new player ' + name);
+  }
+  function msg() { var m = q('.omsg'); return m ? m.textContent : ''; }
+  async function typeMail(v) { (await until(function () { return q('.omail'); }, 'the e-mail field')).value = v; q('.onext').click(); }
+  async function typePass(v) { (await until(function () { return q('.opass'); }, 'the password field')).value = v; q('.osave').click(); }
+
+  // ---- a device without players: nothing is asked ----
+  await open();
+  await until(function () { return q('.pnew .pname'); }, 'who screen of an empty device');
+  L = f.contentWindow.TrollLogic;
+  check(!onb() && !ls('onb'), 'a device without players shows the players\' screen, not the invitation');
+  var pic = q('.cloudb .opic');
+  check(pic && pic.querySelectorAll('svg').length === 3 && /בְּכָל מַכְשִׁיר/.test(q('.cloudb').textContent), 'the button of the account on the players\' screen carries the small picture (device, cloud, device)');
+
+  // ---- a new device: the first player is made, the invitation comes BEFORE the camp ----
+  await newPlayer('ZZ1', 2, function () { return onb('mail') || camp(); });
+  check(onb('mail') && !camp(), 'right after "יאללה" the invitation is on the screen, before the camp');
+  var id1 = profs().cur, s0 = seen();
+  check(s0.n === 1 && s0.d === L.todayStr() && s0.p === id1, 'it was counted once for the device, in its own key (' + ls('onb') + ')');
+  check(Object.keys(JSON.parse(st(id1))).sort().join() === Object.keys(JSON.parse(JSON.stringify(L.newState(2)))).sort().join(), 'the saved progress of the player got no new field');
+  await wait(800); // (the screen slides in: measured when it stands)
+  var m1 = q('.omail'), b1 = q('.onext').getBoundingClientRect(), b2 = q('.onot').getBoundingClientRect();
+  check(m1.type === 'email' && m1.getAttribute('autocomplete') === 'email' && m1.getAttribute('dir') === 'ltr' && m1.getAttribute('inputmode') === 'email', 'the field is an e-mail field: e-mail keyboard, autocomplete, left to right');
+  check(q('.gbtnin') && q('.gbtnin').compareDocumentPosition(m1) & 4, 'Google comes first, before the e-mail field');
+  check(Math.abs(b1.width - b2.width) <= 1 && Math.abs(b1.height - b2.height) <= 1 && b2.height >= 48 && Math.abs(b1.top - b2.top) <= 1 && b2.bottom <= 640, '"not now" is as big as the main button, beside it, ' + Math.round(b2.width) + 'x' + Math.round(b2.height) + ' px');
+  check(onb().querySelectorAll('.oscr svg').length === 2 && q('.olink svg') && /לְאִמָּא/.test(q('.obhead').textContent) && /לְאַף אֶחָד/.test(q('.opriv').textContent), 'the picture (the troll on two devices, the cloud between), the line for the child and the line about the e-mail are there');
+  check(!onb().querySelector('input[type=checkbox]'), 'no checkbox of consent');
+  q('.onot').click();
+  await until(camp, 'the camp after "not now"');
+  check(camp() && !acct() && !sync().code, 'ONE tap on "not now" opens the camp; the device plays on locally, signed in to nothing');
+
+  // ---- the same day: never again ----
+  await open();
+  await until(function () { return camp() || onb(); }, 'the game opened again');
+  await wait(400);
+  check(camp() && !onb() && seen().n === 1, 'opened again on the same day: straight to the camp');
+
+  // ---- another day, nothing happy happened since: no reminder ----
+  await close(); var s1 = seen(); s1.d = yesterday(L); put('onb', s1);
+  await open();
+  await until(function () { return camp() || onb(); }, 'the game opened the next day');
+  await wait(400);
+  check(camp() && !onb() && seen().n === 1, 'the next day without a new troll or 20 more stars: no reminder');
+
+  // ---- another day, with a new troll: the first reminder ----
+  await close(); put('r.' + id1, rich(2, 1));
+  await open();
+  await until(function () { return camp() || onb(); }, 'the game opened after a new troll');
+  check(onb('remind') && seen().n === 2 && seen().o === 3, 'the next day after a new troll: the reminder card, counted as the second time');
+  await wait(800);
+  check(!q('input') && q('.oyes') && q('.onot') && q('.onot').getBoundingClientRect().height >= 48, 'the reminder is two buttons, no field');
+  q('.onot').click();
+  await until(camp, 'the camp after the reminder');
+
+  // ---- never during an exercise: it becomes due while an exercise is on the screen, and waits for the camp ----
+  q('.nextb').click();
+  await until(function () { return q('.answers') || q('.qrow'); }, 'an exercise');
+  var s2 = seen(); s2.d = yesterday(L); s2.o = 0; put('onb', s2); // due from now on
+  await wait(1500);
+  check(!onb() && (q('.answers') || q('.qrow')), 'due in the middle of an exercise: the exercise stays, nothing is shown');
+  var hb = [].filter.call(doc().querySelectorAll('.screen:not(.out) .top .icon'), function (b) { return /לַכְּפָר/.test(b.getAttribute('aria-label') || ''); })[0];
+  hb.click();
+  await until(function () { return camp() || onb(); }, 'back from the exercise');
+  check(onb('remind') && seen().n === 3, 'it comes when the camp is about to open: the second reminder, the third time in all');
+  q('.oyes').click();
+  await until(function () { return q('.omail'); }, 'the form after "now"');
+  check(onb('mail'), 'the reminder leads to the same form');
+  await typeMail('not-an-email');
+  check(onb('mail') && /לֹא תַּקִּינָה/.test(msg()), 'a wrong e-mail format: said in Hebrew, the form stays (' + msg() + ')');
+  q('.onot').click();
+  await until(camp, 'the camp after the third time');
+
+  // ---- shown three times: never again, whatever happens ----
+  await close(); var s3 = seen(); s3.d = yesterday(L); s3.o = 0; s3.s = 0; put('onb', s3);
+  await open();
+  await until(function () { return camp() || onb(); }, 'the game opened after three times');
+  await wait(400);
+  check(camp() && !onb() && seen().n === 3, 'after three times the device is never asked again');
+  check(q('.chip.who'), 'and the account stays reachable from the players\' screen');
+  if (ONLY_LOCAL) { await close(); restore({}); return; }
+
+  // ---- a device that already has a player (and was never asked): asked once, when the camp opens ----
+  await close(); localStorage.removeItem('trollVillage.onb');
+  var stateA = norm(st(id1));
+  await open();
+  await until(function () { return camp() || onb(); }, 'an existing device');
+  check(onb('mail') && seen().n === 1, 'an existing device that is not signed in: asked the next time the camp opens');
+
+  // ---- no network ----
+  await typeMail(mail);
+  await until(function () { return onb('pass'); }, 'the password step');
+  check(q('.omailb span').textContent === mail && q('.opass').type === 'password' && q('.oeye') && q('.onot'), 'the password step: the e-mail stays in sight, one field, show/hide, "not now" still there');
+  q('.oeye').click(); check(q('.opass').type === 'text', 'the eye shows the password'); q('.oeye').click();
+  await typePass('12345');
+  check(/6 תָּוִים/.test(msg()) && !acct(), 'a password that is too short: said at once, nothing is sent');
+  var W = f.contentWindow, realFetch = W.fetch;
+  W.fetch = function () { return Promise.reject(new TypeError('offline (test)')); };
+  await typePass(pw);
+  await until(function () { return /אֵין חִבּוּר/.test(msg()); }, 'the message without a network');
+  check(onb('pass') && !acct() && !sync().code && norm(st(id1)) === stateA, 'without a network: "' + msg() + '", the form stays, nothing changed on the device');
+  W.fetch = realFetch;
+
+  // ---- a new e-mail: the account is made, the player of the device is saved in it ----
+  await typePass(pw);
+  await until(function () { return onb('ok'); }, 'the happy confirmation');
+  var a1 = acct(); uid = a1.uid;
+  check(q('.obhead').textContent === 'הַכֹּל שָׁמוּר!' && onb().querySelectorAll('.oscr svg').length === 2 && q('.omailb span').textContent === mail && seen().n === 3, 'the confirmation: the troll cheers, the e-mail is shown, the device is never asked again');
+  q('.ogo').click();
+  await until(camp, 'the camp after the sign-up');
+  var tk1 = await (await post(IDT + 'signInWithPassword?key=' + KEY, { email: mail, password: pw, returnSecureToken: true })).json(); tok = tk1.idToken;
+  check(a1.email === mail && tk1.localId === uid && sync().code === 'acct', 'a new e-mail: the account was made and the device is signed in to it');
+  var fam1 = await family();
+  check(JSON.parse(fam1.list).length === 1 && JSON.parse(fam1.list)[0].id === id1 && fam1['s3_' + id1] === stateA && norm(st(id1)) === stateA, 'the player of the device is in the account with the whole progress (' + JSON.parse(stateA).owned.length + ' trolls, ' + JSON.parse(stateA).stars + ' stars)');
+  q('.chip.who').click();
+  await until(function () { return q('.cloudb'); }, 'the players\' screen');
+  check(q('.cloudb').textContent.indexOf(mail) >= 0 && !q('.cloudb .opic'), 'the players\' screen shows the connected state with the e-mail');
+  q('.cloudb').click();
+  await until(function () { return q('.cacct'); }, 'the account screen');
+  check(q('.cacct').textContent === mail && q('.signout'), 'and the account screen is the usual signed-in one (sync, sign out)');
+  await close(); localStorage.removeItem('trollVillage.onb');
+  await open();
+  await until(function () { return camp() || onb(); }, 'a signed-in device');
+  await wait(400);
+  check(camp() && !onb(), 'a signed-in device is never asked');
+  var devA = snap();
+
+  // ---- a second device with a player and progress of its own: the same e-mail signs in, nobody is lost ----
+  await device({});
+  await open();
+  await newPlayer('ZZ2', 3, function () { return onb('mail') || camp(); });
+  var id2 = profs().cur;
+  q('.onot').click();
+  await until(camp, 'the camp of the second device');
+  await close(); var stateB = rich(3, 2); put('r.' + id2, stateB); localStorage.removeItem('trollVillage.onb');
+  await open();
+  await until(function () { return onb('mail'); }, 'the invitation on the second device');
+  await typeMail(mail);
+  await typePass('wrong-' + pw);
+  await until(function () { return /כְּבָר יֵשׁ חֶשְׁבּוֹן/.test(msg()); }, 'the message about a wrong password');
+  check(onb('pass') && !acct() && !sync().code && q('.oforgot') && !q('.oforgot').hidden && profs().list.length === 1 && norm(st(id2)) === stateB, 'the e-mail has an account and the password is wrong: "' + msg() + '", "forgot password" appears, the device is unchanged');
+  await typePass(pw);
+  await until(function () { return onb('ok'); }, 'signed in on the second device');
+  q('.ogo').click();
+  await until(camp, 'the camp of the second device, signed in');
+  check(camp().textContent.indexOf('ZZ2') >= 0, 'and the game goes on to the camp of the same player');
+  var pB = profs(), fam2 = await family(), l2 = JSON.parse(fam2.list).map(function (p) { return p.id; }).sort().join();
+  check(acct().uid === uid && sync().code === 'acct', 'an e-mail that has an account, with its password: the same screen signs in (no second account)');
+  check(pB.list.length === 2 && pB.cur === id2 && norm(st(id2)) === stateB && norm(st(id1)) === stateA, 'the device now has both players; its own player kept the whole progress, the player of the account arrived with hers');
+  check(l2 === [id1, id2].sort().join() && fam2['s3_' + id2] === stateB && fam2['s3_' + id1] === stateA, 'the account holds both players, each with the whole progress');
+
+  // ---- no room: a device with 7 players and an account with 2 (8 at most): nothing is linked, nobody is dropped ----
+  await device({});
+  var seven = { cur: 'p900000001', list: [] }, full = {};
+  for (var i = 1; i <= 7; i++) { seven.list.push({ id: 'p90000000' + i, name: 'ZZF' + i, sex: 'f', loc: true }); full['trollVillage.r.p90000000' + i] = JSON.stringify(L.newState(2)); }
+  full['trollVillage.profiles'] = JSON.stringify(seven); restore(full);
+  await open();
+  await until(function () { return onb('mail'); }, 'the invitation on the full device');
+  await typeMail(mail); await typePass(pw);
+  await until(function () { return /אֵין מָקוֹם/.test(msg()); }, 'the message about no room');
+  check(!acct() && !sync().code && profs().list.length === 7 && onb('pass'), 'no room for everybody: "' + msg() + '", the device is signed out again with all its 7 players');
+  q('.onot').click();
+  await until(camp, 'the camp of the full device');
+  var fam3 = await family();
+  check(JSON.parse(fam3.list).length === 2, 'and the account still holds its 2 players only');
+  await close(); restore({});
+  void devA;
+}
+(async function () {
+  var keep = snap(), title;
+  try {
+    await Promise.race([run(), new Promise(function (ok, no) { setTimeout(function () { no(new Error('timeout: the whole test took too long')); }, LIMIT); })]);
+    title = 'ONBOARD OK';
+  } catch (e) { say(String(e)); try { say('screen: ' + (doc().querySelector('.screen:not(.out)') || {}).className + ' | ' + ((doc().querySelector('.screen:not(.out) .omsg') || {}).textContent || '')); } catch (x) {} title = 'ONBOARD FAIL ' + e.message; }
+  finally {
+    dead = true; f.onload = null; f.src = 'about:blank';
+    await new Promise(function (r) { setTimeout(r, 1500); }); // a page that closes may still push
+    if (!ONLY_LOCAL) try {
+      var tk = await (await post(IDT + 'signInWithPassword?key=' + KEY, { email: mail, password: pw, returnSecureToken: true })).json();
+      if (tk.idToken) {
+        uid = tk.localId; tok = tk.idToken;
+        try { var fk = Object.keys(await family()); if (fk.length) await empty(FS + 'families/' + uid + '?key=' + KEY, fk, { Authorization: 'Bearer ' + tok }); say('family document of the test account (' + uid + '): emptied (' + fk.length + ' fields)'); } catch (e) { say('cleanup of the family document: ' + e); }
+        var gone = await post(IDT + 'delete?key=' + KEY, { idToken: tk.idToken });
+        say((gone.ok ? 'ok' : 'NOT DONE') + ' the test account ' + mail + ' was deleted (http ' + gone.status + ')');
+        if (!gone.ok && title === 'ONBOARD OK') title = 'ONBOARD FAIL the test account was not deleted';
+      } else say('no test account to delete (' + ((tk.error && tk.error.message) || '?') + ')');
+    } catch (e) { say('cleanup: ' + e); if (title === 'ONBOARD OK') title = 'ONBOARD FAIL cleanup ' + e.message; }
+    restore(keep);
+  }
+  say('took ' + Math.round((Date.now() - T0) / 1000) + ' s');
+  document.title = title;
+  fetch('/__report', { method: 'POST', body: document.title + String.fromCharCode(10) + log.textContent }).catch(function () {});
+})();
+</script>

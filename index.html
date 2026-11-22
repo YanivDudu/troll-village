@@ -2574,6 +2574,65 @@ body.toy .camp .cground>.cpet.pt3{flex-shrink:.35}
 body.toy .camp .cground>.cpet:not(.pt3){max-height:11cqw;flex-shrink:2}
 body.toy .camp .cground>.cpet.p2{margin-inline:0}
 body.toy .camp .cground>.cpet{object-fit:contain}
+/* task "onboard": the invitation to the family account (.onb). ONE card: the picture of the benefit (the child's own troll on a phone and on a
+   tablet, a cloud between them), a line for the child, a line for the parent, and the shortest form: Google, or an e-mail and then a password.
+   "Not now" is a button of the same size beside the main one. Two columns on a wide or a low screen. While the keyboard is open (.kb, set by the
+   script from the visible height) only the field and the two buttons stay, at the top of what is visible; .kbs: almost nothing is visible. */
+.onb{justify-content:flex-start;--oh:clamp(92px,18vh,168px)}
+.ocard{display:flex;flex-direction:column;align-items:center;gap:var(--sp2);width:min(100%,460px);padding:var(--sp3) var(--sp4);margin:auto 0;background:var(--surface);color:var(--ink);border-radius:var(--r-l);box-shadow:var(--e3);text-align:center;flex:0 0 auto}
+.oside,.oform{display:flex;flex-direction:column;align-items:center;gap:var(--sp2);width:100%;min-width:0}
+.ohero{display:flex;align-items:flex-end;justify-content:center;gap:var(--sp1);direction:ltr;flex:0 0 auto;padding-bottom:var(--sp1)}
+.odev{position:relative;box-sizing:border-box;flex:0 0 auto;padding:calc(var(--oh)*.05);border-radius:calc(var(--oh)*.11);background:linear-gradient(145deg,#5a4c8c,#2e2350 55%,#211940);box-shadow:0 3px 0 #171030,0 8px 14px rgba(46,35,80,.22)}
+.ophone{width:calc(var(--oh)*.58);height:var(--oh)}
+.otab{width:calc(var(--oh)*1.16);height:calc(var(--oh)*.84)}
+.oscr{position:relative;width:100%;height:100%;overflow:hidden;border-radius:calc(var(--oh)*.065);background:linear-gradient(#7fcbff 0,#d4f0ff 62%,#8fdb62 62%,#55b53f 100%);display:flex;align-items:flex-end;justify-content:center}
+.oscr svg{position:relative;height:66%;width:auto;margin-bottom:7%;flex:none}.otab .oscr svg{height:74%;margin-bottom:5%}
+.oscr:after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,rgba(255,255,255,.42) 0,rgba(255,255,255,0) 36%);pointer-events:none}
+.olink{display:flex;align-items:center;align-self:center;gap:3px;color:var(--ans-1);flex:0 0 auto}
+.olink i{width:calc(var(--oh)*.15);height:0;border-top:4px dotted currentColor}
+.olink svg.ic{width:calc(var(--oh)*.4);height:calc(var(--oh)*.4);filter:drop-shadow(0 2px 0 rgba(15,79,143,.35))}
+.onb[data-step="ok"] .olink{color:var(--success)}
+.obhead{margin:0;font-size:var(--t-h2);line-height:var(--lh-h2);font-weight:var(--w-black);color:var(--ink);text-wrap:balance}
+.opar{font-size:var(--t-body);line-height:var(--lh-body);font-weight:var(--w-reg);color:var(--ink);text-wrap:balance;max-width:34em}
+.opriv,.ohint{font-size:var(--t-cap);line-height:var(--lh-cap);color:var(--ink-2);text-wrap:balance}
+.olab{font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold);color:var(--ink)}
+.oform .gbtnin{width:100%;justify-content:center;min-height:48px;box-sizing:border-box;order:0}
+.oform .pname{direction:ltr;text-align:center;text-transform:none;letter-spacing:0;font-size:18px;font-weight:var(--w-bold);min-height:52px;width:100%;box-sizing:border-box;padding:0 var(--sp3)}
+.obrow{display:flex;align-items:center;gap:var(--sp2);width:100%}
+.obrow .pname{flex:1 1 auto;min-width:0}
+.oeye{flex:0 0 auto;width:52px;height:52px;display:grid;place-items:center;padding:0;border-radius:var(--r-m);background:var(--surface);color:var(--locked);box-shadow:var(--e1)}
+.oeye.on{color:var(--ink)}
+.obtns{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp2);width:100%}
+.obtns .btn{min-height:52px;width:100%;padding:0 var(--sp2);font-size:var(--t-lead);line-height:var(--lh-lead)}
+.obtns .btn:active,.oeye:active,.omailb:active{transform:var(--press)}
+.omailb{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);max-width:100%;min-height:48px;padding:0 var(--sp4);border-radius:var(--r-full);background:var(--surface-2);color:var(--ink);font:inherit;font-size:var(--t-body);font-weight:var(--w-bold)}
+.omailb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;direction:ltr}
+.oform .ogo{min-height:52px;width:100%;padding:0 var(--sp2);font-size:var(--t-lead);line-height:var(--lh-lead)}
+.oform [hidden]{display:none!important}
+.oform .clink{min-height:48px;padding:0 var(--sp3);font-size:var(--t-cap)}
+.omsg{min-height:0;font-size:var(--t-cap);line-height:var(--lh-cap);font-weight:var(--w-bold);color:var(--ink);text-wrap:balance}
+body.toy .omsg:not(:empty){background:var(--accent);color:var(--ink);border-radius:var(--r-s);padding:var(--sp1) var(--sp3)}
+.onb[data-step="ok"] .obhead{color:var(--success)}
+.onb[data-step="ok"] .oscr svg{transform-origin:50% 100%;animation:onbHop .7s var(--spring) both}
+@keyframes onbHop{0%{transform:translateY(0) scale(1,1)}30%{transform:translateY(0) scale(1.08,.9)}60%{transform:translateY(-8%) scale(.97,1.04)}100%{transform:translateY(0) scale(1,1)}}
+@media (prefers-reduced-motion:reduce){.onb[data-step="ok"] .oscr svg{animation:none}}
+@media (min-width:600px) and (min-height:700px){.onb{--oh:clamp(140px,20vh,200px)}.ocard{width:min(100%,520px);padding:var(--sp5);gap:var(--sp3)}}
+@media (max-height:520px),(min-width:900px){
+  .ocard{flex-direction:row;align-items:center;gap:var(--sp5);width:min(100%,860px);padding:var(--sp4) var(--sp5)}
+  .oside{flex:1 1 46%}.oform{flex:1 1 54%}
+  .onb{--oh:clamp(96px,min(28vh,11vw),148px)}
+}
+@media (max-height:520px){.onb{--oh:clamp(76px,27vh,120px)}.ocard{padding:var(--sp2) var(--sp4);gap:var(--sp4)}.oside,.oform{gap:6px}.oform .pname{min-height:48px}.obtns .btn{min-height:48px}}
+.onb.kb .oside,.onb.kb .gbtnin,.onb.kb .opriv,.onb.kb .ohint,.onb.kb .omailb{display:none}
+.onb.kb .ocard{margin:0;flex-direction:column;width:min(100%,460px);padding:var(--sp3) var(--sp4);gap:var(--sp2)}
+.onb.kb .oform{flex:0 0 auto;gap:var(--sp2)}
+.onb.kb>.top{visibility:hidden;height:0;min-height:0}.onb.kbs .olab{display:none}
+.onb.kbs .ocard{width:100%;padding:var(--sp2)}
+.onb.kbs .oform{flex-direction:row;flex-wrap:wrap;justify-content:center}
+.onb.kbs .oform>.pname,.onb.kbs .obrow{flex:1 1 220px;width:auto}.onb.kbs .obtns{flex:1 1 240px;width:auto}.onb.kbs .omsg{flex:1 1 300px;min-height:0}.onb.kbs .omsg:empty{display:none}.onb.kbs .oform{align-items:center}
+/* the same picture, small, on the button of the players' screen that leads to the account */
+.cloudb .opic{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;color:var(--ans-1)}
+.cloudb .opic .ic-device{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -5269,7 +5328,7 @@ var TrollLogic = (function () {
   }
 
   // The texts of the game speak to a girl. For a boy the same texts are shown with these words replaced.
-  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["בּוֹאִי", "בּוֹא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"], ["דִּיַּקְתְּ", "דִּיַּקְתָּ"], ["פָּתַרְתְּ", "פָּתַרְתָּ"], ["חָשַׁבְתְּ", "חָשַׁבְתָּ"], ["מָצָאת", "מָצָאתָ"], ["הִצְלַחְתְּ", "הִצְלַחְתָּ"], ["נִסִּית", "נִסִּיתָ"], ["וִתַּרְתְּ", "וִתַּרְתָּ"], ["תִּקַּנְתְּ", "תִּקַּנְתָּ"], ["הִתְעַקַּשְׁתְּ", "הִתְעַקַּשְׁתָּ"], ["אִתָּךְ", "אִתְּךָ"], ["חוֹסֶכֶת", "חוֹסֵךְ"]];
+  var MALE = [["אַתְּ יְכוֹלָה", "אַתָּה יָכוֹל"], ["רוֹצָה לִרְאוֹת", "רוֹצֶה לִרְאוֹת"], ["בּוֹאִי", "בּוֹא"], ["קִרְאִי", "קְרָא"], ["בַּחֲרִי", "בְּחַר"], ["הַקִּישִׁי", "הַקֵּשׁ"], ["עַגְּלִי", "עַגֵּל"], ["שִׂימִי", "שִׂים"], ["תִּסְתַּכְּלִי", "תִּסְתַּכֵּל"], ["בְּנִי", "בְּנֵה"], ["הַתְאִימִי", "הַתְאֵם"], ["הֵעָזְרִי", "הֵעָזֵר"], ["הַכִּירִי", "הַכֵּר"], ["וְהַזְמִינִי", "וְהַזְמֵן"], ["הִגַּעְתְּ", "הִגַּעְתָּ"], ["קִבַּלְתְּ", "קִבַּלְתָּ"], ["סִיַּמְתְּ", "סִיַּמְתָּ"], ["הִצַּלְתְּ", "הִצַּלְתָּ"], ["נִצַּחְתְּ", "נִצַּחְתָּ"], ["זָכִית", "זָכִיתָ"], ["עָלִית", "עָלִיתָ"], ["קָנִית", "קָנִיתָ"], ["אַתְּ", "אַתָּה"], ["דַּעְתֵּךְ", "דַּעְתְּךָ"], ["שֶׁלָּךְ", "שֶׁלְּךָ"], ["דִּיַּקְתְּ", "דִּיַּקְתָּ"], ["פָּתַרְתְּ", "פָּתַרְתָּ"], ["חָשַׁבְתְּ", "חָשַׁבְתָּ"], ["מָצָאת", "מָצָאתָ"], ["הִצְלַחְתְּ", "הִצְלַחְתָּ"], ["נִסִּית", "נִסִּיתָ"], ["וִתַּרְתְּ", "וִתַּרְתָּ"], ["תִּקַּנְתְּ", "תִּקַּנְתָּ"], ["הִתְעַקַּשְׁתְּ", "הִתְעַקַּשְׁתָּ"], ["אִתָּךְ", "אִתְּךָ"], ["חוֹסֶכֶת", "חוֹסֵךְ"]];
   var MALE_MAP = {}, MALE_RE = new RegExp('(^|[^\u0590-\u05FF])(' + MALE.map(function (x) { MALE_MAP[x[0]] = x[1]; return x[0]; }).join('|') + ')(?![\u0590-\u05FF])', 'g');
   function forBoy(t) { return typeof t === 'string' ? t.replace(MALE_RE, function (m, pre, w) { return pre + MALE_MAP[w]; }) : t; }
 
@@ -7132,6 +7191,7 @@ var TrollModels = (function () {
   }
   var swapped = false; // task "flowfix home": a small troll was just made the companion, so the camp that is drawn next cheers with it
   function home() {
+    if (onbGate()) return; // task "onboard": the invitation to the family account comes before the camp, when it is due
     tv.round = null; setMusic('home');
     show(function (el) {
       here = 'home';
@@ -9280,7 +9340,7 @@ var TrollModels = (function () {
       if (!whoForm && profiles.list.length < 8) grid.appendChild(h('div', { class: 'pcard nonew', text: stuck.length ? stuckMsg() : 'אֵין מָקוֹם לְשַׂחְקָן חָדָשׁ: כְּבָר יֵשׁ 8 שַׂחְקָנִים שְׁמוּרִים, כּוֹלֵל אֵלֶּה שֶׁהוּסְרוּ רַק מֵהַמַּכְשִׁיר הַזֶּה. קֹדֶם מוֹחֲקִים שַׂחְקָן מִכָּל מָקוֹם.' }));
       el.appendChild(grid);
       var deadA = !!(auth && auth.dead);
-      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', on: { click: function () { sfx.tap(); cloud(); } } }, icon(auth && !deadA ? 'cloud-ok' : 'cloud', 't'), deadA ? ' צָרִיךְ לְהִכָּנֵס שׁוּב לַחֶשְׁבּוֹן' : auth ? ' מְחֻבָּרִים · ' + auth.email : ' חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר'));
+      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', on: { click: function () { sfx.tap(); cloud(); } } }, auth ? icon(deadA ? 'cloud' : 'cloud-ok', 't') : h('span', { class: 'opic' }, icon('device', 'm'), icon('cloud', 'm'), icon('device', 'm')), deadA ? ' צָרִיךְ לְהִכָּנֵס שׁוּב לַחֶשְׁבּוֹן' : auth ? ' מְחֻבָּרִים · ' + auth.email : ' חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר'));
       else el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
     });
     here = 'who';
@@ -9288,6 +9348,10 @@ var TrollModels = (function () {
   }
 
   // ---------- one village on every device ----------
+  // what a sign-in that failed says (the account screen and the invitation to the account)
+  var ERR = { EMAIL_EXISTS: 'הַמֵּיְל הַזֶּה כְּבָר רָשׁוּם. נַסּוּ אֶת כַּפְתּוֹר הַכְּנִיסָה.', INVALID_LOGIN_CREDENTIALS: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', INVALID_PASSWORD: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', EMAIL_NOT_FOUND: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.',
+    WEAK_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', MISSING_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', INVALID_EMAIL: 'כְּתֹבֶת הַמֵּיְל לֹא תַּקִּינָה.', MISSING_EMAIL: 'כּוֹתְבִים קֹדֶם אֶת הַמֵּיְל.', TOO_MANY_ATTEMPTS_TRY_LATER: 'יוֹתֵר מִדַּי נִסְיוֹנוֹת. נְנַסֶּה שׁוּב בְּעוֹד כַּמָּה דַּקּוֹת.',
+    'auth/popup-blocked': 'הַדַּפְדְּפָן חָסַם אֶת הַחַלּוֹן שֶׁל Google. נַסּוּ שׁוּב.', 'auth/popup-closed-by-user': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/cancelled-popup-request': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/network-request-failed': 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.', script: 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.' };
   function cloud(msg, mode) {
     show(function (el) {
       el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
@@ -9329,9 +9393,6 @@ var TrollModels = (function () {
       } else {
         var mail = h('input', { class: 'pname amail', type: 'email', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
         var pass = h('input', { class: 'pname apass', type: 'password', maxlength: '60', placeholder: '••••••', autocomplete: 'current-password', 'aria-label': 'סִיסְמָה' });
-        var ERR = { EMAIL_EXISTS: 'הַמֵּיְל הַזֶּה כְּבָר רָשׁוּם. נַסּוּ אֶת כַּפְתּוֹר הַכְּנִיסָה.', INVALID_LOGIN_CREDENTIALS: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', INVALID_PASSWORD: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.', EMAIL_NOT_FOUND: 'הַמֵּיְל אוֹ הַסִּיסְמָה לֹא נְכוֹנִים.',
-          WEAK_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', MISSING_PASSWORD: 'צָרִיךְ סִיסְמָה שֶׁל 6 תָּוִים לְפָחוֹת.', INVALID_EMAIL: 'כְּתֹבֶת הַמֵּיְל לֹא תַּקִּינָה.', MISSING_EMAIL: 'כּוֹתְבִים קֹדֶם אֶת הַמֵּיְל.', TOO_MANY_ATTEMPTS_TRY_LATER: 'יוֹתֵר מִדַּי נִסְיוֹנוֹת. נְנַסֶּה שׁוּב בְּעוֹד כַּמָּה דַּקּוֹת.',
-          'auth/popup-blocked': 'הַדַּפְדְּפָן חָסַם אֶת הַחַלּוֹן שֶׁל Google. נַסּוּ שׁוּב.', 'auth/popup-closed-by-user': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/cancelled-popup-request': 'הַחַלּוֹן נִסְגַּר לִפְנֵי שֶׁהַכְּנִיסָה הִסְתַּיְּמָה.', 'auth/network-request-failed': 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.', script: 'אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.' };
         function why(e) { if (!e || !e.auth) { fail(); return; } var k = /^auth\//.test(e.message) ? e.message : String(e.message).split(/[ :]/)[0]; if (!ERR[k]) report('sign-in: ' + e.message); say(ERR[k] || 'זֶה לֹא הִצְלִיחַ. נְנַסֶּה שׁוּב.'); }
         var busy = false;
         function go(isNew) {
@@ -9384,6 +9445,151 @@ var TrollModels = (function () {
       if (auth || !linkTo(code)) { fail(); return; } // (a device that is signed in to the family account stays with the account)
       syncNow(function (ok) { if (ok) { if (!profiles.cur) who(false); else cloud('הַשַּׂחְקָנִים שֶׁל הַקּוֹד מְחֻבָּרִים ✓'); } else fail(); });
     }, fail);
+  }
+
+  // ---------- the invitation to the family account (task "onboard") ----------
+  // Most families play on one device without an account, so a lost phone or a second device means starting over. One screen
+  // asks the parent, through the child, for an e-mail. WHEN: only when the camp is about to open (onbGate, the first line of
+  // home), so never during an exercise or a race: right after the first player of a device is made, and on a device that has
+  // players the next time the camp opens. Then at most two reminders, each on another day and only when the camp opens after
+  // something happy (a new troll, or 20 more stars). Never when signed in, never twice in one day, never after it was shown
+  // three times. What was shown is kept for the device (its own key in localStorage, not in the saved progress).
+  // Self-play, the demo screens and every test on a developer's machine never see it unless the address asks (&onboard=1).
+  // Layout checks: #demo&s=onboard&ob=mail|typed|pass|err|ok|remind (&kb=N: only N percent of the height are visible above the keyboard).
+  var OKEY = 'trollVillage.onb', onbMem = '', ONB = /[&#]onboard=1/.test(hash) || (!sandbox && !LOCAL && location.protocol === 'https:');
+  ERR.ONB_WRONG = 'לַמֵּיְל הַזֶּה כְּבָר יֵשׁ חֶשְׁבּוֹן, וְהַסִּיסְמָה לֹא נְכוֹנָה.';
+  function onbGet() { try { var o = JSON.parse((sandbox ? onbMem : lsGet(OKEY)) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+  function onbSet(o) { var s = JSON.stringify(o); if (sandbox) onbMem = s; else lsSet(OKEY, s); }
+  function onbDue() { // '' | 'first' | 'remind'
+    if (!ONB || auth || !profiles.cur || race || !(cloudOn() || sandbox) || navigator.onLine === false || /join=/.test(hash)) return '';
+    var o = onbGet(), n = +o.n || 0;
+    if (n >= 3 || o.d === L.todayStr()) return '';
+    if (!n) return 'first';
+    return (o.p === profiles.cur ? state.owned.length > (+o.o || 0) || state.stars >= (+o.s || 0) + 20 : state.owned.length > 0 && state.stars >= 20) ? 'remind' : '';
+  }
+  function onbGate() { var w = onbDue(); if (w) onboard(w); return !!w; }
+  // A new e-mail makes an account; an e-mail that already has one signs in to it with the same password (one form for both).
+  function onbAuth(em, pw) {
+    return signIn(em, pw, true).catch(function (e) {
+      if (!e || !e.auth || !/^EMAIL_EXISTS/.test(e.message)) throw e;
+      return signIn(em, pw, false).catch(function (e2) {
+        if (!e2 || !e2.auth || !/^(INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD)/.test(e2.message)) throw e2;
+        var x = new Error('ONB_WRONG'); x.auth = true; throw x;
+      });
+    });
+  }
+  function onbHero(spec, mood) { // the benefit without words: the same troll on a phone and on a tablet, the cloud between them
+    function dev(cls) { return h('div', { class: 'odev ' + cls }, h('div', { class: 'oscr', html: A.trollSVG(spec, { mood: mood, size: 64 }) })); }
+    return h('div', { class: 'ohero', 'aria-hidden': 'true' }, dev('ophone'), h('div', { class: 'olink' }, h('i'), icon(mood === 'cheer' ? 'cloud-ok' : 'cloud'), h('i')), dev('otab'));
+  }
+  function onboard(mode, dbg) { // mode: 'first' | 'remind'; dbg: a layout check draws that state and counts nothing
+    var o = onbGet(), bid = buddyOf(state), spec = bid == null ? GUIDE : specOf(bid), step = mode === 'remind' ? 'remind' : 'mail', em = '', busy = false, left = false;
+    if (!dbg) { o.n = (+o.n || 0) + 1; o.d = L.todayStr(); o.p = profiles.cur; o.s = state.stars; o.o = state.owned.length; onbSet(o); }
+    function leave() { if (left) return; left = true; if (profiles.cur) home(); else who(false); }
+    setMusic('home');
+    show(function (el) {
+      el.classList.add('tpl', 'onb');
+      el.appendChild(topBar(false, leave));
+      var side = h('div', { class: 'oside' }), form = h('div', { class: 'oform' }), msg = h('div', { class: 'cmsg omsg', role: 'status' });
+      el.appendChild(h('div', { class: 'ocard' }, side, form));
+      function say(t) { msg.textContent = t || ''; }
+      function notNow() { return btn('לֹא עַכְשָׁיו', 'b2 onot', leave); }
+      function why(e) {
+        if (!e || !e.auth) { say(ERR.script); return; }
+        var k = /^auth\//.test(e.message) ? e.message : String(e.message).split(/[ :]/)[0];
+        if (!ERR[k]) report('onboard: ' + e.message);
+        say(ERR[k] || 'זֶה לֹא הִצְלִיחַ. נְנַסֶּה שׁוּב.');
+        var fg = form.querySelector('.oforgot'), hn = form.querySelector('.ohint'); if (fg && k === 'ONB_WRONG') { fg.hidden = false; if (hn) hn.hidden = true; } // (the message says what the hint said)
+      }
+      // after the sign-in the players of the device move into the account and the players of the account come here (toAccount, as on the account screen)
+      function finish(signing) {
+        if (busy) return;
+        busy = true; say('מִתְחַבְּרִים...');
+        signing.then(function () {
+          toAccount(function (res, full) {
+            busy = false;
+            if (res === 'full') { auth = null; saveAuth(); say(noRoom(full)); return; } // no room in the account: the device is signed out again and nothing changed on it
+            if (res !== 'ok') { say(ERR.script); return; }
+            var d = onbGet(); d.n = 3; onbSet(d); // signed in: the device is never asked again
+            if (left || cur !== el) return;
+            step = 'ok'; sfx.win(); draw();
+            later(leave, 6000);
+          }, null);
+        }, function (e) { busy = false; why(e); });
+      }
+      function draw(text) {
+        side.textContent = ''; form.textContent = ''; el.setAttribute('data-step', step);
+        side.appendChild(onbHero(spec, step === 'ok' ? 'cheer' : 'wave'));
+        if (step === 'ok') {
+          side.appendChild(h('h2', { class: 'obhead', text: 'הַכֹּל שָׁמוּר!' }));
+          side.appendChild(h('div', { class: 'opar', text: 'מֵעַכְשָׁיו מְשַׂחֲקִים בְּכָל מַכְשִׁיר עִם אוֹתוֹ חֶשְׁבּוֹן.' }));
+          form.appendChild(h('div', { class: 'omailb' }, icon('cloud-ok', 'm'), h('span', { text: (auth && auth.email) || em })));
+          form.appendChild(h('button', { class: 'btn nxt ogo', text: 'יַאלְלָה, לַמַּחֲנֶה!', on: { click: function () { sfx.tap(); leave(); } } }));
+          return;
+        }
+        side.appendChild(h('h2', { class: 'obhead', text: 'קִרְאִי לְאִמָּא אוֹ לְאַבָּא' }));
+        side.appendChild(h('div', { class: 'opar', text: step === 'remind' ? 'הוֹרִים, בְּלִי חֶשְׁבּוֹן מַכְשִׁיר שֶׁאָבַד אוֹ מַכְשִׁיר חָדָשׁ מַתְחִיל מֵהַהַתְחָלָה. מֵיְל אֶחָד שׁוֹמֵר אֶת הַטְּרוֹלִים וְאֶת הַכּוֹכָבִים.' : 'הוֹרִים, עִם הַמֵּיְל שֶׁלָּכֶם הַהִתְקַדְּמוּת נִשְׁמֶרֶת, וְאֶפְשָׁר לְשַׂחֵק בְּכָל מַכְשִׁיר.' }));
+        if (step === 'remind') {
+          form.appendChild(h('div', { class: 'obtns' }, btn('שׁוֹמְרִים עַכְשָׁיו', 'oyes', function () { step = 'mail'; draw(); }), notNow()));
+        } else if (step === 'mail') {
+          var mail = h('input', { class: 'pname omail', type: 'email', inputmode: 'email', enterkeyhint: 'next', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', dir: 'ltr', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
+          var next = function () {
+            var v = mail.value.trim();
+            if (busy) return;
+            if (!v) { say(ERR.MISSING_EMAIL); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { say(ERR.INVALID_EMAIL); return; }
+            em = v; step = 'pass'; draw();
+            var p = form.querySelector('.opass'); if (p) p.focus();
+          };
+          mail.value = em;
+          mail.addEventListener('keydown', function (e) { if (e.key === 'Enter') next(); });
+          form.appendChild(h('button', { class: 'gbtnin', 'aria-label': 'כְּנִיסָה עִם Google', on: { click: function () { if (busy) return; sfx.tap(); finish(googleSignIn()); } } }, h('i', { text: 'G' }), h('span', { text: 'כְּנִיסָה עִם Google' })));
+          if (cloudOn()) googleReady().catch(function () {}); // ready before the tap, so the browser lets Google's window open
+          form.appendChild(h('div', { class: 'olab', text: 'אוֹ עִם הַמֵּיְל שֶׁל הַהוֹרֶה' }));
+          form.appendChild(mail);
+          form.appendChild(h('div', { class: 'obtns' }, btn('הֶמְשֵׁךְ', 'onext', next), notNow())); form.appendChild(msg);
+          form.appendChild(h('div', { class: 'opriv', text: 'הַמֵּיְל מְשַׁמֵּשׁ רַק לִשְׁמִירַת הַהִתְקַדְּמוּת, וְלֹא מוּצָג לְאַף אֶחָד.' }));
+        } else { // the password: a new one for a new account, the old one for an e-mail that has an account
+          var pass = h('input', { class: 'pname opass', type: 'password', maxlength: '60', placeholder: '••••••', autocomplete: 'current-password', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'done', dir: 'ltr', 'aria-label': 'סִיסְמָה' });
+          var eye = h('button', { class: 'oeye', type: 'button', 'aria-label': 'לְהַצִּיג אֶת הַסִּיסְמָה', 'aria-pressed': 'false', on: { click: function () {
+            var on = pass.type === 'password'; sfx.tap(); pass.type = on ? 'text' : 'password'; eye.classList.toggle('on', on); eye.setAttribute('aria-pressed', String(on)); pass.focus();
+          } } }, icon('eye'));
+          var send = function () { if (busy) return; if (pass.value.length < 6) { say(ERR.WEAK_PASSWORD); return; } finish(onbAuth(em, pass.value)); };
+          pass.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+          form.appendChild(h('button', { class: 'omailb', 'aria-label': 'תִּקּוּן הַמֵּיְל', on: { click: function () { if (busy) return; sfx.tap(); step = 'mail'; draw(); } } }, icon('mail', 'm'), h('span', { text: em })));
+          form.appendChild(h('div', { class: 'olab', text: 'בּוֹחֲרִים סִיסְמָה (6 תָּוִים לְפָחוֹת)' }));
+          form.appendChild(h('div', { class: 'obrow' }, pass, eye));
+          form.appendChild(h('div', { class: 'obtns' }, btn('שְׁמִירָה', 'osave', send), notNow())); form.appendChild(msg);
+          form.appendChild(h('div', { class: 'ohint', text: 'כְּבָר יֵשׁ חֶשְׁבּוֹן? כּוֹתְבִים אֶת הַסִּיסְמָה שֶׁלּוֹ.' }));
+          var fg = h('button', { class: 'clink oforgot', text: 'שָׁכַחְתִּי סִיסְמָה', on: { click: function () {
+            if (busy) return;
+            sfx.tap(); say('רֶגַע...'); idt('sendOobCode', { requestType: 'PASSWORD_RESET', email: em }).then(function () { say('שָׁלַחְנוּ מֵיְל לְאִפּוּס הַסִּיסְמָה ✓'); }, why);
+          } } });
+          fg.hidden = true; form.appendChild(fg);
+        }
+        if (msg.parentNode !== form) form.appendChild(msg);  say(text);
+      }
+      // The keyboard of a phone covers half of the screen. While a field of the form has the focus and much less than the whole
+      // height is visible, the screen shrinks to what is visible and shows only the field and the two buttons (.kb).
+      var vv = window.visualViewport, W0 = innerWidth, H0 = innerHeight, kbT = 0, kbDbg = sandbox ? Math.round(+((/[#&]kb=(\d+)/.exec(hash) || [])[1] || 0) * innerHeight / 100) : 0;
+      function kbFit() {
+        if (innerWidth !== W0) { W0 = innerWidth; H0 = innerHeight; } else H0 = Math.max(H0, innerHeight);
+        var vis = kbDbg || Math.min(innerHeight, vv ? vv.height : innerHeight), a = document.activeElement;
+        var on = vis < H0 - 120 && (!!kbDbg || (!!a && a.tagName === 'INPUT' && el.contains(a)));
+        clearTimeout(kbT);
+        if (on) { el.classList.add('kb'); el.classList.toggle('kbs', vis < 250); el.style.bottom = 'auto'; el.style.height = Math.round(vis) + 'px'; el.style.top = vv && !kbDbg ? Math.round(vv.offsetTop) + 'px' : '0'; }
+        else kbT = setTimeout(function () { el.classList.remove('kb', 'kbs'); el.style.bottom = el.style.height = el.style.top = ''; }, 300); // (a tap on a button takes the focus first: the button must not move under the finger)
+      }
+      if (vv) { vv.addEventListener('resize', kbFit); vv.addEventListener('scroll', kbFit); }
+      addEventListener('resize', kbFit); el.addEventListener('focusin', kbFit); el.addEventListener('focusout', kbFit);
+      onLeave = function () { clearTimeout(kbT); removeEventListener('resize', kbFit); if (vv) { vv.removeEventListener('resize', kbFit); vv.removeEventListener('scroll', kbFit); } };
+      if (dbg === 'typed' || dbg === 'pass' || dbg === 'err' || dbg === 'ok') em = 'ima.shel.noa@example.com';
+      if (dbg === 'pass' || dbg === 'err') step = 'pass'; else if (dbg === 'ok') step = 'ok';
+      draw();
+      if (dbg === 'err') why({ auth: true, message: 'ONB_WRONG' });
+      if (kbDbg) kbFit();
+    });
+    here = 'onboard';
   }
 
   // ---------- the cart: the dressing room and shop of the journey world ----------
@@ -10783,6 +10989,7 @@ var TrollModels = (function () {
   else if (scr === 'village') village(vilDemoCard());
   else if (scr === 'journal') journal((/[#&]pg=(\w+)/.exec(hash) || [])[1], /[#&]t=/.test(hash) ? ht : null);
   else if (scr === 'cloud') cloud(/noroom=1/.test(hash) ? noRoom([8, 1]) : '', /cj=1/.test(hash) ? 'code' : ''); // &noroom=1: the longest message of the screen
+  else if (scr === 'onboard') { var hob = (/[#&]ob=(\w+)/.exec(hash) || [])[1] || 'mail'; onboard(hob === 'remind' ? 'remind' : 'first', hob); } // task "onboard": layout checks of the invitation to the account
   else if (scr === 'badges') badgeDemo();
   else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); }
   else if (scr === 'bossend') { endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g); if (!/show=1/.test(hash)) tv.skip(); if (/then=home/.test(hash)) home(); } // then=home: the camp right after a rescue
@@ -10857,6 +11064,24 @@ var TrollModels = (function () {
     var why = [], no = function (w) { bad++; if (why.indexOf(w) < 0) why.push(w); };
     var dsTop = cur.querySelector('.top'); // task "ds": the top bar is one row, nothing in it is cut or pushed out, its buttons keep their size (measured in the layout, so a counter that is popping does not count)
     if (TOY && dsTop) { if (dsTop.scrollWidth > dsTop.clientWidth + 1 || dsTop.offsetHeight > 60) no('topbar'); [].forEach.call(dsTop.querySelectorAll('button,.ct'), function (x) { if (!x.offsetWidth && x.classList.contains('xpchip')) return; if (!x.offsetWidth || x.offsetLeft < -1 || x.offsetLeft + x.offsetWidth > dsTop.clientWidth + 1 || (x.nodeName === 'BUTTON' && (x.offsetWidth < 41.5 || x.offsetHeight < 47.5))) no('topbar'); }); if (dsTop.querySelector('svg.ic') && dsTop.querySelector('img.ico')) no('topicon'); }
+    // task "onboard": the invitation to the account. Everything lies whole inside the card and the card inside what is visible (above the
+    // keyboard: &kb=N); every control is a whole touch target; "not now" is as big as the main button and beside it; no line is cut
+    if (cur.classList.contains('onb')) {
+      var oc = cur.querySelector('.ocard'), ocr = oc.getBoundingClientRect(), ovis = cur.classList.contains('kb') ? cur.getBoundingClientRect().bottom : window.innerHeight, ob2 = cur.querySelectorAll('.obtns .btn'), ostep = cur.getAttribute('data-step');
+      if (ocr.top < -1 || ocr.bottom > ovis + 1 || ocr.left < -1 || ocr.right > window.innerWidth + 1 || cur.scrollHeight > cur.clientHeight + 1) no('onb-card');
+      [].forEach.call(oc.querySelectorAll('button,input,.ohero,.odev,.obhead,.opar,.opriv,.ohint,.olab,.omsg,.omailb'), function (x) {
+        var r = x.getBoundingClientRect(); if (!r.width) return;
+        if (r.top < ocr.top - 1 || r.bottom > ocr.bottom + 1 || r.left < ocr.left - 1 || r.right > ocr.right + 1) no('onb-out');
+        if (/^(BUTTON|INPUT)$/.test(x.tagName) && (r.width < 47.5 || r.height < 47.5)) no('onb-small');
+        if (!x.classList.contains('ohero') && !x.classList.contains('odev') && x.tagName !== 'INPUT' && (x.scrollWidth > x.clientWidth + 1 || x.scrollHeight > x.clientHeight + 1)) no('onb-cut');
+      });
+      if (ostep !== 'ok') {
+        if (ob2.length !== 2 || !ob2[1].classList.contains('onot')) no('onb-notnow');
+        else { var o1 = ob2[0].getBoundingClientRect(), o2 = ob2[1].getBoundingClientRect(); if (Math.abs(o1.width - o2.width) > 1 || Math.abs(o1.height - o2.height) > 1 || Math.abs(o1.top - o2.top) > 1 || o1.left - o2.right < 7.5 || o2.bottom > ovis + 1) no('onb-notnow'); }
+      }
+      if (ostep !== 'ok' && ostep !== 'remind' && !cur.querySelector('.ocard input')) no('onb-field');
+      if (!cur.classList.contains('kb') && (cur.querySelectorAll('.oscr svg').length !== 2 || !cur.querySelector('.olink svg'))) no('onb-pic');
+    }
     // the camp: the book of the journal is a whole touch target above the bottom tenth, nothing is pushed out of the scene, the heart
     // stays on the companion, and what the companion says has at most three lines
     if (cur.classList.contains('camp')) {
