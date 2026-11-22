@@ -5413,7 +5413,8 @@ var TrollModels = (function () {
           var mine = rawOf(to), nTo = revOf(to, revs), a = L.loadState(raw), b = mine ? L.loadState(mine) : null, take;
           if (!b) take = true;
           else if (JSON.stringify(a) === JSON.stringify(b)) take = false;
-          else if (nTo <= m.n) take = true; // nothing was saved under the lasting id since: the copy under the old id is the newer play
+          else if (nTo <= m.n) take = L.revSeed(a) >= L.revSeed(b); // nothing was saved under the lasting id since: the copy under the old id is the newer play,
+          // unless it holds LESS than the lasting one: an old page that found its key gone starts an empty player there, and that must never win
           else take = L.revSeed(a) > L.revSeed(b); // both were played: the copy with more solved exercises and rounds
           if (take) {
             lsSet(DKEY + to, raw);
