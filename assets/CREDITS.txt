@@ -24,3 +24,5 @@ The 3D picture of the trail maps (map3d/): "three.js" r147 by the three.js autho
   https://threejs.org  -  license: MIT, Copyright 2010-2022 Three.js Authors (the text is in map3d/LICENSE-three.txt)
   map3d/toy3d.js and map3d/toy3d_more.js (the houses, landmarks, trees, rocks, flowers and the boat, built in code from rounded shapes) and map3d/map3d.js: own work, no model files and nothing from outside.
   A stop whose picture has no 3D model keeps its Fluent Emoji picture (toy/*.png, above).
+The living pets (pets/): the dog, the cat, the lion, the crocodile, the monkey, the bird and the elephant are original works of the owner of this game (all rights reserved, see LICENSE): 3D models built in code
+  (map3d/pets3d.js, on three.js r147 and map3d/toy3d.js, above). pets/<animal>.webp and pets/<animal>_s.webp are pictures of those models, made by tools/pets/make-sprites.js. No model files and nothing from outside.

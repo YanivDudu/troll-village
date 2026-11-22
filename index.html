@@ -2532,6 +2532,40 @@ body.dusk.toy .camp .ctent,body.dusk.toy .camp .cfire img{background-size:124% 2
 /* a frozen moment for the layout check and for still pictures (&life=<activity>&at=) */
 .lf-still *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){.lfw,.lfw>svg,.lfp,.fheart{transition:none}}
+/* PETS-BEGIN ================= task "pets": the living pets (pictures made from the 3D models, assets/pets) and two pets beside a troll.
+   .p3s  one still of assets/pets/<animal>_s.webp as an <img> (4 square cells in a row; object-position chooses the cell)
+   .pt3  a living picture: .psp is a cell of the sheet assets/pets/<animal>.webp (8 x 8, chosen by background-position), .psh its shadow on the ground;
+         .cpet at the camp, .mpet on a map (.p2 = the second pet), .pstage > .pt3 / canvas in the preview of the cart
+   Motion: one-shot hops and the walk behind the troll at the end of a stage (transform only); all of it is off under reduced motion (the code starts none). */
+.p3s{object-fit:cover!important;aspect-ratio:1}
+.cpic .p3s{max-width:96%;transform:scale(1.18)}
+.pt3{position:relative;display:block;aspect-ratio:1;pointer-events:none;flex:0 0 auto}
+.pt3 .psp{position:absolute;inset:0;background-repeat:no-repeat;background-size:800% 800%}
+.pt3 .psh{position:absolute;left:24%;right:24%;bottom:8.5%;height:11%;border-radius:50%;background:radial-gradient(closest-side,rgba(20,60,40,.42),rgba(20,60,40,0))}
+.pt3.hop .psp{animation:petHop .6s ease-out 1}
+.pt3.hop .psh{animation:petShade .6s ease-out 1}
+@keyframes petHop{0%,100%{transform:translateY(0)}45%{transform:translateY(-12%)}}
+@keyframes petShade{45%{transform:scale(.78);opacity:.6}}
+.pt3.pwalk{animation:petLag .5s ease-in-out var(--pd,0s) 1 backwards}
+.endm.fin .pt3.pwalk{animation:none}
+@keyframes petLag{from{transform:translate(var(--lx,0),var(--ly,0))}}
+.pt3.tap{pointer-events:auto;cursor:pointer}
+.cpet.pt3{animation:none;filter:none;height:clamp(48px,60%,210px);max-height:20cqw;align-self:flex-end;margin-inline-start:-7.5cqw;margin-bottom:-2.4cqw}
+body.toy .cpet.pt3{filter:none}
+.cpet.p2{margin-inline:-10cqw -1.5cqw;z-index:1}
+.cpet.pt3.p2{margin-inline:-11cqw -5.5cqw}
+@media (min-width:900px){.cpet.pt3{max-height:22cqw;margin-inline-start:-9cqw;margin-bottom:-2.6cqw}.cpet.pt3.p2{margin-inline:-12.5cqw -6.5cqw}}
+.mpet.pt3{width:124%;left:64%;bottom:-11%}
+.mpet.p2{left:140%}
+.mpet.pt3.p2{left:128%;bottom:-17%}
+.pstage{position:absolute;z-index:2;pointer-events:none;display:block}
+.mpet.pt3,.pstage .pt3{position:absolute}
+.pstage .pt3,.pstage canvas{inset:0;width:100%;height:100%;display:block}
+.pstage canvas{position:absolute}
+.pstage.gl .pt3{visibility:hidden}
+.ppips{display:inline-flex;gap:2px;margin-inline-start:var(--sp2,8px);vertical-align:-2px;color:var(--primary,#b0206a)}
+.ppips .ic.e{color:var(--locked,#c9c3d6);opacity:.7}
+/* PETS-END */
 </style>
 </head>
 <body>
@@ -4589,7 +4623,7 @@ var TrollLogic = (function () {
     ['pet', 'hamster', '🐹', 'אוֹגֵר', 20], ['pet', 'bunny', '🐰', 'אַרְנָב', 22], ['pet', 'puppy', '🐶', 'כְּלַבְלַב', 25], ['pet', 'kitty', '🐱', 'חֲתַלְתּוּל', 25], ['pet', 'penguin', '🐧', 'פִּינְגְּוִין', 28],
     ['pet', 'fox', '🦊', 'שׁוּעָל', 30], ['pet', 'owl', '🦉', 'יַנְשׁוּף', 30], ['pet', 'octopus', '🐙', 'תְּמָנוּן', 32], ['pet', 'panda', '🐼', 'פַּנְדָּה', 35], ['pet', 'dino', '🦕', 'דִּינוֹזָאוּר', 40],
     ['pet', 'unicorn', '🦄', 'חַד-קֶרֶן', 45], ['pet', 'dragon', '🐉', 'דְּרָקוֹן', 50],
-    ['hat', 'cherry', '🍒', 'דֻּבְדְּבָנִים', 10], ['hat', 'clover', '🍀', 'תִּלְתַּן מַזָּל', 12], ['hat', 'sunflower', '🌻', 'חַמָּנִיָּה', 14], ['hat', 'pumpkin', '🎃', 'דְּלַעַת', 18], ['hat', 'glowstar', '🌟', 'כּוֹכָב זוֹהֵר', 24], ['hat', 'cake', '🎂', 'עוּגַת יוֹם הֻלֶּדֶת', 28], ['hat', 'ufo', '🛸', 'חֲלָלִית', 35], ['face', 'diving', '🤿', 'מַסֵּכַת צְלִילָה', 16], ['hand', 'banana', '🍌', 'בָּנָנָה', 5], ['hand', 'carrot', '🥕', 'גֶּזֶר', 5], ['hand', 'grapes', '🍇', 'עֲנָבִים', 6], ['hand', 'juice', '🧃', 'מִיץ', 6], ['hand', 'popcorn', '🍿', 'פּוֹפְּקוֹרְן', 7], ['hand', 'choc', '🍫', 'שׁוֹקוֹלָד', 8], ['hand', 'dice', '🎲', 'קֻבִּיָּה', 8], ['hand', 'slice', '🍰', 'עוּגָה', 9], ['hand', 'tennis', '🎾', 'טֶנִיס', 9], ['hand', 'yoyo', '🪀', 'יוֹיוֹ', 9], ['hand', 'puzzle', '🧩', 'פָּאזֶל', 10], ['hand', 'target', '🎯', 'מַטָּרָה', 12], ['hand', 'kite', '🪁', 'עֲפִיפוֹן', 14], ['hand', 'mic', '🎤', 'מִיקְרוֹפוֹן', 16], ['hand', 'drum', '🥁', 'תֹּף', 18], ['hand', 'skate', '🛹', 'סְקֵייטְבּוֹרְד', 18], ['hand', 'violin', '🎻', 'כִּנּוֹר', 20], ['hand', 'gamepad', '🎮', 'שַׁלַּט מִשְׂחָק', 22], ['hand', 'keys', '🎹', 'אוֹרְגָּנִית', 22], ['hand', 'cup', '🏆', 'גָּבִיעַ', 30], ['pet', 'snail', '🐌', 'חִלָּזוֹן', 10], ['pet', 'fish', '🐠', 'דָּג', 14], ['pet', 'hen', '🐔', 'תַּרְנְגֹלֶת', 16], ['pet', 'duck', '🦆', 'בַּרְוָז', 16], ['pet', 'piggy', '🐷', 'חֲזַרְזִיר', 20], ['pet', 'cow', '🐮', 'פָּרָה', 22], ['pet', 'squirrel', '🐿️', 'סְנָאִי', 22], ['pet', 'hedgehog', '🦔', 'קִפּוֹד', 24], ['pet', 'monkey', '🐵', 'קוֹף', 26], ['pet', 'koala', '🐨', 'קוֹאָלָה', 28], ['pet', 'parrot', '🦜', 'תֻּכִּי', 30], ['pet', 'tiger', '🐯', 'נָמֵר', 34], ['pet', 'dolphin', '🐬', 'דּוֹלְפִין', 36], ['pet', 'zebra', '🦓', 'זֶבְּרָה', 36], ['pet', 'lion', '🦁', 'אַרְיֵה', 38], ['pet', 'giraffe', '🦒', 'גִ׳ירָפָה', 40], ['pet', 'elephant', '🐘', 'פִּיל', 42], ['pet', 'whale', '🐳', 'לִוְיָתָן', 44],
+    ['hat', 'cherry', '🍒', 'דֻּבְדְּבָנִים', 10], ['hat', 'clover', '🍀', 'תִּלְתַּן מַזָּל', 12], ['hat', 'sunflower', '🌻', 'חַמָּנִיָּה', 14], ['hat', 'pumpkin', '🎃', 'דְּלַעַת', 18], ['hat', 'glowstar', '🌟', 'כּוֹכָב זוֹהֵר', 24], ['hat', 'cake', '🎂', 'עוּגַת יוֹם הֻלֶּדֶת', 28], ['hat', 'ufo', '🛸', 'חֲלָלִית', 35], ['face', 'diving', '🤿', 'מַסֵּכַת צְלִילָה', 16], ['hand', 'banana', '🍌', 'בָּנָנָה', 5], ['hand', 'carrot', '🥕', 'גֶּזֶר', 5], ['hand', 'grapes', '🍇', 'עֲנָבִים', 6], ['hand', 'juice', '🧃', 'מִיץ', 6], ['hand', 'popcorn', '🍿', 'פּוֹפְּקוֹרְן', 7], ['hand', 'choc', '🍫', 'שׁוֹקוֹלָד', 8], ['hand', 'dice', '🎲', 'קֻבִּיָּה', 8], ['hand', 'slice', '🍰', 'עוּגָה', 9], ['hand', 'tennis', '🎾', 'טֶנִיס', 9], ['hand', 'yoyo', '🪀', 'יוֹיוֹ', 9], ['hand', 'puzzle', '🧩', 'פָּאזֶל', 10], ['hand', 'target', '🎯', 'מַטָּרָה', 12], ['hand', 'kite', '🪁', 'עֲפִיפוֹן', 14], ['hand', 'mic', '🎤', 'מִיקְרוֹפוֹן', 16], ['hand', 'drum', '🥁', 'תֹּף', 18], ['hand', 'skate', '🛹', 'סְקֵייטְבּוֹרְד', 18], ['hand', 'violin', '🎻', 'כִּנּוֹר', 20], ['hand', 'gamepad', '🎮', 'שַׁלַּט מִשְׂחָק', 22], ['hand', 'keys', '🎹', 'אוֹרְגָּנִית', 22], ['hand', 'cup', '🏆', 'גָּבִיעַ', 30], ['pet', 'snail', '🐌', 'חִלָּזוֹן', 10], ['pet', 'fish', '🐠', 'דָּג', 14], ['pet', 'hen', '🐔', 'תַּרְנְגֹלֶת', 16], ['pet', 'duck', '🦆', 'בַּרְוָז', 16], ['pet', 'piggy', '🐷', 'חֲזַרְזִיר', 20], ['pet', 'cow', '🐮', 'פָּרָה', 22], ['pet', 'squirrel', '🐿️', 'סְנָאִי', 22], ['pet', 'hedgehog', '🦔', 'קִפּוֹד', 24], ['pet', 'monkey', '🐵', 'קוֹף', 26], ['pet', 'koala', '🐨', 'קוֹאָלָה', 28], ['pet', 'parrot', '🦜', 'תֻּכִּי', 30], ['pet', 'tiger', '🐯', 'נָמֵר', 34], ['pet', 'dolphin', '🐬', 'דּוֹלְפִין', 36], ['pet', 'zebra', '🦓', 'זֶבְּרָה', 36], ['pet', 'lion', '🦁', 'אַרְיֵה', 38], ['pet', 'giraffe', '🦒', 'גִ׳ירָפָה', 40], ['pet', 'elephant', '🐘', 'פִּיל', 42], ['pet', 'whale', '🐳', 'לִוְיָתָן', 44], ['pet', 'croc', '🐊', 'תַּנִּין', 32],
     // items that do something (never anything that helps with an exercise). move: what the companion does once after a correct
     // answer and at the end of a stage; party: the celebration of the end-of-stage screen. The equipped ones are in state.fx.
     ['move', 'jump2', '🦘', 'קְפִיצָה כְּפוּלָה', 30], ['move', 'mvbow', '🙇', 'קִדָּה', 30], ['move', 'spin', '🌀', 'סִחְרוּר', 35], ['move', 'dance', '💃', 'רִקּוּד נִצָּחוֹן', 40], ['move', 'flip', '🤸', 'גַּלְגַּלּוֹן', 45],
@@ -4598,6 +4632,31 @@ var TrollLogic = (function () {
   var ITEM = {};
   ITEMS.forEach(function (it) { ITEM[it.id] = it; });
   var EMOJI_SLOTS = ['hat', 'face', 'hand', 'pet'];
+  // ---- task "pets": seven pets are living toy animals. PET3: item id -> [the animal of assets/map3d/pets3d.js, its colour variant]; the item gets
+  // .pet3 (the animal: the name of its pictures assets/pets/<animal>.webp and <animal>_s.webp) and .pv (the variant). Ids, names and prices of the items
+  // that existed before did not change: a child who owned the puppy simply has the dog now. Every other pet is still a flat picture.
+  // A troll has at most PET_MAX pets. The first is the old field dress[troll].pet; the second is ONE optional key, dress[troll].pet2 (absent in
+  // older saves; an older page ignores it and drops it at its next save, and then the troll simply has its first pet only). All pure.
+  var PET3 = { puppy: ['dog', 0], kitty: ['cat', 0], chick: ['bird', 2], monkey: ['monkey', 0], lion: ['lion', 0], croc: ['croc', 0], elephant: ['elephant', 0] }, PET_MAX = 2;
+  Object.keys(PET3).forEach(function (id) { ITEM[id].pet3 = PET3[id][0]; ITEM[id].pv = PET3[id][1]; });
+  function isPet(id) { return typeof id === 'string' && !!ITEM[id] && ITEM[id].slot === 'pet'; }
+  // the pets of one troll, the older choice first. d: its dress (or a spec). items: when given, a second pet must be an owned item.
+  function petsOf(d, items) {
+    var out = []; d = d || {};
+    if (isPet(d.pet)) out.push(d.pet);
+    if (isPet(d.pet2) && d.pet2 !== d.pet && (!items || items.indexOf(d.pet2) >= 0)) out.push(d.pet2);
+    return out;
+  }
+  // the list after one more pet was chosen: a third one takes the place of the older of the two; one that is already there changes nothing
+  function petsAdd(list, id) { var l = (list || []).slice(0, PET_MAX); if (!isPet(id) || l.indexOf(id) >= 0) return l; l.push(id); return l.slice(-PET_MAX); }
+  function petsSet(state, troll, list) { // returns a new state; the dress of the troll is a new object, with pet / pet2 written from the list
+    var s = Object.assign({}, state), dr = Object.assign({}, state.dress), d = Object.assign({}, dr[troll] || {});
+    d.pet = list[0] || ''; if (list[1]) d.pet2 = list[1]; else delete d.pet2;
+    dr[troll] = d; s.dress = dr; return s;
+  }
+  // a pet joins a troll (only an owned item; the same animal may go with several trolls) / leaves it (id '' = all of them leave). Return a new state.
+  function petPut(state, troll, id) { return isPet(id) && (state.items || []).indexOf(id) >= 0 ? petsSet(state, troll, petsAdd(petsOf((state.dress || {})[troll]), id)) : state; }
+  function petDrop(state, troll, id) { return petsSet(state, troll, id ? petsOf((state.dress || {})[troll]).filter(function (x) { return x !== id; }) : []); }
   // Buying is the child's choice: enough coins and not owned yet. Returns a new state, never mutates.
   // What an item costs: its own fixed price, the same for every player and however many items they already have.
   function priceOf(state, id) {
@@ -4936,6 +4995,7 @@ var TrollLogic = (function () {
       if (typeof d.body === 'string' && hex.test(d.body)) e.body = d.body;
       if (ACCESSORIES.indexOf(d.acc) >= 0) e.acc = d.acc;
       EMOJI_SLOTS.forEach(function (k) { if (typeof d[k] === 'string' && ITEM[d[k]] && ITEM[d[k]].slot === k) e[k] = d[k]; });
+      if (isPet(d.pet2) && d.pet2 !== e.pet && s.items.indexOf(d.pet2) >= 0) e[e.pet ? 'pet2' : 'pet'] = d.pet2; // task "pets": the optional second pet, only an owned one; alone it is simply the pet
       s.dress[k] = e;
     });
     return s;
@@ -5209,7 +5269,7 @@ var TrollLogic = (function () {
     SUBS: SUBS, KIT: KIT,
     MALE: MALE, forBoy: forBoy,
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
-    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
+    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, PET3: PET3, PET_MAX: PET_MAX, petsOf: petsOf, petsAdd: petsAdd, petPut: petPut, petDrop: petDrop, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, linkKey: linkKey, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
@@ -5300,7 +5360,7 @@ var TrollLogic = (function () {
 <script id="troll">
 // Troll drawing: pure string generation, no DOM access. One light from the upper left; every mood is a row of parameters.
 //   TrollArt.trollSVG(spec, opts)
-//   spec: {id, body, hairColor, hair (0-5), acc, eyes (0-2)} + optional emoji items hatE, faceE, handE, petE
+//   spec: {id, body, hairColor, hair (0-5), acc, eyes (0-2)} + optional emoji items hatE, faceE, handE, petE, pet2E (task "pets": a second pet; petK / pet2K: a living animal, see petAt)
 //   opts.mood: happy | think | cheer | sad | curious | surprised | proud | focused | sleepy | wave (or waving) | oops
 //   opts.size: the height it is shown at, in px. Up to 72: the small troll (outlined, fewer parts, class "sm"); above: the large "toy" troll.
 //              Without a size the large troll is drawn and marked data-u, and the page draws it again small if it turns out small (trollFit in the ui block).
@@ -5425,6 +5485,16 @@ var TrollArt = (function () {
       : acc === 'wings' ? grad('linear', id + 'w', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#ffffff'], [1, '#cfeaff']]) + grad('linear', id + 'x', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#eef8ff'], [1, '#b4dcfb']]) : '';
   }
   var api = { assetRoot: '' };
+  // task "pets": up to two pets beside the troll, the first on its left and the second on its right, each turned to it. A living pet (s.petK / s.pet2K: its
+  // animal) is a cell of its picture of stills, assets/pets/<animal>_s.webp (standing to the right, to the left, sitting to the right, to the left; with
+  // s.petSit they sit); any other pet is its emoji picture, as before. data-b: the box of the cell (x y size), for the living preview of the cart.
+  function petAt(ch, kind, right, sit) {
+    if (!ch) return '';
+    if (!kind) return em(ch, right ? 186 : 16, 257, 52, ' pet');
+    var z = 84, x = right ? 147 : -31, y = 185; // the ground of a cell is at 86% of its height: the feet stand a little in front of the troll's
+    return '<g class="em pet p3" data-k="' + kind + '" data-b="' + x + ' ' + y + ' ' + z + '"><svg x="' + x + '" y="' + y + '" width="' + z + '" height="' + z + '" viewBox="' + ((right ? 1 : 0) + (sit ? 2 : 0)) + ' 0 1 1">' +
+      '<image href="' + api.assetRoot + 'assets/pets/' + kind + '_s.webp" width="4" height="1" preserveAspectRatio="none"/></svg></g>';
+  }
   function em(ch, x, y, size, cls) {
     if (!ch) return '';
     var cp = Array.from(ch).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (c) { return c !== 'fe0f'; }).join('-');
@@ -5582,7 +5652,7 @@ var TrollArt = (function () {
 
     return '<svg class="troll ' + mood + (hasLook ? ' lk' : '') + (big ? '' : ' sm') + '"' + (uid ? ' data-u="' + uid + '"' : '') + ' viewBox="0 0 200 262" preserveAspectRatio="xMidYMax meet" style="--td:' + (-((s.id || 0) % 17) / 5) + 's">' + defs +
       '<ellipse class="sh" cx="' + (lv > 1 ? 108 : 104) + '" cy="252" rx="' + ((lv > 1 ? 72 : 64) + (sit ? 8 : 0)) + '" ry="' + (lv > 1 ? 10 : 9) + '" fill="' + U('s') + '"/>' +
-      '<g class="tb">' + (m.tilt ? '<g transform="rotate(' + m.tilt + ' 100 248)">' + inner + '</g>' : sit ? '<g transform="translate(-5 17) scale(1.05 .94)">' + inner + '</g>' : inner) + '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
+      '<g class="tb">' + (m.tilt ? '<g transform="rotate(' + m.tilt + ' 100 248)">' + inner + '</g>' : sit ? '<g transform="translate(-5 17) scale(1.05 .94)">' + inner + '</g>' : inner) + '</g>' + petAt(s.petE, s.petK, 0, s.petSit) + petAt(s.pet2E, s.pet2K, 1, s.petSit) + '</svg>';
   }
   // the troll that was drawn without a size (data-u), drawn again for the height it really has; '' when it is no longer remembered
   function again(uid, size) { var r = mem[uid]; if (!r) return ''; delete mem[uid]; var o = {}, k; for (k in r[1]) o[k] = r[1][k]; o.size = size; o.again = 1; return trollSVG(r[0], o); }
@@ -6393,7 +6463,12 @@ var TrollModels = (function () {
   }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
-  function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
+  function resolve(s) {
+    L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; });
+    var ps = L.petsOf(s), a = L.ITEM[ps[0]], b = L.ITEM[ps[1]]; // task "pets": up to two pets; petK / pet2K: the animal of a living pet
+    s.petE = a ? a.e : ''; s.petK = a && a.pet3 || ''; s.pet2E = b ? b.e : ''; s.pet2K = b && b.pet3 || '';
+    return s;
+  }
   function buddyOf(st) { return st.owned.indexOf(st.buddy) >= 0 ? st.buddy : st.owned.length ? st.owned[0] : null; }
   function h(tag, props) {
     var e = document.createElement(tag), k, i;
@@ -6829,6 +6904,143 @@ var TrollModels = (function () {
     return { sync: sync, leave: function () { want = null; drop(); }, pics: PICS, react: function (n, ms) { try { if (inst && inst.react) inst.react(n, ms); } catch (e) {} } }; // react (task "mapwalk"): the model of the stop the companion reached bounces once
   })();
 
+  // ---------- task "pets": seven pets are living toy animals; a troll has up to two pets ----------
+  // The animals (dog, cat, lion, crocodile, monkey, bird, elephant) are the owner's 3D models of assets/map3d/pets3d.js. Phase 1 (this code) shows them as
+  // PICTURES made from those models by tools/pets/make-sprites.js, so nothing here needs WebGL:
+  //   assets/pets/<animal>_s.webp  4 stills (standing to the right, to the left, sitting to the right, to the left): the cards of the cart, and the pets
+  //                                that TrollArt draws beside a troll (every card, row, village, end screen, the exercise screen: there they sit)
+  //   assets/pets/<animal>.webp    the sheet, 8 directions x 8 poses (ROWS): the pets of the companion at the camp and on the maps, which live a little
+  //                                (PETS.el: they sit down, stand up, look at the child, hop; they sleep at the camp at night; at the end of a stage they
+  //                                walk a step behind the troll in the direction it walks), and the tried-on pet of the cart without WebGL
+  // A picture is asked for only when an element that shows it is built: a session loads the sheets of the companion's own pets and nothing else.
+  // 3D is used in ONE place now: the pet that is tried on in the cart turns around alive (PETS.stage; three.js and pets3d.js arrive then, lazily;
+  // without WebGL, under #fit / #auto or when a file does not arrive the sheet does the same job).
+  // THE HOOK OF PHASE 2 (3D actors at the camp and on the maps; nothing calls it yet):
+  //   petActors(trollId) -> [{ kind, variant, item }]         the living pets that troll has with it, at most two, the older choice first (flat pets are
+  //                                                          not in it); each is made with Pets.create(kind, { variant: variant }). Also M3.pets(trollId)
+  //   petKind(itemId) -> kind or null                         the animal of an item ('puppy' -> 'dog'); null for a flat pet and for anything else
+  //   PETS.load3d(function (Pets) { ... })                    three.js, toy3d.js and pets3d.js, once; Pets is null when 3D is not possible
+  //   PETS.el(spec, i, cls, face)                             the picture element of today, to keep as the silent fallback
+  // Layout checks (sandbox): &wear=puppy.lion (two pets on the companion), &petpose=sit|sleep|happy|walk1 (the pose of the living pictures, frozen),
+  // &pet3d=0 (the cart never asks for 3D).
+  function petKind(itemId) { var x = L.ITEM[itemId]; return x && x.pet3 ? x.pet3 : null; }
+  function petActors(trollId) { return L.petsOf(state.dress[trollId]).filter(petKind).map(function (id) { return { kind: petKind(id), variant: L.ITEM[id].pv, item: id }; }); }
+  var PETS = (function () {
+    var DIR = 'assets/pets/', ROWS = ['stand', 'walk0', 'walk1', 'walk2', 'walk3', 'sit', 'sleep', 'happy'], PI = Math.PI;
+    var still = /fit|auto/.test(hash), dbgPose = sandbox ? (/[#&]petpose=(\w+)/.exec(hash) || [])[1] || '' : '', no3d = still && !/[#&]gl=1/.test(hash) || /[#&]pet3d=0/.test(hash), st3 = 0, wait3 = [];
+    function item(id) { var x = L.ITEM[id]; return x && x.pet3 ? x : null; }
+    function cell(sp, pose, dir) { sp.style.backgroundPosition = ((((dir % 8) + 8) % 8) / 7 * 100).toFixed(2) + '% ' + (Math.max(0, ROWS.indexOf(pose)) / 7 * 100).toFixed(2) + '%'; sp.setAttribute('data-pose', pose); }
+    // one of the four stills as a picture: n = 0 standing to the right, 1 to the left, 2 sitting to the right, 3 to the left
+    function pic(id, cls, n) { var it = item(id); return it ? h('img', { class: (cls ? cls + ' ' : '') + 'p3s', src: DIR + it.pet3 + '_s.webp', alt: it.name, draggable: 'false', style: 'object-position:' + ((n || 0) / 3 * 100).toFixed(1) + '% 0' }) : null; }
+    // a living picture: <span class="pt3 CLS" data-pet=ID><i class="psh"></i><i class="psp"></i></span>; face: the column it looks to at rest (1 = right, 7 = left)
+    function sprite(id, cls, face) {
+      var it = item(id), sp = h('i', { class: 'psp', style: 'background-image:url(' + DIR + it.pet3 + '.webp)' }), el = h('span', { class: 'pt3' + (cls ? ' ' + cls : ''), 'data-pet': id, 'aria-hidden': 'true' }, h('i', { class: 'psh' }), sp);
+      el._sp = sp; el._face = face == null ? 1 : face; cell(sp, dbgPose || 'stand', el._face); return el;
+    }
+    // the small life of a living picture (el from sprite). o.sleep: asleep (the camp at night); o.n: its place (0, 1), so that two pets never move together
+    function live(el, o) {
+      o = o || {}; var sp = el._sp, face = el._face, flat = /croc/.test(el.getAttribute('data-pet')), alive = function () { return el.isConnected; };
+      if (dbgPose) return el;
+      if (o.sleep) { cell(sp, 'sleep', face); el.classList.add('zz'); }
+      if (reduced || still) return el;
+      function rest() { cell(sp, o.sleep ? 'sleep' : 'stand', face); }
+      function hop(then) { cell(sp, 'happy', face); restart(el, 'hop'); later(function () { if (!alive()) return; el.classList.remove('hop'); rest(); if (then) then(); }, 620); }
+      function next(ms) { later(function () { if (alive()) idle(); }, ms); }
+      function idle() {
+        var r = Math.random();
+        if (o.sleep) { rest(); next(6000); return; }
+        if (r < 0.3) { cell(sp, 'sit', face); next(4500 + Math.random() * 4000); }                         // sits down for a while
+        else if (r < 0.52) { cell(sp, 'stand', flat ? (face === 1 ? 2 : 6) : 0); next(1600 + Math.random() * 1400); } // looks at the child (the crocodile, flat from the front, shows its side)
+        else if (r < 0.66) { cell(sp, 'stand', flat ? face : face === 1 ? 2 : 6); next(1400 + Math.random() * 1200); }   // looks ahead
+        else if (r < 0.8) hop(function () { next(2600 + Math.random() * 2500); })                          // a happy hop
+        else { rest(); next(3000 + Math.random() * 3500); }
+      }
+      el._hop = function () { if (alive() && !el.classList.contains('hop')) hop(); };
+      // the end of a stage: the companion walks from the house that was played to its stop (.mbud.ewalk with --dx, --dy, --d, set right after the map is
+      // built). Its pets start a step behind it, walk in the direction it walks and arrive a moment after it; then they turn to it again.
+      later(function () {
+        var mb = alive() && !el.closest('.endm.fin') && el.closest('.mbud.ewalk'), dx = mb ? parseFloat(mb.style.getPropertyValue('--dx')) || 0 : 0, dy = mb ? parseFloat(mb.style.getPropertyValue('--dy')) || 0 : 0, len = Math.sqrt(dx * dx + dy * dy);
+        if (!mb || len < 6) { next(1800 + (o.n || 0) * 1300 + Math.random() * 2500); return; }
+        var d0 = (parseFloat(mb.style.getPropertyValue('--d')) || 0) * 1000, lag = 80 + (o.n || 0) * 60, stepPx = Math.min(len * 0.4, el.offsetWidth * (0.8 + (o.n || 0) * 0.5)), col = Math.round(Math.atan2(-dx, -dy) / (PI / 4)), n = 0;
+        el.style.setProperty('--lx', (dx / len * stepPx).toFixed(1) + 'px'); el.style.setProperty('--ly', (dy / len * stepPx).toFixed(1) + 'px'); el.style.setProperty('--pd', ((d0 + lag) / 1000).toFixed(2) + 's');
+        el.classList.add('pwalk'); cell(sp, 'stand', col);
+        (function walk() { later(function () { if (!alive()) return; if (n < 6 && !el.closest('.endm.fin')) { cell(sp, 'walk' + n % 4, col); n++; walk(); } else { el.classList.remove('pwalk'); rest(); later(function () { if (alive()) hop(function () { next(3000); }); }, 500 + (o.n || 0) * 250); } }, n ? 100 : d0); })(); // the walk of the troll takes 0.6 s and the show ends right after it (END_T): the pets are back beside it by then
+      }, 60);
+      return el;
+    }
+    // the i-th pet (0, 1) of a spec as an element for the camp (cls 'cpet') and the maps ('mpet'): a living picture, or the flat picture of an old pet; null without one.
+    // face: where a living one looks at rest (default: the first to the right, the second to the left). The second element also gets the class 'p2'.
+    function el(spec, i, cls, face) {
+      var id = L.petsOf(spec)[i], it = L.ITEM[id], c = cls + (i ? ' p2' : '');
+      if (!it) return null;
+      if (!it.pet3) return icoImg(it.e, c);
+      var e = live(sprite(id, c, face == null ? (i ? 7 : 1) : face), { n: i, sleep: cls === 'cpet' && document.body.classList.contains('night') });
+      if (cls === 'cpet') { e.classList.add('tap'); e.addEventListener('click', function () { if (e._hop) { sfx.pop(); e._hop(); } }); } // at the camp a tap makes it hop
+      return e;
+    }
+    // three.js + toy3d.js (the files of the 3D maps; the map may be loading them at this moment, so a file that is already asked for is waited for, not asked again) + pets3d.js
+    function ok3() { return !!(window.THREE && window.Toy && window.Pets && window.Toy.PETS === window.Pets); }
+    function load3d(cb) {
+      if (no3d || st3 === 3) { cb(null); return; }
+      if (st3 === 2 && ok3()) { cb(window.Pets); return; }
+      wait3.push(cb); if (st3 === 1) return; st3 = 1;
+      var t0 = Date.now();
+      function end(ok) { st3 = ok ? 2 : 3; var w = wait3; wait3 = []; w.forEach(function (f) { try { f(ok ? window.Pets : null); } catch (e) {} }); }
+      function need(src, test, then) {
+        if (test()) { then(); return; }
+        if (!document.querySelector('script[src="' + src + '"]') || /pets3d/.test(src)) { var s = document.createElement('script'); s.src = src; s.onerror = function () { end(false); }; document.head.appendChild(s); }
+        (function poll() { if (st3 !== 1) return; if (test()) then(); else if (Date.now() - t0 > 30000) end(false); else setTimeout(poll, 60); })();
+      }
+      need('assets/map3d/three.min.js', function () { return !!window.THREE; }, function () {
+        need('assets/map3d/toy3d.js', function () { return !!window.Toy; }, function () {
+          need('assets/map3d/pets3d.js', ok3, function () { var good = false; try { good = window.Pets.supported(); } catch (e) {} end(good); });
+        });
+      });
+    }
+    // the cart: the pet that is tried on (or tapped) stands alive over its still beside the troll of the preview. host: .cprev with the troll inside.
+    // With WebGL it turns around once, looks, jumps (the 3D model, drawn by Pets.render into a small canvas, about 30 pictures a second, only while it is
+    // on the screen); without it the sheet does the same in steps. Reduced motion: the still stays.
+    function stage(host, id) {
+      var it = item(id), g = it && host.querySelector('svg.troll .p3[data-k="' + it.pet3 + '"]'), old = host.querySelector('.pstage');
+      if (old) old.remove();
+      if (!g || reduced || still && !/[#&]gl=1/.test(hash)) return;
+      var b = g.getAttribute('data-b').split(' ').map(Number), W = host.clientWidth, H = host.clientHeight, k = Math.min(W / 200, H / 262), x0 = (W - 200 * k) / 2, y0 = H - 262 * k;
+      if (!(k > 0)) return;
+      var size = Math.max(60, Math.min(150, b[2] * k * 1.5)), cx = x0 + (b[0] + b[2] / 2) * k, by = y0 + (b[1] + b[2]) * k, right = b[0] > 100;
+      cx = Math.max(size * 0.42, Math.min(W - size * 0.42, cx));
+      var box = h('span', { class: 'pstage', 'aria-hidden': 'true', style: 'width:' + size.toFixed(0) + 'px;height:' + size.toFixed(0) + 'px;left:' + ((cx - size / 2) / W * 100).toFixed(2) + '%;bottom:' + ((H - by - size * 0.04) / H * 100).toFixed(2) + '%' });
+      var sp = sprite(id, 'pflat', right ? 7 : 1), n = 0, face = right ? 7 : 1, alive = function () { return box.isConnected && cur && cur.contains(box); };
+      box.appendChild(sp); g.style.visibility = 'hidden'; host.appendChild(box);
+      (function turn() { later(function () { if (!alive() || box.classList.contains('gl')) return; n++; var c = n % 40; // one turn, a look, a hop, a rest sitting
+        if (c <= 8) cell(sp._sp, 'stand', face + c); else if (c === 14) { cell(sp._sp, 'happy', face); restart(sp, 'hop'); } else if (c === 17) cell(sp._sp, 'stand', face); else if (c === 24) cell(sp._sp, 'sit', face); else if (c === 36) cell(sp._sp, 'stand', face);
+        turn(); }, 230); })();
+      load3d(function (P) {
+        if (!P || !alive()) return;
+        try {
+          var dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(size * dpr), cv = h('canvas', { width: String(px), height: String(px) }), ctx = cv.getContext('2d'), t0 = performance.now(), last = 0, home = right ? -0.6 : 0.6;
+          var draw = function (now) {
+            if (!alive()) return;
+            requestAnimationFrame(draw);
+            if (document.hidden || now - last < 30) return; last = now;
+            var t = (now - t0) / 1000, u = t % 9, ang = home, pose = { t: t }, lift = 0;
+            if (u < 3.4) { var q = u / 3.4; ang = home + 2 * PI * q * q * (3 - 2 * q); }            // turns around once
+            else if (u < 5) pose.look = [home > 0 ? -0.5 : 0.5, 0.15];                              // looks at the child
+            else if (u < 6) { pose.act = 'jump'; pose.u = u - 5; pose.mood = 'happy'; }             // a happy jump
+            else if (u > 6.6 && u < 8.2) pose.mood = 'happy';
+            var c = P.render({ kind: it.pet3, variant: it.pv, size: size, dpr: dpr, angle: ang, pose: pose, outline: false, shadow: true, zoom: 0.8, lift: 0.22 });
+            ctx.clearRect(0, 0, px, px); ctx.drawImage(c, 0, 0, px, px);
+            if (!cv.parentNode) { box.appendChild(cv); box.classList.add('gl'); }
+          };
+          requestAnimationFrame(draw);
+        } catch (e) { box.classList.remove('gl'); }
+      });
+    }
+    // how many of the two places are taken, as two paws (the line under the cards of the pets)
+    function pips(n) { var s = h('span', { class: 'ppips', role: 'img', 'aria-label': n + ' מִתּוֹךְ ' + L.PET_MAX }), i; for (i = 0; i < L.PET_MAX; i++) { var p = icon('paw', 's'); if (i >= n) p.classList.add('e'); s.appendChild(p); } return s; }
+    return { item: item, pic: pic, sprite: sprite, live: live, el: el, actors: petActors, load3d: load3d, stage: stage, pips: pips, ROWS: ROWS };
+  })();
+  M3.pets = petActors; // the name the 3D maps will use (phase 2)
+
   // ---------- screens ----------
   function show(build) {
     M3.leave(); // the 3D picture of a map belongs to its screen: the graphics memory is given back as soon as the child leaves
@@ -6958,8 +7170,8 @@ var TrollModels = (function () {
       if (!dbgTrick && !swap && !lifeDbg) campHello(paint, bud);
       // the dressing room: a round button with a shirt beside the companion (a tap on the companion itself still reads its bubble aloud)
       var dressB = TOY && state.owned.length ? iconBtn('dress', 'לְהַלְבִּישׁ', function () { dress(); }, 'cdress') : null;
-      var tentE = mapImg(ART.tent, 'ctent'), fireE = h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)), petE = bs.petE ? icoImg(bs.petE, 'cpet') : null;
-      var cgE = h('div', { class: 'cground' }, dressB, tentE, bud, fireE, petE); // from the start of the row: the dressing room, the tent, the companion, the fire, the pet
+      var tentE = mapImg(ART.tent, 'ctent'), fireE = h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)), petE = PETS.el(bs, 0, 'cpet'), pet2E = PETS.el(bs, 1, 'cpet');
+      var cgE = h('div', { class: 'cground' }, dressB, tentE, pet2E, bud, fireE, petE); // from the start of the row: the dressing room, the tent, the companion, the fire, the pet
       grid.appendChild(h('div', { class: 'campv' }, bubble, cgE));
 
       // the one big button, and the smaller choices
@@ -7510,11 +7722,11 @@ var TrollModels = (function () {
     if (reduced || campMood() !== 'happy' || /tr-/.test(bud.className)) return;
     paint('wave'); later(function () { if (!/tr-/.test(bud.className) && bud.querySelector('.troll.wave')) paint(); }, 1200);
   }
-  function noPet(s) { var t = {}, k; for (k in s) t[k] = s[k]; t.petE = ''; return t; }
+  function noPet(s) { var t = {}, k; for (k in s) t[k] = s[k]; t.petE = t.pet2E = ''; return t; }
   // the companion on a map; the pet it has with it stands beside it, large enough to be seen
   function mapBuddy() {
     var s = buddySpec(), b = h('span', { class: 'mbud', 'aria-hidden': 'true', html: A.trollSVG(noPet(s)) });
-    if (s.petE) b.appendChild(icoImg(s.petE, 'mpet'));
+    [0, 1].forEach(function (i) { var p = PETS.el(s, i, 'mpet', 7); if (p) b.appendChild(p); }); // task "pets": up to two, both on the free side of the stop
     return b;
   }
   function mapFlag() { return mapImg(ART.flag, 'mflag'); }
@@ -8420,7 +8632,7 @@ var TrollModels = (function () {
     state = L.memAdd(state, stageRound ? 'p' : 'm', topicId, stageRound ? cfg.level : 0, L.todayStr()); // optional field: what the companion remembers
     save();
     if (!cfg.race) { walkAt.stop = { t: topicId, lv: cfg.level, boss: cfg.boss }; if (topicId === 'mix') walkAt.topic = 'mix'; } tv.lv = cfg.level; // task "mapwalk": the map that opens next knows where the companion was (tv.lv: the house of this round, for tests/walk.html)
-    var buddy = buddySpec(), combo = 0;
+    var buddy = buddySpec(), combo = 0; buddy.petSit = 1; // task "pets": calm: the living pets sit beside the companion
     tv.round = round; tv.done = false; tv.born1 = false; tv.born = Date.now(); // the screen opens now: a second tap of a double tap on the button that led here must not answer
     show(function (el) {
       if (cfg.race) raceRound = true; // leaving this screen while the race runs means leaving the race
@@ -9196,7 +9408,7 @@ var TrollModels = (function () {
   }
   function partEl(kind, id, color) { var w = h('span', { class: 'ppart', html: A.partSVG(kind, id, color) }); if (w.firstChild) w.firstChild.setAttribute('data-k', kind + '-' + id); return w; }
   // the picture of a shop item by itself
-  function itemPic(it) { return it.slot === 'acc' ? (it.id === 'none' ? icoImg('🚫', 'pimg') : partEl('acc', it.id)) : icoImg(it.e, 'pimg'); }
+  function itemPic(it) { return it.pet3 ? PETS.pic(it.id, 'pimg') : it.slot === 'acc' ? (it.id === 'none' ? icoImg('🚫', 'pimg') : partEl('acc', it.id)) : icoImg(it.e, 'pimg'); }
   // the celebration effects of the end-of-stage screen (items of the slot "party"): one shot, built from the particles the game already has
   function partyFx(id, x, y) {
     if (id === 'prain') confetti(60);
@@ -9231,16 +9443,23 @@ var TrollModels = (function () {
       function owns(it) { return state.items.indexOf(it.id) >= 0 || (it.slot === 'acc' && base.acc === it.id); }
       function isFx(key) { return key === 'move' || key === 'party'; }
       function wornVal(key) { if (isFx(key)) return L.fxOf(state, key); var v = specOf(id)[key]; return v == null ? '' : v; }
-      function cur1() { var s = specOf(id); if (pick && !isFx(pick.key)) { s[pick.key] = pick.val; resolve(s); } return s; }
+      function wears(o) { if (o.key !== 'pet') return wornVal(o.key) === o.val; var ps = L.petsOf(state.dress[id]); return o.val ? ps.indexOf(o.val) >= 0 : !ps.length; } // task "pets": up to two pets are worn
+      function cur1() {
+        var s = specOf(id);
+        if (pick && pick.key === 'pet') { var ps = pick.val ? L.petsAdd(L.petsOf(s), pick.val) : []; s.pet = ps[0] || ''; s.pet2 = ps[1] || ''; resolve(s); } // tried on: as it will be once it is chosen
+        else if (pick && !isFx(pick.key)) { s[pick.key] = pick.val; resolve(s); }
+        return s;
+      }
+      function prevSet(html) { prev.innerHTML = html; PETS.stage(prev, pick && pick.key === 'pet' ? pick.val : ''); } // the pet that was tapped stands alive beside the troll
       function say(text, ic) { msg.textContent = ''; if (ic) msg.appendChild(icon(ic, 't')); msg.appendChild(document.createTextNode((ic ? ' ' : '') + (text || ''))); } // ic: an icon before the line
       var prevT = 0;
       function drawPrev(celebrate, move) {
         var s = cur1(); nameEl.textContent = s.name; clearTimeout(prevT);
         tabs.style.setProperty('--swh', s.hairColor); tabs.style.setProperty('--swb', s.body); // the two colour tabs follow the troll
         prev.className = 'cprev' + (move ? ' mv-' + move : '');
-        prev.innerHTML = A.trollSVG(s, { mood: celebrate || move ? 'cheer' : 'happy' });
+        prevSet(A.trollSVG(s, { mood: celebrate || move ? 'cheer' : 'happy' }));
         if (celebrate) { restart(prev, 'pop'); var c = center(prev); burst(c[0], c[1], 12); }
-        if (celebrate || move) prevT = later(function () { prev.className = 'cprev'; prev.innerHTML = A.trollSVG(cur1()); }, 1100);
+        if (celebrate || move) prevT = later(function () { prev.className = 'cprev'; prevSet(A.trollSVG(cur1())); }, 1100);
       }
       // the tapped item at work on the troll: clothes are tried on, a move is danced once, a celebration goes off once
       function show1(o, celebrate) {
@@ -9256,18 +9475,20 @@ var TrollModels = (function () {
         else if (key === 'body') L.BODIES.forEach(function (c, i) { list.push({ key: key, val: c, name: '', label: TABS[2][1] + ' ' + (i + 1), pic: sw(c) }); });
         else {
           if (key !== 'acc') list.push({ key: key, val: '', name: 'בְּלִי', pic: icoImg('🚫', 'pimg') });
-          L.ITEMS.filter(function (it) { return it.slot === key; }).forEach(function (it) { list.push({ key: key, val: it.id, name: it.name, item: it.id === 'none' ? null : it, pic: itemPic(it) }); });
+          L.ITEMS.filter(function (it) { return it.slot === key; }).sort(function (a, b) { return (b.pet3 ? 1 : 0) - (a.pet3 ? 1 : 0); }).forEach(function (it) { list.push({ key: key, val: it.id, name: it.name, item: it.id === 'none' ? null : it, pic: itemPic(it) }); }); // task "pets": the living animals first, each group by price
         }
         return list;
       }
       function same(o) { return !!pick && pick.key === o.key && pick.val === o.val; }
-      function put(key, val) { // wear, choose or take off; saved at once
+      function put(key, val, off) { // wear, choose or take off; saved at once. off: the one pet that leaves (task "pets")
         if (isFx(key)) state = L.setFx(state, key, val);
+        else if (key === 'pet') state = val ? L.petPut(state, id, val) : L.petDrop(state, id, off || '');
         else { var d = state.dress[id] || {}; d[key] = val; state.dress[id] = d; }
         save();
       }
       // the one button under the cards, for the card that was tapped
-      function drawAct(note) {
+      function drawAct(note) { drawAct1(note); if (TABS[tab][0] === 'pet') msg.appendChild(PETS.pips(L.petsOf(state.dress[id]).length)); } // task "pets": two paws = the two places of a troll
+      function drawAct1(note) {
         act.innerHTML = '';
         var o = pick, it = o && o.item;
         if (!o) { say(note || 'הַקִּישִׁי עַל פָּרִיט כְּדֵי לִרְאוֹת מָה הוּא עוֹשֶׂה'); return; }
@@ -9277,7 +9498,7 @@ var TrollModels = (function () {
         function one(text, cls, fn, ic, coin) { act.appendChild(h('button', { class: 'btn cbtn ' + cls, on: { click: fn } }, ic ? icon(ic, 't') : null, (ic ? ' ' : '') + text + (coin ? ' ' : ''), coin ? icon('coin', 't') : null)); } // ic: an icon before the words; coin: the coin after the price
         if (owns(it)) {
           if (note) say(note); else say(does[1], does[0]);
-          if (wornVal(o.key) === o.val) one(fxk ? 'לְבַטֵּל' : 'לְהוֹרִיד', 'koff', function () { sfx.tap(); put(o.key, o.key === 'acc' ? 'none' : ''); pick = null; drawPrev(false); drawGrid(); drawAct(); });
+          if (wears(o)) one(fxk ? 'לְבַטֵּל' : 'לְהוֹרִיד', 'koff', function () { sfx.tap(); put(o.key, o.key === 'acc' ? 'none' : '', o.val); pick = null; drawPrev(false); drawGrid(); drawAct(); });
           else one(fxk ? 'לִבְחֹר' : 'לִלְבֹּשׁ', 'kgo', function () { sfx.pop(); put(o.key, o.val); show1(o, true); drawGrid(); drawAct(it.name); drawThumbs(); });
         } else if (cost <= state.coins) {
           if (note) say(note); else say(does[1], does[0]);
@@ -9296,7 +9517,7 @@ var TrollModels = (function () {
       }
       function markPick() { [].forEach.call(grid.children, function (b) { b.classList.toggle('pick', !!pick && b.getAttribute('data-v') === String(pick.val)); }); }
       function card(o) {
-        var it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, worn = wornVal(o.key) === o.val, gl = L.goalOf(state);
+        var it = o.item, own = !it || owns(it), cost = it ? L.priceOf(state, it.id) : 0, worn = wears(o), gl = L.goalOf(state);
         var b = h('button', { class: 'citem' + (worn ? ' worn' : '') + (same(o) ? ' pick' : '') + (o.name ? '' : ' bare'), 'aria-label': o.name || o.label || '', 'data-v': String(o.val) });
         b.appendChild(h('span', { class: 'cpic' }, o.pic));
         if (it) b.appendChild(h('span', { class: 'cdo', 'aria-hidden': 'true' }, icon(doesOf(it)[0], 's')));
@@ -9349,6 +9570,7 @@ var TrollModels = (function () {
           if (slot !== 'acc') own.push('');
           d[slot] = rnd(own);
         });
+        var ps = L.petsOf(d); d.pet = ps[0] || ''; if (ps[1]) d.pet2 = ps[1]; else delete d.pet2; // task "pets": the pet was drawn again; a second one stays only beside a different first one
         for (k = 0; k < L.HAIR_STYLES; k++) if (state.stars >= HAIR_REQ[k] || base.hair === k) hairs.push(k);
         d.hair = rnd(hairs); d.hairColor = rnd(L.HAIR_COLORS); d.body = rnd(L.BODIES);
         state.dress[id] = d; pick = null; save();
@@ -10024,6 +10246,7 @@ var TrollModels = (function () {
     var s = L.trollFromId(p.b), d = {};
     try { d = JSON.parse(p.d || '{}') || {}; } catch (e) { d = {}; }
     L.EMOJI_SLOTS.concat(['acc']).forEach(function (k) { if ((d[k] === '' && k !== 'acc') || (typeof d[k] === 'string' && L.ITEM[d[k]] && L.ITEM[d[k]].slot === k)) s[k] = d[k]; });
+    if (typeof d.pet2 === 'string' && L.ITEM[d.pet2] && L.ITEM[d.pet2].slot === 'pet') s.pet2 = d.pet2; // task "pets": the second pet of another player's companion (an older page simply does not show it)
     if (typeof d.hair === 'number' && d.hair >= 0 && d.hair < L.HAIR_STYLES && d.hair === Math.floor(d.hair)) s.hair = d.hair;
     if (L.HAIR_COLORS.indexOf(d.hairColor) >= 0) s.hairColor = d.hairColor;
     if (L.BODIES.indexOf(d.body) >= 0) s.body = d.body;
@@ -10425,7 +10648,7 @@ var TrollModels = (function () {
     if (/[#&]nxp=(\d+)/.test(hash)) state.xp = +/[#&]nxp=(\d+)/.exec(hash)[1];
     hq('own').concat(hq('fx'), hq('wear')).forEach(function (x) { if (state.items.indexOf(x) < 0) state.items.push(x); });
     hq('fx').forEach(function (x) { state = L.setFx(state, L.ITEM[x].slot, x); });
-    hq('wear').forEach(function (x) { var hb = state.owned.indexOf(state.buddy) >= 0 ? state.buddy : state.owned[0]; if (hb != null) { state.dress[hb] = state.dress[hb] || {}; state.dress[hb][L.ITEM[x].slot] = x; } });
+    hq('wear').forEach(function (x) { var hb = state.owned.indexOf(state.buddy) >= 0 ? state.buddy : state.owned[0]; if (hb != null) { state.dress[hb] = state.dress[hb] || {}; if (L.ITEM[x].slot === 'pet') state = L.petPut(state, hb, x); else state.dress[hb][L.ITEM[x].slot] = x; } });
     if (hq('goal')[0]) state = L.setGoal(state, hq('goal')[0]);
   }
   if (sandbox && /[#&]sub=(\w+)/.test(hash)) curSub = /[#&]sub=(\w+)/.exec(hash)[1]; // layout check: the map of another subject
