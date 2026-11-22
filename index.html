@@ -7244,7 +7244,7 @@ var TrollModels = (function () {
     function freeze() {
       var m = nowPos(), t1 = now();
       halt(); frozen = true; mv = null; put(m, 0); cg.classList.add('lf-still');
-      try { cg.getAnimations({ subtree: true }).forEach(function (a) { var tg = a.effect && a.effect.target; if (!tg) return; a.pause(); a.currentTime = t1 - (w.contains(tg) ? tPaint : tStep); }); } catch (e) {}
+      try { cg.getAnimations({ subtree: true }).forEach(function (a) { var tg = a.effect && a.effect.target; if (!tg) return; if (a.transitionProperty) { a.finish(); return; } a.pause(); a.currentTime = t1 - (w.contains(tg) ? tPaint : tStep); }); } catch (e) {}
     }
     // what the troll may do now, with weights: what the child did last comes first, then its level, its temperament, the hour
     function menu() {
