@@ -69,9 +69,50 @@ async function goal() { // the savings goal: a meter on the end screen; when the
   check(!!k && /שֶׁלִּי/.test(k.textContent), 'the item of the goal is bought');
   x.f.remove();
 }
+// task "flowfix-end": what is new on the end screen. The new troll with a t-shirt opens the dressing room on THAT troll (first in the strip); the trophy with
+// the new stamp or postcard opens the journal on that item with a ring around it; the journal button of the camp counts what was not looked at, and looking clears it
+async function news() {
+  var x = await frame('demo&s=end&hatch&hour=10'); await wait(1500);
+  var d = x.d.querySelector('.ebtns .dressn'), a = x.d.querySelector('.ebtns .achb'), all = x.d.querySelectorAll('.ebtns .btn'), name = x.d.querySelector('.emeet .mlab').textContent;
+  check(!!d && !!a && !!d.querySelector('.npic svg') && !!d.querySelector('.ic-shirt') && !!a.querySelector('.ic-trophy') && !!a.querySelector('.npic img'), 'a finished house: the new troll with a t-shirt, and the trophy with the new stamp');
+  check(x.d.querySelectorAll('.ebtns .nxt').length === 1 && all[0].classList.contains('nxt') && tappable(x, all[0]) && tappable(x, d) && tappable(x, a), 'the main button stays first and alone; the two picture buttons can be tapped');
+  d.click(); await wait(600);
+  var cs = x.d.querySelector('.screen.cart:not(.out)'), th = cs && cs.querySelector('.cth.on'), any = cs && cs.querySelector('.cth');
+  check(!!cs && cs.querySelector('.cname').textContent === name && (!any || (!!th && th.getAttribute('aria-label') === name)), 'the t-shirt opens the dressing room on the new troll, which is on the page of the strip that is shown (' + name + ')');
+  x.f.remove();
+  x = await frame('demo&s=end&hatch&hour=21'); await wait(1500);
+  a = x.d.querySelector('.ebtns .achb'); var key = a.getAttribute('data-key'); a.click(); await wait(600);
+  var js = x.d.querySelector('.screen.jrn:not(.out)'), hot = js ? js.querySelectorAll('.jpage .jhot') : [];
+  check(hot.length === 1 && hot[0].getAttribute('data-key') === key && /^h:/.test(key), 'the trophy opens the journal on the page of the new stamp, with a ring around it (' + key + ')');
+  x.d.querySelector('.top .tgroup button:last-child, .top button[aria-label="חֲזָרָה לַכְּפָר"]').click(); await wait(600);
+  x.f.remove();
+  // a rescue, and straight to the camp: the journal button counts the postcard; a tap opens the journal on it; back in the camp the count is gone
+  x = await frame('demo&s=bossend&hour=10'); await wait(300);
+  check(!!x.d.querySelector('.ebtns .dressn') && /^b:/.test((x.d.querySelector('.ebtns .achb') || x.d.body).getAttribute('data-key') || ''), 'a rescue: the rescued troll with a t-shirt, and the trophy with the postcard');
+  x.d.querySelector('.top button[aria-label="חֲזָרָה לַכְּפָר"]').click(); await wait(600);
+  var jb = x.d.querySelector('.screen.camp:not(.out) .jrnb'), bd = jb && jb.querySelector('.jbadge');
+  check(!!jb && !!jb.querySelector('.ic-trophy') && !!bd && bd.textContent === '1', 'the camp: a trophy on the journal button, with the number 1');
+  jb.click(); await wait(600);
+  hot = x.d.querySelectorAll('.screen.jrn:not(.out) .jpage .jcard.jhot');
+  check(hot.length === 1, 'the journal opens on the new postcard, with a ring around it');
+  x.d.querySelector('.top button[aria-label="חֲזָרָה לַכְּפָר"]').click(); await wait(600);
+  jb = x.d.querySelector('.screen.camp:not(.out) .jrnb');
+  check(!!jb && !jb.querySelector('.jbadge'), 'after the journal was opened the number is gone');
+  jb.click(); await wait(600);
+  check(!x.d.querySelector('.screen.jrn:not(.out) .jhot'), 'and the ring is not shown again');
+  x.f.remove();
+  // a stage that completes nothing: no picture buttons; a mixed round: only the new troll
+  x = await frame('demo&s=end&stg=1&stars=2&hour=10'); await wait(300);
+  check(!x.d.querySelector('.ebtns .newb') && !!x.d.querySelector('.ebtns .nxt'), 'a stage in the middle of a house: nothing new, no picture buttons');
+  x.f.remove();
+  x = await frame('demo&s=mixend&hatch&hour=10'); await wait(1500);
+  check(!!x.d.querySelector('.ebtns .dressn') && !x.d.querySelector('.ebtns .achb') && x.d.querySelectorAll('.ebtns .cartb').length === 1, 'a mixed round: the new troll with a t-shirt, no trophy, the cart');
+  x.f.remove();
+}
 (async function () {
   try {
     await goal();
+    await news();
     await one('demo&s=end&stg=1&stars=2&hour=21', 14);
     await one('demo&s=end&stg=0&stars=1&hour=18', 8);
     await one('demo&s=end&stg=0&g=4&hour=10', 22);
