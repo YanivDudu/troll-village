@@ -2068,6 +2068,35 @@ body.toy .jrt{font-size:var(--t-body);line-height:var(--lh-body)}
 body.toy .jrow{font-size:var(--t-cap);line-height:var(--lh-cap)}
 body.toy .btn.jgo{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp2);min-height:56px;padding:var(--sp2) var(--sp5);border:0;border-radius:var(--r-m);background:var(--primary);color:#fff;box-shadow:0 4px 0 var(--primary-edge),0 10px 20px rgba(138,15,64,.28);font-size:var(--t-lead);line-height:var(--lh-lead);font-weight:var(--w-bold);text-shadow:none}
 /* WORLD-END */
+/* FLOWHOME-BEGIN ================= task "flowfix home": the camp can be used without reading. The subjects stand as pictures on the card of the
+   journey (.csubs > .csb, the land of the next step is yellow); every troll of the child is in the strip of the residents, which moves by two arrows
+   (.fscroll, .farr) and a tap on a resident makes it the companion; a round button with a shirt beside the companion (.cdress) opens the dressing room,
+   and so do the coins of the top bar of the camp. */
+.folk{gap:8px}
+.fscroll{flex:0 0 auto;min-width:0;max-width:100%;display:flex;align-items:flex-end;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-snap-type:x mandatory;overscroll-behavior-x:contain}
+.fscroll::-webkit-scrollbar{display:none}
+.fscroll .rt{scroll-snap-align:start}
+.farr{flex:0 0 48px;width:48px;height:48px;padding:0;border-radius:50%;display:grid;place-items:center;align-self:center}
+.farr.gone{visibility:hidden}
+.folk:not(.more) .farr{display:none}
+body.toy .csubs{display:flex;gap:var(--sp2);width:100%;min-width:0}
+body.toy .csb{flex:1 1 0;min-width:48px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:2px;border:0;border-radius:var(--r-m);background:var(--surface-2);color:var(--ink);font-size:12px;line-height:16px;font-weight:var(--w-bold);transition:transform var(--d-fast) var(--ease)}
+body.toy .csb:active{transform:scale(.96)}
+body.toy .csb .sbp{display:block;height:32px;pointer-events:none}
+body.toy .csb .sbp img{display:block;height:100%;width:auto;aspect-ratio:1}
+body.toy .csb .cl{max-width:100%;white-space:nowrap}
+body.toy .csb.on{background:var(--accent);box-shadow:0 2px 0 var(--accent-edge)}
+body.toy .csubs.n1 .csb{flex-direction:row;gap:var(--sp2)}
+@media (min-width:421px){body.toy .csb{font-size:var(--t-cap);line-height:var(--lh-cap)}}
+@media (min-width:700px) and (min-height:600px){body.toy .csb{min-height:68px}body.toy .csb .sbp{height:40px}}
+@media (max-height:520px){body.toy .csb{min-height:48px}body.toy .csb .cl{display:none}body.toy .csb .sbp{height:38px}}
+body.toy .csubs.n1 .csb .cl{display:block}
+@media (max-height:660px) and (orientation:portrait){body.toy .camp .hrow .btn{min-height:56px}body.toy .cstrip .tmap{--s:1.15}body.toy .cjour{padding:var(--sp1) var(--sp2) var(--sp2);gap:var(--sp1)}body.toy .cground{margin-bottom:var(--sp3)}}
+body.toy .cdress{flex:0 0 48px;width:48px;height:48px;padding:0;border-radius:50%;display:grid;place-items:center;align-self:center;position:relative;z-index:1;margin-inline-end:calc(-1*var(--sp2));color:var(--primary);transition:transform var(--d-fast) var(--ease)}
+body.toy .cdress:active{transform:var(--press);box-shadow:0 1px 0 var(--edge)}
+body.toy .camp .top .coinchip.tap{position:relative;cursor:pointer}
+body.toy .camp .top .coinchip.tap::after{content:"";position:absolute;inset:-8px 0}
+/* FLOWHOME-END */
 </style>
 </head>
 <body>
@@ -5489,12 +5518,15 @@ var TrollModels = (function () {
     var k = state.grade >= 3 ? 1 : 0, j = L.journey(state); // greetings; from level 3 with jokes, from level 5 with the name of the team
     return { key: 'generic', text: line('greet' + k + ':' + fr.level + ':' + j.houses + ':' + j.bridges, GREET[k].concat(L.friendLines(state))) };
   }
+  var swapped = false; // task "flowfix home": a small troll was just made the companion, so the camp that is drawn next cheers with it
   function home() {
     tv.round = null; setMusic('home');
     show(function (el) {
       here = 'home';
       el.classList.add('rmap', 'camp');
-      var tb = topBar(false);
+      var tb = topBar(false), swap = swapped; swapped = false;
+      var coinc = tb.querySelector('.coinchip'); // the coins of the camp open the dressing room (only here: the bar of the other screens is not touched)
+      if (coinc && state.owned.length) { coinc.classList.add('tap'); coinc.setAttribute('role', 'button'); coinc.setAttribute('tabindex', '0'); coinc.addEventListener('click', function () { sfx.tap(); dress(); }); }
       tb.insertBefore(h('button', { class: 'chip who', 'aria-label': 'הַחְלָפַת שַׂחְקָן', on: { click: function () { sfx.tap(); who(); } } }, icon('player', 'm'), h('span', { class: 'whon', text: curName() })), tb.firstChild);
       el.appendChild(tb);
       var grid = h('div', { class: 'cgrid' });
@@ -5508,7 +5540,7 @@ var TrollModels = (function () {
       // the camp: the companion with what it says, the campfire and the tent
       var bs = buddySpec(), mine = buddyId();
       // what the companion says: the first true thing about the shared journey that was not said yet in this session (memSay)
-      var said = fresh ? { key: 'first', text: 'שָׁלוֹם! אֲנִי ' + bs.name + '. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַמַּחֲנֶה!' } : memSay();
+      var said = fresh ? { key: 'first', text: 'שָׁלוֹם! אֲנִי ' + bs.name + '. בּוֹאִי נִפְתֹּר תַּרְגִּילִים וְנִמְצָא חֲבֵרִים חֲדָשִׁים לַמַּחֲנֶה!' } : swap ? { key: 'swap', text: bs.name + '!' } : memSay();
       var bubble = h('div', { class: 'cbub', 'data-mem': said.key, text: said.text });
       var fr = L.friend(state), tricks = reduced || fresh ? [] : TRICKS.filter(function (x) { return fr.level >= x[0]; }), taps = 0;
       var bs0 = noPet(bs), bud = h('button', { class: 'cbud', 'aria-label': bs.name + (fresh ? '' : ', חֲבֵרוּת ' + fr.level + ' מִתּוֹךְ 6') }); // the pet stands beside the companion
@@ -5525,10 +5557,13 @@ var TrollModels = (function () {
       });
       var dbgTrick = sandbox ? (/[#&]trick=(\w+)/.exec(hash) || [])[1] : ''; // layout check: a trick frozen at 40% of its motion
       if (dbgTrick) bud.classList.add('tr-' + dbgTrick, 'trstill');
+      else if (swap) { paint('cheer'); later(function () { if (!/tr-/.test(bud.className)) paint(); }, 1500); later(function () { var c = center(bud); burst(c[0], c[1], 9); }, 340); } // the troll that was just chosen cheers
       else if (tricks.length && !WAVED[profiles.cur]) { WAVED[profiles.cur] = true; trick('wave'); } // the secret wave: once, on the first view of the camp
+      // the dressing room: a round button with a shirt beside the companion (a tap on the companion itself still reads its bubble aloud)
+      var dressB = TOY && state.owned.length ? iconBtn('dress', 'לְהַלְבִּישׁ', function () { dress(); }, 'cdress') : null;
       grid.appendChild(h('div', { class: 'campv' }, bubble,
         h('div', { class: 'cground' },
-          mapImg(ART.tent, 'ctent'), bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
+          mapImg(ART.tent, 'ctent'), dressB, bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
           h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)))));
 
       // the one big button, and the smaller choices
@@ -5539,15 +5574,28 @@ var TrollModels = (function () {
       function more(ico, label, full, cls, fn) { // ico: the name of an icon of the family
         row.appendChild(h('button', { class: 'btn ' + cls, 'aria-label': full, on: { click: function () { sfx.tap(); fn(); } } }, h('span', { class: 'ci' }, icon(ico)), h('span', { class: 'cl', text: label })));
       }
-      if (nb) more('map', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
+      // the subjects as pictures, on the card of the journey: the land of the next step is marked, a tap opens the map of that land
+      // (as its card on the screen of the lands does). A grade with one subject: one picture that opens the map.
+      var subs = subsHere(), lt0 = state.last && topicOf(state.last.t), csub = nx && nx.sub ? nx.sub : lt0 && lt0 !== MIX ? lt0.sub || 'math' : null;
+      if (sandbox && /[#&]onesub=1/.test(hash)) subs = subs.slice(0, 1); // layout check: a grade with one subject
+      if (TOY && subs.length) {
+        var one =subs.length < 2, sbar = h('div', { class: 'csubs n' + (one ? 1 : subs.length) });
+        (one ? [subs[0]] : subs).forEach(function (x) {
+          var b = h('button', { class: 'csb' + (!one && x === csub ? ' on' : ''), 'data-sub': x, 'aria-label': one ? 'כָּל הַמַּפָּה' : SUBJ[x][1], on: { click: function () { sfx.pop(); if (one) subjects(); else { curSub = x; topics(); } } } },
+            h('span', { class: 'sbp' }, mapImg(ART.land[x] || ART.land.math)), h('span', { class: 'cl', text: one ? 'הַמַּפָּה' : SUBJ[x][1] }));
+          if (!one && x === csub) b.setAttribute('aria-current', 'true');
+          sbar.appendChild(b);
+        });
+        jour.insertBefore(sbar, jour.firstChild);
+      } else if (nb) more('map', 'הַמַּפָּה', 'כָּל הַמַּפָּה', 'b2 mapb', function () { subjects(); });
       more('journal', 'יוֹמָן', 'יוֹמַן הַמַּסָּע', 'b2 jrnb', function () { journal(0); }); // the travel journal: one of the smaller choices
       if (state.lastGift !== L.todayStr()) more('gift', 'מַתָּנָה', 'מַתָּנָה יוֹמִית', 'b3 wig', gift);
       if (state.owned.length) { // the cart; with a savings goal the button carries its meter, and one tap opens the cart on that item
         var gl = L.goalOf(state);
-        more('cart', 'הָעֲגָלָה', 'הָעֲגָלָה: הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb' + (gl ? ' hasgoal' + (gl.ready ? ' ready' : '') : ''), function () { goCart(gl); });
+        more(TOY ? 'dress' : 'cart', TOY ? 'לְהַלְבִּישׁ' : 'הָעֲגָלָה', 'לְהַלְבִּישׁ: הַלְבָּשָׁה וַחֲנוּת', 'b2 dressb' + (gl ? ' hasgoal' + (gl.ready ? ' ready' : '') : ''), function () { goCart(gl); });
         if (gl) { // the cart icon with the picture of the item, and "coins / price" over a bar instead of the word
           var cb = row.lastChild, gm = goalMeter(gl);
-          cb.setAttribute('aria-label', 'הָעֲגָלָה. הַיַּעַד שֶׁלִּי: ' + gl.item.name + ', ' + gl.have + ' מִתּוֹךְ ' + gl.price);
+          cb.setAttribute('aria-label', 'לְהַלְבִּישׁ. הַיַּעַד שֶׁלִּי: ' + gl.item.name + ', ' + gl.have + ' מִתּוֹךְ ' + gl.price);
           cb.firstChild.appendChild(gm.firstChild); cb.lastChild.textContent = ''; cb.lastChild.className = 'cl ' + gm.className;
           while (gm.firstChild) cb.lastChild.appendChild(gm.firstChild);
         }
@@ -5560,29 +5608,53 @@ var TrollModels = (function () {
       row.classList.add('n' + row.children.length);
       grid.appendChild(row);
 
-      // the residents: every other troll the child owns, the newest first. When they do not all fit, "+N" opens the
-      // dressing room, where all of them are.
-      var folk = h('div', { class: 'folk' });
+      // the residents: every other troll the child owns, the newest first, ALL of them, in a strip that moves sideways by its two
+      // arrows (a tap is enough; a finger can also pull it). A tap on a resident makes it the companion: the same field and the same
+      // saving as the button of the dressing room; the camp is drawn again with it as the big troll and the old companion in the row.
+      var folk = h('div', { class: 'folk' }), lay = null;
       var others = state.owned.filter(function (x) { return x !== mine; }).reverse();
       if (others.length) {
-        var W = window.innerWidth, H = window.innerHeight, two = W > H && W >= 700, small = W < 640 || H < 520;
-        var gw = Math.min(W - (small ? 16 : 40), two ? 1180 : 720), room = two ? (gw - 14) / 2.15 : gw, slot = small ? 48 : 72;
-        var cap = Math.max(2, Math.floor((room + 8) / (slot + 8))), n = others.length > cap ? cap - 1 : others.length;
+        var W = window.innerWidth, H = window.innerHeight, small = W < 640 || H < 520, slot = small ? 48 : 72;
+        var fsc = h('div', { class: 'fscroll' }), GAP = 8;
+        var seen = function (b) { var r = b.getBoundingClientRect(), q = fsc.getBoundingClientRect(); return r.left >= q.left - 2 && r.right <= q.right + 2; };
+        var ends = function () { // an arrow shows only while there is more of the strip on its side
+          var k = fsc.children, q = fsc.getBoundingClientRect(), over = fsc.scrollWidth > fsc.clientWidth + 2;
+          fprev.classList.toggle('gone', !over || k[0].getBoundingClientRect().right <= q.right + 2);
+          fnext.classList.toggle('gone', !over || k[k.length - 1].getBoundingClientRect().left >= q.left - 2);
+        };
+        var go = function (d) { // one window of whole trolls to that side (the strip runs from right to left)
+          var step = fsc.clientWidth + GAP, was = fsc.scrollLeft;
+          try { fsc.scrollBy({ left: -d * step, behavior: reduced ? 'auto' : 'smooth' }); } catch (e) { fsc.scrollLeft = was - d * step; }
+          later(function () { if (fsc.scrollLeft === was) fsc.scrollLeft = was - d * step; ends(); }, 300); // a browser that did not glide: jump
+          later(ends, 60); later(ends, 700);
+        };
+        var fprev = h('button', { class: 'icon farr fprev gone', 'aria-label': 'הַטְּרוֹלִים הַקּוֹדְמִים', on: { click: function () { sfx.tap(); go(-1); } } }, icon('caret-right'));
+        var fnext = h('button', { class: 'icon farr fnext gone', 'aria-label': 'עוֹד טְרוֹלִים', on: { click: function () { sfx.tap(); go(1); } } }, icon('caret-left'));
         folk.style.setProperty('--rs', slot + 'px');
-        others.slice(0, n).forEach(function (id) {
+        others.forEach(function (id) {
           var s = specOf(id), b = h('button', { class: 'rt', 'aria-label': s.name, html: A.trollSVG(s) + '<b>' + s.name + '</b>' });
           b.addEventListener('click', function () {
-            sfx.giggle(); var c = center(b); burst(c[0], c[1], 9);
-            b.innerHTML = A.trollSVG(s, { mood: 'cheer' }) + '<b>' + s.name + '</b>';
-            bubble.textContent = s.name + '!';
-            later(function () { b.innerHTML = A.trollSVG(s) + '<b>' + s.name + '</b>'; }, 1200);
+            if (!seen(b)) return; // a troll that is half outside the window of the strip is not chosen by accident
+            state.buddy = id; save(); sfx.giggle(); // exactly what the button "my companion" of the dressing room does
+            var c = center(b); burst(c[0], c[1], 9);
+            swapped = true; home();
           });
-          folk.appendChild(b);
+          fsc.appendChild(b);
         });
-        if (others.length > n) folk.appendChild(h('button', { class: 'rt rmore', 'aria-label': 'כָּל הַטְּרוֹלִים', text: '+' + (others.length - n), on: { click: function () { sfx.tap(); dress(); } } }));
+        fsc.addEventListener('scroll', ends);
+        folk.appendChild(fprev); folk.appendChild(fsc); folk.appendChild(fnext);
+        lay = function () { // the window of the strip holds whole trolls: all of them when there is room, otherwise as many as fit between the two arrows
+          var room = folk.clientWidth, all = others.length * (slot + GAP) - GAP, n;
+          if (!room) return;
+          if (all <= room) { folk.classList.remove('more'); fsc.style.width = all + 'px'; }
+          else { n = Math.max(1, Math.floor((room - 2 * (48 + GAP) + GAP) / (slot + GAP))); folk.classList.add('more'); fsc.style.width = (n * (slot + GAP) - GAP) + 'px'; }
+          ends();
+        };
       }
       grid.appendChild(folk);
       el.appendChild(grid);
+      if (lay && sandbox && /[#&]fend=1/.test(hash)) { lay(); fsc.style.scrollSnapType = 'none'; fsc.scrollLeft = -99999; if (!fsc.scrollLeft) fsc.scrollLeft = 99999; } // layout check: the strip of the residents at its far end
+      if (lay) { lay(); if (window.ResizeObserver) { var fro = new ResizeObserver(function () { if (cur !== el) fro.disconnect(); else lay(); }); fro.observe(folk); } }
       fitPart(grid);
       if (st) st.start(el);
     });
@@ -8068,6 +8140,7 @@ var TrollModels = (function () {
   if (hg) { var ns0 = L.newState(hg); ns0.owned = state.owned; ns0.buddy = state.buddy; state = ns0; }
   if (/demo(?!0)/.test(hash)) { state.owned = [5, 42, 79, 116, 153, 190, 227]; state.stars = 14; state.streak = 3; state.items.push('wand', 'scarf', 'sunglasses', 'kitty', 'tophat'); state.coins = 60; state.buddy = 5; state.dress[5] = { pet: 'kitty', hat: 'tophat', hand: '' }; state.levels.g2mul = 4; state.levels.g2add = 3; state.prog.g2add = [[3, 3, 3], [3, 2, 1], [2, 0, 0]]; state.prog.g2mul = [[3, 3, 3], [3, 3, 3], [3, 3, 3], [2, 2, 1]]; state.levels.g3mul = 2; state.prog.g3mul = [[2, 2, 1], [1, 0, 0]]; }
   if (sandbox && /many=1/.test(hash)) { state.owned = []; for (var hm = 0; hm < 30; hm++) state.owned.push(5 + 37 * hm); state.stars = 240; } // layout check: a veteran with 30 trolls
+  if (sandbox && /[#&]nt=\d/.test(hash)) state.owned = state.owned.slice(0, Math.max(1, +/[#&]nt=(\d+)/.exec(hash)[1])); // layout check: the first N trolls only (task "flowfix home")
   if (sandbox) { // layout checks of the cart: &coins=N, &own=id.id (items owned), &fx=id.id (equipped move / celebration), &goal=id (the savings goal), &wear=id.id (on the companion)
     var hq = function (k) { return ((new RegExp('[#&]' + k + '=([\\w.]+)').exec(hash) || [])[1] || '').split('.').filter(function (x) { return L.ITEM[x]; }); };
     if (/[#&]coins=(\d+)/.test(hash)) state.coins = +/[#&]coins=(\d+)/.exec(hash)[1];
@@ -8222,11 +8295,12 @@ var TrollModels = (function () {
     if (!fitCheck.fonts && document.fonts && document.fonts.ready) { fitCheck.fonts = 1; document.fonts.ready.then(function () { fitCheck(again); }); return; } // measure with the real font, not the fallback it replaces
     // measure the settled screen: an entrance animation caught half way (a card sliding in) is not an overflow
     try { document.getAnimations().forEach(function (x) { try { var t = x.effect && x.effect.getTiming && x.effect.getTiming(); if (t && t.iterations !== Infinity) x.cancel(); } catch (e) {} }); cur.getBoundingClientRect(); } catch (e) {}
-    var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
+    var offStrip = function (b) { var s = b.closest('.fscroll'); if (!s) return false; var r = b.getBoundingClientRect(), q = s.getBoundingClientRect(); return r.left < q.left - 1 || r.right > q.right + 1; }; // task "flowfix home": a resident outside the window of its strip is reached by the arrows (the strip itself is checked with the camp below)
+    var bad = 0; [].forEach.call(cur.querySelectorAll('button'), function (b) { var r = b.getBoundingClientRect(); if (r.width && !offStrip(b) && (r.left < -1 || r.right > window.innerWidth + 1)) bad++; });
     // a button that cannot be tapped because something lies over it is as bad as a button off the screen
     if (!document.querySelector('.ovl,.rov')) [].forEach.call(cur.querySelectorAll('button'), function (b) {
       var r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
-      if (!r.width || x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return;
+      if (!r.width || x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight || offStrip(b)) return;
       var top = document.elementFromPoint(x, y);
       if (!top || top === b || b.contains(top) || top.contains(b) || top.closest('button')) return;
       var c = top.getBoundingClientRect(); // only a layer that covers most of the screen counts (a list that scrolls hides its own buttons on purpose)
@@ -8259,6 +8333,19 @@ var TrollModels = (function () {
       [].forEach.call(cg.children, function (x) { var r = x.getBoundingClientRect(); if (r.width && (r.left < cgr.left - 1 || r.right > cgr.right + 1 || r.width < 20)) no('scene'); });
       if (cj) { var jr = cj.getBoundingClientRect(), jl = cj.querySelector('.cl'); if (jr.width < 47.5 || jr.height < 47.5 || jl.scrollWidth > jl.clientWidth + 1) no('book'); } else no('nobook'); // the journal is one of the buttons of the row (it was a book in the scene)
       if (TOY) { var hb = [].slice.call(cur.querySelectorAll('.hrow .btn')); hb.forEach(function (b, i) { var r = b.getBoundingClientRect(), l = b.querySelector('.cl'); if (r.width < 47.5 || r.height < 47.5 || (l && l.scrollWidth > l.clientWidth + 1)) no('row'); if (i && hb[i - 1].getBoundingClientRect().left - r.right < 7.5) no('rowgap'); }); var cs = cur.querySelector('.cstrip'); if (cs) [].forEach.call(cs.querySelectorAll('.mnode'), function (n) { var r = n.getBoundingClientRect(), q = cs.getBoundingClientRect(); if (r.top < q.top - 1 || r.bottom > q.bottom + 1 || r.left < q.left - 1 || r.right > q.right + 1) no('strip'); }); }
+      if (TOY) { // task "flowfix home": the pictures of the subjects, the button of the dressing room, and the strip of the residents with its arrows
+        var sb = [].slice.call(cur.querySelectorAll('.csb')), fsc = cur.querySelector('.fscroll'), cd = cur.querySelector('.cdress');
+        if (!sb.length || (sb.length > 1 && cur.querySelectorAll('.csb.on').length > 1)) no('subs');
+        sb.forEach(function (b, i) { var r = b.getBoundingClientRect(), l = b.querySelector('.cl'), p = b.querySelector('.sbp img').getBoundingClientRect(); if (r.width < 47.5 || r.height < 47.5 || p.height < 28 || p.top < r.top - 1 || p.bottom > r.bottom + 1 || (l.offsetWidth && l.scrollWidth > l.clientWidth + 1)) no('subs'); if (i && sb[i - 1].getBoundingClientRect().left - r.right < 7.5) no('subgap'); });
+        if (cd) { var dr = cd.getBoundingClientRect(), dt = document.elementFromPoint(dr.left + dr.width / 2, dr.top + dr.height / 2); if (dr.width < 47.5 || dr.height < 47.5 || !(dt === cd || cd.contains(dt))) no('dressb'); } else if (state.owned.length) no('nodress');
+        if (fsc) {
+          var fq = fsc.getBoundingClientRect(), fk = [].slice.call(fsc.children), fin = fk.filter(function (b) { return !offStrip(b); }), fmore = cur.querySelector('.folk').classList.contains('more');
+          if (fq.left < -1 || fq.right > window.innerWidth + 1 || !fin.length || (!fmore && fin.length < fk.length) || fsc.scrollHeight > fsc.clientHeight + 1) no('folk');
+          fin.forEach(function (b) { var r = b.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); if (r.width < 47.5 || r.height < 47.5 || !(t === b || b.contains(t))) no('resident'); });
+          [].forEach.call(cur.querySelectorAll('.farr'), function (b) { var r = b.getBoundingClientRect(), on = getComputedStyle(b).visibility !== 'hidden' && r.width > 0; if (on && (r.width < 47.5 || r.height < 47.5 || r.left < -1 || r.right > window.innerWidth + 1)) no('farr'); if (b.classList.contains('fnext') && fmore !== on && !fsc.scrollLeft) no('farr'); });
+          if (fmore && fsc.scrollWidth <= fsc.clientWidth + 1) no('folk');
+        }
+      }
       if (fh) { var hr = fh.getBoundingClientRect(); if (hr.left < 0 || hr.right > window.innerWidth || hr.top < cb.getBoundingClientRect().bottom - 12) no('heart'); }
       if (cb.getBoundingClientRect().height > parseFloat(getComputedStyle(cb).lineHeight) * 3 + 18) no('bubble');
     }
