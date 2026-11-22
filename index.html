@@ -2387,6 +2387,8 @@ body.toy .ebtns .btn.growb:active{box-shadow:0 1px 0 var(--accent-edge)}
 body.toy .ebtns .growb .ic{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.ovl .card.vlcard,.ovl.vovl{animation:none}}
 /* VILLAGE-END */
+/* task "cloudfix": the line in the place of the "new player" form when the cloud is full */
+.pcard.nonew{display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(11px,1.8vmin,14px);font-weight:700;line-height:1.35;padding:10px;color:var(--ink,#3a2a5c)}
 </style>
 </head>
 <body>
@@ -5727,7 +5729,7 @@ var TrollModels = (function () {
   function lsSet(k, v) { if (sandbox) return; try { localStorage.setItem(NS + k, v); } catch (e) {} }
   function lsDel(k) { if (sandbox) return; try { localStorage.removeItem(NS + k); } catch (e) {} }
   function rawOf(id) { return lsGet(DKEY + id) || lsGet(DKEY_OLD + id) || lsGet(DKEY_OLD2 + id); }
-  function saveProfiles() { lsSet(PKEY, JSON.stringify(profiles)); }
+  function saveProfiles() { if (!fresh()) { relink(); return; } lsSet(PKEY, JSON.stringify(profiles)); }
   function loadProfiles() {
     profiles = L.loadProfiles(lsGet(PKEY));
     var old = lsGet(KEY); // progress saved before profiles existed becomes the first player
@@ -5761,8 +5763,23 @@ var TrollModels = (function () {
   // cloud copy this device last pulled or pushed, d = saved since then, gone = deleted everywhere, hide = removed from this device only
   var sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }, syncBusy = false, syncAgain = false, pushTimer = null, here = null;
   function cloudOn() { return !!(CLOUD.pid && !sandbox && window.fetch); }
-  function saveSync() { if (sync.code) lsSet(SKEY, JSON.stringify(sync)); else lsDel(SKEY); }
-  function syncOf(o) { var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }; return { code: o.code, t: obj(o.t), b: obj(o.b), d: obj(o.d), gone: Array.isArray(o.gone) ? o.gone : [], hide: Array.isArray(o.hide) ? o.hide.filter(function (x) { return /^p\d+$/.test(x); }) : [] }; }
+  // Several tabs of one device (a browser tab and the installed app): every change of the link (a code is joined, signing in or
+  // out) stores a new link stamp ("<running number>.<random>"). A tab whose stamp is not the stored one holds an older link: it
+  // never stores its link, its account or its list of players again, and loads the page anew to follow the newer link.
+  // HKEY: the village code the device had before it signed in; signing out goes back to it.
+  var LNK = 'trollVillage.link', HKEY = 'trollVillage.home', linkSeen = lsGet(LNK) || '', staleTab = false;
+  function fresh() { return sandbox || (lsGet(LNK) || '') === linkSeen; }
+  function linkBump() { lsSet(LNK, ((parseInt(lsGet(LNK), 10) || 0) + 1) + '.' + String(Math.random()).slice(2, 10)); linkSeen = lsGet(LNK) || ''; }
+  function relink() { if (staleTab) return; staleTab = true; clearTimeout(pushTimer); setTimeout(function () { try { location.reload(); } catch (e) {} }, 0); }
+  function saveSync() { if (!fresh()) { relink(); return; } if (sync.code) lsSet(SKEY, JSON.stringify(sync)); else lsDel(SKEY); }
+  // What the cloud could not take or would not show here. stuck: the names of players of this device that did not fit into the
+  // full list of the cloud (they stay on this device only until there is room). cloudIds: the players of the cloud at the last
+  // sync of this page; before the first one every player that was removed "from this device only" counts as still being there.
+  var stuck = [], cloudIds = null, whoForm = true;
+  function cloudCount() { var n = profiles.list.length; (sync.hide || []).forEach(function (id) { if (!cloudIds || cloudIds[id]) n++; }); return n; }
+  function canAdd() { return profiles.list.length < 8 && (!sync.code || (cloudCount() < 8 && !stuck.length)); }
+  function stuckMsg() { return 'אֵין מָקוֹם: כְּבָר יֵשׁ 8 שַׂחְקָנִים. הַהִתְקַדְּמוּת שֶׁל ' + stuck.join(', ') + ' נִשְׁמֶרֶת רַק בַּמַּכְשִׁיר הַזֶּה. כְּדֵי לְפַנּוֹת מָקוֹם מוֹחֲקִים שַׂחְקָן אַחֵר מִכָּל מָקוֹם.'; }
+  function syncOf(o) { var obj = function (x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }; var out = { code: o.code, t: obj(o.t), b: obj(o.b), d: obj(o.d), gone: Array.isArray(o.gone) ? o.gone : [], hide: Array.isArray(o.hide) ? o.hide.filter(function (x) { return /^p\d+$/.test(x); }) : [] }; if (o.f) out.f = 1; return out; } // f: linked, and not synced with that document yet
   function loadSync() {
     try { var o = JSON.parse(lsGet(SKEY) || '{}'); if (L.CODE_RE.test(o.code) || (o.code === 'acct' && auth)) sync = syncOf(o); } catch (e) {}
   }
@@ -5792,7 +5809,7 @@ var TrollModels = (function () {
   // who is signed in to it can read or change them. (The village code that came before still works for devices that use it.)
   var AKEY = 'trollVillage.auth', auth = null; // { uid, email, rt: refresh token, it: id token, exp }
   function loadAuth() { try { var o = JSON.parse(lsGet(AKEY) || 'null'); if (o && typeof o.uid === 'string' && typeof o.rt === 'string') auth = o; } catch (e) {} }
-  function saveAuth() { if (auth) lsSet(AKEY, JSON.stringify(auth)); else lsDel(AKEY); }
+  function saveAuth() { if (!fresh()) { relink(); return; } if (auth) lsSet(AKEY, JSON.stringify(auth)); else lsDel(AKEY); }
   function idt(what, body) {
     return fetch('https://identitytoolkit.googleapis.com/v1/accounts:' + what + '?key=' + CLOUD.key, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json().then(function (j) { if (!r.ok || j.error) { var e = new Error((j.error && j.error.message) || 'http ' + r.status); e.auth = true; throw e; } return j; }); });
@@ -5819,11 +5836,12 @@ var TrollModels = (function () {
   }
   function token() { // a fresh id token; they live for an hour
     if (!auth) return Promise.reject(new Error('signed out'));
+    if (auth.dead) return Promise.reject(new Error('token')); // the sign-in ran out: nothing is sent until the parent signs in again (the account screen says so)
     if (auth.it && Date.now() < auth.exp) return Promise.resolve(auth.it);
     return fetch('https://securetoken.googleapis.com/v1/token?key=' + CLOUD.key, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(auth.rt) })
       .then(function (r) { return r.json().then(function (j) {
         if (!r.ok || !j.id_token) {
-          if (j.error && /TOKEN_EXPIRED|USER_DISABLED|USER_NOT_FOUND|INVALID_REFRESH_TOKEN|INVALID_GRANT/.test(j.error.message || '')) { auth = null; saveAuth(); unlink(); } // the account is gone or the password was changed
+          if (j.error && /TOKEN_EXPIRED|USER_DISABLED|USER_NOT_FOUND|INVALID_REFRESH_TOKEN|INVALID_GRANT/.test(j.error.message || '')) { auth.dead = 1; saveAuth(); } // the account is gone or the password was changed: the device stays linked to the account and plays on, saving here
           throw new Error('token');
         }
         auth.it = j.id_token; auth.rt = j.refresh_token || auth.rt; auth.exp = Date.now() + (+j.expires_in - 120) * 1000; saveAuth();
@@ -5866,30 +5884,35 @@ var TrollModels = (function () {
   function syncNow(done, keep) {
     if (typeof done !== 'function') done = function () {};
     if (!sync.code || !cloudOn()) { done(false); return; }
+    if (!fresh()) { relink(); done(false); return; } // another tab changed the link of the device: this one follows it first
     if (syncBusy) { syncAgain = true; if (arguments.length && typeof arguments[0] === 'function') syncWait.push(done); return; } // somebody waits for the answer: it comes from the sync that runs right after this one
     syncBusy = true; clearTimeout(pushTimer);
     var changed = false, tries = 0, code = sync.code, link = linkNow();
-    function linked() { return sync.code === code && linkNow() === link; } // still the same village or the same family account as when the sync started
+    function linked() { return sync.code === code && linkNow() === link && fresh(); } // still the same village or the same family account as when the sync started
     function attempt() {
       var sent = {};
       cloudGet(code).then(function (rem) {
         if (!linked()) throw new Error('unlinked'); // signed out, or signed in to another account, while the cloud was being read
         // decided with what is stored now, not with what it was before the request: a save may have landed meanwhile
         syncFresh();
+        // the first sync with a document the device was just linked to: a player of this device that is marked as deleted there keeps its progress (regone)
+        if (sync.f) { if (rem && !regone(rem)) throw new Error('storage'); delete sync.f; }
         var revs = revAll(), a = { list: profiles.list, gone: sync.gone, hide: sync.hide, n: {}, t: sync.t, b: sync.b, d: sync.d, has: {} };
         profiles.list.forEach(function (p) { if (rawOf(p.id)) { a.has[p.id] = true; a.n[p.id] = revOf(p.id, revs); } });
         var hid = {}; (sync.hide || []).forEach(function (id) { hid[id] = true; }); // removed from this device only
         var before = JSON.stringify(profiles.list), m = L.mergeCloud(a, rem), f = {}, del = [], now = Date.now();
-        // the merged list is full and a player of this device with progress is not in it: nothing is touched, here or in the cloud
-        if (profiles.list.some(function (p) { return a.has[p.id] && !hid[p.id] && m.gone.indexOf(p.id) < 0 && !m.list.some(function (x) { return x.id === p.id; }); })) throw new Error('no room');
+        // the merged list is full and a player of this device with progress is not in it: that player stays on this device as it is
+        // (first in the list, never sent, never dropped) until there is room, and everybody else is synced as usual
+        var extra = profiles.list.filter(function (p) { return a.has[p.id] && !hid[p.id] && m.gone.indexOf(p.id) < 0 && !m.list.some(function (x) { return x.id === p.id; }); });
+        stuck = extra.map(function (p) { return p.name; }); cloudIds = {}; m.list.forEach(function (p) { cloudIds[p.id] = true; });
         m.pull.forEach(function (id) {
           var raw = rawOf(id);
           if (!raw || JSON.stringify(L.loadState(raw)) !== rem.s[id]) { lsSet(DKEY + id, rem.s[id]); if (id === profiles.cur) changed = true; } // the same progress is not written again
           revs[id] = m.n[id]; sync.b[id] = rem.st[id]; sync.t[id] = rem.t[id]; delete sync.d[id];
         });
         m.gone.forEach(function (id) { lsDel(DKEY + id); lsDel(DKEY_OLD + id); lsDel(DKEY_OLD2 + id); delete sync.t[id]; delete sync.b[id]; delete sync.d[id]; delete revs[id]; });
-        var alive = m.list.some(function (p) { return p.id === profiles.cur && !hid[p.id]; });
-        var list = m.list.filter(function (p) { return !hid[p.id]; });
+        var list = extra.concat(m.list.filter(function (p) { return !hid[p.id]; }));
+        var alive = list.some(function (p) { return p.id === profiles.cur; });
         profiles.cur = alive ? profiles.cur : null;
         if (JSON.stringify(list) !== before) { profiles.list = list; changed = true; } // an unchanged list keeps its cards: the buttons of the who screen hold them
         sync.gone = m.gone; saveProfiles();
@@ -5932,6 +5955,7 @@ var TrollModels = (function () {
     function fin(ok) {
       syncBusy = false;
       if (changed) { if (here === 'who' || (here === 'home' && !profiles.cur)) who(); else if (here === 'home') home(); }
+      else if (here === 'who' && cur && cur.querySelector('.who-grid') && whoForm !== canAdd()) who(false); // the cloud turned out to be full, or to have room after all
       done(ok, changed);
       if (syncAgain || syncWait.length) {
         var waiting = syncWait; syncWait = []; syncAgain = false;
@@ -5945,24 +5969,55 @@ var TrollModels = (function () {
   function roomFor(rem) {
     var gone = {}, have = {}, more = 0, here = 0;
     ((rem && rem.gone) || []).forEach(function (id) { gone[id] = true; });
-    profiles.list.forEach(function (p) { have[p.id] = true; if (!gone[p.id]) here++; });
+    profiles.list.forEach(function (p) { have[p.id] = true; if (!gone[p.id] || rawOf(p.id)) here++; }); // (a player with progress that is deleted there stays, see regone)
     ((rem && rem.list) || []).forEach(function (p) { if (!have[p.id] && !gone[p.id]) more++; });
     return here + more > 8 ? [here, more] : null;
   }
   function noRoom(full) { return 'אֵין מָקוֹם לְכָל הַשַּׂחְקָנִים: ' + full[0] + ' כָּאן וְעוֹד ' + full[1] + ' שָׁם, וְאֶפְשָׁר עַד 8. צָרִיךְ לִמְחֹק שַׂחְקָן קֹדֶם.'; }
   // The players of this device move into the family account (the device is signed in). First the account is read: when there
   // is no room nothing changes. A device with a code takes the newest state of that code along. done('ok' | 'full', [here, there] | 'fail')
-  function toAccount(done) {
-    var uid = auth && auth.uid;
+  // was: the sign-in the device had before this one. The same account again (the sign-in had run out): the device is still linked
+  // to it, nothing is linked anew.
+  function toAccount(done, was) {
+    var uid = auth && auth.uid, same = sync.code === 'acct' && !!was && was.uid === uid;
     cloudGet('acct').then(function (rem) {
-      var full = roomFor(rem);
+      var full = same ? null : roomFor(rem);
       if (full) { done('full', full); return; }
       var go = function () {
-        if (!auth || auth.uid !== uid || !linkTo('acct', true)) { done('fail'); return; }
+        if (!auth || auth.uid !== uid || (!same && !linkTo('acct', true))) { done('fail'); return; }
         syncNow(function (ok) { done(ok ? 'ok' : 'fail'); });
       };
       if (L.CODE_RE.test(sync.code)) syncNow(go); else go();
     }, function () { done('fail'); });
+  }
+  // A device was just linked to a document (rem) whose list of deleted players holds a player of this device WITH progress:
+  // it was deleted there while this device was not linked to it. The first sync would delete that progress here without a word.
+  // (Called by that first sync, before anything is decided: a code that was typed, a sign-in, a sign-out that goes back to a code.)
+  // Instead the player stays, under a fresh lasting id: for the other side it is a new player (the parent can still delete it).
+  // The progress is first copied and read back, then the list is stored and read back, and only then the old copy goes.
+  // false: the storage refused, nothing may be linked.
+  function regone(rem) {
+    var gone = {}, revs = revAll(), ok = true, ch = false;
+    if (!fresh()) { relink(); return false; }
+    ((rem && rem.gone) || []).forEach(function (id) { gone[id] = true; });
+    profiles.list.forEach(function (p) {
+      var old = p.id, raw = gone[old] ? rawOf(old) : null, id, n, rid, wasCur = profiles.cur === old;
+      if (!raw || !ok) return;
+      do id = rndId(); while (gone[id] || lsGet(DKEY + id) || profiles.list.some(function (x) { return x.id === id; }));
+      lsSet(DKEY + id, raw);
+      if (lsGet(DKEY + id) !== raw) { lsDel(DKEY + id); ok = false; return; }
+      n = revOf(old, revs); rid = ridOf(old);
+      if (wasCur) { if (race) quitRace(); if (presence) presence.stop(); profiles.cur = id; }
+      p.id = id; saveProfiles();
+      if (lsGet(PKEY) !== JSON.stringify(profiles)) { p.id = old; if (wasCur) profiles.cur = old; saveProfiles(); lsDel(DKEY + id); ok = false; return; }
+      if (n) revs[id] = n; delete revs[old];
+      if (sync.t[old]) sync.t[id] = sync.t[old]; delete sync.t[old]; delete sync.b[old]; delete sync.d[old];
+      lsDel(DKEY + old); lsDel(DKEY_OLD + old); lsDel(DKEY_OLD2 + old);
+      if (rid && !p.loc && typeof rtOn === 'function' && rtOn()) { rt.del('board/' + rid); rt.del('online/' + rid); } // its old line in the ranking; the new one is written when it plays
+      ch = true;
+    });
+    if (ch) { revSave(revs); saveSync(); if (profiles.cur && presence && !race) presence.start(); }
+    return ok;
   }
   // Players made before linking get ids that cannot clash with another device's players (a lasting id: p and nine digits).
   // MKEY remembers every such move for good: { old id: { to: lasting id, n: the running number of the lasting copy at the last
@@ -6071,6 +6126,7 @@ var TrollModels = (function () {
     return true;
   }
   function linkTo(code, keepT, boot) { // keepT: the players keep the time of their last change (a device that moves from a village code to the account); boot: the page is still loading
+    if (!fresh()) { relink(); return false; } // another tab linked the device meanwhile: its link is the newer one
     if (!boot) {
       if (race) quitRace(); // the ids are about to change: leave the race and listen again under the new one
       if (presence) presence.stop();
@@ -6078,7 +6134,10 @@ var TrollModels = (function () {
     var moved = moveIds();
     if (moved) {
       var oldT = keepT ? sync.t : {};
-      sync = { code: code, t: {}, b: {}, d: {}, gone: [], hide: [] };
+      if (code === 'acct' && L.CODE_RE.test(sync.code)) lsSet(HKEY, sync.code);
+      linkBump();
+      // what was deleted everywhere and not sent yet, and what was removed from this device only, stay true under the new link
+      sync = { code: code, t: {}, b: {}, d: {}, gone: sync.gone || [], hide: sync.hide || [], f: 1 }; stuck = []; cloudIds = null;
       profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = +oldT[p.id] || Date.now(); });
       saveProfiles(); saveSync();
       ridSweep();
@@ -6145,6 +6204,9 @@ var TrollModels = (function () {
   }
   function adopt() {
     if (sandbox) return;
+    // the link changed in another tab. A tab that is linked to something, or a device that is signed in, starts anew with what
+    // is stored; a tab without any link takes the stored one as it is (below)
+    if (!fresh()) { if (sync.code || auth || lsGet(AKEY)) { relink(); return; } linkSeen = lsGet(LNK) || ''; }
     var map = mapAll(), seen = {}, ch = false;
     profiles.list.forEach(function (p) { if (p.id.length >= 9) seen[p.id] = true; });
     var list = profiles.list.filter(function (p) {
@@ -6159,8 +6221,17 @@ var TrollModels = (function () {
     if (!sync.code) { loadSync(); if (sync.code) ch = true; }
     if (ch && profiles.cur && presence && !race) presence.start();
   }
-  addEventListener('storage', function (e) { if (!e.key || e.key === NS + MKEY || e.key === NS + SKEY) adopt(); });
-  function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }; saveSync(); }
+  addEventListener('storage', function (e) { if (!e.key || e.key === NS + MKEY || e.key === NS + SKEY || e.key === NS + LNK) adopt(); });
+  function unlink() { clearTimeout(pushTimer); if (!fresh()) { relink(); return; } linkBump(); sync = { code: '', t: {}, b: {}, d: {}, gone: sync.gone || [], hide: sync.hide || [] }; stuck = []; cloudIds = null; saveSync(); }
+  // Signing out: the players stay on the device, and the device goes back to the village code it had before it signed in (a
+  // device that had none gets a new one, autoLink). true: there is a link again, to be synced.
+  function signOut() {
+    if (!fresh()) { relink(); return false; }
+    var back = lsGet(HKEY) || '';
+    auth = null; saveAuth(); lsDel(HKEY);
+    if (AUTOLINK && cloudOn() && profiles.list.length && L.CODE_RE.test(back) && linkTo(back, true)) return true;
+    unlink(); return autoLink();
+  }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
   function curName() { for (var i = 0; i < profiles.list.length; i++) if (profiles.list[i].id === profiles.cur) return profiles.list[i].name; return ''; }
   function resolve(s) { L.EMOJI_SLOTS.forEach(function (k) { var it = L.ITEM[s[k]]; s[k + 'E'] = it ? it.e : ''; }); return s; }
@@ -8261,7 +8332,8 @@ var TrollModels = (function () {
         } } }, icon('trash', 'm')));
         grid.appendChild(card);
       });
-      if (profiles.list.length < 8) {
+      whoForm = canAdd();
+      if (whoForm) {
         var inp = h('input', { class: 'pname', type: 'text', maxlength: '14', placeholder: 'הַשֵּׁם שֶׁלִּי', 'aria-label': 'שֵׁם הַשַּׂחְקָן הֶחָדָשׁ' });
         var newG = 0, gmsg = h('small', { class: 'gask', text: 'בְּאֵיזוֹ כִּתָּה?' });
         var grow = gradeRow(0, function (g) { newG = g; gmsg.classList.remove('need'); });
@@ -8286,8 +8358,11 @@ var TrollModels = (function () {
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
         grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', {}, icon('plus', 's'), ' שַׂחְקָן חָדָשׁ'), inp, gmsg, grow, srow, vrow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
       }
+      // fewer than 8 players here, but the cloud holds 8 (some were removed from this device only, or one of this device did not fit): the place of the form says so
+      if (!whoForm && profiles.list.length < 8) grid.appendChild(h('div', { class: 'pcard nonew', text: stuck.length ? stuckMsg() : 'אֵין מָקוֹם לְשַׂחְקָן חָדָשׁ: כְּבָר יֵשׁ 8 שַׂחְקָנִים שְׁמוּרִים, כּוֹלֵל אֵלֶּה שֶׁהוּסְרוּ רַק מֵהַמַּכְשִׁיר הַזֶּה. קֹדֶם מוֹחֲקִים שַׂחְקָן מִכָּל מָקוֹם.' }));
       el.appendChild(grid);
-      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', on: { click: function () { sfx.tap(); cloud(); } } }, icon(auth ? 'cloud-ok' : 'cloud', 't'), auth ? ' מְחֻבָּרִים · ' + auth.email : ' חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר'));
+      var deadA = !!(auth && auth.dead);
+      if (cloudOn() || /s=who|s=cloud/.test(hash)) el.appendChild(h('button', { class: 'btn b2 cloudb', on: { click: function () { sfx.tap(); cloud(); } } }, icon(auth && !deadA ? 'cloud-ok' : 'cloud', 't'), deadA ? ' צָרִיךְ לְהִכָּנֵס שׁוּב לַחֶשְׁבּוֹן' : auth ? ' מְחֻבָּרִים · ' + auth.email : ' חֶשְׁבּוֹן הַמִּשְׁפָּחָה: לְשַׂחֵק בְּכָל מַכְשִׁיר'));
       else el.appendChild(h('div', { class: 'note', text: 'הַהִתְקַדְּמוּת נִשְׁמֶרֶת בַּמַּכְשִׁיר הַזֶּה, לְכָל שַׂחְקָן בְּנִפְרָד.' }));
     });
     here = 'who';
@@ -8299,9 +8374,14 @@ var TrollModels = (function () {
     show(function (el) {
       el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
       el.appendChild(h('h2', { class: 'h2', text: 'חֶשְׁבּוֹן הַמִּשְׁפָּחָה' }));
+      // dead: the sign-in to the account ran out (the password was changed, the account is gone). The device is still linked to
+      // the account and saves here; the parent has to sign in again, or to sign out.
+      var dead = !!(auth && auth.dead);
+      if (dead && !msg) msg = 'צָרִיךְ לְהִכָּנֵס שׁוּב לַחֶשְׁבּוֹן. בֵּינְתַיִם הַהִתְקַדְּמוּת נִשְׁמֶרֶת רַק בַּמַּכְשִׁיר הַזֶּה.';
+      else if (stuck.length && (!msg || /✓$/.test(msg))) msg = stuckMsg(); // a player of this device did not fit into the cloud: said here, with what to do
       var p = h('div', { class: 'cpanel' }), status = h('div', { class: 'cmsg', text: msg || '' });
       function say(t) { status.textContent = t; }
-      function fail() { say('אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.'); }
+      function fail() { if (auth && auth.dead && !dead) { cloud(); return; } say('אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.'); }
       var vcode = L.CODE_RE.test(sync.code) ? sync.code : ''; // every device with players has a code of its own (autoLink)
       if (mode === 'code' && !auth) { // the code of this device, and the place to type the code of another device
         p.classList.add('cj');
@@ -8321,13 +8401,13 @@ var TrollModels = (function () {
         p.appendChild(h('b', { text: 'יֵשׁ לָנוּ קוֹד מִמַּכְשִׁיר אַחֵר' }));
         p.appendChild(h('div', { class: 'crow' }, cinp, btn('חִבּוּר', 'cjoin', join)));
         p.appendChild(h('button', { class: 'clink cback', text: 'חֲזָרָה לְחֶשְׁבּוֹן הַמִּשְׁפָּחָה', on: { click: function () { sfx.tap(); cloud(); } } }));
-      } else if (auth) {
+      } else if (auth && !dead) {
         p.appendChild(h('b', { text: 'מְחֻבָּרִים לַחֶשְׁבּוֹן' }));
         p.appendChild(h('div', { class: 'cacct', dir: 'ltr', text: auth.email }));
         p.appendChild(h('div', { class: 'ctext', text: 'נִכְנָסִים עִם אוֹתוֹ מֵיְל וְסִיסְמָה בְּמַכְשִׁיר אַחֵר, וְכָל הַשַּׂחְקָנִים וְהַהִתְקַדְּמוּת מוֹפִיעִים גַּם שָׁם.' }));
         p.appendChild(h('div', { class: 'crow' },
-          h('button', { class: 'btn', on: { click: function () { sfx.tap(); say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say('הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); } } }, icon('sync', 't'), ' סִנְכְּרוּן'),
-          btn('יְצִיאָה מֵהַחֶשְׁבּוֹן', 'b2 signout', function () { auth = null; saveAuth(); unlink(); if (autoLink()) syncNow(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); })));
+          h('button', { class: 'btn', on: { click: function () { sfx.tap(); say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say(stuck.length ? stuckMsg() : 'הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); } } }, icon('sync', 't'), ' סִנְכְּרוּן'),
+          btn('יְצִיאָה מֵהַחֶשְׁבּוֹן', 'b2 signout', function () { if (signOut()) syncNow(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); })));
       } else {
         var mail = h('input', { class: 'pname amail', type: 'email', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
         var pass = h('input', { class: 'pname apass', type: 'password', maxlength: '60', placeholder: '••••••', autocomplete: 'current-password', 'aria-label': 'סִיסְמָה' });
@@ -8346,20 +8426,22 @@ var TrollModels = (function () {
         // after any kind of sign-in: a device that was linked with a village code takes the newest state of that village with it,
         // then the players of the device go into the account and the players of the account come to the device
         function enter1(signing, isNew) {
+          var was = auth; // (a sign-in that ran out)
           busy = true; say('מִתְחַבְּרִים...');
           signing.then(function () {
             toAccount(function (res, full) {
               busy = false;
-              if (res === 'full') { auth = null; saveAuth(); say(noRoom(full)); return; } // no room in the account: the device is signed out again and nothing changed on it
+              if (res === 'full') { auth = was && was.dead ? was : null; saveAuth(); say(noRoom(full)); return; } // no room in the account: the device is signed out again and nothing changed on it
               if (res !== 'ok') { fail(); return; }
               if (!profiles.cur) who(false); else cloud(isNew ? 'הַחֶשְׁבּוֹן נוֹצַר, וְהַשַּׂחְקָנִים נִשְׁמְרוּ בּוֹ ✓' : 'מְחֻבָּרִים ✓');
-            });
+            }, was);
           }, function (e) { busy = false; why(e); });
         }
         pass.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(false); });
         var gb = h('button', { class: 'gbtnin', 'aria-label': 'כְּנִיסָה עִם Google', on: { click: function () { if (busy) return; sfx.tap(); enter1(googleSignIn(), false); } } }, h('i', { text: 'G' }), h('span', { text: 'כְּנִיסָה עִם Google' }));
         p.appendChild(gb); p.appendChild(h('div', { class: 'ctext cor', text: 'אוֹ' }));
         if (cloudOn()) googleReady().catch(function () {}); // ready before the tap, so the browser lets Google's window open
+        if (dead && /@/.test(auth.email || '')) mail.value = auth.email;
         p.appendChild(h('b', { text: 'הַמֵּיְל שֶׁל הַהוֹרֶה' })); p.appendChild(mail);
         p.appendChild(h('b', { text: 'סִיסְמָה (6 תָּוִים לְפָחוֹת)' })); p.appendChild(pass);
         p.appendChild(h('div', { class: 'crow' }, btn('כְּנִיסָה', 'signin', function () { go(false); }), btn('חֶשְׁבּוֹן חָדָשׁ', 'b2 signup', function () { go(true); })));
@@ -8368,7 +8450,8 @@ var TrollModels = (function () {
           say('רֶגַע...'); idt('sendOobCode', { requestType: 'PASSWORD_RESET', email: em }).then(function () { say('שָׁלַחְנוּ מֵיְל לְאִפּוּס הַסִּיסְמָה ✓'); }, why);
         } } }));
         p.appendChild(h('div', { class: 'ctext', text: 'עִם אוֹתוֹ מֵיְל וְסִיסְמָה מְשַׂחֲקִים בַּטֶּלֶפוֹן, בַּטַּאבְּלֶט וּבַמַּחְשֵׁב עִם אוֹתָם שַׂחְקָנִים.' + (vcode ? ' הַשַּׂחְקָנִים שֶׁל הַמַּכְשִׁיר הַזֶּה יַעַבְרוּ לַחֶשְׁבּוֹן.' : '') }));
-        p.appendChild(h('button', { class: 'clink ccl', on: { click: function () { sfx.tap(); cloud('', 'code'); } } }, vcode ? 'קוֹד הַמַּכְשִׁיר: ' : 'יֵשׁ לָנוּ קוֹד מִמַּכְשִׁיר אַחֵר', vcode ? h('span', { dir: 'ltr', text: vcode }) : null));
+        if (dead) p.appendChild(h('button', { class: 'clink signout', text: 'יְצִיאָה מֵהַחֶשְׁבּוֹן', on: { click: function () { sfx.tap(); if (signOut()) syncNow(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); } } }));
+        else p.appendChild(h('button', { class: 'clink ccl', on: { click: function () { sfx.tap(); cloud('', 'code'); } } }, vcode ? 'קוֹד הַמַּכְשִׁיר: ' : 'יֵשׁ לָנוּ קוֹד מִמַּכְשִׁיר אַחֵר', vcode ? h('span', { dir: 'ltr', text: vcode }) : null));
       }
       p.appendChild(status);
       el.appendChild(p);
@@ -9663,10 +9746,13 @@ var TrollModels = (function () {
     document.addEventListener(ev, function () { actx(); unlocked = true; applyMusic(); }, { passive: true, capture: true });
   });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
-  document.addEventListener('visibilitychange', function () { if (sync.code) syncNow(null, document.hidden); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && !fresh()) adopt(); if (sync.code) syncNow(null, document.hidden); }); // (a tab that slept through the change of the link)
   addEventListener('online', function () { ridSweep(); autoLink(true); if (sync.code) syncNow(); }); // the network is back: what was saved meanwhile goes up
   ridSweep();
   if (/linked/.test(hash)) { auth = { uid: 'x', email: 'parent@example.com', rt: 'x' }; sync.code = 'acct'; } // layout check of the signed-in screens
+  if (sandbox && /dead=1/.test(hash) && auth) auth.dead = 1; // layout checks: the sign-in ran out (&linked&dead=1), a player did not fit into the cloud (&stuck=1), no room for a new player (&noadd=1)
+  if (sandbox && /stuck=1/.test(hash)) stuck = ['נֹעָה'];
+  if (sandbox && /noadd=1/.test(hash)) { if (!sync.code) sync.code = 'ABCD2345'; sync.hide = ['p11', 'p12', 'p13', 'p14', 'p15', 'p16']; }
   if (sandbox && /vcode=1/.test(hash)) sync.code = 'ABCD2345'; // layout check: a device with its own code (&cj=1 with s=cloud: the screen of the code)
   setInterval(musicTick, 150);
   var scr = (/s=(\w+)/.exec(hash) || [])[1], ht = (/t=(\w+)/.exec(hash) || [])[1] || 'add', hl = (/l=(\d+)/.exec(hash) || [])[1];

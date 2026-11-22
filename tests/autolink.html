@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <title>running</title>
 <!-- End-to-end check of the automatic cloud save: a device that is linked to nothing makes a code of its own and saves every
-     player under it, against the real cloud. Run: node tests/run-page.js tests/autolink.html 240. Expects title "AUTOLINK OK".
+     player under it, against the real cloud. Run: node tests/run-page.js tests/autolink.html 300. Expects title "AUTOLINK OK".
      On localhost the game links by itself only when the address has #vlink=1, and this page is the only one that asks for it.
      It is not part of node tests/all.js (only of: node tests/all.js cloud), because of what it leaves behind:
      Every run makes TWO village documents (their codes are printed in the log; the rules allow no delete, so the test empties
@@ -13,7 +13,7 @@
 <iframe id="f" width="420" height="760"></iframe><pre id="log"></pre>
 <script>
 var f = document.getElementById('f'), log = document.getElementById('log'), ONLY_LOCAL = /local/.test(location.search);
-var T0 = Date.now(), LIMIT = 265000, dead = false;
+var T0 = Date.now(), LIMIT = 290000, dead = false;
 function alive() { if (dead || Date.now() - T0 > LIMIT) throw new Error('timeout: the whole test took too long'); }
 function say(t) { log.textContent += t + '\n'; }
 function wait(ms) { alive(); return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -26,7 +26,7 @@ function hook(W) {
   W.fetch = function (u, o) {
     var fs = /firestore\.googleapis\.com/.test(String(u)), rtdb = /firebasedatabase\.app/.test(String(u));
     if (!fs && !rtdb) return real.call(W, u, o);
-    if (net.offline) return Promise.reject(new TypeError('offline (test)'));
+    if (net.offline || (net.block && String(u).indexOf(net.block) >= 0)) return Promise.reject(new TypeError('offline (test)')); // block: one village code that must never be written
     if (rtdb) return real.call(W, u, o);
     var patch = !!(o && o.method === 'PATCH'), e = { patch: patch, url: String(u), status: 0, done: false, held: false }, gate = patch ? null : net.holdGet;
     if (gate) net.holdGet = null;
@@ -115,6 +115,14 @@ async function run() {
     await toCloud(); q('.ccl').click();
     (await until(function () { return q('.cinp'); }, 'the place to type a code')).value = code; q('.cjoin').click();
   }
+  async function whoScreen() { // the screen of the players, from wherever the game opened
+    var b = await until(function () { return q('.who-grid') || q('.chip.who'); }, 'the game is open');
+    if (!q('.who-grid')) b.click();
+    await until(function () { return q('.who-grid'); }, 'the screen of the players');
+  }
+  function card(name) { return [].filter.call(doc().querySelectorAll('.screen:not(.out) .pcard'), function (c) { var s = c.querySelector('.go > span'); return s && s.textContent === name; })[0]; }
+  function put(k, v) { localStorage.setItem('trollVillage.' + k, typeof v === 'string' ? v : JSON.stringify(v)); } // only while the page is closed
+  function ids(list) { return list.map(function (p) { return p.id; }).sort().join(); }
 
   // ---- a device without players links to nothing and writes nothing ----
   i0 = net.log.length;
@@ -277,6 +285,27 @@ async function run() {
   check(JSON.parse(c.list).map(function (p) { return p.id; }).sort().join() === [idA, id1, id2].sort().join() && c['s3_' + id1] === played && c['s3_' + id2] === old2 && c['s3_' + idA] === stateA, 'joining another code by hand: the players of this device went into it whole, the player that was there is untouched');
   check(norm(st(id1)) === played && norm(st(id2)) === old2 && st(idA) === stateA, 'and the device holds all three');
 
+  // ---- (defect 3) another tab of the device was open while the code was joined: it follows the new link, it never stores its old one again ----
+  await close(); var J = snap();
+  restore(C); // the other tab: the device as it was before the join (its own code, two players). It lives in a frame of its own, because it will load itself anew.
+  var g2 = document.createElement('iframe'); g2.width = 420; g2.height = 300; document.body.appendChild(g2);
+  function q2(sel) { try { return g2.contentWindow.__tv && g2.contentDocument.querySelector('.screen:not(.out) ' + sel); } catch (e) { return null; } }
+  g2.src = '../index.html?' + Date.now() + '#vlink=1';
+  await until(function () { return q2('.nextb'); }, 'the other tab is open');
+  await wait(2500); // (its first sync is over)
+  var W2 = g2.contentWindow; W2.__first = 1;
+  check(sync().code === codeC && profs().list.length === 2, 'another tab of the device is open, still with the code from before the join');
+  restore(J); // what the joining tab stored; the game in the frame hears it as a change made by another tab
+  await wait(400);
+  try { g2.contentDocument.dispatchEvent(new Event('visibilitychange')); } catch (e) {} // the other tab wakes up: before the fix its sync stored the old code and the old list again
+  await wait(3500);
+  await until(function () { return q2('.nextb'); }, 'the other tab shows the game');
+  await wait(1500);
+  check(!g2.contentWindow.__first, 'the other tab loaded itself anew when the link of the device changed');
+  check(sync().code === codeA && ids(profs().list) === ids(JSON.parse(J['trollVillage.profiles']).list) && profs().list.length === 3 && st(idA) === stateA && norm(st(id1)) === played && ls('link') === J['trollVillage.link'],
+    'a join made in one tab is not undone by another open tab: the device stays on the joined code with all three players');
+  g2.src = 'about:blank'; await wait(300); g2.remove(); J = snap();
+
   // ---- no room: 8 players here and one more there. Nothing is linked and nobody is dropped ----
   await close();
   var F = JSON.parse(JSON.stringify(C)), fl = JSON.parse(F['trollVillage.profiles']), xs = [];
@@ -324,6 +353,34 @@ async function run() {
   await wait(1200);
   check(/8 כָּאן וְעוֹד 1 שָׁם/.test(q('.cmsg').textContent) && !acct() && sync().code === codeC && profs().list.length === 8 && xs.every(function (id) { return st(id) === F['trollVillage.r.' + id]; }) && same(await family(), fam),
     'no room when signing in: the device is not signed in, keeps its own code and all 8 players; the account is untouched');
+
+  // ---- (defect 1) the cloud holds 8 players and two of them were removed from this device only: no ninth player is offered ----
+  await close();
+  var hl = profs(), hid = xs.slice(4), n9 = 'p800000009';
+  sy = sync(); sy.hide = hid.slice(); hl.list = hl.list.filter(function (p) { return hid.indexOf(p.id) < 0; });
+  hid.forEach(function (id) { localStorage.removeItem('trollVillage.r.' + id); delete sy.t[id]; delete sy.b[id]; delete sy.d[id]; });
+  put('profiles', hl); put('sync', sy);
+  i0 = net.log.length; await openS(); await whoScreen(); await wait(1200);
+  check(profs().list.length === 6 && !q('.pnew') && q('.nonew') && /אֵין מָקוֹם לְשַׂחְקָן חָדָשׁ/.test(q('.nonew').textContent) && /מִכָּל מָקוֹם/.test(q('.nonew').textContent) && patches(i0).length === 0,
+    '6 players here, 8 in the cloud (2 removed from this device only): no new player is offered, and one line says why and what to do');
+  // a ninth player all the same (as if made without a network while another device filled the list), and another player has an unsent change
+  await close();
+  var raw9 = rich(1, 30), x1 = JSON.parse(st(xs[0])); x1.coins += 5; x1 = norm(JSON.stringify(x1));
+  hl = profs(); hl.list.push({ id: n9, name: 'N9', sex: 'f', loc: true }); put('profiles', hl); put('r.' + n9, raw9);
+  revs = JSON.parse(ls('rev')); revs[xs[0]] = (rev(xs[0]) || L.revSeed(JSON.parse(x1))) + 1; put('rev', revs); put('r.' + xs[0], x1); sy = sync(); sy.d[xs[0]] = 1; put('sync', sy);
+  i0 = net.log.length; await openS();
+  await until(function () { return patches(i0).some(function (e) { return e.done && e.status === 200; }); }, 'the other players still sync although one player has no room');
+  await idle(i0); c = await village(codeC);
+  check(JSON.parse(c.list).length === 8 && c.list.indexOf(n9) < 0 && !('s3_' + n9 in c) && c['s3_' + xs[0]] === x1, 'no room for a ninth player: the cloud keeps its 8, and the change of another player still went up');
+  check(profs().list.length === 7 && profs().list.some(function (p) { return p.id === n9; }) && st(n9) === raw9, 'the ninth player stays on this device with the whole progress');
+  await toCloud();
+  check(/אֵין מָקוֹם/.test(q('.cmsg').textContent) && /N9/.test(q('.cmsg').textContent) && /לִמְחֹק|מוֹחֲקִים/.test(q('.cmsg').textContent) && !/אִינְטֶרְנֶט/.test(q('.cmsg').textContent), 'the account screen says it: "' + q('.cmsg').textContent + '"');
+  // room is made (a player is deleted everywhere): the ninth player goes up by itself
+  await close(); sy = sync(); sy.hide = [hid[0]]; sy.gone = (sy.gone || []).concat([hid[1]]); put('sync', sy);
+  i0 = net.log.length; await openS();
+  await until(function () { return patches(i0).some(function (e) { return e.done && e.status === 200; }); }, 'the player that waited for room was uploaded');
+  await idle(i0); c = await village(codeC);
+  check(JSON.parse(c.list).length === 8 && c.list.indexOf(n9) > 0 && c['s3_' + n9] === raw9 && JSON.parse(c.gone).indexOf(hid[1]) >= 0 && st(n9) === raw9, 'when there is room again the player is saved in the cloud, nothing was lost meanwhile');
   // a wiped device signs in: the account alone brings the players back
   await device({}); i0 = net.log.length;
   await open(); await toCloud();
@@ -331,13 +388,56 @@ async function run() {
   await until(function () { return profs().list.length === 3 && sync().code === 'acct'; }, 'signed in on a wiped device');
   await idle(i0);
   check(st(idA) === stateA && st(id1) === played && st(id2) === old2 && patches(i0).length === 0, 'a wiped device that signs in gets the three players with identical progress, and writes nothing');
-  // signing out: the players stay, and the device is at once on a code of its own again (the network is cut here, so no third document is made)
+  // ---- (defect 4) the sign-in ran out (the password was changed elsewhere): the device stays on the account, and the parent is told ----
+  await close();
+  var au = acct(); au.rt = 'not-a-token'; au.it = ''; au.exp = 0; put('auth', au);
+  i0 = net.log.length; await open();
+  await until(function () { return acct() && acct().dead; }, 'the game noticed that the sign-in ran out, and the device is still signed in');
+  await wait(2500); // (before the fix the device left the account here and made a code of its own at the next start)
+  check(sync().code === 'acct' && acct().uid === uid && profs().list.length === 3 && st(idA) === stateA && !net.log.slice(i0).some(function (e) { return /villages\//.test(e.url); }), 'a sign-in that ran out: the device stays linked to the account, the players stay, nothing is linked anew');
+  await close(); i0 = net.log.length; await open();
+  await toCloud();
+  check(sync().code === 'acct' && /לְהִכָּנֵס שׁוּב/.test(q('.cmsg').textContent) && q('.amail').value === mail && !q('.ccl') && !net.log.slice(i0).some(function (e) { return /villages\//.test(e.url); }), 'the next opening too; the account screen says: "' + q('.cmsg').textContent + '"');
+  q('.apass').value = pw; q('.signin').click();
+  await until(function () { return q('.who-grid, .cacct') && acct() && !acct().dead && sync().code === 'acct'; }, 'signed in again');
+  await idle(i0); tok = acct().it;
+  check(profs().list.length === 3 && st(idA) === stateA && st(id1) === played && patches(i0).length === 0 && same(await family(), fam), 'signing in again: the same players and progress, nothing written');
+  // ---- (defect 4) a player is deleted from everywhere without a network, then the parent signs out: the deletion is not forgotten ----
   net.offline = true;
+  await open(); await whoScreen();
+  card('OLD1').querySelector('.pdel').click(); card('OLD1').querySelector('.sure3 .btn.b2:not(.onlyhere)').click();
+  await until(function () { return profs().list.length === 2 && (sync().gone || []).indexOf(id1) >= 0; }, 'deleted from everywhere, not sent yet');
   (await until(function () { return q('.cloudb'); }, 'account button of the signed-in device')).click();
   (await until(function () { return q('.signout'); }, 'signed-in screen')).click();
   await until(function () { return q('.amail') && !acct(); }, 'signed out');
-  var codeS = sync().code;
-  check(CODE_RE.test(codeS) && codeS !== codeA && codeS !== codeC && profs().list.length === 3 && st(idA) === stateA && st(id1) === played && q('.ccl span').textContent === codeS, 'signing out: the players stay on the device, which goes back to a code of its own at once');
+  var codeS = sync().code; if (CODE_RE.test(codeS)) made.push(codeS); // (never written: the network is cut, and afterwards this code is blocked)
+  check(CODE_RE.test(codeS) && codeS !== codeA && codeS !== codeC && profs().list.length === 2 && st(idA) === stateA && q('.ccl span').textContent === codeS, 'signing out (a device that had no code before it signed in): the players stay, the device is on a new code of its own at once');
+  check((sync().gone || []).indexOf(id1) >= 0, 'signing out keeps the deletion that was not sent yet');
+  net.block = codeS; net.offline = false; i0 = net.log.length;
+  q('.amail').value = mail; q('.apass').value = pw; q('.signin').click();
+  await until(function () { return q('.who-grid, .cacct') && acct() && sync().code === 'acct'; }, 'signed in once more');
+  await idle(i0); tok = acct().it;
+  var fam2 = await family();
+  check(JSON.parse(fam2.gone).indexOf(id1) >= 0 && !('s3_' + id1 in fam2) && ids(JSON.parse(fam2.list)) === [idA, id2].sort().join() && profs().list.length === 2 && !ls('r.' + id1), 'at the next sign-in the deletion reaches the account: the player does not come back');
+  check((await village(codeS)) === null, 'the code of the signed-out device was never written (no third document)');
+  // ---- (defect 2) a device that still holds that player, with progress, signs in to the account where it was deleted ----
+  await device(J); net.block = null; i0 = net.log.length;
+  await openS();
+  check(profs().cur === id1 && norm(st(id1)) === played && sync().code === codeA, 'another device (its own code) still has the deleted player, with progress, and it is the one who plays');
+  var nJ = rev(id1);
+  await toCloud();
+  q('.amail').value = mail; q('.apass').value = pw; q('.signin').click();
+  await until(function () { return q('.cacct') && acct() && sync().code === 'acct'; }, 'that device signed in');
+  await idle(i0);
+  var pj = profs(), neu = pj.list.filter(function (p) { return p.name === 'OLD1'; })[0], fam3 = await family();
+  check(pj.list.length === 3 && neu && neu.id !== id1 && /^p\d{9}$/.test(neu.id) && pj.cur === neu.id && norm(st(neu.id)) === played && rev(neu.id) === nJ && !ls('r.' + id1) && st(idA) === stateA && norm(st(id2)) === old2,
+    'signing in where a player of this device is marked as deleted: the progress is NOT deleted, the player stays under a new id (' + tell(st(neu.id)) + ')');
+  check(ids(JSON.parse(fam3.list)) === [idA, id2, neu.id].sort().join() && fam3['s3_' + neu.id] === played && JSON.parse(fam3.gone).indexOf(id1) >= 0 && !('s3_' + id1 in fam3), 'and the account got it as a new player, with the whole progress; the deleted id stays deleted');
+  // ---- (defect 4) signing out: back to the village code the device had before it signed in (no network here: nothing more is written) ----
+  net.offline = true;
+  q('.signout').click();
+  await until(function () { return q('.amail') && !acct(); }, 'signed out');
+  check(sync().code === codeA && profs().list.length === 3 && norm(st(neu.id)) === played && q('.ccl span').textContent === codeA && (sync().gone || []).indexOf(id1) >= 0, 'signing out: the device is back on the code it had before the sign-in, with all its players');
   await close(); restore({});
 }
 (async function () {
