@@ -2397,6 +2397,26 @@ body.toy .tmap.m3on::before{visibility:hidden}
 .tmap.m3on>.mtrail,.tmap.m3on>.mdeco{visibility:hidden!important}
 body.toy .tmap.m3on .mnode.m3k .mic>img:first-child{opacity:0}
 body.toy .tmap.m3on .mnode.m3k.rec .mic:before{display:none}
+/* ==== task "mapwalk": the companion walks on the maps (mapWalk in the ui block). The walker (.mwk) is a point on the ground of the map: its shadow stays there,
+   the drawing (.mwb) hops and leans over it; the pet is a second walker (.mwp). Only transform and opacity move. While it walks the drawing in the stop is hidden.
+   .frz: debug &walkf=, the walk cycle stands still at its place in the step. .mwpop: the stop it reached answers with one small bounce and a glow. ==== */
+.tmap.mwon .mnode .mbud{visibility:hidden}
+.mwk{position:absolute;left:0;top:0;width:0;height:0;z-index:5;pointer-events:none;will-change:transform}
+.mwk .mwb{position:absolute;display:block;transform-origin:50% 96%;will-change:transform}
+.mwk .mwsh{position:absolute;display:block;border-radius:50%;background:radial-gradient(closest-side,rgba(42,33,72,.5),rgba(42,33,72,.2) 55%,rgba(42,33,72,0))}
+.mwk .troll .sh{opacity:0}
+.mwk .troll .pup{animation:none!important;transform:translate(var(--wx,0px),0);transition:transform .14s}
+.mwk .troll[data-act="walk"] .tb,.mwk .troll[data-act="walk"] .hair,.mwk .troll[data-act="walk"] .ftL{animation-duration:var(--hp,.46s);animation-delay:var(--hd,0s)}
+.mwk .troll[data-act="walk"] .ftR{animation-duration:var(--hp,.46s);animation-delay:calc(var(--hd,0s) - var(--hp,.46s)/2)}
+.mwk.frz .troll *{animation-play-state:paused!important}
+.mwk.frz .troll.oops .tb,.mwk.frz .troll.oops .hair{animation-delay:-.1s}
+.mwk .mpet{position:absolute;bottom:auto;height:auto}
+.mnode.mwpop .mic{transform-origin:50% 100%;animation:mwPop var(--mwd,.42s) ease-out 1}
+.mnode.mwpop .mic:after{content:"";position:absolute;pointer-events:none;inset:-26%;border-radius:50%;z-index:-1;background:radial-gradient(closest-side,rgba(255,246,150,.95),rgba(255,226,92,.4) 55%,rgba(255,226,92,0));animation:mwGlow var(--mwd,.42s) ease-out 1 both}
+.tmap.m3on .mnode.m3k.mwpop .mic:after{background:radial-gradient(closest-side,rgba(255,246,150,.55),rgba(255,236,120,.25) 55%,rgba(255,226,92,0))}
+@keyframes mwPop{0%,100%{transform:scale(1,1)}22%{transform:scale(1.1,.9)}52%{transform:scale(.95,1.1)}78%{transform:scale(1.03,.97)}}
+@keyframes mwGlow{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.mnode.mwpop .mic,.mnode.mwpop .mic:after{animation:none}}
 </style>
 </head>
 <body>
@@ -5698,6 +5718,7 @@ var TrollModels = (function () {
   var CHEST = { bronze: 'תֵּבַת אָרָד', silver: 'תֵּבַת כֶּסֶף', gold: 'תֵּבַת זָהָב' };
   var reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var hash = location.hash || '', sandbox = /demo|auto/.test(hash); // sandbox: never touches saved progress
+  if (sandbox && /[#&]rm=1/.test(hash)) reduced = true; // debug: the game behaves as with reduced motion (tests/walk.html)
   var TOY = !/[&#]skin=old/.test(hash); // the skin "the toy island" (body.toy). At the flip this becomes !/[&#]skin=old/.test(hash)
   var state, app = document.getElementById('app'), fx, cur = null, timers = [];
   var tv = window.__tv = { round: null, done: false };
@@ -6675,7 +6696,7 @@ var TrollModels = (function () {
       if (st === 0) { st = 1; load(0); } else if (st === 2) go();
     }
     function drop() { if (inst) { var i = inst; inst = null; try { i.dispose(true); } catch (e) {} } }
-    return { sync: sync, leave: function () { want = null; drop(); }, pics: PICS };
+    return { sync: sync, leave: function () { want = null; drop(); }, pics: PICS, react: function (n, ms) { try { if (inst && inst.react) inst.react(n, ms); } catch (e) {} } }; // react (task "mapwalk"): the model of the stop the companion reached bounces once
   })();
 
   // ---------- screens ----------
@@ -7193,7 +7214,7 @@ var TrollModels = (function () {
         return dd;
       }
       trail.innerHTML = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + (TOY ? '<path class="tbed" d="' + path(N - 1) + '"/><path class="tmid" d="' + path(N - 1) + '"/>' : '') + '<path d="' + path(N - 1) + '"/>' + (last > 0 ? '<path class="walked" d="' + path(last) + '"/>' : '') + '</svg>';
-      if (TOY) box.__pts = pts;
+      box.__pts = pts; // (task "mapwalk": the companion walks along these points in every skin)
       return ok;
     }
     // ---- a map that scrolls ----
@@ -7266,7 +7287,197 @@ var TrollModels = (function () {
     if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (cur !== el) ro.disconnect(); else layout(); }); ro.observe(sc ? wrap : box); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     layout.see = function (n) { see(n, true); };
+    layout.peek = function (n) { see(n, false); }; // task "mapwalk": at once, without the smooth scroll
     return layout;
+  }
+
+  // ---------- task "mapwalk": the companion WALKS on the maps (the map of a topic, the map of a subject, the challenge map), in the 3D picture and in the flat one.
+  // The place where it stands means something: when a map opens it comes from the stop of the round that was played last (or, from the camp, a few steps
+  // in from the stop before / from the edge); a tap on a stop makes it walk there along the trail, the stop answers with a small bounce, and only THEN the
+  // round starts / the next map opens (0.5 to 1.2 s by the distance; more than three stops away it runs); a tap on a closed stop: it walks towards it, stops
+  // before it, wobbles ("oops") and walks back. The walker is a second drawing of the companion over the map (the one in the stop is hidden meanwhile); it
+  // is a child of the map, so it scrolls with it and with the 3D picture under it. Its feet follow the points the trail is drawn from (box.__pts, the same
+  // bends); beside the stop it leaves and the stop it reaches it stands where the companion stands, and it goes round the stops between (the eyes look where it goes and the body leans that way; the drawing is not mirrored, its light stays at the upper left).
+  // Rules: a second tap while it walks to a stop starts at once (a tap on another stop: that one starts; a tap on the top bar, the arrows or the parents'
+  // button: its own action and no round); nothing starts twice and nothing starts on a screen that was left (the timers are those of the screen, and every
+  // step checks the screen). No walk at all, everything at once as before: reduced motion, a race (from the invitation to its end: races are timed), the layout
+  // check, a hidden tab (a walk on the way is finished at once), and the test modes #demo / #auto unless &walk=1 asks for it.
+  // Debug (with #demo...&walk=1): &wto=N taps stop N when the map has opened, &wfrom=N opens the map as if stop N was played last, &walkf=0.4 holds every
+  // walk still at that part of its way (layout checks and screenshots), &walks=8 makes every walk eight times slower. tv.walk: a round waits for the walk; tv.walked: how many walks have started a round.
+  var walkAt = { stop: null, topic: null }, walkNow = null;
+  var WALK_F = sandbox && /[#&]walkf=([\d.]+)/.test(hash) ? Math.max(0, Math.min(1, +/[#&]walkf=([\d.]+)/.exec(hash)[1])) : null;
+  var WALK_S = sandbox && /[#&]walks=(\d+)/.test(hash) ? Math.max(1, +/[#&]walks=(\d+)/.exec(hash)[1]) : 1; // debug &walks=8: every walk eight times slower (a live walk in screenshots)
+  function walkOn() { return !reduced && !race && !document.hidden && (!/fit/.test(hash) || WALK_F != null) && (!sandbox || /[#&]walk=1/.test(hash)); } // (the layout check measures a walk that is held still)
+  document.addEventListener('visibilitychange', function () { if (document.hidden && walkNow) walkNow(); });
+  function mapWalk(el, box, items, lay, sc) {
+    var bud = box.querySelector('.mnode .mbud'), N = items.length, hi = -1, G = null, wk = null, pk = null, body = null, shd = null, petI = null, wrap = sc ? sc.parentNode : null;
+    var u = 0, at0 = -1, pu = 0, ps = 1, lastPP = null, mv = null, pend = null, seq = 0, raf = 0, follow = false, lastP = null, lastWd = null, spec = buddySpec(), K = {};
+    items.forEach(function (it, i) { if (bud && it.el.contains(bud)) hi = i; });
+    at0 = u = hi;
+    function can() { return hi >= 0 && N > 1 && cur === el && !!box.__pts && box.__pts.length === N && bud.offsetWidth > 0 && walkOn(); }
+    function off(n) { var x = 0, y = 0; while (n && n !== box) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; } return [x, y]; }
+    // where things are (measured again whenever the map was laid out again): the points of the trail; for every stop where the companion stands beside it
+    // (st: for its own stop the place of the drawing that stands there, for the others the same side of the picture) and where it passes a stop on its way (fr)
+    function geo() {
+      if (G && G.pts === box.__pts) return G;
+      var pts = box.__pts, o = off(bud), bw = bud.offsetWidth, bh = bud.offsetHeight, Wd = box.clientWidth;
+      G = { pts: pts, bw: bw, bh: bh, st: [], fr: [] };
+      items.forEach(function (it, i) {
+        var m = it.el.querySelector('.mic'), mo = off(m), x, y = mo[1] + m.offsetHeight;
+        if (i === hi) { x = o[0] + bw / 2; y = o[1] + bh; }
+        else { x = mo[0] + m.offsetWidth + bw * 0.42; if (x + bw * (spec.petE ? 1.1 : 0.5) > Wd - 2) x = Math.max(bw / 2 + 2, mo[0] - bw * 0.42); } // on the side of the picture where the companion stands in its own stop; where the map ends there, on the other side
+        G.st.push([x - pts[i][0], y - pts[i][1]]);
+        // a stop on the way: round the side of the picture where the trail comes and goes (the rows of a phone map), or in front of it (one row)
+        var nb = ((pts[i - 1] || pts[i])[0] + (pts[i + 1] || pts[i])[0]) / 2 - pts[i][0], sd = Math.abs(nb) > m.offsetWidth * 0.5 ? (nb > 0 ? 1 : -1) : 0;
+        G.fr.push(sd ? [sd * (m.offsetWidth / 2 + bw * 0.3), y - pts[i][1]] : [0, y + bh * 0.08 - pts[i][1]]);
+      });
+      if (body) size();
+      return G;
+    }
+    function base(uu) { // the point of the trail at stop number uu (3.5: half way from stop 3 to stop 4), with the bends of the drawn path
+      var p = G.pts, k, t, v, a, b, f, mx, my;
+      if (uu < 0) return [p[0][0] - uu * G.bw * 2.4, p[0][1] + uu * G.bw * 0.4]; // before the first stop: in from the side where the trail begins
+      k = Math.min(N - 2, Math.floor(uu)); t = uu - k; v = 1 - t; a = p[k]; b = p[k + 1]; f = (k + 1) % 2 ? 0.1 : -0.1;
+      mx = (a[0] + b[0]) / 2 - (b[1] - a[1]) * f; my = (a[1] + b[1]) / 2 + (b[0] - a[0]) * f;
+      return [v * v * a[0] + 2 * v * t * mx + t * t * b[0], v * v * a[1] + 2 * v * t * my + t * t * b[1]];
+    }
+    function spot(uu, m) { // the feet: on the trail between the stops; near a stop, beside it (the stop of the start and of the end) or in front of it (a stop on the way)
+      var p = base(uu), k0 = Math.floor(uu), k, d, g, end;
+      for (k = k0; k <= k0 + 1; k++) { // (the turn to the side of a stop begins earlier at the two ends of the walk, so the way has no hook)
+        end = k === m.a || k === m.b;
+        if (k >= 0 && k < N && (k === k0 || uu > k0) && (d = Math.abs(uu - k) / (end ? 0.66 : 0.46)) < 1) { d = 1 - d; d = d * d * (3 - 2 * d); g = end ? G.st[k] : G.fr[k]; p[0] += g[0] * d; p[1] += g[1] * d; }
+      }
+      return p;
+    }
+    function size() {
+      body.style.width = G.bw + 'px'; body.style.height = G.bh + 'px'; body.style.left = (-G.bw / 2) + 'px'; body.style.top = (-G.bh) + 'px';
+      shd.style.cssText = 'width:' + (G.bw * 0.74).toFixed(1) + 'px;height:' + (G.bh * 0.1).toFixed(1) + 'px;left:' + (-G.bw * 0.33).toFixed(1) + 'px;top:' + (-G.bh * 0.09).toFixed(1) + 'px';
+      if (petI) petI.style.cssText = 'width:' + (G.bw * 0.62).toFixed(1) + 'px;left:' + (-G.bw * 0.31).toFixed(1) + 'px;top:' + (-G.bw * 0.62).toFixed(1) + 'px';
+    }
+    function paint(mood) { body.innerHTML = A.trollSVG(noPet(spec), { mood: mood, size: G.bh }); }
+    function make() { // the walker: the same drawing in the size of the one that stands in the stop, a shadow of its own on the ground (it stays there in a hop), the pet as a second walker
+      if (wk) return;
+      geo(); shd = h('i', { class: 'mwsh' }); body = h('span', { class: 'mwb mbud' });
+      wk = h('span', { class: 'mwk', 'aria-hidden': 'true' }, shd, body); paint('happy');
+      if (spec.petE) { petI = icoImg(spec.petE, 'mpet'); pk = h('span', { class: 'mwk mwp', 'aria-hidden': 'true' }, petI); box.appendChild(pk); }
+      size(); box.appendChild(wk); box.classList.add('mwon'); lastP = lastPP = null; lastWd = null; follow = false; pu = u; ps = 1;
+      if (WALK_F != null) { wk.classList.add('frz'); if (pk) pk.classList.add('frz'); }
+    }
+    function rest(hello) { // the walk is over: the companion of the stop is seen again
+      cancelAnimationFrame(raf); mv = null; pend = null; tv.walk = false; seq++; if (walkNow === finish) walkNow = null;
+      if (wk) { wk.remove(); wk = null; body = null; } if (pk) { pk.remove(); pk = null; petI = null; }
+      box.classList.remove('mwon'); u = at0 = hi;
+      if (hello && cur === el && !document.hidden) { // it turns to the child: one wave, then back to rest
+        var sv = bud.querySelector('svg.troll'); if (sv) sv.outerHTML = A.trollSVG(noPet(spec), { mood: 'wave' });
+        later(function () { var s2 = bud.querySelector('svg.troll.wave'); if (s2) s2.outerHTML = A.trollSVG(noPet(spec)); }, 1150);
+      }
+    }
+    function ease(k) { return k < 0.5 ? 2 * k * k : 1 - 2 * (1 - k) * (1 - k); }
+    function arc(ph) { return ph > 0.18 && ph < 0.86 ? Math.sin(Math.PI * (ph - 0.18) / 0.68) : 0; } // the hop of the walk cycle (tHop): off the ground from 18% to 86% of a step
+    function pose(t) { // the picture of the move mv at t ms after its start
+      geo();
+      var m = mv, k = Math.max(0, Math.min(1, (t - m.pre) / m.T)), uu = m.u0 + (m.u1 - m.u0) * ease(k), p = spot(uu, m), still = m.u0 === m.u1;
+      var r = 1 - Math.min(1, Math.max(0, t) / (240 * WALK_S)); r = r * r * (3 - 2 * r);
+      if (m.e) { p[0] += m.e[0] * r; p[1] += m.e[1] * r; }
+      var lift = k > 0 && k < 1 ? arc((k * m.nh) % 1) : 0, H = G.bh * (m.run ? 0.3 : 0.2), wd = lastWd || 0, q, go = Math.sin(Math.PI * k);
+      if (!still && k < 1) { q = spot(uu + (m.u1 > m.u0 ? 0.04 : -0.04), m); if (Math.abs(q[0] - p[0]) > 0.4) wd = q[0] > p[0] ? 1 : -1; }
+      if (k >= 1) wd = 0; // arrived: it looks at the child again
+      wk.style.transform = 'translate(' + p[0].toFixed(1) + 'px,' + p[1].toFixed(1) + 'px)';
+      wk.style.opacity = m.fade ? Math.min(1, Math.max(0, k / 0.3)).toFixed(2) : '';
+      body.style.transform = 'translateY(' + (-lift * H).toFixed(1) + 'px) rotate(' + (wd * (m.run ? 8 : 5) * go).toFixed(1) + 'deg)';
+      shd.style.transform = 'scale(' + (1 - 0.3 * lift).toFixed(3) + ')'; shd.style.opacity = (1 - 0.45 * lift).toFixed(2);
+      if (wd !== lastWd) { lastWd = wd; body.style.setProperty('--wx', (wd > 0 ? 3.5 : wd < 0 ? -7.5 : 0) + 'px'); } // the eyes look where it goes (the pupils rest 2 to the right of the middle)
+      if (pk) { // the pet: a step behind on the same way; beside the companion again when both stand in a stop, behind it on the trail when it stops on the way
+        var kp = Math.max(0, Math.min(1, (t - m.pre - m.lag) / m.T)), pp = petAt(m, kp);
+        lastPP = [pp[0], pp[1]];
+        if (m.pe) { pp[0] += m.pe[0] * r; pp[1] += m.pe[1] * r; }
+        pk.style.transform = 'translate(' + pp[0].toFixed(1) + 'px,' + pp[1].toFixed(1) + 'px)'; pk.style.opacity = wk.style.opacity;
+        petI.style.transform = 'translateY(' + (-(kp > 0 && kp < 1 ? arc((kp * m.nh + 0.5) % 1) : 0) * H * 0.7).toFixed(1) + 'px)';
+      }
+      u = uu; lastP = p;
+      if (sc && wrap.classList.contains('scrl')) { // a long map: once the walker is in the part that is seen, the map goes with it
+        var top = sc.scrollTop, vh = wrap.clientHeight, y0 = p[1] - G.bh - 12, y1 = p[1] + 28;
+        if (!follow && y0 >= top + 20 && y1 <= top + vh - 20) follow = true;
+        if (follow && WALK_F == null) { if (y0 < top + 52) sc.scrollTop = Math.max(0, y0 - 52); else if (y1 > top + vh - 60) sc.scrollTop = y1 - vh + 60; }
+      }
+    }
+    function petAt(m, kp) {
+      var e = ease(kp), end = m.b >= 0 ? m.u1 : m.u1 - (m.u1 > m.u0 ? 0.17 : -0.17), p;
+      pu = m.p0 + (end - m.p0) * e; ps = (m.ps + ((m.b >= 0 ? 1 : 0) - m.ps) * e) * (1 - Math.sin(Math.PI * kp));
+      p = spot(pu, m); p[0] += G.bw * 0.67 * ps; return p;
+    }
+    function cycle(on, m) { // the walk cycle of the drawing (data-act="walk": squash, hop, the feet in turn), in the rhythm of the hops
+      var sv = body.querySelector('svg.troll'); if (!sv) return;
+      sv.removeAttribute('data-act'); if (!on) return;
+      body.style.setProperty('--hp', (m.T / m.nh).toFixed(0) + 'ms'); body.style.setProperty('--hd', (m.pre | 0) + 'ms');
+      void sv.getBoundingClientRect(); sv.setAttribute('data-act', 'walk');
+    }
+    function start(m, f) { // f: only the picture at that part of the way (debug &walkf=)
+      make(); cancelAnimationFrame(raf);
+      var id = ++seq; mv = m; m.pre = (m.pre || 0) * WALK_S; m.T *= WALK_S; m.t0 = performance.now(); m.nh = m.u0 === m.u1 ? 1 : Math.max(1, Math.round(m.T / WALK_S / (m.run ? 185 : 245))); m.lag = pk ? Math.min(140, m.T / WALK_S * 0.22) * WALK_S : 0;
+      if (lastP) { var p0 = spot(u, m); m.e = [lastP[0] - p0[0], lastP[1] - p0[1]]; } // a walk that begins in the middle of another: no jump
+      m.p0 = pu; m.ps = ps; if (pk && lastPP) { var q0 = lastPP, q1 = petAt(m, 0); m.pe = [q0[0] - q1[0], q0[1] - q1[1]]; }
+      walkNow = finish; at0 = -1;
+      if (f != null) {
+        cycle(true, m); body.style.setProperty('--hd', (-((f * m.nh) % 1) * m.T / m.nh).toFixed(0) + 'ms'); m.e = m.pe = null;
+        (function hold() { if (cur !== el || seq !== id || !wk) return; pose(m.pre + f * m.T + (f >= 1 ? m.lag : 0)); raf = requestAnimationFrame(hold); })();
+        return;
+      }
+      cycle(true, m); pose(0);
+      raf = requestAnimationFrame(function fr(now) { if (cur !== el || seq !== id || !wk) return; var t = now - m.t0; pose(t); if (t < m.pre + m.T + m.lag + 60) raf = requestAnimationFrame(fr); });
+      later(function () { if (cur !== el || seq !== id || !wk) return; pose(m.pre + m.T + m.lag); cycle(false); at0 = m.b; m.done(); }, m.pre + m.T + (m.wait ? m.lag : 0)); // (wait: the pet has come too)
+    }
+    function pop(n) { if (WALK_S > 1) n.style.setProperty('--mwd', (0.42 * WALK_S) + 's'); restart(n, 'mwpop'); M3.react(n, 420 * WALK_S); } // the stop answers: the picture (and its 3D model) bounces once, with a glow
+    function time(d, slow) { return d < 0.05 ? 320 : Math.round(Math.max(420, Math.min(1020, 340 + 170 * d)) * (slow || 1)); }
+    function fire(fn) { pend = null; tv.walk = false; seq++; cancelAnimationFrame(raf); if (walkNow === finish) walkNow = null; if (cur !== el) return; tv.walked = (tv.walked || 0) + 1; fn(); }
+    function finish() { if (pend) fire(pend.fn); else rest(false); } // the tab was hidden: no walk goes on unseen
+    // a tap anywhere while a round waits for the walk
+    el.addEventListener('click', function (e) {
+      if (!pend) return;
+      var tg = e.target && e.target.closest ? e.target : null;
+      if (tg && tg.closest('.mnode,.mgo')) return;                       // a stop or the big button: its own handler decides (the last tap wins)
+      if (tg && tg.closest('.top,.parb,.marr,.ovl')) { rest(false); return; } // another control: its own action, and no round
+      e.stopPropagation(); e.preventDefault(); fire(pend.fn);
+    }, true);
+    K.busy = function () { return !!pend; };
+    // to stop i (-1: the stop where the companion stands), then fn
+    K.go = function (i, fn) {
+      if (pend || !can()) { if (pend) fire(fn); else fn(); return; } // a second tap: at once
+      if (i < 0) i = hi;
+      var d = Math.abs(i - u), p = pend = { fn: fn }, m = { u0: u, u1: i, a: wk ? at0 : hi, b: i, T: time(d), run: d > 3 };
+      tv.walk = true;
+      m.done = function () { // it is there: the stop answers, and then the round
+        var n = items[i].el; pop(n);
+        later(function () { if (pend === p && cur === el) fire(fn); }, 180 * WALK_S);
+      };
+      if (WALK_F != null) { start(m, WALK_F); if (WALK_F >= 1) pop(items[i].el); return; }
+      start(m);
+    };
+    // a closed stop: towards it, a stop before it, "oops", and back
+    K.no = function (i) {
+      var had = !!pend; pend = null; tv.walk = false;
+      if (!can() || i < 0 || Math.abs(i - u) < 0.5) { if (had) rest(false); return; }
+      var us = i + (u < i ? -0.42 : 0.42), d = Math.abs(us - u), T = Math.max(380, Math.min(900, 260 + 170 * d)), f = WALK_F;
+      var m1 = { u0: u, u1: us, a: wk ? at0 : hi, b: -1, T: T, run: d > 3 }, m2 = { u0: us, u1: hi, a: -1, b: hi, T: Math.max(380, Math.min(900, 260 + 170 * Math.abs(us - hi))), run: Math.abs(us - hi) > 3, wait: 1, done: function () { rest(false); } };
+      function back() { paint('happy'); size(); lastWd = null; start(m2, f == null ? null : (f - 0.6) / 0.4); }
+      m1.done = function () { paint('oops'); size(); at0 = -1; var id = seq; later(function () { if (seq === id && cur === el && wk) back(); }, 640 * WALK_S); };
+      if (f == null) start(m1); else if (f < 0.4) start(m1, f / 0.4); else if (f < 0.6) { start(m1, 1); paint('oops'); size(); } else { start(m1, 1); lastP = lastPP = null; back(); }
+    };
+    // the map has opened. from: the stop the companion comes from (-1: from the camp: a few steps in from the stop before, or from the edge)
+    K.open = function (from) {
+      var hf = sandbox && /[#&]wfrom=(\d+)/.exec(hash), ht = sandbox && /[#&]wto=(\d+)/.exec(hash), m, d;
+      if (hf) from = Math.min(N - 1, +hf[1]);
+      if (ht && items[+ht[1]]) { later(function () { if (cur === el) items[+ht[1]].el.click(); }, 0); return; }
+      if (!can()) return;
+      if (from === hi) { later(function () { if (cur === el && !wk) trollAct(bud, 'hop'); }, 380); return; } // it is where it was: a small hop
+      if (from >= 0 && from < N) { d = Math.abs(hi - from); m = { u0: from, u1: hi, a: from, b: hi, T: time(d, 1.1), run: d > 3, pre: 420, wait: 1 }; }
+      else m = { u0: hi > 0 ? hi - 0.55 : -0.6, u1: hi, a: -1, b: hi, T: 500, pre: 320, fade: 1, wait: 1 };
+      m.done = function () { rest(true); if (lay && lay.see) lay.see(items[hi].el); };
+      if (WALK_F != null) { start(m, WALK_F); return; }
+      if (m.a >= 0 && lay && lay.peek) lay.peek(items[from].el); // a long map: the stop it leaves is seen first, and the map follows it
+      start(m);
+    };
+    return K;
   }
 
   // ---------- subjects: arithmetic, geometry, Hebrew, English. Four lands on the parchment; each has a map of its own for
@@ -7338,19 +7549,23 @@ var TrollModels = (function () {
         var f = info[i], pips = h('span', { class: 'mpips hp', 'aria-hidden': 'true' });
         f.hs.forEach(function (n) { pips.appendChild(h('i', { class: n ? 's' + n : 'o' })); });
         node('reg' + (f.flag ? ' done' : f.got ? ' open' : ' plain'), t.id, icons[i], t.world + (f.ready ? ' 🌉' : ''), { flag: f.flag, pips: pips }, f.got > 0,
-          function () { sfx.pop(); region(t.id); });
+          function (b) { sfx.pop(); walkTo(b, function () { region(t.id); }); });
       });
       if (!ch) {
-        node('mixn', MIX.id, ART.mix, MIX.world, null, false, function () { sfx.pop(); startRound('mix'); });
+        node('mixn', MIX.id, ART.mix, MIX.world, null, false, function (b) { sfx.pop(); walkTo(b, function () { startRound('mix'); }); });
         node('gate' + (gopen ? ' open' : ' far'), GATE.id, ART.gate, GATE.world, gopen ? null : { lock: true }, gopen, function (b) {
-          if (gopen) { sfx.pop(); topics(true); return; }
-          sfx.wrong(); restart(b, 'shake'); say(GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד');
+          if (gopen) { sfx.pop(); walkTo(b, function () { topics(true); }); return; }
+          sfx.wrong(); restart(b, 'shake'); say(GATE.world + ': נִפְתָּח אַחֲרֵי שֶׁחוֹצִים גֶּשֶׁר אֶחָד'); walkTo(b, null);
         });
       }
       var mw = mapWrap(box, null);
       el.appendChild(msg); el.appendChild(mw);
       el.appendChild(h('div', { class: 'note', text: TOY ? 'אִיּוּרִים וְאַיְקוֹנִים: Fluent Emoji (Microsoft). צְלִילִים: Kenney.nl. מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' : 'אַיְקוֹנִים: Fluent Emoji (Microsoft). אִיּוּרִים: Kenney.nl (מַפָּה, בָּתִּים, צְלִילִים), CraftPix.net (יַעַר). מוּזִיקָה: Kevin MacLeod, incompetech.com (CC BY 4.0).' }));
-      trailLayout(el, box, trail, items, null, mw.firstChild);
+      var lay = trailLayout(el, box, trail, items, null, mw.firstChild);
+      // task "mapwalk": the companion walks to the region that was tapped, and comes from the region it was in last
+      var WK = mapWalk(el, box, items, lay, mw.firstChild), wfrom = walkAt.topic; walkAt.topic = null;
+      function walkTo(b, fn) { var i = -1; items.forEach(function (it, k) { if (it.el === b) i = k; }); if (fn) WK.go(i, fn); else WK.no(i); }
+      WK.open(wfrom == null ? -1 : items.map(function (it) { return it.el.getAttribute('data-t'); }).indexOf(wfrom));
     });
   }
 
@@ -7390,21 +7605,22 @@ var TrollModels = (function () {
         if (!rec) return;
         var fresh = !state.rounds && !state.stars && !state.last;
         slot.appendChild(h('button', { class: 'btn mgo', 'data-next': t.id + (rec.boss ? '-boss' : '-' + rec.level), on: { click: function () {
-          sfx.pop(); startRound(t.id, rec.boss ? { boss: rec.boss } : { level: rec.level });
+          sfx.pop(); WK.go(-1, function () { startRound(t.id, rec.boss ? { boss: rec.boss } : { level: rec.level }); }); // task "mapwalk": the companion walks to the recommended house first
         } } }, h('span', { class: 'ntxt' }, h('b', { text: fresh ? 'מַתְחִילִים' : 'מַמְשִׁיכִים' }),
           h('small', { text: rec.boss ? 'מְשִׂימַת הַגֶּשֶׁר' : t.levels[rec.level - 1].name })), h('span', { class: 'ngo', 'aria-hidden': 'true' }, icon('next', 'm'))));
       }
 
-      items.forEach(function (it) {
+      var WK = null; // task "mapwalk": the companion walks to the stop that was tapped, and only then the round starts
+      items.forEach(function (it, ix) {
         var b = stopEl('button', t, it, win.length, rec);
         if (it.boss) b.addEventListener('click', function () {
           if (it.done) { sfx.giggle(); say(it.hero.name + ' בַּמַּחֲנֶה שֶׁלָּךְ עַכְשָׁו!'); return; }
-          if (!it.ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת אַחֲרֵי סִבּוּב מֻצְלָח בְּכָל בַּיִת שֶׁלְּפָנֶיהָ'); return; }
-          sfx.pop(); startRound(t.id, { boss: it.boss });
+          if (!it.ready) { restart(b, 'shake'); sfx.wrong(); say('מְשִׂימַת הַגֶּשֶׁר נִפְתַּחַת אַחֲרֵי סִבּוּב מֻצְלָח בְּכָל בַּיִת שֶׁלְּפָנֶיהָ'); WK.no(ix); return; }
+          sfx.pop(); WK.go(ix, function () { startRound(t.id, { boss: it.boss }); });
         });
         else b.addEventListener('click', function () {
-          if (it.far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי סִבּוּב מֻצְלָח בַּבַּיִת שֶׁלְּפָנָיו'); return; }
-          sfx.pop(); startRound(t.id, { level: it.lv }); // one tap: a round of this house
+          if (it.far) { restart(b, 'shake'); sfx.wrong(); say('הַבַּיִת הַזֶּה יִפָּתַח אַחֲרֵי סִבּוּב מֻצְלָח בַּבַּיִת שֶׁלְּפָנָיו'); WK.no(ix); return; }
+          sfx.pop(); WK.go(ix, function () { startRound(t.id, { level: it.lv }); }); // one tap: a round of this house
         });
         it.el = b; box.appendChild(b);
       });
@@ -7413,6 +7629,10 @@ var TrollModels = (function () {
       drawSlot();
 
       lay = trailLayout(el, box, trail, items, parb, mw.firstChild);
+      WK = mapWalk(el, box, items, lay, mw.firstChild);
+      var ws = walkAt.stop, wi = -1; walkAt.stop = null; walkAt.topic = t.id; // where it comes from: the stop of the round that was played last, when that is on this map
+      if (ws && ws.t === t.id) items.forEach(function (it, k) { if (ws.boss ? it.boss === ws.boss : !it.boss && it.lv === ws.lv) wi = k; });
+      WK.open(wi);
     });
   }
   // For parents: how many houses of the topic are open. Behind a small button, so that it is not among the child's stages.
@@ -7765,6 +7985,7 @@ var TrollModels = (function () {
     if (stageRound) state.last = { t: topicId, l: cfg.level }; // optional field: where the home button continues
     state = L.memAdd(state, stageRound ? 'p' : 'm', topicId, stageRound ? cfg.level : 0, L.todayStr()); // optional field: what the companion remembers
     save();
+    if (!cfg.race) { walkAt.stop = { t: topicId, lv: cfg.level, boss: cfg.boss }; if (topicId === 'mix') walkAt.topic = 'mix'; } tv.lv = cfg.level; // task "mapwalk": the map that opens next knows where the companion was (tv.lv: the house of this round, for tests/walk.html)
     var buddy = buddySpec(), combo = 0;
     tv.round = round; tv.done = false; tv.born1 = false; tv.born = Date.now(); // the screen opens now: a second tap of a double tap on the button that led here must not answer
     show(function (el) {

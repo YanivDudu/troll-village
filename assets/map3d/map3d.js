@@ -276,6 +276,7 @@ var TrollMap3D = (function () {
       saveQ(TIER); }
 
     // -- drawing: only when something changed; the idle motion (water, tree tops, the glow) runs for a while after the last touch, at half rate --
+    var rx = null;
     function kick() { if (!running && !document.hidden && !dead && R && world && !lost) { running = true; last = 0; raf = requestAnimationFrame(tick); } }
     function wake() { lastInput = performance.now(); kick(); }
     function ambient(now) { return !RM && TIER < 4 && now - lastInput < AMB_MS; }
@@ -286,7 +287,9 @@ var TrollMap3D = (function () {
       for (i = 0; i < fogs.length; i++) fogs[i].position.x = fogs[i].userData.x + Math.sin(time * 0.35 + fogs[i].userData.ph) * 0.14;
       if (ship && ship.m) { ship.m.position.copy(ship.p); ship.m.position.y = WATER - 0.02 + Math.sin(time * 1.1) * 0.05; ship.m.rotation.z = Math.sin(time * 0.9) * 0.05; }
       if (recStop && recStop.kind) { var hm = recStop.m, b2 = still ? 1 : 1 + Math.sin(time * 2.6) * 0.012; if (hm) hm.scale.set(hm.userData.sc / b2, hm.userData.sc * b2, hm.userData.sc / b2); }
-      R.render(scene, cam); dirty = false; st.frames++; st.calls = R.info.render.calls; st.tris = R.info.render.triangles;
+      if (rx) { var rk = (performance.now() - rx.t) / rx.d, rm = rx.s.m, rs = rm && rm.userData.sc, rb;                                  // task "mapwalk": the stop the companion has reached bounces once (squash, stretch, settle)
+        if (!rm || rk >= 1) { if (rm && rx.s !== recStop) rm.scale.setScalar(rs); rx = null; } else { rb = 1 - Math.sin(rk * Math.PI * 2.5) * 0.11 * (1 - rk); rm.scale.set(rs * (1 + (1 - rb) * 0.6), rs * rb, rs * (1 + (1 - rb) * 0.6)); } }
+      R.render(scene, cam); dirty = !!rx; st.frames++; st.calls = R.info.render.calls; st.tris = R.info.render.triangles;
       if (!shown) show();
     }
     function tick(now) {
@@ -327,6 +330,7 @@ var TrollMap3D = (function () {
       disposeWorld(); if (R) { if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } R.renderLists.dispose(); R.setSize(1, 1, false); curPR = 0; }
     }
     var self = { layout: layout, dispose: dispose, hide: hide, fail: fail, check: check, box: box,
+      react: function (el, ms) { if (dead || !world || lost) return; stops.forEach(function (s) { if (s.el === el && s.m) { rx = { s: s, t: performance.now(), d: ms || 420 }; dirty = true; kick(); } }); },
       restored: function () { curPR = 0; gTex.needsUpdate = true; if (world) { R.shadowMap.needsUpdate = true; draw(); kick(); } else { sig = ''; rebuild(); } },
       stats: function () { var m = R ? R.info.memory : {}; return { q: TIER, pr: curPR, calls: st.calls || 0, tris: st.tris || 0, verts: verts, geometries: m.geometries || 0, textures: m.textures || 0, programs: R && R.info.programs ? R.info.programs.length : 0, buildMs: st.buildMs, readyMs: st.readyMs, frames: st.frames, stops: stops.length, models: stops.filter(function (s) { return s.kind; }).length, props: props.length, grow: G, shadow: !!(R && sun.castShadow), running: running, shown: shown, probe: probeLog, lost: ctxLost, restored: ctxBack, sky: SKY, w: CW, h: CH }; } };
     Object.defineProperty(self, 'dead', { get: function () { return dead; } });

@@ -36,7 +36,7 @@ async function toRound(x) { // first building, first open house: one tap on the 
   var first = await until(function () { return q(x, '.mnode[data-t]') || q(x, '.land[data-sub]'); }, 'map ' + x);
   if (first.hasAttribute('data-sub')) { q(x, '.land[data-sub="math"]').click(); first = await until(function () { return q(x, '.mnode[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
   first.click();
-  (await until(function () { return q(x, '.mnode:not(.far):not(.boss)'); }, 'region ' + x)).click(); // a tap on a house of the map starts a round of it
+  (await until(function () { return q(x, '.mnode[data-house]:not(.far)'); }, 'region ' + x)).click(); // a tap on a house of the map starts a round of it (task "mapwalk": the map of the topic opens after the companion has walked to it, so a HOUSE is waited for, not any stop)
   await until(function () { return F[x].contentWindow.__tv.round; }, 'round ' + x);
 }
 async function solve(x) { // one correct answer, the way the self-play test gives it

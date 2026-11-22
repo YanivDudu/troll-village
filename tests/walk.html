@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Task "mapwalk": the companion walks on the maps, through the real buttons (the flat map: no WebGL in the test browser; the walker is the same DOM in both).
+     A tap on a house: no round yet, the walker is on the map, the round comes after the walk (0.45 to 1.3 s) and once; a second tap starts at once
+     (a tap on another house: that house); a closed house starts nothing and the companion comes back; leaving the screen in the middle starts nothing;
+     the big button walks too; the map of a subject: the map of the topic opens after the walk, the closed gate opens nothing; the map that opens after a
+     round: the companion comes from the house that was played; a hidden tab finishes the walk at once; a race, reduced motion and the test modes without
+     &walk=1: everything at once, as before; the first exercise keeps its 0.4 s without answers.
+     Result in document.title: WALK OK n / WALK FAIL ...
+     Run: msedge --headless --mute-audio --disable-gpu --allow-file-access-from-files --virtual-time-budget=90000 --dump-dom tests/walk.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0;
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen'); if (s && f.contentWindow.__tv) res({ f: f, d: d, w: f.contentWindow, tv: f.contentWindow.__tv }); else setTimeout(poll, 20); })();
+  });
+}
+function done(x) { x.f.remove(); }
+function q(x, sel) { return x.d.querySelector('.screen:not(.out) ' + sel); }
+function qa(x, sel) { return [].slice.call(x.d.querySelectorAll('.screen:not(.out) ' + sel)); }
+function walker(x) { return q(x, '.tmap > .mwk:not(.mwp)'); }
+function onMap(x) { return !!q(x, '.tmap') && !x.tv.round; }
+function inRound(x) { return !!x.tv.round && !!q(x, '.answers'); }
+function house(x, n) { return qa(x, '.mnode[data-house]')[n - 1]; } // the n-th house of the map
+function lv(x, n) { return +house(x, n).getAttribute('data-house'); }
+function at(x) { var w = walker(x), m = w && /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(w.style.transform); return m ? [+m[1], +m[2]] : null; }
+async function until(fn, max) { var t0 = Date.now(); while (Date.now() - t0 < (max || 3000)) { if (fn()) return Date.now() - t0; await wait(20); } return -1; }
+var R = 'demo&s=region&t=add&flat=1&hour=10', WALK = R + '&walk=1';   // the demo map of addition: houses 1 and 2 are open and won, house 3 is the next step (the companion stands there), house 4 and the bridge are closed
+
+(async function () {
+  var x, a, b, ms, p0, p1, r, n, lv0;
+  try {
+    // ---- the rule of the test modes: without &walk=1 a tap starts the round at once, as before ----
+    x = await frame(R); await wait(500);
+    lv0 = [0, lv(x, 1), lv(x, 2), lv(x, 3)];
+    check(!!house(x, 1) && house(x, 3).classList.contains('rec') && !!q(x, '.mnode.rec .mbud') && house(x, 4).classList.contains('far'), 'the demo map: two open houses, the companion in the third, the fourth closed');
+    house(x, 1).click();
+    check(inRound(x) && !x.tv.walked, 'test mode without &walk=1: a tap on a house starts the round at once');
+    done(x);
+
+    // ---- a tap on a house: no round yet, the walker walks, the round comes after the walk ----
+    x = await frame(WALK); await wait(1800);
+    check(!walker(x) && !q(x, '.tmap.mwon'), 'the walk of the opening is over: the companion stands in its stop');
+    a = house(x, 1); a.click();
+    check(onMap(x) && x.tv.walk === true, 'a tap on a house two stops away: no round yet');
+    check(!!walker(x) && !!q(x, '.tmap.mwon') && getComputedStyle(q(x, '.mnode.rec .mbud')).visibility === 'hidden', 'the walker is on the map and the drawing in the stop is hidden');
+    p0 = at(x); await wait(300);
+    check(onMap(x) && !!p0 && !!walker(x), 'after 0.3 s there is still no round (the way itself is checked below with &walkf=: a hidden test browser does not draw every frame)');
+    check(walker(x) && walker(x).querySelector('svg.troll[data-act="walk"]'), 'it walks with the walk cycle of the drawing');
+    ms = await until(function () { return inRound(x); }, 2500);
+    check(ms >= 0 && ms + 300 >= 450 && ms + 300 <= 1300, 'the round starts after the walk, ' + (ms + 300) + ' ms after the tap (0.45 to 1.3 s)');
+    check(x.tv.lv === lv0[1] && x.tv.walked === 1, 'it is a round of the house that was tapped, started once');
+    // the first exercise keeps its guard: a wrong answer right after the screen opened does not count
+    b = qa(x, '[data-v]').filter(function (e) { return e.getAttribute('data-v') !== String(x.tv.round.current().answer); })[0];
+    if (b) { b.click(); check(!q(x, '.wrong') && !x.d.querySelector('.ovl'), 'a tap on an answer right after the round opened does not answer'); }
+    r = x.tv.round; await wait(1500);
+    check(x.tv.round === r && x.tv.walked === 1 && x.d.querySelectorAll('.screen:not(.out)').length === 1, 'nothing started a second time');
+    done(x);
+
+    // ---- the distance decides the time: one stop away is shorter than two ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 2).click(); n = await until(function () { return inRound(x); }, 2500);
+    check(n >= 450 && n <= 900, 'one stop away: the round after ' + n + ' ms, less than for two stops (' + (ms + 300) + ')');
+    check(n < ms + 300, 'and that is shorter than the walk of two stops');
+    done(x);
+
+    // ---- the stop answers when the companion arrives ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 2).click(); n = await until(function () { return house(x, 2).classList.contains('mwpop') || inRound(x); }, 2500);
+    check(n >= 300 && onMap(x) && house(x, 2).classList.contains('mwpop'), 'the house bounces when the companion is there (' + n + ' ms), before the round');
+    done(x);
+
+    // ---- a second tap skips the walk ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(120);
+    check(onMap(x), 'second tap: the first tap started a walk');
+    q(x, '.tmap').click();
+    check(inRound(x) && x.tv.lv === lv0[1] && x.tv.walked === 1, 'a second tap on the map starts the round at once');
+    r = x.tv.round; await wait(1500);
+    check(x.tv.round === r && x.tv.walked === 1, 'and the timer of the walk starts nothing more');
+    done(x);
+
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); house(x, 1).click();
+    check(inRound(x) && x.tv.walked === 1, 'a double tap on a house: one round, at once');
+    done(x);
+
+    // ---- two houses quickly: the last tap wins, one round ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(100); house(x, 2).click();
+    check(inRound(x) && x.tv.lv === lv0[2] && x.tv.walked === 1, 'a tap on another house while it walks: the round of that house, at once');
+    r = x.tv.round; await wait(1500);
+    check(x.tv.round === r && x.tv.lv === lv0[2] && x.tv.walked === 1, 'and the first house starts nothing later');
+    done(x);
+
+    // ---- a closed house: towards it, back, no round; the message is shown ----
+    x = await frame(WALK); await wait(1800);
+    a = q(x, '.mnode.far[data-house]'); b = q(x, '.rmsg').textContent; a.click();
+    check(onMap(x) && !x.tv.walk && q(x, '.rmsg').textContent !== b && a.classList.contains('shake'), 'a closed house: the message and the shake as before, and no round waits');
+    check(!!walker(x), 'the companion walks towards it');
+    await wait(550);
+    p0 = at(x); check(onMap(x) && !!walker(x) && !!walker(x).querySelector('svg.troll.oops'), 'it stops before the house and shows "oops" (' + JSON.stringify(p0) + ')');
+    await wait(2200);
+    check(onMap(x) && !walker(x) && !q(x, '.tmap.mwon') && !x.tv.walked, 'then it is back in its stop, and nothing started');
+    // the closed bridge the same, and a walk to a house can follow
+    q(x, '.mnode.boss.far').click(); await wait(300);
+    check(onMap(x) && !!walker(x), 'the closed bridge: it walks towards it');
+    house(x, 2).click();
+    check(onMap(x) && x.tv.walk === true, 'a tap on an open house while it is on that way: it turns and walks there');
+    n = await until(function () { return inRound(x); }, 2500);
+    check(n >= 300 && x.tv.lv === lv0[2] && x.tv.walked === 1, 'and the round of that house starts after the walk (' + n + ' ms)');
+    done(x);
+
+    // ---- leaving the screen in the middle of a walk starts nothing ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(150);
+    x.d.querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]').click();
+    await wait(1800);
+    check(!x.tv.round && !!q(x, '.nextb') && !x.tv.walked, 'home in the middle of a walk: the camp, and no round starts later');
+    done(x);
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(150);
+    x.d.querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה"]').click();
+    await wait(1800);
+    check(!x.tv.round && !!q(x, '.mnode[data-t]') && !x.tv.walked, 'back in the middle of a walk: the map of the subject, and no round starts later');
+    done(x);
+    // the sound button is not a second tap: no round, and the companion is back in its stop
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(150);
+    x.d.querySelector('.screen:not(.out) .top .icon[aria-label="צְלִילִים"]').click();
+    await wait(1500);
+    check(onMap(x) && !walker(x) && !x.tv.walked, 'a button of the top bar in the middle of a walk: its own action, no round');
+    done(x);
+
+    // ---- the big button: the companion is already there, a short hop, then the round ----
+    x = await frame(WALK); await wait(1800);
+    q(x, '.mgo').click();
+    check(onMap(x) && x.tv.walk === true, 'the big button: no round yet');
+    n = await until(function () { return inRound(x); }, 2500);
+    check(n >= 350 && n <= 800 && x.tv.lv === lv0[3] && x.tv.walked === 1, 'the round of the next step starts after ' + n + ' ms');
+    done(x);
+
+    // ---- a hidden tab: the walk is finished at once ----
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await wait(100);
+    Object.defineProperty(x.d, 'hidden', { configurable: true, get: function () { return true; } }); x.d.dispatchEvent(new x.w.Event('visibilitychange'));
+    check(inRound(x) && x.tv.walked === 1, 'the tab is hidden in the middle of a walk: the round is there at once');
+    done(x);
+
+    // ---- the map opens after a round: the companion comes from the house that was played ----
+    x = await frame(WALK + '&wfrom=0'); await wait(150);
+    a = house(x, 1).querySelector('.mic').getBoundingClientRect(); b = walker(x) && walker(x).getBoundingClientRect();
+    check(!!b && !!q(x, '.tmap.mwon') && onMap(x) && Math.abs(b.left - (a.left + a.width / 2)) < a.width * 1.5 && Math.abs(b.top - a.bottom) < a.height, 'the map opens (&wfrom=0): the walker stands beside the house that was played');
+    await wait(2400); // (a hidden test browser draws no frames while the page loads: the way itself is checked in the walks that follow a tap)
+    check(!walker(x) && !q(x, '.tmap.mwon') && onMap(x) && !x.tv.walked, 'then it stands in its stop; nothing started');
+    done(x);
+    // through the real buttons: a round from the map, back to the map: the companion comes from that house
+    x = await frame(WALK); await wait(1800);
+    house(x, 1).click(); await until(function () { return inRound(x); }, 2500);
+    x.d.querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה"]').click(); await wait(200);
+    a = house(x, 1).querySelector('.mic').getBoundingClientRect(); b = walker(x) && walker(x).getBoundingClientRect();
+    check(!!b && Math.abs(b.left - (a.left + a.width / 2)) < a.width * 1.5 && Math.abs(b.top - a.bottom) < a.height, 'back from a round of house 1: the walker starts beside house 1');
+    await wait(2200);
+    check(!walker(x) && !q(x, '.tmap.mwon') && !!house(x, 1), 'and walks to its stop');
+    done(x);
+
+    // ---- the map of a subject ----
+    x = await frame('demo&s=topics&flat=1&hour=10&walk=1'); await wait(1800);
+    a = qa(x, '.mnode.reg')[2]; a.click();
+    check(!!q(x, '.mnode[data-t]') && !!walker(x) && x.tv.walk === true, 'the map of the subject: a tap on a region starts a walk, the map stays');
+    n = await until(function () { return !!q(x, '.mnode[data-house]'); }, 2500);
+    check(n >= 300 && n <= 1300 && x.tv.walked === 1, 'the map of the topic opens after the walk (' + n + ' ms)');
+    done(x);
+    x = await frame('demo&s=topics&flat=1&hour=10&walk=1'); await wait(1800);
+    a = q(x, '.mnode.gate'); b = a.classList.contains('far'); a.click(); await wait(400);
+    check(!!walker(x) && !!q(x, '.mnode.mixn'), 'the gate (' + (b ? 'closed' : 'open') + '): the companion walks towards it, the map stays');
+    await wait(2600);
+    if (b) check(!walker(x) && !!q(x, '.mnode.gate') && !x.tv.round && !x.tv.walked, 'the closed gate: it comes back; nothing opened');
+    else check(!q(x, '.mnode.mixn') && !!q(x, '.mnode[data-t]') && x.tv.walked === 1, 'the open gate: the challenge map opened after the walk');
+    done(x);
+    x = await frame('demo&s=topics&flat=1&hour=10&walk=1&g=1'); await wait(1800);
+    a = q(x, '.mnode.gate'); b = q(x, '.rmsg').textContent;
+    if (a.classList.contains('far')) { a.click(); await wait(400); check(!!walker(x) && q(x, '.rmsg').textContent !== b, 'grade 1, the closed gate: the message, and the companion walks towards it'); await wait(2600); check(!walker(x) && !!q(x, '.mnode.mixn') && !x.tv.walked, 'and comes back; nothing opened'); }
+    q(x, '.mnode.mixn').click(); n = await until(function () { return inRound(x); }, 2500);
+    check(n >= 300 && x.tv.walked === 1, 'the temple of the mixed round: the round after the walk (' + n + ' ms)');
+    done(x);
+
+    // ---- a race: no walk (races are timed) ----
+    x = await frame(WALK + '&race=1'); await wait(1800);
+    house(x, 1).click();
+    check(!!x.tv.round && !x.tv.walked, 'a race: a tap on a house starts the round at once');
+    done(x);
+
+    // ---- reduced motion: everything at once ----
+    x = await frame(WALK + '&rm=1'); await wait(300);
+    check(!walker(x) && !q(x, '.tmap.mwon'), 'reduced motion: no walk when the map opens');
+    house(x, 1).click();
+    check(inRound(x) && !x.tv.walked, 'reduced motion: a tap on a house starts the round at once');
+    done(x);
+    x = await frame(WALK + '&rm=1'); await wait(300);
+    q(x, '.mnode.far[data-house]').click(); await wait(100);
+    check(!walker(x) && onMap(x), 'reduced motion: a closed house moves nothing');
+    done(x);
+
+    // ---- the way: the pictures of one walk held still (&walkf=) go from the stop of the companion to the house that was tapped, step after step ----
+    var way = [];
+    for (n = 0; n < 5; n++) { x = await frame(WALK + '&wto=0&walkf=' + (n / 4)); await wait(500); way.push(at(x)); if (n === 0) a = q(x, '.mnode.rec .mbud').getBoundingClientRect(); if (n === 4) { b = house(x, 1).querySelector('.mic').getBoundingClientRect(); r = walker(x).getBoundingClientRect(); p0 = q(x, '.tmap').getBoundingClientRect(); } if (n < 4) done(x); }
+    check(way.every(function (p) { return !!p; }) && way.slice(1).every(function (p, i) { return Math.hypot(p[0] - way[i][0], p[1] - way[i][1]) > 15; }), 'five pictures of one walk (0, 25, 50, 75, 100%): each a step further (' + JSON.stringify(way) + ')');
+    check(way[4][1] < way[0][1] - 100, 'it goes up the map, from the third house to the first');
+    check(Math.abs(r.left - p0.left - way[4][0]) < 2 && r.left > b.left && r.left < b.right + b.width && Math.abs(r.top - b.bottom) < 6, 'at the end it stands beside the house that was tapped, its feet at the foot of the picture');
+    check(onMap(x) && !x.tv.walked, 'a walk that is held still starts no round');
+    done(x);
+
+    // ---- the picture of a walk held still (&walkf=): the walker stays inside the map, on the trail between the two stops ----
+    x = await frame(WALK + '&wto=0&walkf=0.5', 360, 640); await wait(600);
+    a = walker(x); b = q(x, '.tmap').getBoundingClientRect(); r = a && a.querySelector('.mwb').getBoundingClientRect();
+    check(!!a && onMap(x) && r.left >= b.left - 2 && r.right <= b.right + 2 && r.top >= b.top - 30 && r.bottom <= b.bottom + 2, '&walkf=0.5 at 360x640: the walk stands still and the walker is inside the map');
+    done(x);
+  } catch (e) { fails.push('exception: ' + (e && e.stack || e)); }
+  document.title = fails.length ? 'WALK FAIL ' + fails.length + ': ' + fails.join(' | ').slice(0, 900) : 'WALK OK ' + checks;
+})();
+</script>
