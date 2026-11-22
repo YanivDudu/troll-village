@@ -2417,6 +2417,121 @@ body.toy .tmap.m3on .mnode.m3k.rec .mic:before{display:none}
 @keyframes mwPop{0%,100%{transform:scale(1,1)}22%{transform:scale(1.1,.9)}52%{transform:scale(.95,1.1)}78%{transform:scale(1.03,.97)}}
 @keyframes mwGlow{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.25)}}
 @media (prefers-reduced-motion:reduce){.mnode.mwpop .mic,.mnode.mwpop .mic:after{animation:none}}
+/* ==== task "camp life": the companion lives on its island (campLife in the ui block). The button .cbud keeps its place in the layout; the troll
+   itself is .lfw inside it and is moved by transform (a spot further back is higher and smaller). The heart stays on the home spot and fades
+   while the troll is away. Layers of the island: .lfbk (a tree, behind everything), the tent (raised to the back), the troll, the fire and the
+   pet, .lffr (a rock, a flower, the things the troll lays on the ground). Only transform and opacity move; every animation here is finite,
+   except the "zz" over the tent while the troll sleeps in it at night. ==== */
+.cground{position:relative}
+.cbud{pointer-events:none}
+.lfw{display:block;width:100%;height:100%;pointer-events:auto;transform-origin:50% 100%;cursor:pointer}
+.lfw>svg{transform-origin:50% 100%;transition:transform .25s ease-in-out}
+.lfw:active>svg{transform:scale(.96)}
+.lfw.wl>svg{transform:rotate(-2.5deg)}.lfw.wr>svg{transform:rotate(2.5deg)}
+.fheart{transition:opacity .3s linear}.lf-away .fheart{opacity:0}
+.lfl{position:absolute;inset:0;pointer-events:none}
+.lfbk{z-index:-1}
+.lfd,.lfp,.lfzz{position:absolute;display:block}
+body.toy .lfd{filter:var(--osh)}
+.lft{cursor:pointer}
+body.toy .camp .ctent{height:clamp(56px,24vmin,190px);max-height:min(17cqw,66%);position:relative;transform:translateY(-30%);margin-inline-end:-2.5cqw}
+body.toy .camp .cdress{margin-inline-end:-2.5cqw}
+body.toy .camp .cpet{margin-inline-start:0}
+body.toy .camp .cfire:after{content:"";position:absolute;inset:-8px}
+/* the light of the fire on the troll (an ellipse inside its body; --fw is set from where it stands and from the hour) */
+.troll .fgl{opacity:var(--fw,0);transition:opacity .6s linear}
+/* evening: long soft shadows */
+body.dusk .cbud .troll .sh{transform:scale(1.34,1.1) translateX(9%)}
+body.dusk.toy .camp .ctent,body.dusk.toy .camp .cfire img{background-size:124% 26%}
+/* a calm walk and a calm hop (the short hop before a screen opens) */
+.cbud .lfw .troll[data-act="walk"] .tb{animation:lfWalk .72s ease-in-out infinite}
+.cbud .lfw .troll[data-act="walk"] .hair{animation:lfHairWalk .72s ease-in-out infinite}
+.cbud .lfw .troll[data-act="walk"] .ftL{animation:lfStep .72s ease-in-out infinite}
+.cbud .lfw .troll[data-act="walk"] .ftR{animation:lfStep .72s ease-in-out -.36s infinite}
+.cbud .lfw .troll[data-act="walk"] .sh{animation:lfShWalk .72s ease-in-out infinite}
+.cbud .lfw .troll[data-act="hop"] .tb{animation:tHop .27s ease-in-out 2}
+.cbud .lfw .troll[data-act="nod"] .tb{animation:tNodB .7s ease-in-out 1}
+@keyframes lfWalk{0%,100%{transform:translateY(0) rotate(0) scale(1,1)}22%{transform:translateY(0) rotate(1.2deg) scale(1.03,.965)}58%{transform:translateY(-7px) rotate(-1.6deg) scale(.985,1.025)}88%{transform:translateY(0) rotate(.6deg) scale(1.02,.975)}}
+@keyframes lfHairWalk{0%,100%{transform:rotate(0) scale(1,1)}30%{transform:rotate(-1.5deg) scale(1.01,.97)}66%{transform:rotate(2deg) scale(.99,1.05)}92%{transform:rotate(-1deg) scale(1.01,.96)}}
+@keyframes lfStep{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-8deg)}}
+@keyframes lfShWalk{0%,100%{transform:scale(1);opacity:1}58%{transform:scale(.9);opacity:.8}}
+/* sitting: it settles, breathes, and moves its hands in the warmth */
+.cbud .troll.sit .tb,.cbud .troll.sitn .tb{animation:lfSit .6s ease-out 1,tBreath 3.8s ease-in-out .6s 2}
+.cbud .troll.sit[data-act] .tb,.cbud .troll.sitn[data-act] .tb{animation:tNodB .7s ease-in-out 1}
+.troll.sit .arm,.troll.sitn .arm{transform-box:fill-box;transform-origin:50% 0;animation:lfWarm 1.7s ease-in-out 5}
+.troll.sit .armR,.troll.sitn .armR{animation-delay:.85s}
+@keyframes lfSit{0%{transform:translateY(-12px) scale(.97,1.05)}60%{transform:translateY(0) scale(1.04,.95)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes lfWarm{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+/* a slow stretch, a yawn, a look at the sky */
+.troll.stretch .tb{animation:lfStretch 2.8s ease-in-out 1}
+.troll.stretch .hair{animation:lfHairStretch 2.8s ease-in-out 1}
+.troll.stretch .armL{transform-box:fill-box;transform-origin:100% 100%;animation:lfArmL 2.8s ease-in-out 1}
+.troll.stretch .armR{transform-box:fill-box;transform-origin:0 100%;animation:lfArmR 2.8s ease-in-out 1}
+@keyframes lfStretch{0%,100%{transform:scale(1,1)}14%{transform:scale(1.04,.95)}42%,66%{transform:translateY(-3px) scale(.95,1.08)}86%{transform:scale(1.03,.965)}}
+@keyframes lfHairStretch{0%,100%{transform:scale(1,1)}20%{transform:scale(1.02,.95)}48%,70%{transform:scale(.97,1.08)}90%{transform:scale(1.02,.96)}}
+@keyframes lfArmL{0%,100%{transform:rotate(0)}42%,66%{transform:rotate(-12deg)}}
+@keyframes lfArmR{0%,100%{transform:rotate(0)}42%,66%{transform:rotate(12deg)}}
+.troll.yawn .tb{animation:lfYawn 2.6s ease-in-out 1}
+.troll.yawn .fc{animation:lfYawnF 2.6s ease-in-out 1}
+@keyframes lfYawn{0%,100%{transform:rotate(0) scale(1,1)}30%,60%{transform:rotate(-4deg) scale(.98,1.04)}82%{transform:rotate(1deg) scale(1.02,.98)}}
+@keyframes lfYawnF{0%,100%{transform:translateY(0)}30%,60%{transform:translateY(-4px)}}
+.troll.sky .fc{animation:lfSkyF 4.4s ease-in-out 1}
+.troll.sky .tb{animation:lfSkyB 4.4s ease-in-out 1}
+.troll.sky .hair{animation:lfSkyH 4.4s ease-in-out 1}
+@keyframes lfSkyF{0%,100%{transform:translateY(0)}14%,86%{transform:translateY(-8px)}}
+@keyframes lfSkyB{0%,100%{transform:rotate(0) scale(1,1)}14%,86%{transform:rotate(-2.5deg) scale(.99,1.02)}}
+@keyframes lfSkyH{0%,100%{transform:rotate(0)}14%,86%{transform:rotate(4deg)}}
+/* a slow little dance: a sway from foot to foot */
+.troll.dance .tb{animation:lfDance .95s ease-in-out 4}
+.troll.dance .hair{animation:lfHairDance .95s ease-in-out 4}
+.troll.dance .armL{transform-box:fill-box;transform-origin:100% 100%;animation:waveL .475s ease-in-out 8 alternate}
+.troll.dance .armR{transform-box:fill-box;transform-origin:0 0;animation:lfHip .95s ease-in-out 4}
+.troll.dance .ftL{animation:lfStep .95s ease-in-out 4}
+.troll.dance .ftR{animation:lfStep .95s ease-in-out .475s 4}
+.troll.dance .sh{animation:lfShWalk .475s ease-in-out 8}
+.troll.dance .hE{animation:waveR .475s ease-in-out 8 alternate}
+@keyframes lfDance{0%,50%,100%{transform:translateY(0) rotate(0) scale(1.03,.97)}25%{transform:translateY(-6px) rotate(-6deg) scale(.98,1.03)}75%{transform:translateY(-6px) rotate(6deg) scale(.98,1.03)}}
+@keyframes lfHairDance{0%,50%,100%{transform:rotate(0)}32%{transform:rotate(6deg)}82%{transform:rotate(-6deg)}}
+@keyframes lfHip{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+/* juggling: eyes and arms up */
+.troll.jug .armL{transform-box:fill-box;transform-origin:100% 100%;animation:waveL .6s ease-in-out 6 alternate}
+.troll.jug .armR{transform-box:fill-box;transform-origin:0 100%;animation:waveR .6s ease-in-out -.3s 6 alternate}
+.troll.jug .tb{animation:tBreath 1.2s ease-in-out 3}
+.lfp.lfj{animation:lfJug 1.5s ease-in-out 3}
+@keyframes lfJug{0%,100%{transform:translate(calc(var(--u)*-1),0)}25%{transform:translate(calc(var(--u)*-.5),calc(var(--u)*-1.1))}50%{transform:translate(var(--u),0)}75%{transform:translate(calc(var(--u)*.5),calc(var(--u)*-1.1))}}
+/* a look to both sides */
+.cbud.lf-look .troll.happy:not(.lk) .pup{animation:lfLook 3.4s ease-in-out 1}
+.cbud.lf-look .troll.happy .fc{transform-box:fill-box;animation:lfLookF 3.4s ease-in-out 1}
+.cbud.lf-look .troll.happy .hair{animation:lfLookH 3.4s ease-in-out 1}
+@keyframes lfLook{0%,100%{transform:translate(0,0)}14%,40%{transform:translate(-7px,0)}60%,86%{transform:translate(7px,-1px)}}
+@keyframes lfLookF{0%,100%{transform:translateX(0)}14%,40%{transform:translateX(-4px)}60%,86%{transform:translateX(4px)}}
+@keyframes lfLookH{0%,100%{transform:rotate(0)}14%,40%{transform:rotate(1.5deg)}60%,86%{transform:rotate(-1.5deg)}}
+/* the thing in its hand */
+.cbud.lf-item .troll.wave .armR{animation:tWave 1.8s ease-in-out 2}
+.cbud.lf-item .troll.wave .hE{animation:lfItem 1.8s ease-in-out 2}
+@keyframes lfItem{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-16deg) scale(1.12)}50%{transform:rotate(14deg) scale(1.2)}75%{transform:rotate(-14deg) scale(1.12)}}
+/* the pet plays too */
+.cpet.lf-play{animation:lfPet .8s ease-in-out 4}
+@keyframes lfPet{0%,100%{transform:translateY(0) scale(1,1)}18%{transform:scale(1.07,.92)}50%{transform:translateY(-34%) rotate(-7deg) scale(.97,1.04)}84%{transform:translateY(0) scale(1.05,.95)}}
+/* what it lays on the ground */
+.lfp{opacity:0;transform:scale(.5);transition:transform .35s cubic-bezier(.3,1.4,.6,1),opacity .25s linear}
+.lfp.on{opacity:1;transform:none}
+.lfp.lfj.on{opacity:1}
+.lfp svg{display:block;width:100%;height:100%;overflow:visible}
+.lfsand path{fill:none;stroke:rgba(52,96,30,.75);stroke-width:3.5;stroke-linecap:round;opacity:0;transition:opacity .9s linear}
+.lfsand path.on{opacity:1}
+.lfstick{border-radius:99px;background:linear-gradient(90deg,#c08a48,#8a5a2a);box-shadow:0 2px 0 rgba(20,60,20,.25);transform-origin:50% 100%}
+.lfstick.on{transform:rotate(-24deg);animation:lfStick 1.3s ease-in-out 3}
+@keyframes lfStick{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(-34deg)}}
+.lfflag{transform-origin:20% 100%}
+.lfflag.on{animation:lfFlag 1.6s ease-in-out 1.2s 2}
+@keyframes lfFlag{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}70%{transform:rotate(6deg)}}
+/* asleep in the tent */
+.lfzz{opacity:0}.lfzz svg{display:block;width:100%;height:100%;overflow:visible}
+.lfzz.on{animation:tZz 4.6s ease-in-out infinite}
+/* a frozen moment for the layout check and for still pictures (&life=<activity>&at=) */
+.lf-still *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.lfw,.lfw>svg,.lfp,.fheart{transition:none}}
 </style>
 </head>
 <body>
@@ -5332,7 +5447,15 @@ var TrollArt = (function () {
     focused:   { look: [-.7, .75], mouth: 'tongue', arms: ['down', 'down'], brow: [5, -7, 5, -7] },
     sleepy:    { look: [0, .7], lid: .58, mouth: 'yawn', arms: ['down', 'down'], brow: [1, 10, 1, 10], zz: 1 },
     wave:      { mouth: 'open', arms: ['down', 'wave'], brow: [-3, 5, -3, 5] },
-    oops:      { look: [.55, -.45], mouth: 'wobble', arms: ['down', 'head'], brow: [0, 13, -2, 13], blush: 1 }
+    oops:      { look: [.55, -.45], mouth: 'wobble', arms: ['down', 'head'], brow: [0, 13, -2, 13], blush: 1 },
+    // task "camp life": the poses of the companion that lives on its island (pose 'sit': the body settles and the soles of the feet face the child)
+    sit:       { look: [-.62, .72], lidB: .2, mouth: 'smile', arms: ['warm', 'warm'], brow: [-2, 4, -2, 4], pose: 'sit' },
+    sitn:      { look: [-.62, .72], lid: .42, mouth: 'small', arms: ['warm', 'warm'], brow: [1, 8, 1, 8], pose: 'sit' },
+    stretch:   { eye: 'joy', mouth: 'bigO', arms: ['up', 'up'], brow: [-6, 8, -6, 8] },
+    yawn:      { look: [0, .5], lid: .62, mouth: 'bigO', arms: ['down', 'chin'], brow: [-2, 12, -2, 12] },
+    sky:       { look: [-.3, -1], mouth: 'osmall', arms: ['down', 'down'], brow: [-6, 5, -6, 5] },
+    dance:     { eye: 'joy', mouth: 'grin', arms: ['up', 'hips'] },
+    jug:       { look: [0, -.85], mouth: 'open', arms: ['up', 'up'], brow: [-5, 5, -5, 5] }
   };
   var ALIAS = { waving: 'wave' };
   // a left arm: start x, y, control dx, dy, end dx, dy (the right arm is its mirror); the last number 1 = drawn in front of the body
@@ -5343,7 +5466,8 @@ var TrollArt = (function () {
     wave: [48, 186, -32, -8, -31, -54],
     hips: [46, 184, -32, 10, -7, 38],
     head: [48, 186, -38, -8, -19, -58],
-    out:  [44, 196, -18, 4, -31, -12]
+    out:  [44, 196, -18, 4, -31, -12],
+    warm: [40, 198, -12, 14, 13, 23, 1]
   };
   function arm(pose, right, cls, col, lv, big, ol) {
     var a = ARMS[pose] || ARMS.down, k = right ? -1 : 1, sx = right ? 200 - a[0] : a[0], ex = sx + k * a[4], ey = a[1] + a[5];
@@ -5430,16 +5554,21 @@ var TrollArt = (function () {
       mouthOf(m.mouth, big) +
       (onFace ? ACC[s.acc] : '') + em(s.faceE, 100, 186, 72) + '</g>' +
       (m.tear && o.tear !== false ? '<path class="tear" d="M138,180 q-6,10 0,15 q6,-5 0,-15 Z" fill="#7fd4ff"/>' : '') +
-      (m.zz ? '<g class="zz"><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#fff" stroke-width="' + (big ? 8 : 10) + '" stroke-linecap="round" stroke-linejoin="round"/><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#6c5a8e" stroke-width="' + (big ? 4 : 5.5) + '" stroke-linecap="round" stroke-linejoin="round"/></g>' : '');
+      (m.zz && o.zz !== false ? '<g class="zz"><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#fff" stroke-width="' + (big ? 8 : 10) + '" stroke-linecap="round" stroke-linejoin="round"/><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#6c5a8e" stroke-width="' + (big ? 4 : 5.5) + '" stroke-linecap="round" stroke-linejoin="round"/></g>' : '');
 
     var BODYD = 'M100,96 C150,96 166,140 166,186 C166,226 140,246 100,246 C60,246 34,226 34,186 C34,140 50,96 100,96 Z';
     var olA = ol ? ' stroke="' + ol + '" stroke-width="' + (big ? 3 : 5) + '"' : '';
+    if (o.glow) defs += grad('radial', id + 'f', '', [[0, '#ffb347', .9], [.55, '#ff9a3c', .4], [1, '#ff8a30', 0]]) + '<clipPath id="' + id + 'q"><path d="' + BODYD + '"/></clipPath>'; // opts.glow -1 | 1: a warm light on that side of the body (the camp fire); its strength is the CSS variable --fw
     var hair = (olH ? '<path d="' + HAIRD[hs] + '" fill="none" stroke="' + olH + '" stroke-width="' + ((hs === 1 ? 12 : 0) + (big ? 6 : 9)) + '" stroke-linejoin="round"/>' : '') +
       (big ? HAIR[hs](U('h'), tone(hairC, .5), tone(hairC, -.4), lv, big) : hairSmall(hs, U('h')));
 
+    var sit = m.pose === 'sit', pad = tone(body, .34); // sitting: the feet are drawn after the body, as two soles turned to the child
+    var soles = sit ? '<g class="sole"><ellipse cx="60" cy="237" rx="20" ry="15" transform="rotate(-16 60 237)" fill="' + limbL + '"' + olA + '/><ellipse cx="140" cy="237" rx="20" ry="15" transform="rotate(16 140 237)" fill="' + limbR + '"' + olA + '/>' +
+      '<path d="M49,238a10,7 0 1,0 20,0a10,7 0 1,0 -20,0M131,238a10,7 0 1,0 20,0a10,7 0 1,0 -20,0" fill="' + pad + '" opacity="' + (big ? .6 : .75) + '"/>' +
+      (big ? '<path d="M46,228a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0M56,224a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0M66,226a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0M127.6,226a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0M137.6,224a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0M147.6,228a3.2,3.2 0 1,0 6.4,0a3.2,3.2 0 1,0 -6.4,0" fill="' + pad + '" opacity=".6"/>' : '') + '</g>' : '';
     var inner =
       '<g class="hair">' + hair + '</g>' + (lit && BACK[s.acc] ? lit(U) : BACK[s.acc] || '') + armsBack +
-      '<ellipse class="ft ftL" cx="74" cy="246" rx="22" ry="10" fill="' + limbL + '"' + olA + '/><ellipse class="ft ftR" cx="126" cy="246" rx="22" ry="10" fill="' + limbR + '"' + olA + '/>' +
+      (sit ? '' : '<ellipse class="ft ftL" cx="74" cy="246" rx="22" ry="10" fill="' + limbL + '"' + olA + '/><ellipse class="ft ftR" cx="126" cy="246" rx="22" ry="10" fill="' + limbR + '"' + olA + '/>') +
       '<ellipse cx="36" cy="166" rx="14" ry="18" fill="' + tone(body, .12) + '"' + olA + '/><ellipse cx="164" cy="166" rx="14" ry="18" fill="' + tone(body, -.14 * K) + '"' + olA + '/>' +
       (big ? '<path d="M29,166a6,9 0 1,0 12,0a6,9 0 1,0 -12,0M159,166a6,9 0 1,0 12,0a6,9 0 1,0 -12,0" fill="' + dk + '" opacity=".5"/>' : '') +
       '<path d="' + BODYD + '" fill="' + U('b') + '"' + olA + '/>' +
@@ -5447,12 +5576,13 @@ var TrollArt = (function () {
       '<ellipse cx="100" cy="218" rx="36" ry="22" fill="' + lt + '" opacity="' + (lv > 1 ? .5 : .55) + '"/>' +
       '<ellipse cx="76" cy="122" rx="30" ry="15" transform="rotate(-30 76 122)" fill="' + (big ? U('g') + '"' : '#fff" opacity=".3"') + '/>' +                                                // soft light on the head
       (lv > 1 && big ? '<ellipse cx="69" cy="113" rx="10" ry="4.5" transform="rotate(-33 69 113)" fill="#fff" opacity=".62"/>' : '') + // vinyl sheen
-      face + armsFront + (onFace ? '' : lit && !BACK[s.acc] ? lit(U) : ACC[s.acc] || '') + em(s.hatE, 100, 114, 62) +
+      (o.glow ? '<g clip-path="url(#' + id + 'q)"><ellipse class="fgl" cx="' + (o.glow < 0 ? 34 : 166) + '" cy="204" rx="84" ry="76" fill="' + U('f') + '"/></g>' : '') +
+      face + soles + armsFront + (onFace ? '' : lit && !BACK[s.acc] ? lit(U) : ACC[s.acc] || '') + em(s.hatE, 100, 114, 62) +
       (aR.front ? em(s.handE, 172, 240, 46, ' hE') : em(s.handE, aR.ex + 6, aR.ey + 12, 46, ' hE'));
 
     return '<svg class="troll ' + mood + (hasLook ? ' lk' : '') + (big ? '' : ' sm') + '"' + (uid ? ' data-u="' + uid + '"' : '') + ' viewBox="0 0 200 262" preserveAspectRatio="xMidYMax meet" style="--td:' + (-((s.id || 0) % 17) / 5) + 's">' + defs +
-      '<ellipse class="sh" cx="' + (lv > 1 ? 108 : 104) + '" cy="252" rx="' + (lv > 1 ? 72 : 64) + '" ry="' + (lv > 1 ? 10 : 9) + '" fill="' + U('s') + '"/>' +
-      '<g class="tb">' + (m.tilt ? '<g transform="rotate(' + m.tilt + ' 100 248)">' + inner + '</g>' : inner) + '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
+      '<ellipse class="sh" cx="' + (lv > 1 ? 108 : 104) + '" cy="252" rx="' + ((lv > 1 ? 72 : 64) + (sit ? 8 : 0)) + '" ry="' + (lv > 1 ? 10 : 9) + '" fill="' + U('s') + '"/>' +
+      '<g class="tb">' + (m.tilt ? '<g transform="rotate(' + m.tilt + ' 100 248)">' + inner + '</g>' : sit ? '<g transform="translate(-5 17) scale(1.05 .94)">' + inner + '</g>' : inner) + '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
   }
   // the troll that was drawn without a size (data-u), drawn again for the height it really has; '' when it is no longer remembered
   function again(uid, size) { var r = mem[uid]; if (!r) return ''; delete mem[uid]; var o = {}, k; for (k in r[1]) o[k] = r[1][k]; o.size = size; o.again = 1; return trollSVG(r[0], o); }
@@ -6756,7 +6886,7 @@ var TrollModels = (function () {
 
   // ---------- home: the camp on the journey. Parchment, a rolled-open strip of the map with the current stretch of the trail,
   // the companion beside the campfire and the tent, the one big button of the next step, and the trolls the child has earned
-  // as residents of the camp. Nothing walks here: the trolls stand, breathe and blink. ----------
+  // as residents of the camp. The residents stand still; the companion alone lives on the island (task "camp life": campLife below). ----------
   var GREET = [['שָׁלוֹם! יוֹצְאִים לַדֶּרֶךְ?', 'אֲנִי אִתָּךְ בַּמַּסָּע', 'הַמְּדוּרָה דּוֹלֶקֶת, וְהַמַּפָּה פְּתוּחָה', 'בּוֹאִי נַמְשִׁיךְ בַּמַּסָּע!', 'אֵיזֶה יֹפִי שֶׁחָזַרְנוּ לַמַּחֲנֶה!'],
     ['יוֹצְאִים לַדֶּרֶךְ?', 'הַמַּפָּה פְּתוּחָה.', 'מַמְשִׁיכִים בַּמַּסָּע.', 'קָדִימָה, לַדֶּרֶךְ.', 'הַמְּדוּרָה דּוֹלֶקֶת.']];
   // What the companion says in the camp. L.memTriggers lists what is true now, the most important first; each event line is
@@ -6808,11 +6938,13 @@ var TrollModels = (function () {
       var bs0 = noPet(bs), bud = h('button', { class: 'cbud', 'aria-label': bs.name + (fresh ? '' : ', חֲבֵרוּת ' + fr.level + ' מִתּוֹךְ 6') }); // the pet stands beside the companion
       var heart = fresh ? null : h('span', { class: 'fheart', 'aria-hidden': 'true' }, jart('heart'), h('b', { text: String(fr.level) })); // the friendship level, on the companion
       if (heart && mine != null) heart.appendChild(growChip(mine)); // task "village": the level stars of the companion, under its heart
-      function paint(mood) { bud.innerHTML = A.trollSVG(bs0, { mood: mood || campMood() }); if (heart) bud.appendChild(heart); }
+      var walk = h('span', { class: 'lfw' }), life = null; bud.appendChild(walk); if (heart) bud.appendChild(heart); // task "camp life": the troll itself is .lfw, which moves; the button and the heart keep the home spot
+      function paint(mood, op) { op = op || {}; op.mood = mood || campMood(); walk.innerHTML = A.trollSVG(bs0, op); }
       function trick(name) { bud.classList.add('tr-' + name); later(function () { bud.classList.remove('tr-' + name); }, 1200); }
       paint();
       bud.addEventListener('click', function () {
-        sfx.giggle(); var c = center(bud); burst(c[0], c[1], 9);
+        if (life) life.tap();
+        sfx.giggle(); var c = center(walk); burst(c[0], c[1], 9);
         taps++;
         if (tricks.length && taps % 2 === 0 && !/tr-/.test(bud.className)) { paint(); trick(tricks[(taps / 2 - 1) % tricks.length][1]); } // every second tap: a trick of the friendship level
         else if (!/tr-/.test(bud.className)) { paint('cheer'); later(function () { if (!/tr-/.test(bud.className)) paint(); }, 1200); }
@@ -6822,13 +6954,13 @@ var TrollModels = (function () {
       if (dbgTrick) bud.classList.add('tr-' + dbgTrick, 'trstill');
       else if (swap) { paint('cheer'); later(function () { if (!/tr-/.test(bud.className)) paint(); }, 1500); later(function () { var c = center(bud); burst(c[0], c[1], 9); }, 340); } // the troll that was just chosen cheers
       else if (tricks.length && !WAVED[profiles.cur]) { WAVED[profiles.cur] = true; trick('wave'); } // the secret wave: once, on the first view of the camp
-      if (!dbgTrick && !swap) campHello(paint, bud);
+      var lifeDbg = /[#&]life=[a-z]/.test(hash);
+      if (!dbgTrick && !swap && !lifeDbg) campHello(paint, bud);
       // the dressing room: a round button with a shirt beside the companion (a tap on the companion itself still reads its bubble aloud)
       var dressB = TOY && state.owned.length ? iconBtn('dress', 'לְהַלְבִּישׁ', function () { dress(); }, 'cdress') : null;
-      grid.appendChild(h('div', { class: 'campv' }, bubble,
-        h('div', { class: 'cground' },
-          mapImg(ART.tent, 'ctent'), dressB, bud, bs.petE ? icoImg(bs.petE, 'cpet') : null,
-          h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)))));
+      var tentE = mapImg(ART.tent, 'ctent'), fireE = h('span', { class: 'cfire', 'aria-hidden': 'true' }, mapImg(ART.fire)), petE = bs.petE ? icoImg(bs.petE, 'cpet') : null;
+      var cgE = h('div', { class: 'cground' }, dressB, tentE, bud, fireE, petE); // from the start of the row: the dressing room, the tent, the companion, the fire, the pet
+      grid.appendChild(h('div', { class: 'campv' }, bubble, cgE));
 
       // the one big button, and the smaller choices
       if (nb) nb.classList.add('cgo');
@@ -6922,7 +7054,309 @@ var TrollModels = (function () {
       if (lay) { lay(); if (window.ResizeObserver) { var fro = new ResizeObserver(function () { if (cur !== el) fro.disconnect(); else lay(); }); fro.observe(folk); } }
       fitPart(grid);
       if (st) st.start(el);
+      life = campLife(el, { cg: cgE, bud: bud, walk: walk, tent: tentE, fire: fireE, pet: petE, paint: paint, id: mine, item: !!bs.handE, hello: !swap, off: !!dbgTrick });
+      if (sandbox) tv.life = life;
+      if (life.on) [[tentE, 'tent'], [fireE, 'fire'], [petE, 'pet']].forEach(function (x) { if (x[0]) { x[0].classList.add('lft'); x[0].addEventListener('click', function () { life.go(x[1]); }); } }); // a tap on the tent, the fire or the pet sends the troll there
     });
+  }
+  // ---------- task "camp life": the companion lives on its island. A small behaviour engine: one activity at a time, each a short list of
+  // steps [what to do, how long], picked by weights that come from what the child did (the last house played, a bridge, a perfect house,
+  // the pet, the item in the hand), from the level of the troll, from its temperament (its id) and from the time of day; a few calm seconds
+  // between activities. Only DOM, CSS transitions and the finite CSS animations of the troll: no loop per frame. Depth is layered DOM: a spot
+  // further back is higher and smaller, the tent, the fire, the pet and the things in the front hide the troll. Everything stops when the
+  // tab is hidden, when the screen is left (the timers are the game's own: later) and under reduced motion (then the troll stands as before).
+  // Debug: &life=0 off · &life=<activity> plays that activity once · &at=<0..1> freezes it at that share of its time · &setoff=1 the short
+  // walk before a screen opens, which the test modes skip. ----------
+  var LIFE = { walk: 3, fire: 3, tent: 2, look: 2, sky: 2, stretch: 2, wave: 2, peek: 2, pet: 3, item: 3, jump: 2, dance: 2, juggle: 2 };
+  var LIFE_LV = { peek: 2, pet: 2, item: 2, jump: 3, dance: 3, juggle: 4 }; // the level of the troll that knows the activity (the others: from level 1)
+  var LIFE_TEMP = [['look', 'sky', 'peek', 'walk'], ['fire', 'stretch', 'tent', 'sky'], ['dance', 'jump', 'pet', 'item', 'juggle'], ['piles', 'rows', 'shape', 'read', 'flag', 'fire']]; // curious, sleepy, playful, tidy: what each does twice as often
+  function campLife(el, o) {
+    var dbg = (/[#&]life=(\w+)/.exec(hash) || [])[1] || '', at = parseFloat((/[#&]at=([\d.]+)/.exec(hash) || [])[1]);
+    var cg = o.cg, w = o.walk, bud = o.bud, lt = [], pos = { x: 0, y: 0, s: 1 }, inside = false, asleep = false, frozen = false, leaving = null, pass = false, last = '', stage = 0, zz = null, first = true;
+    var night = document.body.classList.contains('night'), dusk = document.body.classList.contains('dusk'), hr = +((/[&#]hour=(\d+)/.exec(hash) || [])[1] || new Date().getHours());
+    var on = !reduced && dbg !== '0' && !o.off, setoff = on && (!sandbox || /[#&]setoff=1/.test(hash) || dbg === 'go');
+    var api = { on: on, now: '', tap: function () {}, go: function () {}, menu: menu }, solo = !!dbg && dbg !== '1'; // solo: the debug hash plays one activity, and then the troll only answers taps
+    // the things of the island that have no part in the layout: a tree at the back, a rock and a flower at the front (they hide the feet of a troll that walks behind them)
+    var back = h('span', { class: 'lfl lfbk', 'aria-hidden': 'true' }), front = h('span', { class: 'lfl lffr', 'aria-hidden': 'true' });
+    function R(e) { return e ? e.getBoundingClientRect() : null; }
+    function decor() {
+      var c = R(cg), t = R(o.tent), u = Math.max(20, Math.round(c.height * .17));
+      if (!c.width || !TOY) return;
+      back.innerHTML = ''; [].slice.call(front.querySelectorAll('.lfd')).forEach(function (x) { x.remove(); });
+      var put1 = function (box, pic, x, y, sz) { box.appendChild(h('img', { class: 'lfd', src: 'assets/toy/' + pic + '.png', alt: '', draggable: 'false', style: 'left:' + Math.round(x) + 'px;top:' + Math.round(y - sz) + 'px;width:' + sz + 'px;height:' + sz + 'px' })); };
+      var th = Math.round(Math.min(c.height * .62, c.width * .2));
+      put1(back, '1f333', c.width * .015, c.height * .72, th);
+      put1(back, '1faa8', c.width * .17, c.height * .66, Math.round(u * .9)); put1(back, '1f337', c.width * .17 + u * .75, c.height * .68, u); // at the back, near the far shore
+    }
+    cg.insertBefore(back, cg.firstChild); cg.appendChild(front); decor();
+    var onSize = function () { if (cur !== el) { removeEventListener('resize', onSize); return; } decor(); if (on && !frozen) { stopHere(); put({ x: 0, y: 0, s: 1 }, 0); inside = false; P(campMood()); idle(); } };
+    addEventListener('resize', onSize);
+    if (!on) return api;
+
+    function T(f, ms) { var t = later(function () { if (cur === el && !frozen) f(); }, ms); lt.push(t); return t; }
+    var skew = 0; function now() { return Date.now() + skew; } // (a frozen moment of the debug hash is built at once: the steps before it run with the clock set back)
+    function halt() { lt.forEach(clearTimeout); lt = []; }
+    function spots() {
+      var c = R(cg), hb = R(bud), t = R(o.tent), f = R(o.fire), p = R(o.pet), hx = hb.left + hb.width / 2, band = c.height * .3;
+      var S = { c: c, h: hb.height, w: hb.width, hx: hx, gy: hb.bottom - c.top, home: { x: 0, y: 0, s: 1 } };
+      var dep = function (x, d) { return { x: x - hx, y: -band * d, s: 1 - .4 * d }; };
+      var fs = f ? (f.left + f.width / 2 < hx ? 1 : -1) : 1, ts = t ? (t.left + t.width / 2 < hx ? -1 : 1) : -fs;
+      S.fx = f ? f.left + f.width / 2 : hx - hb.width;
+      S.fire = f ? dep(f.left + f.width / 2 + fs * (f.width * .5 + hb.width * .24), .22) : S.home;
+      S.pet = p ? dep(f ? (f.left + f.width / 2 + p.left + p.width / 2) / 2 : p.left + p.width / 2, .55) : S.home;
+      S.back = [dep(f ? hx * .45 + S.fx * .55 : hx - hb.width * .3, .9), dep(hx + ts * hb.width * .16, .7)];
+      S.work = dep(hx + ts * hb.width * .1, .45);
+      if (t) {
+        var ds = Math.max(.42, Math.min(.8, t.height * .8 / hb.height)), dy = -(c.bottom - t.bottom) + t.height * .05, dx = t.left + t.width * .24 - hx;
+        S.door = { x: dx, y: dy, s: ds }; S.inn = { x: dx + Math.max(t.width * .42, hb.width * ds * .8), y: dy - t.height * .05, s: ds * .86 };
+        S.peek = { x: t.left + t.width * .3 - hx - hb.width * ds * .1, y: dy - t.height * .02, s: ds * .96 };
+        S.clip = 'inset(-999px ' + (hb.right - (t.left + t.width * .3)).toFixed(1) + 'px -999px -9999px)';
+        S.zz = [t.left - c.left + t.width * .56, t.top - c.top + t.height * .08];
+      }
+      return S;
+    }
+    // one paint of the troll: the mood, where it looks, the motion on request, and the warm light of the fire on the side that faces it
+    function P(mood, look, act) {
+      var op = { size: bud.offsetHeight || 200, zz: !act && pos.x === 0 && pos.y === 0, glow: lastFx > 0 ? 1 : -1 };
+      if (look) op.look = look;
+      o.paint(mood, op); tPaint = now();
+      var sv = w.querySelector('svg.troll'); if (act && sv) sv.setAttribute('data-act', act);
+    }
+    var lastFx = -1, sp0 = null, mv = null, tPaint = 0, tStep = 0, EZ = { io: [.37, 0, .63, 1], i: [.42, 0, 1, 1], o: [0, 0, .58, 1], off: [.4, 0, .8, .6] };
+    function bez(z, x) { // the value of a CSS cubic-bezier at the share x of its time
+      if (!z) return x; var lo = 0, hi = 1, t = x, i, c = function (a, b, t) { return 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t; };
+      for (i = 0; i < 24; i++) { t = (lo + hi) / 2; if (c(z[0], z[2], t) < x) lo = t; else hi = t; }
+      return c(z[1], z[3], t);
+    }
+    function nowPos() { // where the troll is at this moment of its move
+      if (!mv || !mv.ms) return pos;
+      var e = now() - mv.t0, k = bez(EZ[mv.ez], Math.max(0, Math.min(1, e / mv.ms))), a = mv.a, b = mv.b, oa = a.o == null ? 1 : a.o, ob = b.o == null ? 1 : b.o, ok = Math.max(0, Math.min(1, (e - mv.od) / Math.min(mv.ms, 320)));
+      return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, s: a.s + (b.s - a.s) * k, o: oa + (ob - oa) * ok };
+    }
+    function put(p, ms, ez, od) {
+      var ease = ez ? 'cubic-bezier(' + EZ[ez].join(',') + ')' : 'linear';
+      mv = { a: nowPos(), b: p, t0: now(), ms: ms || 0, ez: ez, od: od || 0 }; pos = p;
+      w.style.transition = 'transform ' + (ms || 0) + 'ms ' + ease + ',opacity ' + Math.min(ms || 0, 320) + 'ms linear ' + (od || 0) + 'ms';
+      w.style.transform = p.x || p.y || p.s !== 1 ? 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) scale(' + p.s.toFixed(3) + ')' : '';
+      w.style.opacity = p.o == null ? '' : p.o;
+      cg.classList.toggle('lf-away', Math.abs(p.x) > 2 || Math.abs(p.y) > 2 || p.o === 0);
+      if (sp0) { // the light of the fire: stronger near it, and by night
+        var d = Math.hypot(p.x - sp0.fire.x, (p.y - sp0.fire.y) * 2) / (sp0.w * 2.2);
+        lastFx = sp0.fx - (sp0.hx + p.x);
+        w.style.setProperty('--fw', ((night ? .85 : dusk ? .6 : .3) * Math.max(.2, 1 - d)).toFixed(2));
+      }
+    }
+    function zzOn(S) {
+      if (!S.zz) return;
+      if (!zz) { zz = h('span', { class: 'lfzz', html: '<svg viewBox="160 80 44 60"><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#6c5a8e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' }); front.appendChild(zz); }
+      var z = Math.max(22, Math.round(S.h * .2)); zz.style.cssText = 'left:' + Math.round(S.zz[0]) + 'px;top:' + Math.round(S.zz[1] - z * .6) + 'px;width:' + z + 'px;height:' + z + 'px'; zz.classList.add('on');
+    }
+    function tidy() { // everything an activity may have left behind
+      if (zz) zz.classList.remove('on');
+      bud.style.clipPath = ''; w.style.visibility = ''; bud.classList.remove('lf-look', 'lf-item'); if (o.pet) o.pet.classList.remove('lf-play');
+      w.classList.remove('wl', 'wr');
+      [].slice.call(front.querySelectorAll('.lfp')).forEach(function (x) { x.remove(); });
+      var sv = w.querySelector('svg.troll'); if (sv) sv.removeAttribute('data-act');
+    }
+    function stopHere() { // stop where it stands (a troll inside the tent is at once at its door)
+      halt(); api.now = '';
+      var S = sp0 = spots(), m = nowPos();
+      tidy();
+      if (inside) { inside = asleep = false; mv = null; put(S.door || S.home, 0); }
+      else { mv = null; put({ x: m.x, y: m.y, s: m.s }, 0); }
+      void w.offsetWidth;
+    }
+    function prop(node, x, y, sz, hgt) { // x: its middle, y: its foot, in the island's own px
+      node.classList.add('lfp'); node.style.left = Math.round(x - sz / 2) + 'px'; node.style.top = Math.round(y - (hgt || sz)) + 'px'; node.style.width = Math.round(sz) + 'px'; node.style.height = Math.round(hgt || sz) + 'px';
+      front.appendChild(node); void node.offsetWidth; node.classList.add('on'); return node;
+    }
+    function pic(name) { return h('img', { src: 'assets/toy/' + name + '.png', alt: '', draggable: 'false' }); }
+    function propsOff() { [].slice.call(front.querySelectorAll('.lfp')).forEach(function (x) { x.classList.remove('on'); later(function () { x.remove(); }, 450); }); }
+
+    // an activity as a list of steps [f, ms]; the list is built from where the troll stands now, so its length is known before it starts
+    function build(name) {
+      var S = sp0 = spots(), q = [], p = pos, idleM = campMood(), stand = night ? 'sleepy' : 'happy';
+      function add(f, ms) { q.push([f, ms]); }
+      function walkTo(to, quick) {
+        var d = Math.hypot(to.x - p.x, (to.y - p.y) * 1.8), ms = Math.round(Math.max(650, d / (S.h * (quick ? 1.5 : .4)) * 1000)), dir = to.x > p.x + 3 ? 1 : to.x < p.x - 3 ? -1 : 0, up = to.y < p.y - 3;
+        if (d < 3) return;
+        add(function () { P(stand, { x: dir * .75, y: up ? -.3 : .2 }, 'walk'); w.classList.toggle('wl', dir < 0); w.classList.toggle('wr', dir > 0); put(to, ms, 'io'); }, ms);
+        add(function () { var sv = w.querySelector('svg.troll'); if (sv) sv.removeAttribute('data-act'); w.classList.remove('wl', 'wr'); }, 160);
+        p = to;
+      }
+      function goIn() {
+        add(function () { bud.style.clipPath = S.clip; P(stand, { x: .6, y: 0 }, 'walk'); put(S.inn, 900, 'i'); }, 920);
+        add(function () { inside = true; w.style.visibility = 'hidden'; var sv = w.querySelector('svg.troll'); if (sv) sv.removeAttribute('data-act'); }, 0);
+        p = S.inn;
+      }
+      function comeOut(quick) {
+        add(function () { if (zz) zz.classList.remove('on'); asleep = false; bud.style.clipPath = S.clip; w.style.visibility = ''; mv = null; put(S.inn, 0); void w.offsetWidth; P(stand, { x: -.5, y: .1 }, 'walk'); put(S.door, quick ? 320 : 900, 'o'); }, quick ? 340 : 920);
+        add(function () { inside = false; bud.style.clipPath = ''; var sv = w.querySelector('svg.troll'); if (sv) sv.removeAttribute('data-act'); }, 100);
+        p = S.door;
+      }
+      function goHome() { walkTo(S.home); add(function () { P(idleM); }, 0); }
+      // where a thing lies on the ground before a troll that stands at spot sp: dx in troll widths from its middle, dy in px below its feet
+      function gx(sp, dx) { return S.hx - S.c.left + sp.x + dx * S.w * sp.s; }
+      function gy(sp, dy) { return S.gy + sp.y + (dy || 0); }
+      if (inside && S.door) comeOut(name !== 'wake');
+      if (!S.door && /^(tent|peek|sleep|wake)$/.test(name)) name = 'look';
+      if (name === 'pet' && !o.pet) name = 'look';
+      var W = S.work, u = S.w * W.s, peb = Math.max(11, Math.round(u * .15)), k;
+      switch (name) {
+        case 'walk': var b = S.back[Math.random() < .5 || !isNaN(at) ? 0 : 1]; walkTo(b); add(function () { P('happy'); bud.classList.add('lf-look'); }, 3600); add(function () { bud.classList.remove('lf-look'); }, 0); goHome(); break;
+        case 'fire': walkTo(S.fire); add(function () { P(night ? 'sitn' : 'sit'); }, night ? 9000 : 7600); add(function () { P(stand, { x: -.4, y: .5 }); }, 600); goHome(); break;
+        case 'tent': walkTo(S.door); goIn(); add(function () {}, 2600); comeOut(); goHome(); break;
+        case 'peek': walkTo(S.door); goIn(); add(function () {}, 1200);
+          add(function () { w.style.visibility = ''; P('curious'); put(S.peek, 900, 'o'); }, 2800);
+          add(function () { P('wave'); }, 1600);
+          add(function () { P('happy', { x: .6, y: 0 }); put(S.inn, 800, 'i'); }, 820);
+          add(function () { w.style.visibility = 'hidden'; }, 900);
+          comeOut(); goHome(); break;
+        case 'dance': add(function () { P('dance'); }, 3800); add(function () { P(idleM); }, 0); break;
+        case 'perfect': walkTo(S.fire); add(function () { P('dance'); }, 3800); add(function () { P('proud'); }, 1300); goHome(); break;
+        case 'jump': add(function () { P('happy', null, 'jump'); }, 1100); add(function () { P('happy', null, 'jump'); }, 900); add(function () { P('proud'); }, 1400); add(function () { P(idleM); }, 0); break;
+        case 'stretch': add(function () { P('stretch'); }, 3000); add(function () { P(idleM); }, 0); break;
+        case 'yawn': add(function () { P('yawn'); }, 2800); add(function () { P(idleM); }, 0); break;
+        case 'look': add(function () { P('happy'); bud.classList.add('lf-look'); }, 3600); add(function () { bud.classList.remove('lf-look'); P(idleM); }, 0); break;
+        case 'wave': add(function () { P('wave'); }, 1500); add(function () { P(idleM); }, 0); break;
+        case 'sky': walkTo(S.back[1]); add(function () { P('sky'); }, 4600); add(function () { P('happy'); }, 300); goHome(); break;
+        case 'item': add(function () { P('wave'); bud.classList.add('lf-item'); }, 4000); add(function () { bud.classList.remove('lf-item'); P(idleM); }, 0); break;
+        case 'pet': walkTo(S.pet);
+          add(function () { P('happy', { x: lastFx > 0 ? .7 : -.7, y: .7 }, 'nod'); o.pet.classList.add('lf-play'); }, 1500);
+          add(function () { P('dance'); }, 1900); add(function () { o.pet.classList.remove('lf-play'); P('happy', { x: -.6, y: .6 }); }, 700); goHome(); break;
+        case 'juggle': walkTo(W);
+          add(function () { P('jug'); for (k = 0; k < 3; k++) { var e = prop(pic('1faa8'), gx(W, 0), gy(W, -S.h * W.s * .78), peb); e.classList.add('lfj'); e.style.setProperty('--u', (u * .34).toFixed(1) + 'px'); e.style.animationDelay = (-k * .5) + 's'; } }, 4500);
+          add(function () { propsOff(); P('proud'); }, 1100); goHome(); break;
+        case 'piles': case 'rows': // pebbles: two piles that are counted (after adding and subtracting), rows of the same length (after multiplying and dividing)
+          walkTo(W); add(function () { P('sit', { x: 0, y: .9 }); }, 900);
+          var at2 = name === 'rows' ? [[-.42, 3], [-.14, 3], [.14, 3], [.42, 3], [-.42, -8], [-.14, -8], [.14, -8], [.42, -8]] : [[-.58, 2], [-.4, 5], [-.49, -6], [.3, 3], [.5, 5], [.4, -6], [.6, -5]];
+          at2.forEach(function (a, i) { add(function () { if (name === 'piles' && i === 3) P('sit', { x: .7, y: .8 }); prop(pic('1faa8'), gx(W, a[0]), gy(W, peb * .9 + a[1]), peb); }, 620); });
+          add(function () { P('sit', { x: -.6, y: .85 }, 'nod'); }, 1200); add(function () { P('sit', { x: .6, y: .85 }, 'nod'); }, 1200);
+          add(function () { P('proud'); }, 1500); add(function () { propsOff(); }, 300); goHome(); break;
+        case 'shape': // a shape in the ground with a stick (after geometry)
+          walkTo(W);
+          add(function () {
+            P('focused');
+            var sv = h('span', { html: '<svg viewBox="0 0 64 34"><path d="M8,29 L31,6"/><path d="M31,6 L56,29"/><path d="M56,29 L8,29"/></svg>' }); prop(sv, gx(W, -.42), gy(W, peb * 1.1), u * .62, u * .33); sv.classList.add('lfsand');
+            prop(h('span', {}), gx(W, -.02), gy(W, 4), Math.max(4, u * .05), u * .62).classList.add('lfstick');
+          }, 600);
+          [0, 1, 2].forEach(function (i) { add(function () { var ps = front.querySelectorAll('.lfsand path'); if (ps[i]) ps[i].setAttribute('class', 'on'); }, 1300); });
+          add(function () { var st = front.querySelector('.lfstick'); if (st) st.classList.remove('on'); P('proud'); }, 1800); add(function () { propsOff(); }, 300); goHome(); break;
+        case 'read': // a little book (after Hebrew or English)
+          walkTo(W); add(function () { P('sit', { x: 0, y: .95 }); prop(pic('1f4d6'), gx(W, 0), gy(W, 2), u * .4).classList.add('lfbook'); }, 2600);
+          add(function () { P('sit', { x: -.35, y: .95 }, 'nod'); }, 2400); add(function () { P('sit', { x: .35, y: .95 }); }, 2400);
+          add(function () { propsOff(); P('happy'); }, 700); goHome(); break;
+        case 'flag': // the flag of the bridge that was crossed
+          walkTo(W); add(function () { prop(pic('1f6a9'), gx(W, .78), gy(W, 2), u * .6).classList.add('lfflag'); P('happy', { x: .8, y: .1 }); }, 1200);
+          add(function () { P('wave'); }, 1600); add(function () { P('proud'); }, 2200); add(function () { propsOff(); }, 400); goHome(); break;
+        case 'sleep': add(function () { P('yawn'); }, 2600); walkTo(S.door); goIn(); add(function () { asleep = true; zzOn(S); }, 0); break;
+        case 'wake': goHome(); add(function () { P('wave'); }, 1400); add(function () { P(idleM); }, 0); break;
+        default: add(function () { P(idleM); }, 0);
+      }
+      return q;
+    }
+    function run(name, q, after) {
+      var i = 0; api.now = name;
+      (function step() {
+        if (i >= q.length) { api.now = ''; if (after) after(); return; }
+        var st = q[i++]; tStep = now(); st[0](); if (st[1]) T(step, st[1]); else step();
+      })();
+    }
+    function freeze() {
+      var m = nowPos(), t1 = now();
+      halt(); frozen = true; mv = null; put(m, 0); cg.classList.add('lf-still');
+      try { cg.getAnimations({ subtree: true }).forEach(function (a) { var tg = a.effect && a.effect.target; if (!tg) return; if (a.transitionProperty) { a.finish(); return; } a.pause(); a.currentTime = t1 - (w.contains(tg) ? tPaint : tStep); }); } catch (e) {}
+    }
+    // what the troll may do now, with weights: what the child did last comes first, then its level, its temperament, the hour
+    function menu() {
+      var id = o.id, lv = id == null ? 1 : L.growLevel(L.growOf(state, id)).level, temp = LIFE_TEMP[(id || 0) % 4], m = {}, k, ev, n, t, pr;
+      for (k in LIFE) if ((LIFE_LV[k] || 1) <= lv) m[k] = LIFE[k];
+      if (!o.pet) delete m.pet; else m.fire += 2; // with a pet: more evenings by the fire, which they share
+      if (!o.item) delete m.item;
+      try {
+        ev = L.memEv(state); n = ev.length ? ev[ev.length - 1] : null; t = state.last && topicOf(state.last.t);
+        if (n && n.k === 'b') m.flag = 5;
+        if (t && t !== MIX) {
+          m[t.sub === 'geo' ? 'shape' : t.sub === 'heb' || t.sub === 'eng' ? 'read' : /mul|div|frac/.test(t.id) ? 'rows' : 'piles'] = 5;
+          pr = state.prog[t.id] && state.prog[t.id][state.last.l - 1]; if (pr && pr.length && pr.every(function (x) { return x >= 3; })) m.perfect = 4;
+        }
+      } catch (e) {}
+      if (L.friend(state).level >= 2 && m.wave) m.wave += 1;
+      temp.forEach(function (x) { if (m[x]) m[x] *= 2; });
+      if (dusk) m.fire *= 3; else if (hr < 10) m.stretch *= 3;
+      return m;
+    }
+    function next() {
+      var name = '', m, k, sum = 0, r;
+      if (night) name = asleep ? '' : ['yawn', 'fire', 'look', 'sleep'][Math.min(stage++, 3)];
+      else {
+        m = menu(); delete m[last];
+        if (first) name = hr < 10 ? 'stretch' : dusk ? 'fire' : ['flag', 'piles', 'rows', 'shape', 'read'].filter(function (x) { return m[x]; })[0] || '';
+        if (!name) { for (k in m) sum += m[k]; r = Math.random() * sum; for (k in m) { r -= m[k]; if (r < 0) { name = k; break; } } }
+      }
+      first = false; if (!name) return;
+      last = name; run(name, build(name), idle);
+    }
+    function idle(ms) { if (asleep || solo) return; halt(); T(next, ms != null ? ms : 2600 + Math.random() * 2400); }
+
+    // a tap on the troll: it stops where it is, the camp does its usual answer, and then it goes on
+    api.tap = function () {
+      if (frozen || leaving) return;
+      stopHere();
+      T(back2, 1500);
+    };
+    function back2() { // walk home from wherever it stands, then go on living
+      var S = spots(), d = Math.hypot(pos.x, pos.y * 1.8), ms = Math.round(Math.max(650, d / (S.h * .4) * 1000)), dir = pos.x > 3 ? -1 : pos.x < -3 ? 1 : 0;
+      halt(); sp0 = S;
+      if (d < 3) { idle(); return; }
+      P(night ? 'sleepy' : 'happy', { x: dir * .75, y: .2 }, 'walk'); w.classList.toggle('wl', dir < 0); w.classList.toggle('wr', dir > 0); put(S.home, ms, 'io');
+      T(function () { tidy(); P(campMood()); idle(); }, ms + 160);
+    }
+    // a tap on the fire, the tent or the pet sends it there
+    api.go = function (name) {
+      if (frozen || leaving) return;
+      var was = asleep, inn = inside;
+      if (name === 'tent' && night) name = was ? 'wake' : 'sleep'; else if (name === 'tent' && inn) name = 'wake';
+      if (inn) { halt(); if (zz) zz.classList.remove('on'); } else stopHere();
+      last = name; run(name, build(name), function () { if (night && !asleep) { stage = 3; idle(9000); } else idle(); });
+    };
+    // the big button, a subject, the strip of the map, the dressing room, the village: the troll hops off towards it, and then the screen opens
+    function leave(b) {
+      stopHere();
+      var S = sp0, r = R(b), q = R(w), dx = r.left + r.width / 2 - (q.left + q.width / 2), dy = r.top + r.height / 2 - (q.top + q.height * .7), d = Math.hypot(dx, dy) || 1, st = S.h * pos.s * .42;
+      P('happy', { x: dx / d, y: dy / d }, 'hop'); w.classList.toggle('wl', dx < -8); w.classList.toggle('wr', dx > 8);
+      put({ x: pos.x + dx / d * st, y: pos.y + dy / d * st * .7, s: pos.s }, 540, 'off');
+      leaving = { b: b, t: later(function () { if (cur !== el || frozen) return; leaving = null; pass = true; try { b.click(); } finally { pass = false; } if (cur === el) back2(); }, 560) };
+    }
+    if (setoff) el.addEventListener('click', function (e) {
+      if (pass || frozen || cur !== el) return;
+      var b = e.target.closest ? e.target.closest('.cgo,.csb,.cstrip,.cdress,.dressb,.vilb') : null;
+      if (!b) return;
+      if (leaving) { clearTimeout(leaving.t); leaving = null; return; } // a second tap: at once
+      e.stopPropagation(); e.preventDefault(); leave(b);
+    }, true);
+    var vis = function () {
+      if (cur !== el) { document.removeEventListener('visibilitychange', vis); return; }
+      if (frozen || leaving) return;
+      if (document.hidden) { if (!asleep) { stopHere(); put({ x: 0, y: 0, s: 1 }, 0); inside = false; P(campMood()); } halt(); }
+      else if (!asleep) idle(1500);
+    };
+    document.addEventListener('visibilitychange', vis);
+    sp0 = spots(); put(pos, 0);
+    if (dbg && dbg !== '1') { // one activity, once (and frozen at &at=)
+      T(function () {
+        var q, total = 0;
+        if (dbg === 'go') { var gb = el.querySelector('.cgo'); if (!isNaN(at)) { skew = -at * 560; leave(gb); clearTimeout(leaving.t); skew = 0; freeze(); } else gb.click(); return; }
+        if (dbg === 'wake') { sp0 = spots(); if (sp0.inn) { put(sp0.inn, 0); w.style.visibility = 'hidden'; inside = asleep = true; zzOn(sp0); } }
+        q = build(dbg); q.forEach(function (s) { total += s[1]; });
+        api.total = total;
+        if (isNaN(at)) { run(dbg, q, null); return; }
+        var T0 = at * total, acc = 0, i = 0;
+        while (i < q.length && acc <= T0) { skew = acc - T0; tStep = now(); q[i][0](); acc += q[i][1]; i++; }
+        skew = 0; api.now = dbg; freeze();
+      }, 600);
+    } else if (!document.hidden) idle(o.hello ? 2600 : 1600);
+    return api;
   }
   // The strip of the map in the camp: the stop before, the stop of the next step and the stop after it, drawn by the same
   // code as the map of the topic. Without a next step in a topic: the end of the trail the child walked last.

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Task "camp life": the companion that lives on the island of the camp, through the real page.
+     The life starts by itself and never covers the big button or the dressing room; a tap on the troll stops it where it is and it walks home;
+     a tap on the fire sends it there; leaving the screen in the middle of an activity leaves nothing behind; at night it sleeps in the tent and
+     a tap on the tent wakes it; &life=0 switches it off; a frozen moment (&life=..&at=..) is what it says; what the troll may do follows the
+     last house played and the level of the troll; the short walk before a screen opens: off in the test modes (one tap opens the exercise at
+     once), on with &setoff=1 (the exercise opens after about half a second, a second tap opens it at once).
+     Result in document.title: LIFE OK n / LIFE FAIL ...
+     Run: msedge --headless --mute-audio --disable-gpu --allow-file-access-from-files --virtual-time-budget=90000 --dump-dom tests/life.html -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0, errs = [];
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w || 360; f.height = h || 640; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() {
+      var d = f.contentDocument, s = d && d.querySelector('.screen');
+      if (f.contentWindow && !f.contentWindow.__le) { f.contentWindow.__le = 1; f.contentWindow.addEventListener('error', function (e) { errs.push(hash + ': ' + e.message); }); }
+      if (s && f.contentWindow.__tv) res({ f: f, d: d, w: f.contentWindow, tv: f.contentWindow.__tv }); else setTimeout(poll, 20);
+    })();
+  });
+}
+function camp(x) { return x.d.querySelector('.screen.camp:not(.out)'); }
+function tappable(x, b) { var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
+function home(x) { var w = x.d.querySelector('.lfw'); return !!w && !w.style.transform && w.style.visibility !== 'hidden'; }
+function done(x) { x.f.remove(); }
+
+async function alive() {
+  var x = await frame('demo&s=home&hour=10&home=mid'); await wait(500);
+  var w = x.d.querySelector('.cbud .lfw');
+  check(!!w && !!w.querySelector('svg.troll') && x.tv.life && x.tv.life.on, 'the camp: the troll is inside its walker, and the life is on');
+  check(tappable(x, x.d.querySelector('.cgo')) && tappable(x, x.d.querySelector('.cdress')), 'the big button and the dressing room can be tapped');
+  check(!!x.d.querySelector('.cbud .fheart') && x.d.querySelector('.fheart').parentNode === x.d.querySelector('.cbud'), 'the heart stays on the home spot (it is not inside the walker)');
+  await wait(4500);
+  check(x.tv.life.now === 'piles', 'the first activity starts by itself within five seconds, and it is the one of the last house played (adding: the piles): ' + x.tv.life.now);
+  var seen = {}, i, away = false;
+  for (i = 0; i < 60; i++) { await wait(1000); if (x.tv.life.now) seen[x.tv.life.now] = 1; if (!home(x)) away = true; if (!tappable(x, x.d.querySelector('.cgo')) || !tappable(x, x.d.querySelector('.cdress'))) break; }
+  check(i === 60, 'for a whole minute of life the big button and the dressing room stay free');
+  check(Object.keys(seen).length >= 3 && away, 'in a minute the troll does several different things and leaves its spot: ' + Object.keys(seen).join(' '));
+  check(camp(x) && x.d.querySelectorAll('.cbud svg.troll').length === 1, 'one troll, still on the camp');
+  done(x);
+}
+async function taps() {
+  var x = await frame('demo&s=home&hour=10&life=fire'); await wait(2600);
+  check(x.tv.life.now === 'fire' && !home(x), 'debug &life=fire: the troll is on its way to the fire');
+  x.d.querySelector('.cbud').click();
+  check(x.tv.life.now === '' && !!x.d.querySelector('.lfw svg.troll.cheer, .cbud[class*="tr-"]'), 'a tap on the troll: it stops and gives its usual answer');
+  await wait(5000);
+  check(home(x) && !x.d.querySelector('.lfw svg[data-act]'), 'and then it walks home and stands');
+  x.d.querySelector('.cfire').click(); await wait(50);
+  check(x.tv.life.now === 'fire', 'a tap on the fire sends it to the fire');
+  await wait(4000);
+  check(!!x.d.querySelector('.lfw svg.troll.sit') && x.d.querySelector('.cground').classList.contains('lf-away'), 'it sits there (the sitting pose), and the heart of the home spot is hidden');
+  x.d.querySelector('.ctent').click(); await wait(4800);
+  check(x.tv.life.now === 'tent' && x.d.querySelector('.lfw').style.visibility === 'hidden', 'a tap on the tent: it goes inside (not visible)');
+  x.d.querySelector('.ctent').click(); await wait(6000);
+  check(home(x), 'a tap on the tent while it is inside brings it out and home');
+  done(x);
+}
+async function leaving() {
+  var x = await frame('demo&s=home&hour=10&life=piles'); await wait(4000);
+  check(x.d.querySelectorAll('.lffr .lfp').length > 0, 'the pebbles lie on the ground');
+  x.d.querySelector('.jrnb').click(); await wait(8000);
+  check(!camp(x) && !errs.length, 'leaving the camp in the middle of an activity: no error afterwards ' + errs.join(' ; '));
+  x.d.querySelector('.top .icon[aria-label*="כְּפָר"], .top .tgroup .icon').click(); await wait(350);
+  var c = camp(x);
+  check(!!c && c.querySelectorAll('.lfp').length === 0 && home(x), 'back on the camp: a clean island and the troll at home');
+  done(x);
+}
+async function night() {
+  var x = await frame('demo&s=home&hour=21&life=sleep'); await wait(600 + 9000);
+  var z = x.d.querySelector('.lfzz');
+  check(!!z && z.classList.contains('on') && x.d.querySelector('.lfw').style.visibility === 'hidden', 'night: the troll sleeps inside the tent, only "zz" over it');
+  check(tappable(x, x.d.querySelector('.cgo')), 'the big button is free at night');
+  x.d.querySelector('.ctent').click(); await wait(7000);
+  check(home(x) && !z.classList.contains('on'), 'a tap on the tent wakes it: it comes out and home');
+  done(x);
+}
+async function offAndFrozen() {
+  var x = await frame('demo&s=home&hour=10&life=0'); await wait(8000);
+  check(x.tv.life && !x.tv.life.on && home(x) && !x.d.querySelector('.lft'), '&life=0: nothing moves, nothing answers a tap on the fire');
+  var b = x.d.querySelector('.cgo'); b.click();
+  check(!!x.d.querySelector('.screen:not(.out) .qrow'), 'without the life one tap on the big button opens the exercise at once');
+  done(x);
+  x = await frame('demo&s=home&hour=10&life=fire&at=.5'); await wait(1500);
+  check(x.tv.life.now === 'fire' && !!x.d.querySelector('.lfw svg.troll.sit') && /translate/.test(x.d.querySelector('.lfw').style.transform), 'a frozen moment: &life=fire&at=.5 sits by the fire');
+  var t0 = x.d.querySelector('.lfw').style.transform; await wait(5000);
+  check(x.d.querySelector('.lfw').style.transform === t0 && !!x.d.querySelector('.lfw svg.troll.sit'), 'and it stays frozen');
+  done(x);
+}
+async function memory() {
+  var x = await frame('demo&s=home&hour=10&home=mid&life=0'), m = x.tv.life.menu();
+  check(m.piles > 0 && !m.shape && !m.read && !m.juggle && !m.dance && m.walk > 0 && m.fire > 0, 'after an adding house a troll of level 1 may lay piles of pebbles; it does not dance or juggle yet: ' + Object.keys(m).join(' '));
+  done(x);
+  x = await frame('demo&s=home&hour=10&mem=last&t=geo2poly&life=0&grow=5'); m = x.tv.life.menu();
+  check(m.shape > 0 && !m.piles && m.dance > 0 && m.juggle > 0, 'after a geometry house it draws a shape; a troll of level 4 also dances and juggles: ' + Object.keys(m).join(' '));
+  done(x);
+  x = await frame('demo&s=home&hour=10&mem=last&t=heb2words&life=0'); m = x.tv.life.menu();
+  check(m.read > 0, 'after a Hebrew house it reads a little book');
+  done(x);
+  x = await frame('demo&s=home&hour=18&life=0'); m = x.tv.life.menu(); var d = m.fire;
+  done(x);
+  x = await frame('demo&s=home&hour=12&life=0'); m = x.tv.life.menu();
+  check(d === m.fire * 3, 'at dusk it sits by the fire three times as often');
+  done(x);
+}
+async function setoff() {
+  var x = await frame('demo&s=home&hour=10'); await wait(300);
+  x.d.querySelector('.cgo').click();
+  check(!!x.d.querySelector('.screen:not(.out) .qrow'), 'test modes: one tap on the big button opens the exercise at once (no walk before it)');
+  done(x);
+  x = await frame('demo&s=home&hour=10&setoff=1'); await wait(300);
+  x.d.querySelector('.cgo').click();
+  check(camp(x) && !x.d.querySelector('.qrow') && /translate/.test(x.d.querySelector('.lfw').style.transform) && x.d.querySelector('.lfw svg').getAttribute('data-act') === 'hop', '&setoff=1: a tap on the big button: the troll hops off towards it first');
+  await wait(450); check(!!camp(x), 'after 0.45 s the camp is still there');
+  await wait(300); check(!!x.d.querySelector('.screen:not(.out) .qrow'), 'after 0.75 s the exercise is on the screen');
+  done(x);
+  x = await frame('demo&s=home&hour=10&setoff=1'); await wait(300);
+  x.d.querySelector('.cgo').click(); await wait(120); x.d.querySelector('.cgo').click();
+  check(!!x.d.querySelector('.screen:not(.out) .qrow'), 'a second tap opens the exercise at once');
+  await wait(1500); check(!errs.length && !!x.d.querySelector('.screen:not(.out) .qrow'), 'and nothing happens later');
+  done(x);
+  x = await frame('demo&s=home&hour=21&setoff=1&life=sleep'); await wait(600 + 9000);
+  x.d.querySelector('.cdress').click();
+  check(camp(x) && x.d.querySelector('.lfw').style.visibility !== 'hidden', 'asleep in the tent: a tap on the dressing room brings it out at once');
+  await wait(800); check(!camp(x), 'and the dressing room opens');
+  done(x);
+}
+(async function () {
+  try { await alive(); await taps(); await leaving(); await night(); await offAndFrozen(); await memory(); await setoff(); check(!errs.length, 'no script errors: ' + errs.join(' ; ')); }
+  catch (e) { fails.push('exception: ' + (e && e.message)); }
+  document.title = fails.length ? 'LIFE FAIL ' + fails.join(' | ') : 'LIFE OK ' + checks;
+})();
+</script>

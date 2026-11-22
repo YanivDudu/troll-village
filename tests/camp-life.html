@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חיי המחנה: מה הטרול עושה באי שלו</title>
+<!-- Task "camp life": the gallery of what the companion does on its island. Every card is the REAL camp of the game (index.html in demo mode,
+     nothing is saved) at phone size, with one activity played once by the debug hash &life=<activity>; the button plays it again.
+     A frozen moment for a still picture: add &at=0..1 (the link "תמונה עומדת" of a card). &life=0 switches the life off. -->
+<style>
+html,body{margin:0;background:#cfeefa;color:#2b2140;font-family:Rubik,Arial,sans-serif}
+body{padding:14px 16px 60px}
+h1{font-size:26px;margin:6px 0}h2{font-size:21px;margin:26px 0 8px;border-bottom:3px solid #fff;padding-bottom:4px}p{margin:4px 0 10px;font-size:15px;max-width:900px}
+.bar{position:sticky;top:0;z-index:5;background:#cfeefa;padding:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:flex;flex-wrap:wrap;gap:12px}
+.card{background:#ffffffcc;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px;box-shadow:0 3px 0 #9ccfe2;width:360px;max-width:100%}
+.card b{font-size:16px}.card small{font-size:13px;color:#5d5378;line-height:1.35;min-height:2.7em}
+.view{position:relative;overflow:hidden;border-radius:10px;background:#8fd4f0;direction:ltr}
+.view iframe{position:absolute;left:0;border:0;display:block}
+.view.wide{border-radius:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button,a.b{font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:4px 16px;border:0;border-radius:99px;background:#c2185b;color:#fff;box-shadow:0 3px 0 #8a0f3f;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+button:active{transform:translateY(2px)}
+button.q,a.b{background:#fff;color:#2b2140;box-shadow:0 3px 0 #9ccfe2}
+button.on{background:#2b2140;color:#fff;box-shadow:0 3px 0 #000}
+table{border-collapse:collapse;font-size:14px;background:#ffffffcc;border-radius:10px;overflow:hidden}td,th{padding:5px 10px;border-bottom:1px solid #cfe6f0;text-align:right}
+code{direction:ltr;unicode-bidi:embed;background:#fff;border-radius:6px;padding:1px 5px;font-size:13px}
+</style>
+</head>
+<body>
+<h1>חיי המחנה</h1>
+<p>כל משבצת היא המחנה האמיתי של המשחק בגודל של טלפון (מצב הדגמה, שום דבר לא נשמר). הכפתור מנגן את הפעילות שוב. במשחק עצמו הטרול בוחר לבד מה לעשות, עם כמה שניות של מנוחה בין פעילות לפעילות.</p>
+<div class="bar">
+  <button id="day" class="on">יום</button><button id="dusk" class="q">ערב</button><button id="night" class="q">לילה</button>
+  <span style="flex:1"></span>
+  <button id="allb" class="q">לנגן את כל מה שרואים</button>
+</div>
+
+<h2>החיים עצמם: המחנה חי לבד</h2>
+<p>כאן המנוע רץ חופשי, כמו במשחק. אפשר להקיש על הטרול (הוא עוצר, מגיב וממשיך), על המדורה, על האוהל ועל חיית המחמד (הוא הולך אליהם). בלילה הוא מפהק, יושב ליד האש, והולך לישון באוהל; הקשה על האוהל מעירה אותו.</p>
+<div class="grid" id="free"></div>
+
+<h2>מה שהילד עשה קובע מה הטרול עושה</h2>
+<p>הפעילות הראשונה אחרי שהמחנה נפתח היא זו שקשורה לבית האחרון ששוחק; אחר כך היא חוזרת לעיתים קרובות.</p>
+<div class="grid" id="mem"></div>
+
+<h2>פעילויות של כל יום</h2>
+<div class="grid" id="day0"></div>
+
+<h2>מה שנפתח כשהטרול גדל</h2>
+<p>טרול ברמה 1 בעיקר הולך, יושב ומסתכל. רמה 2: מציץ מהאוהל, משחק עם חיית המחמד ועם מה שבידו. רמה 3: קופץ ורוקד. רמה 4: מלהטט באבנים.</p>
+<div class="grid" id="lv"></div>
+
+<h2>לילה</h2>
+<div class="grid" id="ngt"></div>
+
+<h2>יוצאים לדרך</h2>
+<p>הקשה על "ממשיכים" (או על תמונת מקצוע, על רצועת המפה, על חדר ההלבשה או על הכפר): הטרול מדלג לכיוון הכפתור, ורק אז המסך נפתח (כחצי שנייה; הקשה שנייה פותחת מיד).</p>
+<div class="grid" id="go"></div>
+
+<h2>האופי של הטרול</h2>
+<table>
+<tr><th>אופי (לפי המספר של הטרול)</th><th>מה הוא עושה פי שניים</th></tr>
+<tr><td>סקרן</td><td>מסתכל סביב, מסתכל לשמיים, מציץ מהאוהל, מטייל</td></tr>
+<tr><td>ישנוני</td><td>יושב ליד האש, מתמתח, נכנס לאוהל, מסתכל לשמיים</td></tr>
+<tr><td>שובב</td><td>רוקד, קופץ, משחק עם החיה ועם החפץ, מלהטט</td></tr>
+<tr><td>מסודר</td><td>האבנים, הצורה, הספר, הדגל, ויושב ליד האש</td></tr>
+</table>
+<p>כתובות לבדיקה: <code>index.html#demo&amp;s=home&amp;life=fire</code> מנגן פעילות אחת · <code>&amp;at=0.5</code> מקפיא אותה באמצע · <code>&amp;life=0</code> מכבה את החיים · <code>&amp;setoff=1</code> מפעיל את הדילוג לפני פתיחת מסך גם במצב הדגמה · <code>&amp;hour=21</code> לילה · <code>&amp;grow=5</code> טרול ברמה גבוהה.</p>
+
+<script>
+var hour = 10, cards = [];
+// [id, name, what triggers it, extra hash]
+var SETS = {
+  free: [['1', 'יום שלם במחנה', 'המנוע עצמו. להקיש על הטרול, על המדורה, על האוהל ועל החתול.', '&grow=5&wear=guitar&setoff=1']],
+  mem: [
+    ['piles', 'שתי ערימות של אבנים', 'אחרי בית של חיבור, חיסור או מספרים: מניח אבנים בשתי ערימות וסופר.', '&t=add'],
+    ['rows', 'אבנים בשורות', 'אחרי בית של כפל, חילוק או שברים: מסדר אבנים בשורות שוות.', '&g=3&t=mul'],
+    ['shape', 'צורה באדמה', 'אחרי בית של גאומטריה: מצייר משולש עם מקל.', '&t=geo2poly'],
+    ['read', 'ספר קטן', 'אחרי בית של שפה או אנגלית: יושב וקורא.', '&t=heb2words'],
+    ['flag', 'הדגל של הגשר', 'אחרי שעברו גשר: מציב דגל ועומד גאה.', ''],
+    ['perfect', 'ריקוד שמח ליד האש', 'אחרי בית שכל השלבים שלו עם שלושה כוכבים.', '']
+  ],
+  day0: [
+    ['walk', 'טיול לקצה האי', 'תמיד. הולך לעומק האי (קטן וגבוה יותר), מסתכל סביב וחוזר.', ''],
+    ['fire', 'יושב ליד המדורה', 'תמיד; בערב פי שלושה; עם חיית מחמד יותר. מתיישב ומחמם ידיים.', ''],
+    ['tent', 'נכנס לאוהל ויוצא', 'תמיד. נעלם בפתח האוהל, וחוזר.', ''],
+    ['look', 'מסתכל לצדדים', 'תמיד.', ''],
+    ['sky', 'מסתכל לשמיים', 'תמיד. הולך אחורה ומרים את הראש.', ''],
+    ['stretch', 'מתמתח', 'תמיד; בבוקר (לפני עשר) זו הפעילות הראשונה.', ''],
+    ['wave', 'מנופף לילד', 'תמיד; מחברוּת 2 קצת יותר.', '']
+  ],
+  lv: [
+    ['peek', 'מציץ מפתח האוהל', 'מרמה 2.', ''],
+    ['pet', 'משחק עם חיית המחמד', 'מרמה 2, כשיש חיה: הולך אליה מאחורי האש, והיא קופצת.', ''],
+    ['item', 'משחק עם מה שבידו', 'מרמה 2, כשהוא מחזיק חפץ.', '&wear=guitar'],
+    ['jump', 'קופץ משמחה', 'מרמה 3.', ''],
+    ['dance', 'ריקוד קטן ואיטי', 'מרמה 3.', ''],
+    ['juggle', 'מלהטט באבנים', 'מרמה 4.', '']
+  ],
+  ngt: [
+    ['yawn', 'מפהק', 'בלילה, ראשון.', '&hour=21'],
+    ['fire', 'יושב ליד האש בלילה', 'בלילה, אחרי הפיהוק. האש מאירה אותו.', '&hour=21'],
+    ['sleep', 'הולך לישון באוהל', 'בלילה, בסוף: רק "zz" מעל האוהל.', '&hour=21'],
+    ['wake', 'מתעורר', 'הקשה על האוהל כשהוא ישן: יוצא, מנופף, ואחר כך חוזר לישון.', '&hour=21']
+  ],
+  go: [['go', 'ממשיכים!', 'הקשה על הכפתור הגדול: דילוג קצר לכיוונו, ואז נפתח התרגיל.', '&setoff=1']]
+};
+function src(c, at) { return '../index.html#demo&s=home' + (/hour=/.test(c[3]) ? '' : '&hour=' + hour) + c[3] +'&life=' + c[0] + (at != null ? '&at=' + at : ''); }
+function make(box, c, big) {
+  var card = document.createElement('div'); card.className = 'card';
+  var v = document.createElement('div'); v.className = 'view'; v.style.height = (big ? 640 : 300) + 'px';
+  var b = document.createElement('b'); b.textContent = c[1];
+  var s = document.createElement('small'); s.textContent = c[2];
+  var row = document.createElement('div'); row.className = 'row';
+  var play = document.createElement('button'); play.textContent = 'שוב';
+  var still = document.createElement('a'); still.className = 'b'; still.textContent = 'תמונה עומדת'; still.target = '_blank';
+  var f = null, rec = { el: card, play: go };
+  function go() {
+    if (f) f.remove();
+    f = document.createElement('iframe'); f.width = 360; f.height = 640; f.style.top = (big ? 0 : -56) + 'px'; f.src = src(c); v.appendChild(f);
+    still.href = src(c, .5);
+  }
+  play.addEventListener('click', go);
+  row.appendChild(play); if (c[0] !== '1') row.appendChild(still);
+  card.appendChild(b); card.appendChild(s); card.appendChild(v); card.appendChild(row); box.appendChild(card);
+  cards.push(rec);
+  return rec;
+}
+Object.keys(SETS).forEach(function (k) { SETS[k].forEach(function (c) { make(document.getElementById(k), c, k === 'free'); }); });
+// a card starts when it is first seen (every card is a whole copy of the game: they are not all loaded at once)
+function inView(r) { var q = r.el.getBoundingClientRect(); return q.bottom > -100 && q.top < innerHeight + 100; }
+function startSeen() { cards.forEach(function (r) { if (!r.on && inView(r)) { r.on = 1; r.play(); } }); }
+addEventListener('scroll', startSeen, { passive: true }); addEventListener('resize', startSeen); startSeen();
+document.getElementById('allb').addEventListener('click', function () { cards.filter(inView).forEach(function (r) { r.play(); }); });
+[['day', 10], ['dusk', 18], ['night', 21]].forEach(function (x) {
+  document.getElementById(x[0]).addEventListener('click', function () {
+    hour = x[1]; ['day', 'dusk', 'night'].forEach(function (id) { var b = document.getElementById(id); b.className = id === x[0] ? 'on' : 'q'; });
+    cards.filter(inView).forEach(function (r) { r.play(); });
+  });
+});
+</script>
+</body>
+</html>
