@@ -53,6 +53,7 @@ job('mute', /^MUTE OK/, () => edge(page + '/tests/mute.html', 60000));
 if (process.argv[2] === 'cloud') job('autolink (real database)', /^AUTOLINK OK/, () => run('node', ['tests/run-page.js', 'tests/autolink.html', '300'], 330000).then(o => o.split('\n')[0]));
 job('village', /^VILLAGE OK/, () => edge(page + '/tests/village.html', 120000)); // task "village": the village of the trolls through its real buttons, the levels on the end screens
 job('map3d', /^MAP3D OK/, () => edge(page + '/tests/map3d.html' + (quick ? '#360x640' : ''), 600000)); // task "map3d": the 3D picture of every trail map puts nothing over a label, a badge, the companion or a button (the geometry only, no WebGL)
+job('onboard', /^ONBOARD OK/, () => process.argv[2] === 'cloud' ? run('node', ['tests/run-page.js', 'tests/onboard.html', '240'], 270000).then(o => o.split('\n')[0]) : edge(page + '/tests/onboard.html?local', 150000)); // task "onboard": the invitation to the family account. Default: when it appears, "not now", the reminders (nothing is made in the cloud); `cloud`: also sign-up and sign-in against the real database (one throw-away account, deleted)
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine
