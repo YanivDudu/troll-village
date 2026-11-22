@@ -2249,8 +2249,8 @@ body.toy .ccode{background:var(--surface-2);border-radius:var(--r-s);color:var(-
 .hbadge.m9 .hbn{text-shadow:0 1px 0 rgba(46,35,80,.75),0 0 3px rgba(46,35,80,.6)}
 .hbadge.m10{--pl:radial-gradient(circle at 22% 30%,#ffe27a 0 1.4px,transparent 1.8px),radial-gradient(circle at 78% 68%,#ffe27a 0 1.2px,transparent 1.6px),radial-gradient(circle at 60% 22%,#fff 0 1px,transparent 1.4px),linear-gradient(145deg,#4a3a8c,#231a52 60%,#120c33);--num:#ffd84d;--pe:#c79200;--pr:#ffd84d}
 /* on a map the badge takes the size of the stop; in the strip of the camp and in the journal it is a little smaller */
-.mcard .hbadge{margin-top:2px}
-.cstrip .hbadge{transform:scale(.85);transform-origin:center}
+.mic .hbadge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);z-index:2}
+.cstrip .mic .hbadge{transform:translateX(-50%) scale(.85);transform-origin:center bottom}
 .jrn .sdisc{position:relative}
 .jrn .sdisc .hbadge{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) scale(.85);transform-origin:center bottom}
 .npic .hbadge{position:absolute;bottom:-4px;left:-6px;transform:scale(.8);transform-origin:left bottom}
@@ -4273,7 +4273,7 @@ var TrollLogic = (function () {
         (best.c.bad = best.c.bad || {})[best.k] = true; // this exercise does not take that format after all
         if (++tried > 40) break;
       }
-      var fb = makeQuestion(topicId, level, rng); fb.d = 2; fb.slot = sl.k; qs.push(fb); // never reached with a pool of this size
+      var fb = makeQuestion(topicId, level, rng); fb.d = 2; fb.sh = 0; fb.slot = sl.k; qs.push(fb); // never reached with a pool of this size
     });
     var r = roundOf(topicId, qs); r.plan = plan;
     return r;
@@ -6866,8 +6866,8 @@ var TrollModels = (function () {
       isRec = !!rec && !rec.boss && rec.level === it.lv; it.reached = !far; it.far = far; it.count = cnt;
       b = h(tag, { class: 'mnode' + (far ? ' far' : full ? ' done' : ' open') + (isRec ? ' rec' : ''), 'data-house': it.lv, 'data-n': cnt },
         h('span', { class: 'mtop' }, isRec && !bare ? mapBuddy() : null,
-          h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, mapImg(stopIco(it.i, n)), full && !far ? mapFlag() : null, far ? mapLock() : null)),
-        mapCard(bare ? null : h('span', { class: 'mlab', text: it.d.name }), far ? null : pips));
+          h('span', { class: 'mic', style: '--k:' + (0.8 + 0.2 * it.i / Math.max(1, n - 1)).toFixed(2) }, mapImg(stopIco(it.i, n)), full && !far ? mapFlag() : null, far ? mapLock() : null, pips)), // the badge is pinned to the foot of the picture: it takes no room of its own on the map
+        mapCard(bare ? null : h('span', { class: 'mlab', text: it.d.name }), null));
     }
     return b;
   }
@@ -9391,6 +9391,7 @@ var TrollModels = (function () {
       state.prog[ht] = hrow;
       state.cnt = {}; state.cnt[ht] = hrow.map(function (x, i) { return i === lv0 - 1 ? (hcnt ? hcnt - 1 : hegg ? (hstg > 0 ? 2 : 0) : 11) : 0; });
     }
+    if (hegg && hmiss > 2) hmiss = 2; // an egg comes with a house that is won: a round with one star cannot hatch one any more
     r0 = L.createHouseRound(state, ht, lv0, Math.random, []);
     while (!r0.done()) { if (hmiss-- > 0) r0.miss(); r0.answer(r0.current().answer); r0.next(); }
     endStage(r0, ht, { level: lv0 });

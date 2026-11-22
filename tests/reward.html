@@ -110,7 +110,7 @@ async function news() {
   if (a) { a.click(); await wait(600); hot = x.d.querySelectorAll('.screen.jrn:not(.out) .jpage .jhot'); check(hot.length === 1 && hot[0].getAttribute('data-key') === key5 && !!hot[0].querySelector('.hbadge.a5'), 'the journal opens on the stamp of that house, with its badge and a ring around it'); }
   x.f.remove();
   // a round that was not won (one star): it counts and is rewarded, nothing opens, and the main button offers one more round or the next step
-  x = await frame('demo&s=end&rn=3&stg=1&egg&stars=1&hour=10'); await wait(300);
+  x = await frame('demo&s=end&rn=3&stars=1&hour=10'); await wait(300);
   check(!!x.d.querySelector('.eframe .hbadge.a3') && !x.d.querySelector('.emeet') && x.d.querySelectorAll('.ebtns .nxt').length === 1 && x.d.querySelectorAll('.bigstars .star.on').length === 1, 'a round that was not won: one star, the badge counts it, no egg, one main button');
   x.f.remove();
   // a round that changes nothing but the count: no picture buttons; a mixed round: only the new troll
