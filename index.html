@@ -2130,6 +2130,90 @@ body.toy .jhot{animation:jhot .9s var(--ease) 1}
 body.toy .camp .hrow .btn .jbadge{position:absolute;top:2px;inset-inline-end:max(2px,calc(50% - 30px));min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-full);background:var(--primary);color:#fff;font-size:12px;line-height:20px;font-weight:var(--w-black);text-align:center;box-shadow:0 0 0 2px var(--surface);pointer-events:none}
 body.toy .camp .hrow .btn.jrnb .ic{color:var(--accent-edge)}
 /* FLOWFIX-END-END */
+/* ==== task "troll": the motion set of the new drawing. Only transform and opacity. A troll stands still unless a rule here moves it:
+   endless motion only for the companion at the camp (.cbud) and on a map (.mbud), slow and small; everything else is one shot of under a second
+   (a mood plays its motion once when the troll is drawn; data-act plays one on request: trollAct in the ui block). ==== */
+.troll .tb,.troll .hair,.troll .eyes,.troll .pup,.troll .pet{animation:none}
+.troll .fc,.troll .sh,.troll .zz,.troll .ft{transform-box:fill-box;transform-origin:50% 100%}
+.troll .hE{transform-box:view-box;transform-origin:150px 184px}
+.buddy .troll.lk .pup{transform:none}
+/* idle: breathing, hair, blink and a glance now and then (the glance not when the mood or the caller aims the eyes) */
+.cbud .troll.happy:not([data-act]) .tb,.mbud .troll.happy:not([data-act]) .tb{animation:tBreath 3.8s ease-in-out infinite;animation-delay:var(--td,0s)}
+.cbud:not([class*="tr-"]) .troll.happy:not([data-act]) .hair,.mbud:not([class*="tr-"]) .troll.happy:not([data-act]) .hair{animation:tHairIdle 5.4s ease-in-out infinite;animation-delay:var(--td,0s)}
+.cbud .troll.happy .eyes,.mbud .troll.happy .eyes{animation:blink 4.6s infinite;animation-delay:var(--td,0s)}
+.cbud .troll.happy:not(.lk) .pup,.mbud .troll.happy:not(.lk) .pup{animation:look 9s ease-in-out infinite;animation-delay:var(--td,0s)}
+@keyframes tBreath{0%,100%{transform:scale(1,1)}50%{transform:scale(.985,1.022)}}
+@keyframes tHairIdle{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+/* the happy jump: squash, stretch, land; the hair and the shadow follow a little late */
+@keyframes jump{0%,100%{transform:translateY(0) scale(1,1)}14%{transform:translateY(0) scale(1.09,.88)}42%{transform:translateY(-34px) scale(.93,1.09)}56%{transform:translateY(-36px) scale(1,1)}80%{transform:translateY(-4px) scale(.96,1.05)}90%{transform:translateY(0) scale(1.08,.91)}}
+@keyframes tHairJump{0%,100%{transform:scale(1,1)}20%{transform:scale(1.03,.93)}50%{transform:scale(.96,1.12)}66%{transform:scale(.97,1.09)}94%{transform:scale(1.04,.9)}}
+@keyframes tShJump{0%,100%{transform:scale(1);opacity:1}14%{transform:scale(1.06);opacity:1}50%{transform:scale(.72);opacity:.55}90%{transform:scale(1.05);opacity:1}}
+.troll.cheer .hair{animation:tHairJump .55s ease-in-out infinite}
+.troll.cheer .sh{animation:tShJump .55s ease-in-out infinite}
+.troll.cheer .hE{animation:waveR .28s ease-in-out infinite alternate}
+.buddy .troll.cheer .hair,.buddy .troll.cheer .sh{animation-duration:.55s;animation-iteration-count:1}
+.buddy .troll.cheer .armL,.buddy .troll.cheer .armR,.buddy .troll.cheer .hE{animation-duration:.25s;animation-iteration-count:4}
+[class*="mv-"] .troll.cheer .hair,[class*="mv-"] .troll.cheer .sh{animation:none}
+/* oops: a wobble, the hair the other way */
+.troll.oops .tb{animation:tOops .7s ease-in-out 1}
+.troll.oops .hair{animation:tHairOops .7s ease-in-out 1}
+@keyframes tOops{0%,100%{transform:rotate(0) scale(1,1)}14%{transform:translateY(2px) rotate(-6deg) scale(1.04,.95)}36%{transform:rotate(5deg) scale(1,1)}58%{transform:rotate(-3.5deg)}80%{transform:rotate(1.5deg)}}
+@keyframes tHairOops{0%,100%{transform:rotate(0)}20%{transform:rotate(8deg)}42%{transform:rotate(-7deg)}64%{transform:rotate(4deg)}84%{transform:rotate(-2deg)}}
+/* surprised: a pop */
+.troll.surprised .tb{animation:tPop .5s ease-out 1}
+.troll.surprised .hair{animation:tHairPop .5s ease-out 1}
+.troll.surprised .eyes{animation:tEyePop .5s ease-out 1}
+@keyframes tPop{0%{transform:scale(1,1)}16%{transform:scale(1.07,.9)}44%{transform:translateY(-16px) scale(.9,1.13)}72%{transform:translateY(0) scale(1.05,.95)}100%{transform:scale(1,1)}}
+@keyframes tHairPop{0%,100%{transform:scale(1,1)}16%{transform:scale(1.03,.94)}50%{transform:scale(.96,1.13)}78%{transform:scale(1.03,.94)}}
+@keyframes tEyePop{0%{transform:scale(.6)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+/* proud: a dip, then chest up */
+.troll.proud .tb{animation:tProud .8s ease-in-out 1}
+.troll.proud .hair{animation:tHairProud .8s ease-in-out 1}
+@keyframes tProud{0%,100%{transform:scale(1,1)}22%{transform:scale(1.05,.94)}55%{transform:translateY(-5px) rotate(-2deg) scale(.96,1.08)}78%{transform:translateY(-2px) rotate(-1deg) scale(.98,1.04)}}
+@keyframes tHairProud{0%,100%{transform:rotate(0)}30%{transform:rotate(-3deg) scaleY(.94)}62%{transform:rotate(5deg) scaleY(1.08)}82%{transform:rotate(-2deg)}}
+/* hello: the raised arm swings from the shoulder, with what it holds */
+.troll.wave .armR{transform-box:fill-box;transform-origin:0 100%;animation:tWave .9s ease-in-out 1}
+.troll.wave .hE{transform-origin:152px 186px;animation:tWave .9s ease-in-out 1}
+@keyframes tWave{0%,100%{transform:rotate(0)}14%{transform:rotate(-16deg)}34%{transform:rotate(14deg)}54%{transform:rotate(-16deg)}74%{transform:rotate(12deg)}}
+/* sleepy: the head sinks and comes back; endless only at the camp */
+.troll.sleepy .tb{animation:tDoze .9s ease-in-out 1}
+.cbud .troll.sleepy .tb{animation:tDozeLong 4.6s ease-in-out infinite}
+.cbud .troll.sleepy .zz{animation:tZz 4.6s ease-in-out infinite}
+@keyframes tDoze{0%,100%{transform:rotate(0)}55%{transform:translateY(3px) rotate(5deg) scale(1.02,.97)}}
+@keyframes tDozeLong{0%,100%{transform:rotate(0)}40%,52%{transform:translateY(3px) rotate(5deg) scale(1.02,.97)}60%{transform:rotate(-1.5deg)}68%{transform:rotate(0)}}
+@keyframes tZz{0%{transform:translateY(8px);opacity:0}35%,55%{transform:translateY(0);opacity:1}100%{transform:translateY(-10px);opacity:0}}
+/* the exercise screen stays calm: nothing loops there, and nothing is longer than a second */
+.buddy .troll.think .tb{animation:tilt .9s ease-in-out 1}
+.buddy .troll.sad .tb,.buddy .troll.sad .tear{animation-duration:1s;animation-iteration-count:1}
+/* motions on request: <svg class="troll" data-act="nod|hop|jump|walk"> (walk is the only loop; nothing in the game uses it on the exercise screen) */
+.troll[data-act="nod"] .fc{animation:tNod .7s ease-in-out 1}
+.troll[data-act="nod"] .hair{animation:tHairNod .7s ease-in-out 1}
+@keyframes tNod{0%,100%{transform:translateY(0)}22%{transform:translateY(10px)}46%{transform:translateY(-1px)}68%{transform:translateY(8px)}}
+.troll[data-act="nod"] .tb{animation:tNodB .7s ease-in-out 1}
+@keyframes tNodB{0%,100%{transform:scale(1,1)}22%{transform:scale(1.015,.972)}46%{transform:scale(1,1)}68%{transform:scale(1.012,.978)}}
+@keyframes tHairNod{0%,100%{transform:scale(1,1)}28%{transform:scale(1.02,.93)}52%{transform:scale(1,1.02)}74%{transform:scale(1.01,.95)}}
+.troll[data-act="hop"] .tb{animation:tHop .3s ease-in-out 2}
+.troll[data-act="hop"] .hair{animation:tHairHop .3s ease-in-out 2}
+.troll[data-act="hop"] .ftL{animation:tStep .3s ease-in-out 2}
+.troll[data-act="hop"] .ftR{animation:tStep .3s ease-in-out .15s 2}
+.troll[data-act="walk"] .tb{animation:tHop .46s ease-in-out infinite}
+.troll[data-act="walk"] .hair{animation:tHairHop .46s ease-in-out infinite}
+.troll[data-act="walk"] .ftL{animation:tStep .46s ease-in-out infinite}
+.troll[data-act="walk"] .ftR{animation:tStep .46s ease-in-out -.23s infinite}
+@keyframes tHop{0%,100%{transform:translateY(0) rotate(0) scale(1,1)}18%{transform:translateY(0) scale(1.07,.92)}55%{transform:translateY(-13px) rotate(-3deg) scale(.96,1.05)}86%{transform:translateY(0) rotate(1deg) scale(1.05,.94)}}
+@keyframes tHairHop{0%,100%{transform:scale(1,1)}25%{transform:scale(1.02,.95)}62%{transform:scale(.97,1.09)}90%{transform:scale(1.03,.93)}}
+@keyframes tStep{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-9px) rotate(-10deg)}}
+.troll[data-act="jump"] .tb{animation:jump .55s ease-in-out 1}
+.troll[data-act="jump"] .hair{animation:tHairJump .55s ease-in-out 1}
+.troll[data-act="jump"] .sh{animation:tShJump .55s ease-in-out 1}
+/* the end of a stage: the companion hops along the trail while it walks (.ewalk), and stands proud when the map has changed */
+.endm .mbud:not([class*="mv-"]) .troll.proud .tb{animation:tProud .8s ease-in-out 1.5s 1}
+.endm .mbud:not([class*="mv-"]) .troll.proud .hair{animation:tHairProud .8s ease-in-out 1.5s 1}
+.endm .mbud.ewalk:not([class*="mv-"]) .troll.proud .tb{animation:tHop .3s ease-in-out var(--d,0s) 2}
+.endm .mbud.ewalk:not([class*="mv-"]) .troll.proud .hair{animation:tHairHop .3s ease-in-out var(--d,0s) 2}
+.endm .mbud.ewalk .troll .ftL{animation:tStep .3s ease-in-out var(--d,0s) 2}
+.endm .mbud.ewalk .troll .ftR{animation:tStep .3s ease-in-out calc(var(--d,0s) + .15s) 2}
+@media (prefers-reduced-motion:reduce){.troll *{animation:none!important}}
 </style>
 </head>
 <body>
@@ -4472,21 +4556,96 @@ var TrollLogic = (function () {
 })(TrollLogic);
 </script>
 <script id="troll">
-// Troll drawing: pure string generation, no DOM access.
+// Troll drawing: pure string generation, no DOM access. One light from the upper left; every mood is a row of parameters.
+//   TrollArt.trollSVG(spec, opts)
+//   spec: {id, body, hairColor, hair (0-5), acc, eyes (0-2)} + optional emoji items hatE, faceE, handE, petE
+//   opts.mood: happy | think | cheer | sad | curious | surprised | proud | focused | sleepy | wave (or waving) | oops
+//   opts.size: the height it is shown at, in px. Up to 72: the small troll (outlined, fewer parts, class "sm"); above: the large "toy" troll.
+//              Without a size the large troll is drawn and marked data-u, and the page draws it again small if it turns out small (trollFit in the ui block).
+//   opts.look: {x, y} from -1 to 1 (where the eyes look; such a troll has the class "lk" and its pupils are not moved by CSS)
+//   opts.tear: false removes the tear of 'sad'      opts.v: 2 toy | 3 outlined (overrides the choice by size)      opts.uid: a fixed id for the gradients
+// Groups for motion (CSS): .tb the whole troll, .hair, .fc the face, .eyes, .pup, .arm.armL/.armR, .ft.ftL/.ftR, .sh the shadow, .hE the item in the hand, .pet, .zz
 var TrollArt = (function () {
   'use strict';
-  function shade(hex, f) {
-    var n = parseInt(hex.slice(1), 16), c = [n >> 16, n >> 8 & 255, n & 255];
+  var seq = 0, KEEP = 400, mem = {}, INK = '#3b2a55', MOUTH = '#6b2140', TONGUE = '#ff7aa8';
+
+  // ---------- colour ----------
+  function hx(hex) { var h = String(hex).replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; var n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function shade(hex, f) { // the game's helper: f < 0 towards black, f > 0 towards white
+    var c = hx(hex);
     return 'rgb(' + c.map(function (x) { return Math.max(0, Math.min(255, Math.round(f < 0 ? x * (1 + f) : x + (255 - x) * f))); }).join(',') + ')';
   }
-  var HAIR = [
-    function (c, l) { return '<path d="M56,120 Q36,44 100,4 Q164,44 144,120 Z" fill="' + c + '"/><path d="M78,116 Q70,62 100,26 Q130,62 122,116 Z" fill="' + l + '" opacity=".55"/>'; },
-    function (c, l) { return '<path d="M58,118 L40,40 L80,70 L100,8 L120,70 L160,40 L142,118 Z" fill="' + c + '" stroke="' + c + '" stroke-width="12" stroke-linejoin="round"/><path d="M88,112 L100,34 L112,112 Z" fill="' + l + '" opacity=".55"/>'; },
-    function (c, l) { return '<g fill="' + c + '"><circle cx="64" cy="82" r="32"/><circle cx="136" cy="82" r="32"/><circle cx="100" cy="52" r="40"/><circle cx="100" cy="96" r="36"/></g><circle cx="88" cy="42" r="14" fill="' + l + '" opacity=".6"/><circle cx="126" cy="68" r="9" fill="' + l + '" opacity=".6"/>'; },
-    function (c, l) { return '<path d="M56,120 C30,66 62,36 100,36 C130,36 150,14 122,4 C172,0 176,66 144,120 Z" fill="' + c + '"/><path d="M80,112 C66,74 84,56 104,54 C124,52 138,40 132,26" fill="none" stroke="' + l + '" stroke-width="8" stroke-linecap="round" opacity=".6"/>'; },
-    function (c, l) { return '<path d="M74,116 Q10,86 18,18 Q66,44 100,104 Z" fill="' + c + '"/><path d="M126,116 Q190,86 182,18 Q134,44 100,104 Z" fill="' + c + '"/><circle cx="100" cy="100" r="28" fill="' + c + '"/><circle cx="52" cy="84" r="8" fill="' + l + '"/><circle cx="148" cy="84" r="8" fill="' + l + '"/>'; },
-    function (c, l) { return '<path d="M60,120 Q44,32 114,6 Q98,40 142,22 Q128,54 160,60 Q140,86 142,120 Z" fill="' + c + '"/><path d="M82,112 Q76,58 104,34" fill="none" stroke="' + l + '" stroke-width="8" stroke-linecap="round" opacity=".6"/>'; }
+  // tone: like shade, but a shadow also turns away from yellow and gains saturation, a light turns towards yellow
+  // (the way the Fluent objects are painted), so that a shaded pastel stays a colour and does not turn grey
+  function tone(hex, k) {
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return hex;
+    var c = hx(hex), r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, s = 0, h = 0, d = mx - mn;
+    if (d) { s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? ((g - b) / d + (g < b ? 6 : 0)) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; }
+    var y = ((h - 60 + 540) % 360) - 180, a;
+    if (k < 0) { a = Math.min(-k * 30, 180 - Math.abs(y)); y += y > 0 ? a : -a; l *= 1 + k; s *= 1 + k * .6; }
+    else { a = Math.min(k * 30, Math.abs(y)); y -= y > 0 ? a : -a; l += (1 - l) * k; }
+    h = (y + 60 + 360) % 360;
+    var q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    function ch(t) { t = (t + 360) % 360; var v = t < 60 ? p + (q - p) * t / 60 : t < 180 ? q : t < 240 ? p + (q - p) * (240 - t) / 60 : p; return ('0' + Math.round(v * 255).toString(16)).slice(-2); }
+    return '#' + ch(h + 120) + ch(h) + ch(h - 120);
+  }
+  // soft: a quieter shadow colour for limbs and nose (half way between tone and the game's plain shade)
+  function soft(hex, k) { var a = hx(tone(hex, k)), b = hx(hex); return '#' + a.map(function (x, i) { return ('0' + Math.round((x + b[i] * (1 + k)) / 2).toString(16)).slice(-2); }).join(''); }
+  function n1(x) { return Math.round(x * 10) / 10; }
+  function circ(cx, cy, r) { return 'M' + n1(cx - r) + ',' + n1(cy) + 'a' + r + ',' + r + ' 0 1,0 ' + 2 * r + ',0a' + r + ',' + r + ' 0 1,0 ' + (-2 * r) + ',0'; }
+  // the part of a circle above (top) or below (bottom) a chord; t = covered share of the height (0 to 1)
+  function seg(cx, cy, r, t, bottom) {
+    var yy = bottom ? cy + r - 2 * r * t : cy - r + 2 * r * t, w = Math.sqrt(Math.max(0, r * r - (yy - cy) * (yy - cy)));
+    return 'M' + n1(cx - w) + ',' + n1(yy) + 'A' + r + ',' + r + ' 0 ' + (t > .5 ? 1 : 0) + ',' + (bottom ? 0 : 1) + ' ' + n1(cx + w) + ',' + n1(yy) + 'Q' + cx + ',' + n1(yy + (bottom ? -1 : 1) * 3 * (1 - t)) + ' ' + n1(cx - w) + ',' + n1(yy) + 'Z';
+  }
+  function grad(kind, id, geo, stops) {
+    return '<' + kind + 'Gradient id="' + id + '" ' + geo + '>' + stops.map(function (s) {
+      return '<stop offset="' + s[0] + '" stop-color="' + s[1] + '"' + (s[2] != null ? ' stop-opacity="' + s[2] + '"' : '') + '/>';
+    }).join('') + '</' + kind + 'Gradient>';
+  }
+
+  // ---------- hair: the six silhouettes of the game, untouched. f = fill, l = light, d = dark, lv = level, big = not the simplified troll ----------
+  var HAIRD = [
+    'M56,120 Q36,44 100,4 Q164,44 144,120 Z',
+    'M58,118 L40,40 L80,70 L100,8 L120,70 L160,40 L142,118 Z',
+    circ(64, 82, 32) + circ(136, 82, 32) + circ(100, 52, 40) + circ(100, 96, 36),
+    'M56,120 C30,66 62,36 100,36 C130,36 150,14 122,4 C172,0 176,66 144,120 Z',
+    'M74,116 Q10,86 18,18 Q66,44 100,104 Z M126,116 Q190,86 182,18 Q134,44 100,104 Z ' + circ(100, 100, 28),
+    'M60,120 Q44,32 114,6 Q98,40 142,22 Q128,54 160,60 Q140,86 142,120 Z'
   ];
+  function hairSmall(hs, f) { return '<path d="' + HAIRD[hs] + '" fill="' + f + '"' + (hs === 1 ? ' stroke="' + f + '" stroke-width="12" stroke-linejoin="round"' : '') + '/>'; }
+  var HAIR = [
+    function (f, l, d, lv, big) {
+      return '<path d="' + HAIRD[0] + '" fill="' + f + '"/><path d="M78,116 Q70,62 100,26 Q130,62 122,116 Z" fill="' + l + '" opacity=".4"/>' +
+        (big && lv > 1 ? '<path d="M71,112 Q60,60 97,15 M129,112 Q140,60 103,15" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".4"/>' : '') +
+        (big ? '<path d="M63,86 Q60,52 85,27" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".38"/>' : '');
+    },
+    function (f, l, d, lv, big) {
+      return '<path d="' + HAIRD[1] + '" fill="' + f + '" stroke="' + f + '" stroke-width="12" stroke-linejoin="round"/><path d="M88,112 L100,34 L112,112 Z" fill="' + l + '" opacity=".42"/>' +
+        (big && lv > 1 ? '<path d="M70,110 L55,62 M130,110 L145,62" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".4"/>' : '') +
+        (big ? '<path d="M46,52 L56,96 M95,30 L88,62" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".38"/>' : '');
+    },
+    function (f, l, d, lv, big) {
+      return '<g fill="' + f + '"><circle cx="64" cy="82" r="32"/><circle cx="136" cy="82" r="32"/><circle cx="100" cy="52" r="40"/><circle cx="100" cy="96" r="36"/></g>' +
+        (big ? '<path d="M70,38 Q78,22 96,20 M42,74 Q44,62 54,58" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".42"/>' : '') +
+        (big && lv > 1 ? '<path d="M112,30 q12,4 14,16 M150,70 q8,8 4,20 M50,96 q-6,-10 2,-20" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".35"/>' : '');
+    },
+    function (f, l, d, lv, big) {
+      return '<path d="' + HAIRD[3] + '" fill="' + f + '"/><path d="M80,112 C66,74 84,56 104,54 C124,52 138,40 132,26" fill="none" stroke="' + l + '" stroke-width="8" stroke-linecap="round" opacity=".5"/>' +
+        (big && lv > 1 ? '<path d="M64,108 C48,74 66,48 100,45 M134,110 C150,86 158,58 150,32" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".4"/>' : '');
+    },
+    function (f, l, d, lv, big) {
+      return '<path d="' + HAIRD[4] + '" fill="' + f + '"/><circle cx="52" cy="84" r="8" fill="' + l + '"/><circle cx="148" cy="84" r="8" fill="' + l + '"/>' +
+        (big && lv > 1 ? '<path d="M34,40 Q56,60 74,92 M166,40 Q144,60 126,92" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".4"/>' : '') +
+        (big ? '<path d="M25,32 Q27,56 40,74" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".38"/>' : '');
+    },
+    function (f, l, d, lv, big) {
+      return '<path d="' + HAIRD[5] + '" fill="' + f + '"/><path d="M82,112 Q76,58 104,34" fill="none" stroke="' + l + '" stroke-width="8" stroke-linecap="round" opacity=".5"/>' +
+        (big && lv > 1 ? '<path d="M104,112 Q104,70 128,42 M126,112 Q128,88 146,70" fill="none" stroke="' + d + '" stroke-width="3" stroke-linecap="round" opacity=".4"/>' : '');
+    }
+  ];
+
+  // ---------- accessories: the game's drawings, unchanged ----------
   var ACC = {
     none: '',
     sunglasses: '<path d="M54,150 h40 v10 a20,17 0 0 1 -40,0 Z M106,150 h40 v10 a20,17 0 0 1 -40,0 Z" fill="#3b2a55"/><path d="M92,154 h16" stroke="#3b2a55" stroke-width="5"/><path d="M60,156 h9 M112,156 h9" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>',
@@ -4504,56 +4663,183 @@ var TrollArt = (function () {
     flower: '<g transform="translate(60,112)"><g fill="#fff"><circle cx="0" cy="-11" r="8"/><circle cx="10" cy="-3" r="8"/><circle cx="6" cy="9" r="8"/><circle cx="-6" cy="9" r="8"/><circle cx="-10" cy="-3" r="8"/></g><circle r="6.5" fill="#ffd23f"/></g>',
     hat: '<g transform="rotate(16 130 104)"><path d="M108,110 L130,56 L152,110 Z" fill="#5bd1ff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><path d="M116,92 L144,92 M122,76 L138,76" stroke="#fff" stroke-width="4"/><circle cx="130" cy="54" r="8" fill="#ffd23f"/></g>'
   };
-  var BACK = { wings: '<g fill="#fff" stroke="#9fdcff" stroke-width="3" opacity=".95"><path d="M52,186 Q-14,120 4,196 Q-6,236 54,216 Z"/><path d="M148,186 Q214,120 196,196 Q206,236 146,216 Z"/></g>' }; // accessories drawn behind the body
+  var BACK = { wings: '<g fill="#fff" stroke="#9fdcff" stroke-width="3" opacity=".95"><path d="M52,186 Q-14,120 4,196 Q-6,236 54,216 Z"/><path d="M148,186 Q214,120 196,196 Q206,236 146,216 Z"/></g>' };
+  // the four accessories that were flat get the same light as the body (large troll and the cards of the cart; the small troll keeps the flat ones)
+  var LIT = {
+    scarf: function () { return '<path d="M40,212 Q100,240 160,212 L158,228 Q100,256 42,228 Z" fill="#ff6a3d"/><path d="M126,236 l5,28 l17,-4 l-7,-28 Z" fill="#ff6a3d"/>' +
+      '<path d="M41,221 Q100,249 159,221 L158,228 Q100,256 42,228 Z M139,233 l2,-1 l7,28 l-5,1.2 Z" fill="#a82c0c" opacity=".38"/><path d="M40,212 Q100,240 160,212 L159.4,216.5 Q100,244.5 40.6,216.5 Z" fill="#fff" opacity=".34"/>' +
+      '<path d="M60,226 l3,12 M84,233 l2,12 M110,234 l0,12 M133,246 l14,-3" stroke="#ffd23f" stroke-width="4"/>'; },
+    headphones: function () { return '<path d="M36,158 Q34,90 100,90 Q166,90 164,158" fill="none" stroke="#3b2a55" stroke-width="8" stroke-linecap="round"/><path d="M39,140 Q41,96 96,93.5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".4"/>' +
+      '<rect x="22" y="144" width="22" height="40" rx="10" fill="#ff4f9a"/><rect x="156" y="144" width="22" height="40" rx="10" fill="#e0367f"/>' +
+      '<path d="M27,152 v14 M161,152 v10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".5"/><path d="M26,178 q7,7 15,0 M160,178 q7,7 15,0" fill="none" stroke="#8f1650" stroke-width="5" stroke-linecap="round" opacity=".4"/>'; },
+    crown: function (U) { return '<path d="M72,112 L66,78 L87,96 L100,70 L113,96 L134,78 L128,112 Z" fill="' + U('k') + '" stroke="#e8a800" stroke-width="4" stroke-linejoin="round"/>' +
+      '<path d="M73,84 L77,106 M97,82 L92,97" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".7"/><path d="M75,109 h50" stroke="#c98a00" stroke-width="3" stroke-linecap="round" opacity=".5"/>' +
+      '<circle cx="100" cy="98" r="5" fill="#ff4f9a"/><circle cx="80" cy="102" r="3.5" fill="#5bb8ff"/><circle cx="120" cy="102" r="3.5" fill="#5bb8ff"/><path d="' + circ(98.6, 96.4, 1.4) + circ(79, 100.8, 1) + circ(119, 100.8, 1) + '" fill="#fff" opacity=".9"/>'; },
+    wings: function (U) { return '<g stroke="#9fdcff" stroke-width="3" opacity=".95"><path d="M52,186 Q-14,120 4,196 Q-6,236 54,216 Z" fill="' + U('w') + '"/><path d="M148,186 Q214,120 196,196 Q206,236 146,216 Z" fill="' + U('x') + '"/>' +
+      '<path d="M46,196 Q20,180 9,172 M46,206 Q22,208 9,214 M154,196 Q180,180 191,172 M154,206 Q178,208 191,214" fill="none" stroke-width="2" stroke-linecap="round"/></g>'; }
+  };
+  function litDefs(acc, id) {
+    return acc === 'crown' ? grad('linear', id + 'k', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#fff6b0'], [.45, '#ffd23f'], [1, '#f2a100']])
+      : acc === 'wings' ? grad('linear', id + 'w', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#ffffff'], [1, '#cfeaff']]) + grad('linear', id + 'x', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#eef8ff'], [1, '#b4dcfb']]) : '';
+  }
+  var api = { assetRoot: '' };
   function em(ch, x, y, size, cls) {
     if (!ch) return '';
     var cp = Array.from(ch).map(function (c) { return c.codePointAt(0).toString(16); }).filter(function (c) { return c !== 'fe0f'; }).join('-');
-    return '<image class="em' + (cls || '') + '" href="assets/ico/' + cp + '.png" x="' + (x - size / 2) + '" y="' + (y - size * 0.9) + '" width="' + size + '" height="' + size + '"/>';
+    return '<image class="em' + (cls || '') + '" href="' + api.assetRoot + 'assets/ico/' + cp + '.png" x="' + n1(x - size / 2) + '" y="' + n1(y - size * 0.9) + '" width="' + size + '" height="' + size + '"/>';
   }
-  // spec: {id, body, hairColor, hair, acc, eyes} + optional emoji items hatE, faceE, handE, petE; opts.mood: 'happy' | 'think' | 'cheer'
+
+  // ---------- expressions: every mood is a row of parameters for the one drawing ----------
+  // eye: open | joy (closed, laughing) | wide      look: [x, y] -1..1       lid / lidB: share of the eye covered from above / below
+  // brow: [heightL, slantL, heightR, slantR]  (height: minus = up; slant: plus = inner end up, kind or worried; minus = inner end down, concentrating)
+  // mouth: smile | grin | o | bigO | small | tongue | wide | wobble | frown | open | yawn
+  // arms: [left, right] of down | up | chin | wave | hips | head | out      tilt: degrees
+  var MOODS = {
+    happy:     { mouth: 'smile', arms: ['down', 'down'] },
+    think:     { look: [.5, -.8], mouth: 'o', arms: ['down', 'chin'], brow: [0, 4, -5, 4] },
+    cheer:     { eye: 'joy', mouth: 'grin', arms: ['up', 'up'] },
+    sad:       { look: [0, .85], mouth: 'frown', arms: ['down', 'down'], brow: [5, 20, 5, 20], tear: 1 },
+    curious:   { look: [-.75, .35], mouth: 'osmall', arms: ['down', 'chin'], brow: [1, 2, -7, 6], tilt: -6 },
+    surprised: { eye: 'wide', mouth: 'bigO', arms: ['out', 'out'], brow: [-7, 6, -7, 6] },
+    proud:     { look: [.15, -.3], lidB: .24, mouth: 'wide', arms: ['hips', 'hips'], brow: [-3, 5, -3, 5] },
+    focused:   { look: [-.7, .75], mouth: 'tongue', arms: ['down', 'down'], brow: [5, -7, 5, -7] },
+    sleepy:    { look: [0, .7], lid: .58, mouth: 'yawn', arms: ['down', 'down'], brow: [1, 10, 1, 10], zz: 1 },
+    wave:      { mouth: 'open', arms: ['down', 'wave'], brow: [-3, 5, -3, 5] },
+    oops:      { look: [.55, -.45], mouth: 'wobble', arms: ['down', 'head'], brow: [0, 13, -2, 13], blush: 1 }
+  };
+  var ALIAS = { waving: 'wave' };
+  // a left arm: start x, y, control dx, dy, end dx, dy (the right arm is its mirror); the last number 1 = drawn in front of the body
+  var ARMS = {
+    down: [44, 188, -18, 16, -10, 40],
+    up:   [50, 180, -28, -16, -24, -56],
+    chin: [37, 200, -8, 30, 30, 10, 1],
+    wave: [48, 186, -32, -8, -31, -54],
+    hips: [46, 184, -32, 10, -7, 38],
+    head: [48, 186, -38, -8, -19, -58],
+    out:  [44, 196, -18, 4, -31, -12]
+  };
+  function arm(pose, right, cls, col, lv, big, ol) {
+    var a = ARMS[pose] || ARMS.down, k = right ? -1 : 1, sx = right ? 200 - a[0] : a[0], ex = sx + k * a[4], ey = a[1] + a[5];
+    var d = 'M' + sx + ',' + a[1] + ' q' + k * a[2] + ',' + a[3] + ' ' + k * a[4] + ',' + a[5];
+    if (!big && !ol) return { s: '<path class="arm ' + cls + '" fill="none" stroke-linecap="round" stroke-width="15" stroke="' + col + '" d="' + d + '"/>', front: !!a[6], ex: ex, ey: ey };
+    var s = '<g class="arm ' + cls + '" fill="none" stroke-linecap="round" stroke-width="15" stroke="' + col + '">' +
+      (ol ? '<path d="' + d + '" stroke="' + ol + '" stroke-width="' + (big ? 20 : 21) + '"/>' + (big ? '<path d="M' + ex + ',' + ey + 'h0" stroke="' + ol + '" stroke-width="24"/>' : '') : '') +
+      '<path d="' + d + '"/>' + (big ? '<path d="M' + ex + ',' + ey + 'h0" stroke-width="19"/>' : '') + '</g>';
+    return { s: s, front: !!a[6], ex: ex, ey: ey };
+  }
+  function mouthOf(type, big) {
+    var w = big ? 6 : 7.5, line = function (d) { return '<path d="' + d + '" fill="none" stroke="' + MOUTH + '" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round"/>'; };
+    switch (type) {
+      case 'grin': return '<path d="M80,194 Q100,228 120,194 Z" fill="' + MOUTH + '" stroke="' + MOUTH + '" stroke-width="4" stroke-linejoin="round"/><path d="M90,208 Q100,200 110,208 Q100,220 90,208 Z" fill="' + TONGUE + '"/>';
+      case 'open': return '<path d="M84,196 Q100,220 116,196 Z" fill="' + MOUTH + '" stroke="' + MOUTH + '" stroke-width="4" stroke-linejoin="round"/>' + (big ? '<path d="M93,207 Q100,202 107,207 Q100,214 93,207 Z" fill="' + TONGUE + '"/>' : '');
+      case 'o': return '<ellipse cx="104" cy="202" rx="' + (big ? 6 : 7) + '" ry="' + (big ? 7 : 8) + '" fill="' + MOUTH + '"/>';
+      case 'osmall': return '<ellipse cx="98" cy="202" rx="' + (big ? 5 : 6.5) + '" ry="' + (big ? 5.5 : 7) + '" fill="' + MOUTH + '"/>';
+      case 'yawn': return '<ellipse cx="100" cy="203" rx="' + (big ? 6 : 7) + '" ry="' + (big ? 4.5 : 6) + '" fill="' + MOUTH + '"/>';
+      case 'bigO': return '<ellipse cx="100" cy="206" rx="10" ry="12" fill="' + MOUTH + '"/>' + (big ? '<ellipse cx="100" cy="212" rx="6" ry="4" fill="' + TONGUE + '"/>' : '');
+      case 'small': return line('M91,201 Q100,207 109,201');
+      case 'tongue': return line('M88,200 Q97,206 106,201') + '<circle cx="109" cy="204" r="' + (big ? 6 : 7) + '" fill="' + TONGUE + '" stroke="' + MOUTH + '" stroke-width="2"/>';
+      case 'wide': return line('M78,194 Q100,222 122,194');
+      case 'wobble': return line('M84,203 q5,-8 10,0 t10,0 t10,0');
+      case 'frown': return line('M84,208 Q100,193 116,208');
+      default: return line('M82,196 Q100,216 118,196');
+    }
+  }
+
   function trollSVG(s, o) {
-    o = o || {};
-    var mood = o.mood || 'happy', dk = shade(s.body, -0.22), lt = shade(s.body, 0.45), ink = '#3b2a55';
-    var arms = mood === 'cheer'
-      ? '<path class="arm armL" d="M50,180 q-28,-16 -24,-56"/><path class="arm armR" d="M150,180 q28,-16 24,-56"/>'
-      : mood === 'think'
-        ? '<path class="arm armL" d="M44,188 q-16,18 -8,40"/><path class="arm armR" d="M154,196 q14,34 -30,14"/>'
-        : '<path class="arm armL" d="M44,188 q-18,16 -10,40"/><path class="arm armR" d="M156,188 q18,16 10,40"/>';
-    var py = mood === 'think' ? -5 : mood === 'sad' ? 5 : 0, px = mood === 'think' ? 3 : 0, pr = [7.5, 9.5, 7.5][s.eyes] || 7.5;
-    var eyes = mood === 'cheer'
-      ? '<path d="M62,164 q14,-18 28,0 M110,164 q14,-18 28,0" fill="none" stroke="' + ink + '" stroke-width="6" stroke-linecap="round"/>'
-      : '<g class="eyes"><circle cx="76" cy="160" r="16" fill="#fff"/><circle cx="124" cy="160" r="16" fill="#fff"/>' +
-        '<g class="pup"><circle cx="' + (78 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/><circle cx="' + (126 + px) + '" cy="' + (161 + py) + '" r="' + pr + '" fill="' + ink + '"/>' +
-        '<circle cx="' + (81 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/><circle cx="' + (129 + px) + '" cy="' + (157 + py) + '" r="3" fill="#fff"/></g>' +
-        (s.eyes === 2 ? '<path d="M61,150 l-7,-5 M66,145 l-4,-8 M139,150 l7,-5 M134,145 l4,-8" stroke="' + ink + '" stroke-width="3.5" stroke-linecap="round"/>' : '') + '</g>';
-    var mouth = mood === 'cheer'
-      ? '<path d="M80,194 Q100,228 120,194 Z" fill="#6b2140" stroke="#6b2140" stroke-width="4" stroke-linejoin="round"/><path d="M90,208 Q100,200 110,208 Q100,220 90,208 Z" fill="#ff7aa8"/>'
-      : mood === 'think'
-        ? '<ellipse cx="104" cy="202" rx="6" ry="7" fill="#6b2140"/>'
-        : '<path d="M82,196 Q100,216 118,196" fill="none" stroke="#6b2140" stroke-width="5" stroke-linecap="round"/>';
-    if (mood === 'sad') mouth = '<path d="M84,208 Q100,193 116,208" fill="none" stroke="#6b2140" stroke-width="5" stroke-linecap="round"/>' +
-      '<path d="M58,146 L90,134 M142,146 L110,134" stroke="' + ink + '" stroke-width="5" stroke-linecap="round"/>' +
-      '<path class="tear" d="M138,180 q-6,10 0,15 q6,-5 0,-15 Z" fill="#7fd4ff"/>';
-    return '<svg class="troll ' + mood + '" viewBox="0 0 200 262" preserveAspectRatio="xMidYMax meet" style="--d:' + (-((s.id || 0) % 17) / 5) + 's">' +
-      '<ellipse cx="100" cy="253" rx="56" ry="7" fill="rgba(0,0,0,.14)"/>' +
-      '<g class="tb"><g class="hair">' + (HAIR[s.hair] || HAIR[0])(s.hairColor, shade(s.hairColor, 0.5)) + '</g>' + (BACK[s.acc] || '') +
-      '<g stroke="' + dk + '">' + arms + '</g>' +
-      '<ellipse class="ft ftL" cx="74" cy="246" rx="22" ry="10" fill="' + dk + '"/><ellipse class="ft ftR" cx="126" cy="246" rx="22" ry="10" fill="' + dk + '"/>' +
-      '<ellipse cx="36" cy="166" rx="14" ry="18" fill="' + s.body + '"/><ellipse cx="164" cy="166" rx="14" ry="18" fill="' + s.body + '"/>' +
-      '<ellipse cx="35" cy="166" rx="6" ry="9" fill="' + dk + '" opacity=".5"/><ellipse cx="165" cy="166" rx="6" ry="9" fill="' + dk + '" opacity=".5"/>' +
-      '<path d="M100,96 C150,96 166,140 166,186 C166,226 140,246 100,246 C60,246 34,226 34,186 C34,140 50,96 100,96 Z" fill="' + s.body + '"/>' +
-      '<ellipse cx="100" cy="218" rx="36" ry="22" fill="' + lt + '" opacity=".55"/>' +
-      '<circle cx="56" cy="188" r="10" fill="#ff8fb5" opacity=".75"/><circle cx="144" cy="188" r="10" fill="#ff8fb5" opacity=".75"/>' +
-      eyes + '<ellipse cx="100" cy="180" rx="8" ry="6" fill="' + dk + '"/>' + mouth + (ACC[s.acc] || '') + em(s.faceE, 100, 186, 72) + em(s.hatE, 100, 114, 62) + em(s.handE, 172, 240, 46) +
-      '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
+    o = o || {}; s = s || {};
+    var mood = ALIAS[o.mood] || o.mood; if (!MOODS[mood]) mood = 'happy';
+    var m = MOODS[mood], big = !(o.size && o.size <= 72), lv = o.v === 2 || o.v === 3 ? o.v : big ? 2 : 3, lit = big && LIT[s.acc], uid = 0;
+    if (!o.size && !o.again) { uid = ++seq; mem[uid] = [s, o]; delete mem[uid - KEEP]; } // may be drawn again small (see again)
+    var id = 't' + (o.uid != null ? o.uid : uid || ++seq) + '-', U = function (n) { return 'url(#' + id + n + ')'; };
+    var body = s.body || '#ff8fb1', hairC = s.hairColor || '#8e5cff', hs = HAIR[s.hair] ? s.hair : 0;
+    var K = lv === 3 ? 1.35 : lv === 2 ? 1.15 : 1;                               // contrast of the shading
+    var lt = shade(body, 0.45), dk = tone(body, -0.22), deep = tone(body, -0.48), ol = lv === 3 ? tone(body, -0.42) : null, olH = lv === 3 ? tone(hairC, -0.4) : null;
+
+    // gradients: one light, from the upper left
+    var defs =
+      grad('radial', id + 'b', 'cx=".35" cy=".27" r=".85"', big ? [[0, tone(body, .3 * K)], [.5, body], [1, tone(body, -.17 * K)]] : [[0, tone(body, .26 * K)], [.62, body], [1, tone(body, -.11 * K)]]) +
+      (hs === 2 && big ? grad('radial', id + 'h', 'cx=".34" cy=".28" r=".78"', [[0, tone(hairC, .24 * K)], [.5, hairC], [1, tone(hairC, -.17 * K)]])
+                : grad('linear', id + 'h', 'x1=".2" y1="0" x2=".8" y2="1"', big ? [[0, tone(hairC, .22 * K)], [.4, hairC], [1, tone(hairC, -.17 * K)]] : [[0, tone(hairC, .2 * K)], [1, tone(hairC, -.15 * K)]])) +
+      grad('radial', id + 's', '', big ? [[0, '#2a2148', lv > 1 ? .5 : .4], [.5, '#2a2148', .2], [1, '#2a2148', 0]] : [[0, '#2a2148', .5], [1, '#2a2148', 0]]) +
+      (big ? grad('radial', id + 'g', '', [[0, '#fff', lv > 1 ? .7 : .55], [1, '#fff', 0]]) +
+             grad('radial', id + 'c', '', [[0, '#ff5f93', m.blush ? .95 : .72], [1, '#ff5f93', 0]]) : '') + (lit ? litDefs(s.acc, id) : '');
+    var limbL = soft(body, -.14), limbR = soft(body, -.26 * K);                  // lit side, shaded side
+
+    // arms
+    var aL = arm(m.arms[0], false, 'armL', limbL, lv, big, ol), aR = arm(m.arms[1], true, 'armR', limbR, lv, big, ol);
+    var armsBack = (aL.front ? '' : aL.s) + (aR.front ? '' : aR.s), armsFront = (aL.front ? aL.s : '') + (aR.front ? aR.s : '');
+
+    // eyes
+    var lk = o.look || (m.look ? { x: m.look[0], y: m.look[1] } : { x: 0, y: 0 }), lx = +lk.x || 0, ly = +lk.y || 0, ll = Math.sqrt(lx * lx + ly * ly);
+    if (ll > 1) { lx /= ll; ly /= ll; }
+    var wide = m.eye === 'wide', R = wide ? 18 : big ? 16 : 17, pr = ([7.5, 9.5, 7.5][s.eyes] || 7.5) * (wide ? .8 : 1) + (big ? 0 : 1.5), reach = R - pr - 1.5;
+    var hasLook = !!(o.look || m.look), px = hasLook ? lx * reach : 2, py = hasLook ? ly * reach : 1, ex = [76, 124], ey = 160, eyes, brows = '';
+    if (m.eye === 'joy') {
+      eyes = '<path d="M62,164 q14,-18 28,0 M110,164 q14,-18 28,0" fill="none" stroke="' + INK + '" stroke-width="' + (big ? 6 : 8) + '" stroke-linecap="round"/>';
+    } else {
+      var hl = big ? 3.5 : 3.2;
+      eyes = '<g class="eyes"><path d="' + circ(ex[0], ey, R) + circ(ex[1], ey, R) + '" fill="#fff" stroke="' + (ol || deep) + '" stroke-width="' + (lv === 3 ? 2.5 : 2) + '" stroke-opacity="' + (lv === 3 ? .8 : .4) + '"/>' +
+        '<g class="pup"><path d="' + circ(n1(ex[0] + px), n1(ey + py), pr) + circ(n1(ex[1] + px), n1(ey + py), pr) + '" fill="' + INK + '"/>' +
+        '<path d="' + circ(n1(ex[0] + px - pr * .36), n1(ey + py - pr * .42), hl) + circ(n1(ex[1] + px - pr * .36), n1(ey + py - pr * .42), hl) +
+        (big && lv > 1 ? circ(n1(ex[0] + px + pr * .42), n1(ey + py + pr * .42), 1.5) + circ(n1(ex[1] + px + pr * .42), n1(ey + py + pr * .42), 1.5) : '') + '" fill="#fff"/></g>' +
+        (m.lid ? '<path d="' + seg(ex[0], ey, R + 1, m.lid) + seg(ex[1], ey, R + 1, m.lid) + '" fill="' + tone(body, -.1) + '" stroke="' + deep + '" stroke-width="2" stroke-linejoin="round"/>' : '') +
+        (m.lidB ? '<path d="' + seg(ex[0], ey, R + 1, m.lidB, 1) + seg(ex[1], ey, R + 1, m.lidB, 1) + '" fill="' + body + '" stroke="' + deep + '" stroke-opacity=".45" stroke-width="2" stroke-linejoin="round"/>' : '') +
+        (s.eyes === 2 ? '<path d="M61,150 l-7,-5 M66,145 l-4,-8 M139,150 l7,-5 M134,145 l4,-8" stroke="' + INK + '" stroke-width="' + (big ? 3.5 : 5) + '" stroke-linecap="round"/>' : '') + '</g>';
+    }
+    if (m.brow) {
+      var bd = '', hl2 = 14, i;
+      for (i = 0; i < 2; i++) {
+        var sg = i ? -1 : 1, by = ey - R - 9 + m.brow[i * 2], an = m.brow[i * 2 + 1] * Math.PI / 180, cx = ex[i] + (i ? 1 : -1) * 1, c = Math.cos(an) * hl2, sn = Math.sin(an) * hl2;
+        bd += 'M' + n1(cx - sg * c) + ',' + n1(by + sn) + ' Q' + cx + ',' + n1(by - 4) + ' ' + n1(cx + sg * c) + ',' + n1(by - sn);
+      }
+      brows = '<path d="' + bd + '" fill="none" stroke="' + INK + '" stroke-width="' + (big ? 5 : 7) + '" stroke-linecap="round"/>';
+    }
+
+    var onFace = s.acc === 'glasses' || s.acc === 'sunglasses';
+    var face = '<g class="fc">' + (big ? '<circle cx="55" cy="189" r="13.5" fill="' + U('c') + '"/><circle cx="145" cy="189" r="13.5" fill="' + U('c') + '"/>'
+                    : '<path d="' + circ(56, 188, 10) + circ(144, 188, 10) + '" fill="#ff7aa8" opacity=".7"/>') +
+      eyes + brows +
+      '<ellipse cx="100" cy="180" rx="8" ry="6" fill="' + soft(body, -.27) + '"/>' + (big && lv > 1 ? '<ellipse cx="97.5" cy="178" rx="3" ry="1.8" fill="#fff" opacity=".45"/>' : '') +
+      mouthOf(m.mouth, big) +
+      (onFace ? ACC[s.acc] : '') + em(s.faceE, 100, 186, 72) + '</g>' +
+      (m.tear && o.tear !== false ? '<path class="tear" d="M138,180 q-6,10 0,15 q6,-5 0,-15 Z" fill="#7fd4ff"/>' : '') +
+      (m.zz ? '<g class="zz"><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#fff" stroke-width="' + (big ? 8 : 10) + '" stroke-linecap="round" stroke-linejoin="round"/><path d="M168,116 h13 l-13,15 h13 M186,90 h9 l-9,11 h9" fill="none" stroke="#6c5a8e" stroke-width="' + (big ? 4 : 5.5) + '" stroke-linecap="round" stroke-linejoin="round"/></g>' : '');
+
+    var BODYD = 'M100,96 C150,96 166,140 166,186 C166,226 140,246 100,246 C60,246 34,226 34,186 C34,140 50,96 100,96 Z';
+    var olA = ol ? ' stroke="' + ol + '" stroke-width="' + (big ? 3 : 5) + '"' : '';
+    var hair = (olH ? '<path d="' + HAIRD[hs] + '" fill="none" stroke="' + olH + '" stroke-width="' + ((hs === 1 ? 12 : 0) + (big ? 6 : 9)) + '" stroke-linejoin="round"/>' : '') +
+      (big ? HAIR[hs](U('h'), tone(hairC, .5), tone(hairC, -.4), lv, big) : hairSmall(hs, U('h')));
+
+    var inner =
+      '<g class="hair">' + hair + '</g>' + (lit && BACK[s.acc] ? lit(U) : BACK[s.acc] || '') + armsBack +
+      '<ellipse class="ft ftL" cx="74" cy="246" rx="22" ry="10" fill="' + limbL + '"' + olA + '/><ellipse class="ft ftR" cx="126" cy="246" rx="22" ry="10" fill="' + limbR + '"' + olA + '/>' +
+      '<ellipse cx="36" cy="166" rx="14" ry="18" fill="' + tone(body, .12) + '"' + olA + '/><ellipse cx="164" cy="166" rx="14" ry="18" fill="' + tone(body, -.14 * K) + '"' + olA + '/>' +
+      (big ? '<path d="M29,166a6,9 0 1,0 12,0a6,9 0 1,0 -12,0M159,166a6,9 0 1,0 12,0a6,9 0 1,0 -12,0" fill="' + dk + '" opacity=".5"/>' : '') +
+      '<path d="' + BODYD + '" fill="' + U('b') + '"' + olA + '/>' +
+      (lv > 1 && big ? '<path d="M164.5,198 C161,228 138,244.5 106,246 C134,240 155,225 164.5,198 Z" fill="' + tone(body, .6) + '" opacity=".42"/>' : '') +   // rim light, lower right
+      '<ellipse cx="100" cy="218" rx="36" ry="22" fill="' + lt + '" opacity="' + (lv > 1 ? .5 : .55) + '"/>' +
+      '<ellipse cx="76" cy="122" rx="30" ry="15" transform="rotate(-30 76 122)" fill="' + (big ? U('g') + '"' : '#fff" opacity=".3"') + '/>' +                                                // soft light on the head
+      (lv > 1 && big ? '<ellipse cx="69" cy="113" rx="10" ry="4.5" transform="rotate(-33 69 113)" fill="#fff" opacity=".62"/>' : '') + // vinyl sheen
+      face + armsFront + (onFace ? '' : lit && !BACK[s.acc] ? lit(U) : ACC[s.acc] || '') + em(s.hatE, 100, 114, 62) +
+      (aR.front ? em(s.handE, 172, 240, 46, ' hE') : em(s.handE, aR.ex + 6, aR.ey + 12, 46, ' hE'));
+
+    return '<svg class="troll ' + mood + (hasLook ? ' lk' : '') + (big ? '' : ' sm') + '"' + (uid ? ' data-u="' + uid + '"' : '') + ' viewBox="0 0 200 262" preserveAspectRatio="xMidYMax meet" style="--td:' + (-((s.id || 0) % 17) / 5) + 's">' + defs +
+      '<ellipse class="sh" cx="' + (lv > 1 ? 108 : 104) + '" cy="252" rx="' + (lv > 1 ? 72 : 64) + '" ry="' + (lv > 1 ? 10 : 9) + '" fill="' + U('s') + '"/>' +
+      '<g class="tb">' + (m.tilt ? '<g transform="rotate(' + m.tilt + ' 100 248)">' + inner + '</g>' : inner) + '</g>' + em(s.petE, 16, 257, 52, ' pet') + '</svg>';
   }
+  // the troll that was drawn without a size (data-u), drawn again for the height it really has; '' when it is no longer remembered
+  function again(uid, size) { var r = mem[uid]; if (!r) return ''; delete mem[uid]; var o = {}, k; for (k in r[1]) o[k] = r[1][k]; o.size = size; o.again = 1; return trollSVG(r[0], o); }
   // One piece alone, for a card of the cart: a code-drawn accessory or a hairstyle, without the troll. The caller fits the
   // viewBox to the drawing once it is in the page (getBBox).
   function partSVG(kind, id, color) {
-    var c = color || '#ff4f9a', inner = kind === 'hair' ? (HAIR[id] || HAIR[0])(c, shade(c, 0.5)) : (BACK[id] || '') + (ACC[id] || '');
-    return inner ? '<svg class="part" viewBox="0 0 200 262" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + inner + '</svg>' : '';
+    var c = color || '#ff4f9a', pid = 'p' + kind.charAt(0) + id + String(c).replace('#', '') + '-', U = function (n) { return 'url(#' + pid + n + ')'; }, inner, defs = '';
+    if (kind === 'hair') { if (!HAIR[id]) id = 0; defs = grad('linear', pid + 'h', 'x1=".2" y1="0" x2=".8" y2="1"', [[0, tone(c, .25)], [.4, c], [1, tone(c, -.2)]]); inner = HAIR[id](U('h'), tone(c, .5), tone(c, -.4), 2, true); }
+    else { inner = LIT[id] ? LIT[id](U) : (BACK[id] || '') + (ACC[id] || ''); defs = litDefs(id, pid); }
+    return inner ? '<svg class="part" viewBox="0 0 200 262" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + defs + inner + '</svg>' : '';
   }
-  return { trollSVG: trollSVG, partSVG: partSVG, shade: shade };
+  function nodes(svg) { return (svg.match(/<[a-zA-Z]/g) || []).length; }
+  api.trollSVG = trollSVG; api.partSVG = partSVG; api.again = again; api.shade = shade; api.tone = tone; api.nodes = nodes; api.MOODS = Object.keys(MOODS);
+  return api;
 })();
 </script>
 <script id="models">
@@ -5580,7 +5866,7 @@ var TrollModels = (function () {
       var fr = L.friend(state), tricks = reduced || fresh ? [] : TRICKS.filter(function (x) { return fr.level >= x[0]; }), taps = 0;
       var bs0 = noPet(bs), bud = h('button', { class: 'cbud', 'aria-label': bs.name + (fresh ? '' : ', חֲבֵרוּת ' + fr.level + ' מִתּוֹךְ 6') }); // the pet stands beside the companion
       var heart = fresh ? null : h('span', { class: 'fheart', 'aria-hidden': 'true' }, jart('heart'), h('b', { text: String(fr.level) })); // the friendship level, on the companion
-      function paint(mood) { bud.innerHTML = A.trollSVG(bs0, mood ? { mood: mood } : undefined); if (heart) bud.appendChild(heart); }
+      function paint(mood) { bud.innerHTML = A.trollSVG(bs0, { mood: mood || campMood() }); if (heart) bud.appendChild(heart); }
       function trick(name) { bud.classList.add('tr-' + name); later(function () { bud.classList.remove('tr-' + name); }, 1200); }
       paint();
       bud.addEventListener('click', function () {
@@ -5594,6 +5880,7 @@ var TrollModels = (function () {
       if (dbgTrick) bud.classList.add('tr-' + dbgTrick, 'trstill');
       else if (swap) { paint('cheer'); later(function () { if (!/tr-/.test(bud.className)) paint(); }, 1500); later(function () { var c = center(bud); burst(c[0], c[1], 9); }, 340); } // the troll that was just chosen cheers
       else if (tricks.length && !WAVED[profiles.cur]) { WAVED[profiles.cur] = true; trick('wave'); } // the secret wave: once, on the first view of the camp
+      if (!dbgTrick && !swap) campHello(paint, bud);
       // the dressing room: a round button with a shirt beside the companion (a tap on the companion itself still reads its bubble aloud)
       var dressB = TOY && state.owned.length ? iconBtn('dress', 'לְהַלְבִּישׁ', function () { dress(); }, 'cdress') : null;
       grid.appendChild(h('div', { class: 'campv' }, bubble,
@@ -5824,6 +6111,30 @@ var TrollModels = (function () {
     });
   }
   function mapImg(name, cls) { return h('img', { class: cls || null, src: ART.dir + name + '.png', alt: '', draggable: 'false' }); }
+  // task "troll": a troll drawn without a size is measured once it is in the page; one that is shown small (up to 72 px high) is drawn again as
+  // the small outlined troll. No call site has to know its size. (The size is the laid-out one, so an entrance animation does not fool it.)
+  function trollFit() {
+    [].forEach.call(document.querySelectorAll('svg.troll[data-u]'), function (sv) {
+      var hh = parseFloat(getComputedStyle(sv).height), u = sv.getAttribute('data-u'), again;
+      if (!(hh > 0)) return; // not laid out yet (a hidden screen): looked at again at the next change of the page
+      sv.removeAttribute('data-u');
+      if (hh <= 72 && (again = A.again(u, hh))) sv.outerHTML = again;
+    });
+  }
+  if (window.MutationObserver) new MutationObserver(trollFit).observe(document.body, { childList: true, subtree: true });
+  // one motion of the set, once, on the troll inside el: nod | hop | jump (CSS: .troll[data-act])
+  function trollAct(el, name) {
+    var sv = el && el.querySelector('svg.troll'); if (!sv || reduced) return;
+    sv.removeAttribute('data-act'); void sv.getBoundingClientRect(); sv.setAttribute('data-act', name);
+    setTimeout(function () { if (sv.getAttribute('data-act') === name) sv.removeAttribute('data-act'); }, 1000);
+  }
+  // the mood of the companion at the camp when nothing happens: sleepy at night
+  function campMood() { return document.body.classList.contains('night') ? 'sleepy' : 'happy'; }
+  // the hello of the companion when the camp opens: one wave, then back to rest (not at night, not while a trick of the friendship level plays)
+  function campHello(paint, bud) {
+    if (reduced || campMood() !== 'happy' || /tr-/.test(bud.className)) return;
+    paint('wave'); later(function () { if (!/tr-/.test(bud.className) && bud.querySelector('.troll.wave')) paint(); }, 1200);
+  }
   function noPet(s) { var t = {}, k; for (k in s) t[k] = s[k]; t.petE = ''; return t; }
   // the companion on a map; the pet it has with it stands beside it, large enough to be seen
   function mapBuddy() {
@@ -6365,7 +6676,8 @@ var TrollModels = (function () {
         later(function () {
           var s = {}, k; for (k in buddy) s[k] = buddy[k]; if (it && L.EMOJI_SLOTS.concat(['acc']).indexOf(it.slot) >= 0) { s[it.slot] = item; resolve(s); }
           stage.innerHTML = '';
-          stage.appendChild(h('div', { class: 'reveal gbud' + (it && it.slot === 'move' ? ' mv-' + item : ''), html: A.trollSVG(s, { mood: 'cheer' }) }));
+          var gb = h('div', { class: 'reveal gbud' + (it && it.slot === 'move' ? ' mv-' + item : ''), html: A.trollSVG(s, { mood: it && it.slot === 'move' ? 'cheer' : 'surprised' }) });
+          stage.appendChild(gb); later(function () { if (gb.querySelector('.troll.surprised')) gb.innerHTML = A.trollSVG(s, { mood: 'cheer' }); }, 1000);
           // the item itself, large, with its name and the icon of what it does
           if (it) { stage.appendChild(h('div', { class: 'gitem reveal' }, h('span', { class: 'cdo', 'aria-hidden': 'true' }, icon(doesOf(it)[0], 's')), h('span', { class: 'cpic' }, itemPic(it)), h('span', { class: 'cnm', text: it.name }))); fitPart(stage); }
           var c = center(stage); burst(c[0], c[1], 16); if (it && it.slot === 'party') partyFx(item, c[0], c[1]); else confetti(70); sfx.win();
@@ -6562,8 +6874,9 @@ var TrollModels = (function () {
       window.addEventListener('resize', onSize);
 
       var mvId = L.fxOf(state, 'move'); if (mvId) bud.classList.add('mv-' + mvId); // one shot, only in the "cheer" mood: never while the child is thinking
-      function mood(m, text) { bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; bubble.classList.toggle('good', m === 'cheer'); restart(bubble, 'pop'); }
-      bud.addEventListener('click', function () { if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent); });
+      var moodN = 0; // a mistake: 'oops' for a moment, then the companion looks at the exercise again (only the picture changes, not the text)
+      function mood(m, text) { var n = ++moodN; bud.innerHTML = A.trollSVG(buddy, { mood: m }); bubble.textContent = text; bubble.classList.toggle('good', m === 'cheer'); restart(bubble, 'pop'); if (m === 'oops') later(function () { if (n === moodN && cur === el) bud.innerHTML = A.trollSVG(buddy, { mood: 'curious' }); }, 1100); }
+      bud.addEventListener('click', function () { trollAct(bud, 'nod'); if (document.body.classList.contains('cansay') && bubble.textContent) speak(bubble.textContent); });
       function renderQ() {
         var q = round.current(), t = topicOf(q.topic);
         tv.hint = false; // set when the explanation is opened for this exercise (see praise)
@@ -6578,7 +6891,7 @@ var TrollModels = (function () {
         if (cfg.race) { label.appendChild(icon('flag', 't')); label.appendChild(document.createTextNode(' ' + (round.i + 1) + ' / ' + round.qs.length + ' · ')); }
         if (lhead) { label.appendChild(h('b', { text: lhead })); label.appendChild(document.createTextNode(' · ')); }
         label.appendChild(document.createTextNode(t.levels[q.level - 1].name + (q.review ? ' · חֲזָרָה' : '')));
-        mood('happy', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : memo && round.i === 0 ? voice(L.MEMO[memo], 'memo-' + memo) : voice(ASK, 'ask'));
+        mood('curious', cfg.stage === 0 && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : memo && round.i === 0 ? voice(L.MEMO[memo], 'memo-' + memo) : voice(ASK, 'ask'));
         if (memo && round.i === 0) bubble.setAttribute('data-mem', memo); else bubble.removeAttribute('data-mem');
         helpB.classList.toggle('glow', cfg.stage === 0);
         var BOX = '<span class="box">?</span>';
@@ -6705,7 +7018,7 @@ var TrollModels = (function () {
             if (a.r === b.r) {
               a.el.classList.add('ok'); b.el.classList.add('ok'); a.el.disabled = b.el.disabled = true; sfx.pop();
               if (++done === q.pairs.length) onAnswer(b.el, 'ok', q);
-            } else { restart(a.el, 'shake'); restart(b.el, 'shake'); sfx.wrong(); round.miss(); mood('think', voice(RETRY, 'retry')); }
+            } else { restart(a.el, 'shake'); restart(b.el, 'shake'); sfx.wrong(); round.miss(); mood('oops', voice(RETRY, 'retry')); }
           }
           function side(list, col, isLeft) {
             list.forEach(function (o) {
@@ -6764,7 +7077,7 @@ var TrollModels = (function () {
         } else {
           combo = 0;
           if (b.hasAttribute('data-v')) b.classList.add('wrong'); else restart(b, 'shake');
-          sfx.wrong(); mood('think', voice(RETRY, 'retry'));
+          sfx.wrong(); mood('oops', voice(RETRY, 'retry'));
           later(function () { openExplain(q); }, 650);
         }
       }
@@ -6839,6 +7152,7 @@ var TrollModels = (function () {
     P.start = function (onEnd) {
       end = onEnd;
       if (gl) { P.caps.appendChild(h('div', { class: 'banner egoal ea' + (gl.ready ? ' ready' : ''), style: '--d:' + END_T.btns + 's', 'aria-label': 'הַיַּעַד שֶׁלִּי: ' + gl.item.name }, icoImg('🎯'), goalMeter(gl, true), gl.ready ? null : h('span', { class: 'gcoin', text: '🪙' }))); fitPart(P.caps); }
+      var pb = el.querySelector('.mbud svg.troll'); if (pb) pb.outerHTML = A.trollSVG(noPet(buddySpec()), { mood: 'proud' }); // proud of the stage (the drawing only; its place and size stay)
       var mb = mv && el.querySelector('.mbud'); if (mb) mb.classList.add('mv-' + mv);
       var tb = trickUp && !reduced && el.querySelector('.mbud'); if (tb) tb.classList.add('tr-' + trickUp);
       el.addEventListener('click', function (e) { // before the end of the show: no button works; after the first 0.9 s a tap skips to the end
@@ -6864,7 +7178,8 @@ var TrollModels = (function () {
       hatched = true; egg.classList.add('hatching'); sfx.hatch();
       later(function () {
         el.classList.add('hatched');
-        slot.innerHTML = '<div class="reveal">' + A.trollSVG(resolve(troll), { mood: 'cheer' }) + '</div>';
+        slot.innerHTML = '<div class="reveal">' + A.trollSVG(resolve(troll), { mood: 'surprised' }) + '</div>';
+        var born = slot.firstChild; later(function () { if (born.querySelector('.troll.surprised')) born.innerHTML = A.trollSVG(resolve(troll), { mood: 'cheer' }); }, 1000);
         slot.appendChild(h('span', { class: 'mlab', text: troll.name }));
         var c = center(slot); burst(c[0], c[1], 18); confetti(90); sfx.win();
         msg.classList.remove('ea'); msg.textContent = 'הַכִּירִי אֶת ' + troll.name + '!'; restart(msg, 'pop');
@@ -7069,7 +7384,7 @@ var TrollModels = (function () {
         var st = p.id === profiles.cur ? state : L.loadState(rawOf(p.id)), bid = buddyOf(st);
         var card = h('div', { class: 'pcard', style: 'animation-delay:' + (i * 0.07) + 's' });
         card.appendChild(h('button', { class: 'go', 'aria-label': 'לְשַׂחֵק בְּתוֹר ' + p.name, on: { click: function () { enter(p.id); } } },
-          h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st)) }), h('span', { text: p.name }),
+          h('div', { class: 'tr', html: A.trollSVG(bid == null ? GUIDE : specOf(bid, st), { mood: 'wave' }) }), h('span', { text: p.name }),
           h('small', {}, icon('star', 't'), ' ' + st.stars + ' · ' + st.owned.length + ' טְרוֹלִים', p.loc ? ' · ' : null, p.loc ? icon('device', 't') : null)));
         card.appendChild(h('button', { class: 'psex' + (p.sex ? '' : ' ask'), text: p.sex === 'm' ? 'בֵּן' : p.sex === 'f' ? 'בַּת' : 'בַּת / בֵּן', 'aria-label': 'בֵּן אוֹ בַּת: ' + p.name, on: { click: function () {
           sfx.tap(); p.sex = p.sex === 'f' ? 'm' : 'f'; p.mt = Date.now(); p.mn = (p.mn || 0) + 1; saveProfiles(); if (sync.code) syncNow(); who(false);
