@@ -137,13 +137,13 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     for (var fxh of ['&fx=spin', '']) {
       x = await frame('demo&s=round&t=add' + fxh, 390, 800, '.screen .answers');
       var tb = function () { return x.w.getComputedStyle(x.d.querySelector('.screen:not(.out) .buddy .troll .tb')); }, tvx = x.w.__tv, was = tvx.round.i;
-      check(tb().animationName === 'idle', 'exercise' + fxh + ': while the child thinks the companion only breathes (' + tb().animationName + ')');
+      check(tb().animationName === 'none', 'exercise' + fxh + ': while the child thinks the companion stands still (' + tb().animationName + ')');
       var ok1 = [].slice.call(x.d.querySelectorAll('.screen:not(.out) [data-v]')).filter(function (a) { return a.getAttribute('data-v') === String(tvx.round.current().answer); })[0];
       await wait(450); // answers ignore taps for the first 0.4 s after an exercise screen opens
       if (ok1) ok1.click(); else if (tvx.solve) tvx.solve();
       check(tb().animationName === (fxh ? 'mvSpin' : 'jump') && tb().animationIterationCount === '1', 'exercise' + fxh + ': after a correct answer: ' + tb().animationName + ', once');
       await wait(1700);
-      check(tvx.round.i === was + 1 && tb().animationName === 'idle', 'exercise' + fxh + ': the next exercise comes as before, and the companion is calm again');
+      check(tvx.round.i === was + 1 && tb().animationName === 'none', 'exercise' + fxh + ': the next exercise comes as before, and the companion is calm again');
       x.f.remove();
     }
     // ---- the chosen celebration and move on the end-of-stage screen: once, after the chest; none when nothing is chosen
