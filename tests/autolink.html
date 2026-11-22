@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- End-to-end check of the automatic cloud save: a device that is linked to nothing makes a code of its own and saves every
+     player under it, against the real cloud. Run: node tests/run-page.js tests/autolink.html 240. Expects title "AUTOLINK OK".
+     On localhost the game links by itself only when the address has #vlink=1, and this page is the only one that asks for it.
+     Every run makes TWO village documents (their codes are printed in the log; the rules allow no delete, so the test empties
+     them at the end and they stay, empty) and one throw-away family account, which is deleted at the end. The test players
+     are local players: nothing of them goes to the ranking or to the list of who is online. One line of the ranking is written
+     by the test itself under a made-up race identity, to see that the game removes it; the test removes it too, whatever happens.
+     tests/autolink.html?local runs only the part without a network (old devices are moved to lasting ids): no document is made. -->
+<iframe id="f" width="420" height="760"></iframe><pre id="log"></pre>
+<script>
+var f = document.getElementById('f'), log = document.getElementById('log'), ONLY_LOCAL = /local/.test(location.search);
+var T0 = Date.now(), LIMIT = 225000, dead = false;
+function alive() { if (dead || Date.now() - T0 > LIMIT) throw new Error('timeout: the whole test took too long'); }
+function say(t) { log.textContent += t + '\n'; }
+function wait(ms) { alive(); return new Promise(function (r) { setTimeout(r, ms); }); }
+function until(fn, what) { var n = 0; return new Promise(function (ok, no) { (function tick() { var v; try { alive(); } catch (e) { no(e); return; } try { v = fn(); } catch (e) {} if (v) ok(v); else if (++n > 150) no(new Error('timeout: ' + what)); else setTimeout(tick, 100); })(); }); }
+// Every request of the game page to the cloud goes through here: the test sees it and can cut the network.
+var net = { log: [], page: { inflight: 0 }, offline: false };
+function hook(W) {
+  var real = W.fetch, me = net.page = { inflight: 0 }; W.__spied = true;
+  W.fetch = function (u, o) {
+    var fs = /firestore\.googleapis\.com/.test(String(u)), rtdb = /firebasedatabase\.app/.test(String(u));
+    if (!fs && !rtdb) return real.call(W, u, o);
+    if (net.offline) return Promise.reject(new TypeError('offline (test)'));
+    if (rtdb) return real.call(W, u, o);
+    var patch = !!(o && o.method === 'PATCH'), e = { patch: patch, url: String(u), status: 0, done: false };
+    me.inflight++; net.log.push(e);
+    return real.call(W, u, o).then(function (r) { e.status = r.status; e.done = true; me.inflight--; return r; }, function (x) { e.done = true; me.inflight--; throw x; });
+  };
+}
+function open(hash) { // the game, linking by itself as on the live site; the watcher is in before the script of the page runs
+  alive();
+  return new Promise(function (r, no) {
+    f.onload = null; f.src = 'about:blank';
+    setTimeout(function () {
+      var ch = new MessageChannel(), on = true, hooked = false, late = false;
+      function tryHook() { try { var W = f.contentWindow; if (W && /index\.html$/.test(W.location.pathname) && !W.__spied) { late = W.__tv !== undefined; hook(W); hooked = true; } } catch (e) {} }
+      f.onload = function () { on = false; if (!hooked) tryHook(); if (late || !hooked) no(new Error('the test could not watch the first request of the page')); else r(); };
+      ch.port1.onmessage = function () { if (!on || hooked) return; tryHook(); if (!hooked) ch.port2.postMessage(0); };
+      f.src = '../index.html?' + Date.now() + '#vlink=1' + (hash || ''); ch.port2.postMessage(0);
+    }, 50);
+  });
+}
+function idle(from) { var quiet = 0; return until(function () { var got = net.log.slice(from).some(function (e) { return !e.patch && e.done; }); quiet = got && net.page.inflight === 0 ? quiet + 1 : 0; return quiet >= 10; }, 'the sync is over'); }
+async function openS(hash) { var i = net.log.length; await open(hash); await idle(i); }
+function patches(from) { return net.log.slice(from).filter(function (e) { return e.patch; }); }
+function doc() { return f.contentDocument; }
+function q(sel) { return doc().querySelector('.screen:not(.out) ' + sel); }
+function snap() { var o = {}; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^trollVillage/.test(k)) o[k] = localStorage.getItem(k); } return o; }
+function restore(o) { Object.keys(snap()).forEach(function (k) { localStorage.removeItem(k); }); for (var k in o) localStorage.setItem(k, o[k]); }
+function ls(k) { return localStorage.getItem('trollVillage.' + k); }
+function sync() { return JSON.parse(ls('sync') || '{}'); }
+function profs() { return JSON.parse(ls('profiles') || '{"list":[]}'); }
+function rev(id) { return +JSON.parse(ls('rev') || '{}')[id] || 0; }
+async function close() { f.onload = null; f.src = 'about:blank'; await wait(150); }
+async function device(o) { await close(); restore(o); }
+function check(c, what) { if (!c) throw new Error('FAILED: ' + what); say('ok ' + what); }
+function same(a, b) { var ka = Object.keys(a || {}).sort(), kb = Object.keys(b || {}).sort(); return ka.join() === kb.join() && ka.every(function (k) { return a[k] === b[k]; }); }
+var KEY = 'AIzaSyDbPSLMpo4Zqdey6NgQwzzCty6t9FCg0-0', mail = 'zz-test-' + Date.now() + '@example.com', pw = 'pw' + Date.now(), uid = '', tok = '';
+var IDT = 'https://identitytoolkit.googleapis.com/v1/accounts:', FS = 'https://firestore.googleapis.com/v1/projects/troll-math/databases/(default)/documents/', RT = 'https://troll-math-default-rtdb.europe-west1.firebasedatabase.app/';
+var CODE_RE = /^[A-HJ-NP-Z2-9]{8}$/, made = []; // the village codes this run made: nothing else is ever read or written by the test
+function post(url, body) { return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+function vurl(code) { if (made.indexOf(code) < 0) throw new Error('not a village of this test: ' + code); return FS + 'villages/' + code + '?key=' + KEY; }
+function fields(d) { var o = {}; for (var k in (d && d.fields) || {}) o[k] = d.fields[k].stringValue; return o; }
+function village(code) { return fetch(vurl(code)).then(function (r) { return r.status === 404 ? null : r.json().then(fields); }); }
+function family() { if (!/^[A-Za-z0-9]{10,}$/.test(uid)) throw new Error('no test account'); return fetch(FS + 'families/' + uid + '?key=' + KEY, { headers: { Authorization: 'Bearer ' + tok } }).then(function (r) { return r.json(); }).then(fields); }
+function empty(url, keys, hdr) { return fetch(url + keys.map(function (k) { return '&updateMask.fieldPaths=' + k; }).join(''), { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, hdr || {}), body: '{"fields":{}}' }); }
+var RID = 'r9' + String(10000000 + Math.floor(Math.random() * 90000000)); // a made-up race identity of an old player
+function boardRow() { return fetch(RT + 'board/' + RID + '.json').then(function (r) { return r.json(); }); }
+
+async function run() {
+  await device({});
+  var L, i0, c;
+  function norm(raw) { return JSON.stringify(L.loadState(raw)); }
+  function st(id) { return ls('r.' + id); }
+  function acct() { return JSON.parse(ls('auth') || 'null'); }
+  // progress worth losing: finished stages, stars, trolls, bought items, what a troll wears (today's visit is already counted,
+  // so opening the game does not change the state)
+  function rich(g, k) {
+    var s = L.newState(g), t = L.topicsFor(s)[0], lv = s.levels[t], free = s.items.length;
+    [0, 1, 2].forEach(function (stg) { s = L.finishStage(s, t, lv, stg, [true, true, true, true]).state; });
+    s.owned = [5, 42, 79 + k]; s.buddy = 42; s.items = s.items.concat(['wand', 'scarf', 'kitty', 'tophat']); s.coins = 123 + k; s.dress = { 42: { pet: 'kitty', hat: 'tophat' } };
+    s.xp += 40 + k; s.rounds += 6; s.last = { t: t, l: lv };
+    s = L.updateStreak(s, L.todayStr());
+    var raw = norm(norm(JSON.stringify(s))); s = JSON.parse(raw);
+    if (!(norm(raw) === raw && s.owned.length === 3 && s.items.length === free + 4 && s.coins === 123 + k && s.stars > 0 && s.dress[42].pet === 'kitty' && JSON.stringify(s.prog[t]).indexOf('3') > 0)) throw new Error('the test state is not what was meant: ' + raw.slice(0, 400));
+    return raw;
+  }
+  function tell(raw) { var s = JSON.parse(raw); return s.owned.length + ' trolls, ' + s.items.length + ' items, ' + s.stars + ' stars, ' + s.coins + ' coins'; }
+  async function newPlayer(name, grade) {
+    var inp = await until(function () { return q('.pnew .pname'); }, 'who screen');
+    inp.value = name; q('.pnew .gbtn[data-g="' + grade + '"]').click(); q('.pnew .sxrow .gbtn').click(); q('.pnew .vrow .gbtn[data-v="loc"]').click(); q('.pnew .btn').click();
+    await until(function () { return q('.chip.who'); }, 'home of ' + name);
+  }
+  async function save1(id) { var r0 = rev(id); (await until(function () { return q('.nextb'); }, 'the big button of the home screen')).click(); await until(function () { return rev(id) > r0; }, 'a save raised the number'); return rev(id); }
+  async function toCloud() { // the account screen, from the home screen or from the screen of the players
+    var b = await until(function () { return q('.cloudb') || q('.chip.who'); }, 'the game is open');
+    if (!q('.cloudb')) b.click();
+    (await until(function () { return q('.cloudb'); }, 'account button')).click();
+    await until(function () { return q('.amail'); }, 'account screen');
+  }
+  async function typeCode(code) {
+    await toCloud(); q('.ccl').click();
+    (await until(function () { return q('.cinp'); }, 'the place to type a code')).value = code; q('.cjoin').click();
+  }
+
+  // ---- a device without players links to nothing and writes nothing ----
+  i0 = net.log.length;
+  await open();
+  await until(function () { return q('.pnew .pname'); }, 'who screen of an empty device');
+  L = f.contentWindow.TrollLogic;
+  await wait(1200);
+  check(!sync().code && net.log.length === i0, 'a device without players gets no code and sends nothing to the cloud');
+
+  // ---- progress from before players existed (one saved state, no list of players), without a network ----
+  await close(); net.offline = true;
+  var rich0 = rich(3, 1);
+  restore({ 'trollVillage.v1': rich0 });
+  await open();
+  await until(function () { return q('.nextb') || q('.pcard .go'); }, 'the game opened without a network');
+  var p0 = profs();
+  check(p0.list.length === 1 && /^p\d{9}$/.test(p0.list[0].id) && norm(st(p0.list[0].id)) === rich0 && !ls('v1') && !ls('p.p1') && CODE_RE.test(sync().code), 'the oldest layout: the progress became one player with a lasting id, nothing lost (' + tell(st(p0.list[0].id)) + '; no network: nothing was sent, no document was made)');
+
+  // ---- (c) + (d) an old unlinked device (short ids, a race identity, a line in the ranking) opens without a network ----
+  await close();
+  var old1 = rich(2, 2), old2 = rich(4, 3);
+  check((await fetch(RT + 'board/' + RID + '.json', { method: 'PUT', body: JSON.stringify({ n: 'zz-test', b: 5, g: 2, xp: 0, st: 0, t: { '.sv': 'timestamp' } }) })).ok && (await boardRow()).n === 'zz-test', 'an old line of the ranking exists under the race identity ' + RID);
+  restore({ 'trollVillage.profiles': JSON.stringify({ cur: 'p1', list: [{ id: 'p1', name: 'OLD1', sex: 'f', loc: true }, { id: 'p2', name: 'OLD2', sex: 'm', loc: true }] }),
+    'trollVillage.r.p1': old1, 'trollVillage.q.p2': old2, 'trollVillage.rid.p1': RID, 'trollVillage.rev': JSON.stringify({ p1: 500 }) });
+  i0 = net.log.length;
+  await open();
+  await until(function () { return q('.nextb'); }, 'the home screen, without a network');
+  var pc = profs(), id1 = pc.list[0].id, id2 = pc.list[1].id, codeC = sync().code;
+  check(pc.list.length === 2 && /^p\d{9}$/.test(id1) && /^p\d{9}$/.test(id2) && id1 !== id2 && pc.cur === id1 && pc.list[0].name === 'OLD1' && pc.list[1].name === 'OLD2' && pc.list[1].sex === 'm' && pc.list[1].loc === true, 'old device: the two players got lasting ids, the same player is still the one who plays, no player twice');
+  check(norm(st(id1)) === old1 && norm(st(id2)) === old2 && !ls('r.p1') && !ls('q.p2') && !ls('r.p2'), 'old device: both saved states moved whole (also the one under an older key), the old copies are gone (' + tell(st(id1)) + ' / ' + tell(st(id2)) + ')');
+  check(rev(id1) === 500 && !('p1' in JSON.parse(ls('rev'))) && !ls('rid.p1') && JSON.parse(ls('ridgone') || '[]').join() === RID, 'old device: the running number moved with the player; the old race identity waits to be taken off the ranking');
+  check(CODE_RE.test(codeC), 'old device: it has a code of its own although there is no network'); made.push(codeC); say('   village code made by this run: ' + codeC);
+  var n1 = await save1(id1);
+  await wait(5500); // the push that follows a save is tried and fails quietly
+  check(n1 === 501 && (await village(codeC)) === null && (await boardRow()) && sync().d[id1] === 1 && !doc().querySelector('.ovl') && q('.qrow, .answers, .nextb'), 'without a network: the child plays, nothing reached the cloud, nothing is shown about it, the change waits');
+  var played = norm(st(id1));
+  if (ONLY_LOCAL) { say('(only the part without a network was asked for)'); return; }
+  net.offline = false; i0 = net.log.length;
+  f.contentWindow.dispatchEvent(new Event('online'));
+  await until(function () { return patches(i0).some(function (e) { return e.done && e.status === 200; }); }, 'the network came back and the device uploaded');
+  await idle(i0);
+  c = await village(codeC);
+  var listC = JSON.parse(c.list), s3 = Object.keys(c).filter(function (k) { return /^s3_/.test(k); });
+  check(listC.length === 2 && listC[0].id === id1 && listC[1].id === id2 && s3.length === 2 && c['s3_' + id1] === played && c['s3_' + id2] === old2 && c['r3_' + id1].split(':')[0] === String(n1), 'the network is back: both players are in the cloud once each, with everything, also what was played without a network');
+  await until(function () { return !ls('ridgone'); }, 'the old race identity was taken off');
+  check((await boardRow()) === null && (await (await fetch(RT + 'board/' + id1 + '.json')).json()) === null, 'the old line of the ranking is gone (and no second line was made; on localhost the game writes no ranking line at all)');
+  i0 = net.log.length; await openS();
+  check(patches(i0).length === 0 && profs().list.length === 2 && norm(st(id1)) === played && norm(st(id2)) === old2 && sync().code === codeC, 'the next opening changes nothing: same players, same progress, same code, nothing written');
+  await close(); var C = snap();
+
+  // ---- (a) a new player on a device that is linked to nothing: the device makes its own code and the cloud gets the player ----
+  restore({}); i0 = net.log.length;
+  await open();
+  await newPlayer('A1', 2);
+  await until(function () { return patches(i0).some(function (e) { return e.done; }); }, 'the first upload');
+  await idle(i0);
+  var codeA = sync().code, idA = profs().list[0].id;
+  check(CODE_RE.test(codeA) && codeA !== codeC && !acct(), 'device A linked itself to a new code, nobody was asked'); made.push(codeA); say('   village code made by this run: ' + codeA);
+  check(patches(i0).length === 1 && /villages\//.test(patches(i0)[0].url) && /currentDocument\.exists=false/.test(patches(i0)[0].url) && patches(i0)[0].status === 200, 'the document of the code was made by one write, guarded by "does not exist yet"');
+  c = await village(codeA);
+  check(c && JSON.parse(c.list).length === 1 && JSON.parse(c.list)[0].id === idA && JSON.parse(c.list)[0].name === 'A1' && c['s3_' + idA] === norm(st(idA)) && c['r3_' + idA] === rev(idA) + ':' + c['t3_' + idA], 'the cloud holds the player and the whole saved state, with its running number');
+  // the player makes real progress (written while the page is closed, as a played session leaves it: a new state, a higher number, not sent yet)
+  await close();
+  var richA = rich(2, 0), revs = JSON.parse(ls('rev')), sy = sync();
+  localStorage.setItem('trollVillage.r.' + idA, richA); revs[idA] = rev(idA) + 9; localStorage.setItem('trollVillage.rev', JSON.stringify(revs)); sy.d[idA] = 1; localStorage.setItem('trollVillage.sync', JSON.stringify(sy));
+  i0 = net.log.length; await openS();
+  c = await village(codeA);
+  check(c['s3_' + idA] === richA && patches(i0).length === 1, 'when the game opens, the progress that was not sent yet goes up: stages, stars, trolls, items (' + tell(richA) + ')');
+  i0 = net.log.length; var nA = await save1(idA);
+  await until(function () { return patches(i0).some(function (e) { return e.done && e.status === 200; }); }, 'the save was pushed by itself');
+  await idle(i0); c = await village(codeA);
+  check(c['s3_' + idA] === norm(st(idA)) && c['r3_' + idA].split(':')[0] === String(nA), 'a saved change reaches the cloud by itself a few seconds later (number ' + nA + ')');
+  await openS();
+  await toCloud();
+  check(q('.ccl span').textContent === codeA, 'the parent sees the code of the device on the account screen');
+  q('.ccl').click();
+  await until(function () { return q('.ccode') && q('.ccode').textContent === codeA && q('.cinp') && /מַקְלִידִים/.test(q('.cpanel').textContent); }, 'the screen of the code shows it, the line that explains it, and the place to type another code');
+  q('.cinp').value = codeA; q('.cjoin').click();
+  check(/הַמַּכְשִׁיר הַזֶּה/.test(q('.cmsg').textContent) && sync().code === codeA, 'typing the own code of the device changes nothing');
+  await close(); await wait(1500);
+  var A = snap(), stateA = st(idA); c = await village(codeA);
+  check(c['s3_' + idA] === stateA && norm(stateA) === stateA, 'device A and the cloud hold the same state');
+
+  // ---- (b) the storage of the device is wiped; the code brings everything back ----
+  restore({}); i0 = net.log.length;
+  await open();
+  await typeCode('ZZZZ' + codeA.slice(4).split('').reverse().join(''));
+  await until(function () { return /לֹא מָצָאנוּ/.test(q('.cmsg').textContent); }, 'a code that does not exist is refused');
+  check(!sync().code && !profs().list.length && patches(i0).length === 0, 'a code that does not exist links nothing and writes nothing');
+  q('.cinp').value = codeA.toLowerCase(); q('.cjoin').click();
+  await until(function () { return profs().list.length === 1 && sync().code === codeA; }, 'the players came back');
+  await idle(i0);
+  check(profs().list[0].id === idA && profs().list[0].name === 'A1' && profs().list[0].loc === true && st(idA) === stateA && rev(idA) === nA, 'wiped device + the code: the same player, byte for byte the same progress (' + tell(st(idA)) + ')');
+  check(patches(i0).length === 0 && same(await village(codeA), c), 'and the wiped device wrote nothing to the cloud');
+
+  // ---- a device with its own code joins another code by hand: its players go along ----
+  await device(C); i0 = net.log.length;
+  await openS();
+  await typeCode('ZZZZ' + codeA.slice(4).split('').reverse().join(''));
+  await until(function () { return /לֹא מָצָאנוּ/.test(q('.cmsg').textContent); }, 'a wrong code on a linked device');
+  check(sync().code === codeC && profs().list.length === 2, 'a wrong code leaves the device on its own code');
+  q('.cinp').value = codeA; q('.cjoin').click();
+  await until(function () { return profs().list.length === 3 && sync().code === codeA; }, 'joined the code of device A');
+  await idle(i0);
+  c = await village(codeA);
+  check(JSON.parse(c.list).map(function (p) { return p.id; }).sort().join() === [idA, id1, id2].sort().join() && c['s3_' + id1] === played && c['s3_' + id2] === old2 && c['s3_' + idA] === stateA, 'joining another code by hand: the players of this device went into it whole, the player that was there is untouched');
+  check(norm(st(id1)) === played && norm(st(id2)) === old2 && st(idA) === stateA, 'and the device holds all three');
+
+  // ---- (e) the device that linked itself signs in to a family account: its players move into the account ----
+  await device(A); i0 = net.log.length;
+  await openS();
+  await until(function () { return profs().list.length === 3; }, 'device A received the two players that joined its code');
+  await toCloud();
+  check(/הַמַּכְשִׁיר הַזֶּה יַעַבְרוּ לַחֶשְׁבּוֹן/.test(q('.cpanel').textContent), 'the account screen says that the players of the device will move to the account');
+  var before = JSON.stringify(profs().list);
+  q('.amail').value = mail; q('.apass').value = pw; q('.signup').click();
+  await until(function () { return q('.cacct') && acct() && sync().code === 'acct'; }, 'signed up');
+  uid = acct().uid; tok = acct().it;
+  await idle(i0);
+  var fam = await family(), flist = JSON.parse(fam.list);
+  check(flist.map(function (p) { return p.id; }).sort().join() === [idA, id1, id2].sort().join() && fam['s3_' + idA] === stateA && fam['s3_' + id1] === played && fam['s3_' + id2] === old2, 'signing in: every player of the device is in the family account, with the whole progress');
+  check(JSON.stringify(profs().list) === before && st(idA) === stateA && norm(st(id1)) === played && rev(idA) === nA && fam['r3_' + idA].split(':')[0] === String(nA), 'and nothing changed on the device: same players, same ids, same progress, same numbers');
+  var signedIn = snap();
+  // the page was closed after the sign-in was stored and before the players moved: the next opening finishes the move
+  await close();
+  var half = JSON.parse(JSON.stringify(A)); half['trollVillage.auth'] = signedIn['trollVillage.auth'];
+  restore(half); i0 = net.log.length;
+  await openS();
+  await until(function () { return profs().list.length === 3; }, 'the players of the account arrived');
+  check(sync().code === 'acct' && st(idA) === stateA && same(await family(), fam), 'a sign-in that was cut in the middle is finished by the next opening; nothing is lost on the device or in the account');
+  // a wiped device signs in: the account alone brings the players back
+  await device({}); i0 = net.log.length;
+  await open(); await toCloud();
+  q('.amail').value = mail; q('.apass').value = pw; q('.signin').click();
+  await until(function () { return profs().list.length === 3 && sync().code === 'acct'; }, 'signed in on a wiped device');
+  await idle(i0);
+  check(st(idA) === stateA && st(id1) === played && st(id2) === old2 && patches(i0).length === 0, 'a wiped device that signs in gets the three players with identical progress, and writes nothing');
+  // signing out: the players stay, and the device is at once on a code of its own again (the network is cut here, so no third document is made)
+  net.offline = true;
+  (await until(function () { return q('.cloudb'); }, 'account button of the signed-in device')).click();
+  (await until(function () { return q('.signout'); }, 'signed-in screen')).click();
+  await until(function () { return q('.amail') && !acct(); }, 'signed out');
+  var codeS = sync().code;
+  check(CODE_RE.test(codeS) && codeS !== codeA && codeS !== codeC && profs().list.length === 3 && st(idA) === stateA && st(id1) === played && q('.ccl span').textContent === codeS, 'signing out: the players stay on the device, which goes back to a code of its own at once');
+  await close(); restore({});
+}
+(async function () {
+  var keep = snap(), title;
+  try {
+    await Promise.race([run(), new Promise(function (ok, no) { setTimeout(function () { no(new Error('timeout: the whole test took too long')); }, LIMIT); })]);
+    title = 'AUTOLINK OK';
+  } catch (e) { say(String(e)); title = 'AUTOLINK FAIL ' + e.message; }
+  finally {
+    dead = true; f.onload = null; f.src = 'about:blank'; net.offline = false;
+    await new Promise(function (r) { setTimeout(r, 1500); }); // a page that closes may still push
+    try { await fetch(RT + 'board/' + RID + '.json', { method: 'DELETE' }); } catch (e) {}
+    for (var i = 0; i < made.length; i++) { // the rules allow no delete of a village: the two of this run are emptied and stay
+      try { var keys = Object.keys((await village(made[i])) || {}); if (keys.length) await empty(vurl(made[i]), keys); say('village ' + made[i] + ' of this run: ' + (keys.length ? 'emptied (' + keys.length + ' fields)' : 'was never written')); } catch (e) { say('cleanup of ' + made[i] + ': ' + e); }
+    }
+    try {
+      var tk = await (await post(IDT + 'signInWithPassword?key=' + KEY, { email: mail, password: pw, returnSecureToken: true })).json();
+      if (tk.idToken) {
+        uid = tk.localId; tok = tk.idToken;
+        try { var fk = Object.keys(await family()); if (fk.length) await empty(FS + 'families/' + uid + '?key=' + KEY, fk, { Authorization: 'Bearer ' + tok }); } catch (e) {}
+        var gone = await post(IDT + 'delete?key=' + KEY, { idToken: tk.idToken });
+        say((gone.ok ? 'ok' : 'NOT DONE') + ' the test account was deleted (http ' + gone.status + ')');
+        if (!gone.ok && title === 'AUTOLINK OK') title = 'AUTOLINK FAIL the test account was not deleted';
+      } else say('no test account to delete (' + ((tk.error && tk.error.message) || '?') + ')');
+    } catch (e) { say('cleanup: ' + e); if (title === 'AUTOLINK OK') title = 'AUTOLINK FAIL cleanup ' + e.message; }
+    restore(keep);
+  }
+  say('took ' + Math.round((Date.now() - T0) / 1000) + ' s');
+  document.title = title;
+  fetch('/__report', { method: 'POST', body: document.title + String.fromCharCode(10) + log.textContent }).catch(function () {});
+})();
+</script>

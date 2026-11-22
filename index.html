@@ -2214,6 +2214,10 @@ body.toy .camp .hrow .btn.jrnb .ic{color:var(--accent-edge)}
 .endm .mbud.ewalk .troll .ftL{animation:tStep .3s ease-in-out var(--d,0s) 2}
 .endm .mbud.ewalk .troll .ftR{animation:tStep .3s ease-in-out calc(var(--d,0s) + .15s) 2}
 @media (prefers-reduced-motion:reduce){.troll *{animation:none!important}}
+/* task "autolink": the code of the device on the family account screen (.ccl: the line on the sign-in panel; .cj: the panel of the code) */
+body.toy .ccode{background:var(--surface-2);border-radius:var(--r-s);color:var(--ink)}
+.cpanel .ccl span{font-weight:700;letter-spacing:.08em;user-select:text;-webkit-user-select:text}
+@media (max-height:480px){.cpanel.cj>*{order:0}.cpanel.cj>b{width:auto}.cpanel.cj .ccode{font-size:22px}.cpanel.cj .ctext{font-size:13px}}
 </style>
 </head>
 <body>
@@ -5334,24 +5338,74 @@ var TrollModels = (function () {
     }
   }
   // Players made before linking get ids that cannot clash with another device's players.
-  function linkTo(code, keepT) { // keepT: the players keep the time of their last change (a device that moves from a village code to the account)
-    if (race) quitRace(); // the ids are about to change: leave the race and listen again under the new one
-    if (presence) presence.stop();
+  // The progress is first copied under the new id and read back, then the list of players is stored and read back, and only
+  // then the old copy is deleted: when the storage refuses a write nothing changes and the device stays as it was (returns false).
+  function linkTo(code, keepT, boot) { // keepT: the players keep the time of their last change (a device that moves from a village code to the account); boot: the page is still loading
+    var moves = [], used = {}, fine = true, was = lsGet(PKEY);
+    profiles.list.forEach(function (p) { used[p.id] = true; });
     profiles.list.forEach(function (p) {
-      if (p.id.length < 9) {
-        var id = rndId(), raw = rawOf(p.id), revs = revAll();
-        if (raw) lsSet(DKEY + id, raw);
-        if (revs[p.id]) { revs[id] = revs[p.id]; delete revs[p.id]; revSave(revs); } // the number moves with the player
-        lsDel(DKEY + p.id); lsDel(DKEY_OLD + p.id); lsDel(DKEY_OLD2 + p.id);
-        if (profiles.cur === p.id) profiles.cur = id;
-        p.id = id;
-      }
+      if (p.id.length >= 9) return;
+      var id = rndId(), raw = rawOf(p.id);
+      while (used[id] || lsGet(DKEY + id)) id = rndId();
+      used[id] = true; moves.push({ from: p.id, to: id });
+      if (raw) { lsSet(DKEY + id, raw); if (lsGet(DKEY + id) !== raw) fine = false; }
     });
+    if (fine && moves.length) {
+      var next = { cur: profiles.cur, list: profiles.list.map(function (p) { var o = {}, k; for (k in p) o[k] = p[k]; return o; }) };
+      moves.forEach(function (m) { next.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; }); if (next.cur === m.from) next.cur = m.to; });
+      lsSet(PKEY, JSON.stringify(next));
+      if (lsGet(PKEY) !== JSON.stringify(next)) { fine = false; if (was !== null) lsSet(PKEY, was); }
+    }
+    if (!fine) { moves.forEach(function (m) { lsDel(DKEY + m.to); }); return false; }
+    if (!boot) {
+      if (race) quitRace(); // the ids are about to change: leave the race and listen again under the new one
+      if (presence) presence.stop();
+    }
+    var revs = revAll(), rids = [];
+    moves.forEach(function (m) {
+      if (revs[m.from]) { revs[m.to] = revs[m.from]; delete revs[m.from]; } // the number moves with the player
+      profiles.list.forEach(function (p) { if (p.id === m.from) p.id = m.to; });
+      if (profiles.cur === m.from) profiles.cur = m.to;
+      lsDel(DKEY + m.from); lsDel(DKEY_OLD + m.from); lsDel(DKEY_OLD2 + m.from);
+      // the player is known by the new id from now on, in the ranking too: the line of the old race identity is taken off the server
+      var rid = lsGet('trollVillage.rid.' + m.from); if (rid) rids.push(rid); lsDel('trollVillage.rid.' + m.from);
+    });
+    if (moves.length) revSave(revs);
     var oldT = keepT ? sync.t : {};
     sync = { code: code, t: {}, b: {}, d: {}, gone: [], hide: [] };
     profiles.list.forEach(function (p) { if (rawOf(p.id)) sync.t[p.id] = +oldT[p.id] || Date.now(); });
     saveProfiles(); saveSync();
-    if (presence && profiles.cur) presence.start();
+    if (rids.length) ridSweep(rids);
+    if (!boot && presence && profiles.cur) presence.start();
+    return true;
+  }
+  // Race identities that are no longer used (their players got a lasting id): their lines in the ranking and in the list of
+  // who is online are deleted on the server. What could not be deleted (no network) is kept and tried again.
+  var GKEY = 'trollVillage.ridgone';
+  function ridList() { try { var l = JSON.parse(lsGet(GKEY) || '[]'); return Array.isArray(l) ? l.filter(function (x) { return /^r\d{9}$/.test(x); }) : []; } catch (e) { return []; } }
+  function ridSweep(add) {
+    var list = ridList();
+    (add || []).forEach(function (x) { if (/^r\d{9}$/.test(x) && list.indexOf(x) < 0) list.push(x); });
+    if (!list.length) return;
+    lsSet(GKEY, JSON.stringify(list.slice(-40)));
+    if (typeof rtOn !== 'function' || !CLOUD.rt || !rtOn()) return;
+    list.forEach(function (rid) {
+      Promise.all([rt.send('DELETE', 'board/' + rid), rt.send('DELETE', 'online/' + rid)]).then(function () {
+        var left = ridList().filter(function (x) { return x !== rid; });
+        if (left.length) lsSet(GKEY, JSON.stringify(left)); else lsDel(GKEY);
+      }, function () {});
+    });
+  }
+  // Every device saves its players in the cloud by itself: a device with players that is linked to nothing makes a village
+  // code of its own and links itself to it, without a question and without waiting for the network (the document is written
+  // by the first sync that gets through, see syncNow). Never in the sandbox; on a developer's machine, from a file and in the
+  // tests only when the address asks for it (#vlink=1 on localhost).
+  var AUTOLINK = LOCAL ? /[&#]vlink=1/.test(hash) : location.protocol === 'https:';
+  function autoLink(boot) {
+    if (!AUTOLINK || !cloudOn()) return false;
+    if (auth) return sync.code !== 'acct' && linkTo('acct', true, boot); // signed in, and the page was closed before the players moved to the account
+    if (sync.code || !profiles.list.length) return false;
+    return linkTo(rndCode(), false, boot);
   }
   function unlink() { clearTimeout(pushTimer); sync = { code: '', t: {}, b: {}, d: {}, gone: [], hide: [] }; saveSync(); }
   function joinUrl() { return location.origin + location.pathname + '#join=' + sync.code; }
@@ -7439,7 +7493,7 @@ var TrollModels = (function () {
           if (!newSex) { restart(srow, 'shake'); sfx.wrong(); return; }
           profiles = L.addProfile(profiles, inp.value, rndId(), { sex: newSex, loc: newLoc }); saveProfiles();
           lsSet(DKEY + profiles.cur, JSON.stringify(L.newState(newG)));
-          enter(profiles.cur); save(); if (sync.code) syncNow();
+          enter(profiles.cur); save(); autoLink(); if (sync.code) syncNow();
         };
         inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') add(); });
         grid.appendChild(h('div', { class: 'pcard pnew' }, h('b', {}, icon('plus', 's'), ' שַׂחְקָן חָדָשׁ'), inp, gmsg, grow, srow, vrow, h('button', { class: 'btn', text: 'יַאלְלָה!', on: { click: add } })));
@@ -7453,20 +7507,39 @@ var TrollModels = (function () {
   }
 
   // ---------- one village on every device ----------
-  function cloud(msg) {
+  function cloud(msg, mode) {
     show(function (el) {
       el.classList.add('tpl'); el.appendChild(topBar(!!profiles.cur, function () { who(false); }));
       el.appendChild(h('h2', { class: 'h2', text: 'חֶשְׁבּוֹן הַמִּשְׁפָּחָה' }));
       var p = h('div', { class: 'cpanel' }), status = h('div', { class: 'cmsg', text: msg || '' });
       function say(t) { status.textContent = t; }
       function fail() { say('אֵין חִבּוּר לָאִינְטֶרְנֶט. נְנַסֶּה שׁוּב אַחַר כָּךְ.'); }
-      if (auth) {
+      var vcode = L.CODE_RE.test(sync.code) ? sync.code : ''; // every device with players has a code of its own (autoLink)
+      if (mode === 'code' && !auth) { // the code of this device, and the place to type the code of another device
+        p.classList.add('cj');
+        if (vcode) {
+          p.appendChild(h('b', { text: 'הַקּוֹד שֶׁל הַמַּכְשִׁיר הַזֶּה' }));
+          p.appendChild(h('div', { class: 'ccode', text: vcode }));
+          p.appendChild(h('div', { class: 'ctext', text: 'מַקְלִידִים אֶת הַקּוֹד הַזֶּה בְּמַכְשִׁיר אַחֵר, וְכָל הַשַּׂחְקָנִים וְהַהִתְקַדְּמוּת מוֹפִיעִים גַּם שָׁם.' }));
+        }
+        var cinp = h('input', { class: 'pname cinp', type: 'text', maxlength: '8', placeholder: 'ABCD2345', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', 'aria-label': 'קוֹד מִמַּכְשִׁיר אַחֵר' });
+        var join = function () {
+          var code = cinp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (!L.CODE_RE.test(code)) { say('בַּקּוֹד יֵשׁ 8 אוֹתִיּוֹת וּסְפָרוֹת.'); return; }
+          if (code === vcode) { say('זֶה הַקּוֹד שֶׁל הַמַּכְשִׁיר הַזֶּה.'); return; }
+          sfx.tap(); joinCode(code, say, fail);
+        };
+        cinp.addEventListener('keydown', function (e) { if (e.key === 'Enter') join(); });
+        p.appendChild(h('b', { text: 'יֵשׁ לָנוּ קוֹד מִמַּכְשִׁיר אַחֵר' }));
+        p.appendChild(h('div', { class: 'crow' }, cinp, btn('חִבּוּר', 'cjoin', join)));
+        p.appendChild(h('button', { class: 'clink cback', text: 'חֲזָרָה לְחֶשְׁבּוֹן הַמִּשְׁפָּחָה', on: { click: function () { sfx.tap(); cloud(); } } }));
+      } else if (auth) {
         p.appendChild(h('b', { text: 'מְחֻבָּרִים לַחֶשְׁבּוֹן' }));
         p.appendChild(h('div', { class: 'cacct', dir: 'ltr', text: auth.email }));
         p.appendChild(h('div', { class: 'ctext', text: 'נִכְנָסִים עִם אוֹתוֹ מֵיְל וְסִיסְמָה בְּמַכְשִׁיר אַחֵר, וְכָל הַשַּׂחְקָנִים וְהַהִתְקַדְּמוּת מוֹפִיעִים גַּם שָׁם.' }));
         p.appendChild(h('div', { class: 'crow' },
           h('button', { class: 'btn', on: { click: function () { sfx.tap(); say('מְסַנְכְרְנִים...'); syncNow(function (ok) { if (ok) say('הַכֹּל מְסֻנְכְרָן ✓'); else fail(); }); } } }, icon('sync', 't'), ' סִנְכְּרוּן'),
-          btn('יְצִיאָה מֵהַחֶשְׁבּוֹן', 'b2 signout', function () { auth = null; saveAuth(); unlink(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); })));
+          btn('יְצִיאָה מֵהַחֶשְׁבּוֹן', 'b2 signout', function () { auth = null; saveAuth(); unlink(); if (autoLink()) syncNow(); cloud('יְצָאתֶם מֵהַחֶשְׁבּוֹן. הַשַּׂחְקָנִים נִשְׁאֲרוּ בַּמַּכְשִׁיר הַזֶּה.'); })));
       } else {
         var mail = h('input', { class: 'pname amail', type: 'email', maxlength: '80', placeholder: 'name@example.com', autocomplete: 'email', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'הַמֵּיְל שֶׁל הַהוֹרֶה' });
         var pass = h('input', { class: 'pname apass', type: 'password', maxlength: '60', placeholder: '••••••', autocomplete: 'current-password', 'aria-label': 'סִיסְמָה' });
@@ -7502,7 +7575,8 @@ var TrollModels = (function () {
           var em = mail.value.trim(); if (!em) { say(ERR.MISSING_EMAIL); return; }
           say('רֶגַע...'); idt('sendOobCode', { requestType: 'PASSWORD_RESET', email: em }).then(function () { say('שָׁלַחְנוּ מֵיְל לְאִפּוּס הַסִּיסְמָה ✓'); }, why);
         } } }));
-        p.appendChild(h('div', { class: 'ctext', text: 'עִם אוֹתוֹ מֵיְל וְסִיסְמָה מְשַׂחֲקִים בַּטֶּלֶפוֹן, בַּטַּאבְּלֶט וּבַמַּחְשֵׁב עִם אוֹתָם שַׂחְקָנִים.' + (L.CODE_RE.test(sync.code) ? ' הַשַּׂחְקָנִים שֶׁל קוֹד הַכְּפָר יַעַבְרוּ לַחֶשְׁבּוֹן.' : '') }));
+        p.appendChild(h('div', { class: 'ctext', text: 'עִם אוֹתוֹ מֵיְל וְסִיסְמָה מְשַׂחֲקִים בַּטֶּלֶפוֹן, בַּטַּאבְּלֶט וּבַמַּחְשֵׁב עִם אוֹתָם שַׂחְקָנִים.' + (vcode ? ' הַשַּׂחְקָנִים שֶׁל הַמַּכְשִׁיר הַזֶּה יַעַבְרוּ לַחֶשְׁבּוֹן.' : '') }));
+        p.appendChild(h('button', { class: 'clink ccl', on: { click: function () { sfx.tap(); cloud('', 'code'); } } }, vcode ? 'קוֹד הַמַּכְשִׁיר: ' : 'יֵשׁ לָנוּ קוֹד מִמַּכְשִׁיר אַחֵר', vcode ? h('span', { dir: 'ltr', text: vcode }) : null));
       }
       p.appendChild(status);
       el.appendChild(p);
@@ -7511,9 +7585,9 @@ var TrollModels = (function () {
   function joinCode(code, say, fail) {
     say('מִתְחַבְּרִים...');
     cloudGet(code).then(function (rem) {
-      if (!rem) { say('לֹא מָצָאנוּ כְּפָר עִם הַקּוֹד הַזֶּה.'); return; }
-      linkTo(code);
-      syncNow(function (ok) { if (ok) { if (!profiles.cur) who(false); else cloud('הַכְּפָר מְחֻבָּר ✓'); } else fail(); });
+      if (!rem) { say('לֹא מָצָאנוּ שַׂחְקָנִים עִם הַקּוֹד הַזֶּה.'); return; }
+      if (auth || !linkTo(code)) { fail(); return; } // (a device that is signed in to the family account stays with the account)
+      syncNow(function (ok) { if (ok) { if (!profiles.cur) who(false); else cloud('הַשַּׂחְקָנִים שֶׁל הַקּוֹד מְחֻבָּרִים ✓'); } else fail(); });
     }, fail);
   }
 
@@ -8533,7 +8607,7 @@ var TrollModels = (function () {
   }
 
   // ---------- start ----------
-  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadAuth(); loadSync(); }
+  if (sandbox) profiles = { cur: 'p1', list: [{ id: 'p1', name: 'דֶּמוֹ' }, { id: 'p2', name: 'נֹעָה' }] }; else { loadProfiles(); loadAuth(); loadSync(); autoLink(true); }
   if (sandbox && /boy=1/.test(hash)) profiles.list[0].sex = 'm'; // layout check of the masculine wording
   load(); buildBg();
   var hg = +((/[#&]g=(\d)/.exec(hash) || [])[1] || 0);
@@ -8566,7 +8640,10 @@ var TrollModels = (function () {
   document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
   document.addEventListener('visibilitychange', function () { if (sync.code) syncNow(null, document.hidden); });
+  addEventListener('online', function () { ridSweep(); if (sync.code) syncNow(); }); // the network is back: what was saved meanwhile goes up
+  ridSweep();
   if (/linked/.test(hash)) { auth = { uid: 'x', email: 'parent@example.com', rt: 'x' }; sync.code = 'acct'; } // layout check of the signed-in screens
+  if (sandbox && /vcode=1/.test(hash)) sync.code = 'ABCD2345'; // layout check: a device with its own code (&cj=1 with s=cloud: the screen of the code)
   setInterval(musicTick, 150);
   var scr = (/s=(\w+)/.exec(hash) || [])[1], ht = (/t=(\w+)/.exec(hash) || [])[1] || 'add', hl = (/l=(\d+)/.exec(hash) || [])[1];
   var hsrc = L.SRC.filter(function (x) { return x.id === ht; })[0];
@@ -8664,7 +8741,7 @@ var TrollModels = (function () {
   else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
   else if (scr === 'journal') journal((/[#&]pg=(\w+)/.exec(hash) || [])[1], /[#&]t=/.test(hash) ? ht : null);
-  else if (scr === 'cloud') cloud();
+  else if (scr === 'cloud') cloud('', /cj=1/.test(hash) ? 'code' : '');
   else if (scr === 'region') { region(ht); if (/par=1/.test(hash)) cur.querySelector('.parb').click(); if (/open=1/.test(hash)) { var on0 = cur.querySelector('.mnode.rec:not(.boss)') || cur.querySelector('.mnode.open,.mnode.done'); if (on0) on0.click(); } }
   else if (scr === 'bossend') { endBoss(L.createBoss(ht, topicOf(ht).g, Math.random), ht, topicOf(ht).g); if (!/show=1/.test(hash)) tv.skip(); if (/then=home/.test(hash)) home(); } // then=home: the camp right after a rescue
   else if (scr === 'end') {
@@ -8692,7 +8769,8 @@ var TrollModels = (function () {
   if (jc && cloudOn()) {
     jc = jc.toUpperCase();
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
-    if (L.CODE_RE.test(jc) && jc !== sync.code) { unlink(); cloud(); joinCode(jc, function (t) { var m = cur.querySelector('.cmsg'); if (m) m.textContent = t; }, function () {}); }
+    // (the device stays linked to its own code until the other one is found and linked: a link that fails changes nothing)
+    if (L.CODE_RE.test(jc) && jc !== sync.code && !auth) { cloud(); joinCode(jc, function (t) { var m = cur.querySelector('.cmsg'); if (m) m.textContent = t; }, function () {}); }
   }
   if (/fit/.test(hash)) setTimeout(function fitCheck(again) { // layout self-check: reports overflow to the test harness
     if (!fitCheck.fonts && document.fonts && document.fonts.ready) { fitCheck.fonts = 1; document.fonts.ready.then(function () { fitCheck(again); }); return; } // measure with the real font, not the fallback it replaces
