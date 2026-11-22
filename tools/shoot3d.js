@@ -1,7 +1,7 @@
 // node tools/shoot3d.js <out.png> <WxH> "<hash, e.g. demo&s=region&t=add>" [wait ms] [js to evaluate, its value is printed]
 // (run through: sh tools/edge-slot.sh node tools/shoot3d.js ...)
 // Opens index.html from file:// in headless Edge WITH software WebGL (swiftshader), so the 3D map is really drawn, and saves a screenshot.
-// GL=0: no WebGL at all (--disable-gpu), the way the layout tests run.  GL=hw: the real graphics chip (ANGLE on Direct3D 11) instead of swiftshader.  DPR=2: device pixel ratio.  RM=1: prefers-reduced-motion.  PAGE=tests/x.html
+// SERIES=0,400,800: also pictures at those ms after the wait (a motion as several frames).  GL=0: no WebGL at all (--disable-gpu), the way the layout tests run.  GL=hw: the real graphics chip (ANGLE on Direct3D 11) instead of swiftshader.  DPR=2: device pixel ratio.  RM=1: prefers-reduced-motion.  PAGE=tests/x.html
 const fs = require('fs'), path = require('path'), os = require('os'), { spawn, execSync } = require('child_process');
 const [out, size, hash, wait, js] = process.argv.slice(2), [W, H] = size.split('x').map(Number), ROOT = path.resolve(__dirname, '..');
 const GL = process.env.GL === '0' ? ['--disable-gpu'] : process.env.GL === 'hw' ? ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-gpu'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
@@ -23,6 +23,7 @@ function cdp(url) { return new Promise((res, rej) => { const ws = new WebSocket(
     await pg.send('Page.navigate', { url: (process.env.BASE || 'file:///' + ROOT.split(path.sep).join('/').replace(/ /g, '%20') + '/') + (process.env.PAGE || 'index.html') + (hash ? '#' + hash : '') });
     const ev = async x => { const r = await pg.send('Runtime.evaluate', { expression: x, returnByValue: true, awaitPromise: true }); return r.exceptionDetails ? 'EXC ' + (r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text) : r.result.value; };
     await sleep(+(wait || 2500));
+    if (process.env.SERIES && out && out !== '-') { let was = 0; for (const ms of process.env.SERIES.split(',').map(Number)) { await sleep(Math.max(0, ms - was)); was = ms; fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out.replace(/\.png$/, '_' + ms + '.png'), Buffer.from((await pg.send('Page.captureScreenshot', { format: 'png' })).data, 'base64')); } }   // SERIES=0,400,800: more pictures, that many ms after the wait (out_0.png, out_400.png ...)
     if (js) console.log('js', JSON.stringify(await ev(js[0] === '@' ? fs.readFileSync(js.slice(1), 'utf8') : js)));   // @file: the script is read from a file
     if (process.env.AFTER) await sleep(+process.env.AFTER);
     if (out && out !== '-') { fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true }); fs.writeFileSync(out, Buffer.from((await pg.send('Page.captureScreenshot', { format: 'png' })).data, 'base64')); console.log('saved', out); }

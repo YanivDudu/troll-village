@@ -11,7 +11,7 @@
 <style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
 <div id="frames"></div><pre id="out"></pre>
 <script>
-var fails = [], checks = 0;
+var fails = [], checks = 0, notes = [];
 function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 function frame(hash, w, h) {
@@ -21,6 +21,15 @@ function frame(hash, w, h) {
     (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen'); if (s && f.contentWindow.__tv) res({ f: f, d: d, w: f.contentWindow, tv: f.contentWindow.__tv }); else setTimeout(poll, 20); })();
   });
 }
+// A screen comes in with a small motion (scrIn: it grows from 92%). Sizes and places measured on the screen are only true when it is over; a hidden test browser on a
+// loaded machine may still be in the middle of it after any fixed wait (a 48 px button measured 44 to 47 px: that was the "flaky" door of the camp). The motion is waited
+// for, and ended by hand if the browser does not get there.
+async function settle(x) {
+  var run = function () { return x.d.getAnimations().filter(function (a) { return a.animationName === 'scrIn' && a.playState !== 'finished'; }); };
+  await until(function () { return !run().length; }, 1500); run().forEach(function (a) { try { a.finish(); } catch (e) {} });
+}
+async function until(f, ms) { var t = Date.now(); while (Date.now() - t < (ms || 4000)) { if (f()) return true; await wait(50); } return !!f(); } // (a state is waited for, not a number of ms: on a loaded machine the entrance of a screen takes longer)
+function atMid(x, b) { var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return t ? t.tagName + '.' + String(t.className && t.className.baseVal != null ? t.className.baseVal : t.className).replace(/ /g, '.') : 'nothing'; }
 function scr(x, cls) { return x.d.querySelector('.screen.' + cls + ':not(.out)'); }
 function tappable(x, b) { var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
 function ids(v) { return [].map.call(v.querySelectorAll('.vtr'), function (b) { return b.getAttribute('data-id'); }); }
@@ -29,8 +38,12 @@ function coins(x) { return +x.d.querySelector('.coinchip').getAttribute('data-n'
 
 async function door() { // the camp -> the village -> a card -> my companion -> the dressing room and back -> the camp
   var x = await frame('demo&s=home&vn=12&hour=10'); await wait(400);
-  var b = x.d.querySelector('.camp .folk .vilb');
-  check(!!b && tappable(x, b) && !!b.querySelector('img') && b.getBoundingClientRect().height >= 47.5, 'the camp has the door to the village, a whole touch target with a picture');
+  var b = x.d.querySelector('.camp .folk .vilb'), hEarly = b ? b.getBoundingClientRect().height : 0; await settle(x);
+  if (b && hEarly < 47.5) notes.push('at 400 ms the door measured ' + hEarly.toFixed(1) + ' px high (the screen was still coming in)');
+  var early = b ? (tappable(x, b) ? '' : ' (at 400 ms it was under ' + atMid(x, b) + ')') : ' (at 400 ms there was no door)';
+  await until(function () { b = x.d.querySelector('.camp .folk .vilb'); return !!b && tappable(x, b) && b.getBoundingClientRect().height >= 47.5; });
+  if (early) notes.push('at 400 ms the door of the camp was not ready yet' + early);
+  check(!!b && tappable(x, b) && !!b.querySelector('img') && b.getBoundingClientRect().height >= 47.5, 'the camp has the door to the village, a whole touch target with a picture' + (b ? ', now under ' + atMid(x, b) : ''));
   b.click(); await wait(500);
   var v = scr(x, 'vil'), ts = v ? v.querySelectorAll('.vtr') : [];
   check(!!v && ts.length === 12, 'the door opens the village, with all 12 trolls');
@@ -77,14 +90,14 @@ async function door() { // the camp -> the village -> a card -> my companion -> 
   x.f.remove();
 }
 async function scroll() { // many trolls: the island scrolls in its own area by the two arrows; the page itself never scrolls
-  var x = await frame('demo&s=village&vn=38&hour=10', 360, 640); await wait(600);
+  var x = await frame('demo&s=village&vn=38&hour=10', 360, 640); await wait(600); await settle(x);
   var v = scr(x, 'vil'), mw = v.querySelector('.mwrap'), sc = mw.querySelector('.mscroll'), up = mw.querySelector('.mup'), dn = mw.querySelector('.mdn');
   var shown = function (b) { return x.w.getComputedStyle(b).display !== 'none'; };
   check(v.querySelectorAll('.vtr').length === 38 && mw.classList.contains('scrl') && sc.scrollHeight > sc.clientHeight + 20, '38 trolls on a small phone: the island is taller than its window');
   check(v.scrollHeight <= v.clientHeight + 1 && x.d.documentElement.scrollHeight <= x.w.innerHeight + 1, 'the screen itself does not scroll');
   check(shown(dn) && !shown(up) && tappable(x, dn), 'at the top: only the arrow down');
   dn.click(); await wait(1100);
-  check(sc.scrollTop > 100 && shown(up), 'the arrow down moves the island a screenful, and the arrow up comes');
+  check(sc.scrollTop > 100 && shown(up), 'the arrow down moves the island a screenful, and the arrow up comes (scrollTop ' + Math.round(sc.scrollTop) + ')');
   for (var k = 0; k < 15 && shown(dn); k++) { dn.click(); await wait(1100); } // (a hidden test browser sends no scroll events: the arrows are followed through their own taps)
   check(!shown(dn) && shown(up) && sc.scrollTop >= sc.scrollHeight - sc.clientHeight - 2, 'the arrow down leads to the bottom, where only the arrow up is left');
   var last = v.querySelectorAll('.vtr')[37]; last.click(); await wait(300);
@@ -135,6 +148,6 @@ async function grow() { // a finished round: one point for the companion; the ro
 }
 (async function () {
   try { await door(); await scroll(); await grow(); } catch (e) { fails.push('threw: ' + e.message); }
-  document.title = fails.length ? 'VILLAGE FAIL ' + fails.join(' | ') : 'VILLAGE OK ' + checks;
+  document.title = (fails.length ? 'VILLAGE FAIL ' + fails.join(' | ') : 'VILLAGE OK ' + checks) + (notes.length ? ' [' + notes.join('; ') + ']' : '');
 })();
 </script>

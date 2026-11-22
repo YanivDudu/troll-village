@@ -196,7 +196,7 @@ var TrollCamp3D = (function () {
     }
     function trollAct(name) { if (!troll) return; if (name === 'jump' || name === 'nod' || name === 'hop' || name === 'door' || name === 'wave' || name === 'pickup' || name === 'dance') { troll.play(name); busy(2200); } }
     function trollStep(dt) {
-      var T = troll, s = ts, face = s.face == null ? 0 : s.face, lk = tq.look;
+      var T = troll, s = ts, face = s.face === undefined ? 0 : s.face, lk = tq.look;   // (face null: it keeps the way it stands)
       if (T.root.visible !== !s.hidden) T.root.visible = !s.hidden;
       if (!!s.sitting !== tq.sit) { tq.sit = !!s.sitting; if (tq.sit) T.sit({ warm: Math.hypot(s.x - L.fire[0], s.z - L.fire[1]) < 2.6 }); else T.stand(); }
       T.drive(s.x, s.z, s.hidden ? null : face);

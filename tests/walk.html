@@ -32,7 +32,15 @@ function house(x, n) { return qa(x, '.mnode[data-house]')[n - 1]; } // the n-th 
 function lv(x, n) { return +house(x, n).getAttribute('data-house'); }
 function at(x) { var w = walker(x), m = w && /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(w.style.transform); return m ? [+m[1], +m[2]] : null; }
 async function until(fn, max) { var t0 = Date.now(); while (Date.now() - t0 < (max || 3000)) { if (fn()) return Date.now() - t0; await wait(20); } return -1; }
-var R = 'demo&s=region&t=add&flat=1&hour=10', WALK = R + '&walk=1';   // the demo map of addition: houses 1 and 2 are open and won, house 3 is the next step (the companion stands there), house 4 and the bridge are closed
+// A screen comes in with a small motion (scrIn: it grows from 92% and slides up 50 px, over half a second). A place that is measured on the screen (getBoundingClientRect)
+// is only true once that motion is over, and a hidden test browser on a loaded machine may still be in the middle of it after any fixed wait: this was the "flaky" final
+// place of the walk (the walker was right; it was measured through a screen at 97%). So: the motion is waited for, and ended by hand if the browser does not get there.
+async function settle(x) {
+  var run = function () { return x.d.getAnimations().filter(function (a) { return a.animationName === 'scrIn' && a.playState !== 'finished'; }); };
+  await until(function () { return !run().length; }, 1500); run().forEach(function (a) { try { a.finish(); } catch (e) {} });
+}
+// tests/walk.html#3d: the same walks on the 3D map (needs a browser with a graphics chip: node tools/shoot3d.js with GL=hw and PAGE=tests/walk.html; "#3d&soft" takes software WebGL)
+var H3 = /3d/.test(location.hash), R = 'demo&s=region&t=add' + (H3 ? (/soft/.test(location.hash) ? '&q=0' : '') : '&flat=1') + '&hour=10', WALK = R + '&walk=1';   // the demo map of addition: houses 1 and 2 are open and won, house 3 is the next step (the companion stands there), house 4 and the bridge are closed
 
 (async function () {
   var x, a, b, ms, p0, p1, r, n, lv0;
@@ -211,7 +219,7 @@ var R = 'demo&s=region&t=add&flat=1&hour=10', WALK = R + '&walk=1';   // the dem
 
     // ---- the way: the pictures of one walk held still (&walkf=) go from the stop of the companion to the house that was tapped, step after step ----
     var way = [];
-    for (n = 0; n < 5; n++) { x = await frame(WALK + '&wto=0&walkf=' + (n / 4)); await wait(500); way.push(at(x)); if (n === 0) a = q(x, '.mnode.rec .mbud').getBoundingClientRect(); if (n === 4) { b = house(x, 1).querySelector('.mic').getBoundingClientRect(); r = walker(x).getBoundingClientRect(); p0 = q(x, '.tmap').getBoundingClientRect(); } if (n < 4) done(x); }
+    for (n = 0; n < 5; n++) { x = await frame(WALK + '&wto=0&walkf=' + (n / 4)); await wait(500); await settle(x); way.push(at(x)); if (n === 0) a = q(x, '.mnode.rec .mbud').getBoundingClientRect(); if (n === 4) { b = house(x, 1).querySelector('.mic').getBoundingClientRect(); r = walker(x).getBoundingClientRect(); p0 = q(x, '.tmap').getBoundingClientRect(); } if (n < 4) done(x); }
     check(way.every(function (p) { return !!p; }) && way.slice(1).every(function (p, i) { return Math.hypot(p[0] - way[i][0], p[1] - way[i][1]) > 15; }), 'five pictures of one walk (0, 25, 50, 75, 100%): each a step further (' + JSON.stringify(way) + ')');
     check(way[4][1] < way[0][1] - 100, 'it goes up the map, from the third house to the first');
     check(Math.abs(r.left - p0.left - way[4][0]) < 2 && r.left > b.left && r.left < b.right + b.width && Math.abs(r.top - b.bottom) < 6, 'at the end it stands beside the house that was tapped, its feet at the foot of the picture');
@@ -219,10 +227,25 @@ var R = 'demo&s=region&t=add&flat=1&hour=10', WALK = R + '&walk=1';   // the dem
     done(x);
 
     // ---- the picture of a walk held still (&walkf=): the walker stays inside the map, on the trail between the two stops ----
-    x = await frame(WALK + '&wto=0&walkf=0.5', 360, 640); await wait(600);
+    x = await frame(WALK + '&wto=0&walkf=0.5', 360, 640); await wait(600); await settle(x);
     a = walker(x); b = q(x, '.tmap').getBoundingClientRect(); r = a && a.querySelector('.mwb').getBoundingClientRect();
     check(!!a && onMap(x) && r.left >= b.left - 2 && r.right <= b.right + 2 && r.top >= b.top - 30 && r.bottom <= b.bottom + 2, '&walkf=0.5 at 360x640: the walk stands still and the walker is inside the map');
     done(x);
+    if (H3) { // ---- the 3D map: the companion is the 3D troll, it stands where the walker of the page stands, and the drawing rests ----
+      x = await frame(WALK + '&wto=0&walkf=1'); await until(function () { return !!q(x, '.tmap.m3on:not(.m3w)'); }, 8000); await wait(1200);
+      var i3 = x.w.TrollMap3D && x.w.TrollMap3D.current(), t3 = i3 && i3.troll && i3.troll(), w3 = at(x), p3 = t3 && i3.trollAt();
+      check(!!t3 && !!q(x, '.tmap.m3troll'), '3D map: the companion is a 3D troll and the drawing rests');
+      check(!!p3 && !!w3 && Math.hypot(p3[0] - w3[0], p3[1] - w3[1]) < 4, '3D map: at the end of the walk the 3D troll stands where the walker stands (' + JSON.stringify([p3, w3]) + ')');
+      check(!!t3 && Math.abs(t3.heading) < 0.2, '3D map: arrived, it looks at the child again');
+      check(!!walker(x) && getComputedStyle(walker(x).querySelector('.mwb')).opacity === '0', '3D map: the walker of the page is not seen');
+      done(x);
+      x = await frame(WALK); await until(function () { return !!q(x, '.tmap.m3on:not(.m3w)'); }, 8000); await wait(1800);
+      house(x, 1).click(); await wait(250); t3 = x.w.TrollMap3D.current().troll();
+      check(!!t3 && Math.abs(t3.heading) > 0.5, '3D map: on its way the troll is turned to where it goes (heading ' + (t3 ? t3.heading.toFixed(2) : '-') + ')');
+      ms = await until(function () { return inRound(x); }, 2500);
+      check(ms >= 0 && ms + 250 <= 1300, '3D map: the round starts after the walk, ' + (ms + 250) + ' ms after the tap');
+      done(x);
+    }
   } catch (e) { fails.push('exception: ' + (e && e.stack || e)); }
   document.title = fails.length ? 'WALK FAIL ' + fails.length + ': ' + fails.join(' | ').slice(0, 900) : 'WALK OK ' + checks;
 })();

@@ -7075,6 +7075,7 @@ var TrollModels = (function () {
       FILES.forEach(function (f) { var s = document.createElement('script'); s.async = false; s.src = 'assets/map3d/' + f; s.onload = function () { TM.files[f] = Math.round(performance.now()) - TM.s0; fin(); }; s.onerror = function () { if (!/pets3d|troll3d/.test(f)) bad = true; fin(); }; document.head.appendChild(s); }); // (the animals and the 3D troll are extras: without their files everything else is drawn)
     }
     function warm() { if (st === 0 && real()) load(); }
+    function pre() { if (st !== 0 || !real()) return; FILES.forEach(function (f) { var l = document.createElement('link'); l.rel = 'preload'; l.as = 'script'; l.href = 'assets/map3d/' + f; document.head.appendChild(l); }); } // the files start to arrive while the game itself is still starting (they are run later, when the page is idle)
     // the mist over the place of a picture that is not drawn yet (on: put it there; off: lift it)
     function mist(box, on) {
       if (!box) return; var m = box.querySelector(':scope>.m3mist');
@@ -7137,11 +7138,12 @@ var TrollModels = (function () {
     }
     function campWhen(f) { if (no || cplan || !cw || st === 3 || (cinst && cw.V)) f(); else { cq.push(f); later(function () { var k = cq.indexOf(f); if (k >= 0) { cq.splice(k, 1); f(); } }, 45000); } } // f runs when the 3D camp is on the screen, or when it is known that it will not be
     function campDrop() { cw = null; cq = []; if (cinst) { var i = cinst; cinst = null; try { i.dispose(true); } catch (e) {} } }
-    return { sync: sync, leave: function () { want = null; drop(); campDrop(); if (VEIL.shut()) setTimeout(function () { if (!want && !cw) VEIL.done(); }, 0); }, camp: camp, campLay: campLay, campWhen: campWhen, warm: warm, real: real, times: TM,
+    return { sync: sync, leave: function () { want = null; drop(); campDrop(); if (VEIL.shut()) setTimeout(function () { if (!want && !cw) VEIL.done(); }, 0); }, camp: camp, campLay: campLay, campWhen: campWhen, warm: warm, pre: pre, real: real, times: TM,
       walk: function (x, y, m) { try { if (inst && inst.walker) inst.walker(x, y, false, m); } catch (e) {} }, mood: function (m) { try { if (inst && inst.trollPose) inst.trollPose(m); } catch (e) {} }, pics: PICS, react: function (n, ms) { try { if (inst && inst.react) inst.react(n, ms); } catch (e) {} } }; // react (task "mapwalk"): the model of the stop the companion reached bounces once
   })();
 
   tv.m3t = M3.times; tv.veil = VEIL.log; // (tools/time3d.js and the tests read these)
+  if (!sandbox || /[#&]warm=1/.test(hash)) M3.pre();
   if (!sandbox || /[#&]warm=1/.test(hash)) setTimeout(function () { var f = function () { M3.warm(); }; if (window.requestIdleCallback) requestIdleCallback(f, { timeout: 1500 }); else f(); }, 250); // the 3D scripts are fetched and read while the first screen is looked at
   // ---------- task "pets": seven pets are living toy animals; a troll has up to two pets ----------
   // The animals (dog, cat, lion, crocodile, monkey, bird, elephant) are the owner's 3D models of assets/map3d/pets3d.js. Phase 1 (this code) shows them as
@@ -7614,8 +7616,8 @@ var TrollModels = (function () {
     var view = o.view, V3 = null, G3 = null, hid = false, sitNow = false, hitT = null, hitF = null;
     // task "world3d": T3: the companion is the 3D troll of the 3D picture (G3.trollOn). The drawing rests then (.c3t), but it is still moved, so everything that
     // hangs on it (the bubble, the heart, the place a tap answers, the hop towards a button) is as before. face3: where the 3D troll turns when it stands (0: to the child)
-    var T3 = false, face3 = 0;
-    api.pose3 = function (mood, look) { if (!T3) return; face3 = look && look.x ? look.x * 0.95 : /^sit/.test(mood || '') ? 'fire' : 0; G3.trollPose(mood, look); };
+    var T3 = false, face3 = 0, walk3 = false; // (walk3: this pose is a walk; the troll keeps the way it walks when it stops for a moment between two legs of a way)
+    api.pose3 = function (mood, look) { if (!T3) return; face3 = walk3 ? null : look && look.x ? look.x * 0.95 : /^sit/.test(mood || '') ? 'fire' : 0; G3.trollPose(mood, walk3 ? null : look); };
     api.act3 = function (name) { if (T3) G3.trollAct(name); };
     function carry3(kind) { if (T3) G3.trollCarry(kind); }
     function homeP() { return V3 ? { x: V3.ox, y: V3.oy, s: V3.K, g: CAMP3.home } : { x: 0, y: 0, s: 1 }; }
@@ -7643,7 +7645,9 @@ var TrollModels = (function () {
       }
     }
     var actor = api.actor = { moveTo: function (p, ms, ez, od) { put(p, ms, ez, od); }, pose: function (m, l, a) { P(m, l, a); }, hide: function (y) { hid = !!y; w.style.visibility = y ? 'hidden' : ''; },
-      state: function () { var m = nowPos(), g = V3 ? gOf(m) : [0, 0], F = CAMP3.fire; return { x: g[0], z: g[1], s: m.s, hidden: hid || m.o === 0, sitting: sitNow, moving: !!mv && mv.ms > 0 && now() - mv.t0 < mv.ms, pose: api.now,
+      state: function () { var m = nowPos(), g = V3 ? gOf(m) : [0, 0], F = CAMP3.fire, tn = CAMP3.tent, tc = Math.cos(tn[2]), tsn = Math.sin(tn[2]), lx = ((g[0] - tn[0]) * tc - (g[1] - tn[1]) * tsn) / tn[3], lz = ((g[0] - tn[0]) * tsn + (g[1] - tn[1]) * tc) / tn[3];
+        var inT = T3 && Math.abs(lx) < 1.2 && lz > -1.2 && lz < 1.3; // (the 3D troll is taller than the inside of the tent: it is gone the moment it has stepped through the door)
+        return { x: g[0], z: g[1], s: m.s, hidden: hid || inT || (!T3 && m.o === 0), sitting: sitNow, moving: !!mv && mv.ms > 0 && now() - mv.t0 < mv.ms, pose: api.now,
         face: face3 === 'fire' ? (Math.hypot(F[0] - g[0], F[1] - g[1]) < 2.6 ? Math.atan2(F[0] - g[0], F[1] - g[1]) * 0.62 : 0) : face3 }; } };
     api.three = function () { return V3; }; dress3();
     api.probe = function (g) { // tests: the troll is put on the ground point g; how far its feet are from where the camera sees that point, and how big it is there
@@ -7677,7 +7681,7 @@ var TrollModels = (function () {
       var L3 = CAMP3, c = R(cg), hb = R(bud), hx = hb.left + hb.width / 2, S = { c: c, h: hb.height, w: hb.width, hx: hx, gy: hb.bottom - c.top, three: 1 }, tp;
       S.home = sp3(L3.home); S.fire = sp3(L3.sit); S.fx = hx + sp3(L3.fire).x; S.pet = sp3(L3.play); S.back = [sp3(L3.back[0]), sp3(L3.back[1])]; S.work = sp3(L3.work);
       S.peb = sp3(L3.peb); S.sand = sp3(L3.sand); S.poke = sp3(L3.poke); S.wat = sp3(L3.water);
-      S.door = sp3(c3tl(0.1, 1.9)); S.inn = sp3(c3tl(0.3, -0.1)); S.inn.o = 0; S.peek = sp3(c3tl(0, 0.72)); S.clip = '';
+      S.door = sp3(c3tl(0.1, 1.9)); S.inn = sp3(c3tl(0.3, -0.1)); S.inn.o = 0; S.peek = sp3(c3tl(0, T3 ? 1.45 : 0.72)); S.clip = '';
       tp = sp3(c3tl(0, 0.6), 3.05); S.zz = [hx - c.left + tp.x, S.gy + tp.y];
       return S;
     }
@@ -7705,8 +7709,8 @@ var TrollModels = (function () {
     // one paint of the troll: the mood, where it looks, the motion on request, and the warm light of the fire on the side that faces it
     function P(mood, look, act) {
       var op = { size: bud.offsetHeight || 200, zz: !act && atHome(pos), glow: lastFx > 0 ? 1 : -1 };
-      if (look) op.look = look; sitNow = /^sit/.test(mood || '');
-      o.paint(mood, op); tPaint = now();
+      if (look) op.look = look; sitNow = /^sit/.test(mood || ''); walk3 = act === 'walk' || act === 'hop';
+      o.paint(mood, op); tPaint = now(); walk3 = false;
       var sv = w.querySelector('svg.troll'); if (act && sv) sv.setAttribute('data-act', act);
       if (T3 && act && act !== 'walk') G3.trollAct(act);
     }
@@ -10273,7 +10277,11 @@ var TrollModels = (function () {
       el.appendChild(wrap);
       function smax() { return Math.max(0, sc.scrollHeight - sc.clientHeight); }
       function ends() { var on = wrap.classList.contains('scrl'), t = sc.scrollTop; wrap.classList.toggle('up', on && t > 2); wrap.classList.toggle('dn', on && t < smax() - 2); }
-      function to(v, smooth) { v = Math.max(0, Math.min(smax(), v)); if (smooth && !calm && sc.scrollTo && 'scrollBehavior' in document.documentElement.style) sc.scrollTo({ top: v, behavior: 'smooth' }); else sc.scrollTop = v; var was = sc.scrollTop; later(function () { if (sc.scrollTop === was && Math.abs(was - v) > 2) sc.scrollTop = v; ends(); }, 300); later(ends, 60); later(ends, 450); later(ends, 900); } // a browser that did not glide: jump
+      var goal = null; // where a glide of the island is going (null: none). A glide that was cut short still ends there: a layout in the middle of it (a font or a picture that arrived) used to stop the island after a few px, and a browser that draws no frames never glides at all
+      function to(v, smooth) { v = Math.max(0, Math.min(smax(), v)); goal = v; if (smooth && !calm && sc.scrollTo && 'scrollBehavior' in document.documentElement.style) sc.scrollTo({ top: v, behavior: 'smooth' }); else sc.scrollTop = v; var was = sc.scrollTop;
+        later(function () { if (goal === v && sc.scrollTop === was && Math.abs(was - v) > 2) sc.scrollTop = v; ends(); }, 300); // a browser that did not glide: jump
+        later(function () { if (goal !== v) return; goal = null; if (Math.abs(sc.scrollTop - v) > 2) sc.scrollTop = Math.min(v, smax()); ends(); }, 800); // a glide that stopped on its way: it ends where it was going
+        later(ends, 60); later(ends, 450); later(ends, 900); }
       [up, dn].forEach(function (b, k) { b.addEventListener('click', function () { sfx.tap(); to(sc.scrollTop + (k ? 1 : -1) * Math.max(60, wrap.clientHeight * 0.8), true); }); }); // one screenful
       var endA = h('i', { class: 'mend a' }), endZ = h('i', { class: 'mend z' }); box.appendChild(endA); box.appendChild(endZ);
       if (window.IntersectionObserver) { var io = new IntersectionObserver(function () { if (cur !== el) io.disconnect(); else ends(); }, { root: sc }); io.observe(endA); io.observe(endZ); }
@@ -10287,7 +10295,7 @@ var TrollModels = (function () {
         if (box.offsetHeight > wrap.clientHeight + 1) {
           wrap.classList.add('scrl'); wrap.classList.toggle('side', wrap.clientWidth >= 640);
           dn.style.bottom = Math.max(wrap.classList.contains('side') ? 0 : 4, Math.ceil(wrap.getBoundingClientRect().bottom - window.innerHeight * 0.9)) + 'px'; // the arrow stays above the bottom tenth
-          sc.scrollTop = Math.min(keep, smax());
+          sc.scrollTop = Math.min(goal != null ? goal : keep, smax());
         }
         ends();
       }
