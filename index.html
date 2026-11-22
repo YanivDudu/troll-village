@@ -2566,6 +2566,14 @@ body.toy .cpet.pt3{filter:none}
 .ppips{display:inline-flex;gap:2px;margin-inline-start:var(--sp2,8px);vertical-align:-2px;color:var(--primary,#b0206a)}
 .ppips .ic.e{color:var(--locked,#c9c3d6);opacity:.7}
 /* PETS-END */
+/* merge of "camp life" and "pets": with two pets the row of the island can be wider than the island on a narrow phone.
+   The scenery and the pets give way (the companion and the dressing button never do), so nothing stands outside the island. */
+body.toy .camp .cground{gap:clamp(2px,1cqw,34px)}
+body.toy .camp .cground>.cpet,body.toy .camp .cground>.ctent,body.toy .camp .cground>.cfire{flex-shrink:1;min-width:22px}
+body.toy .camp .cground>.cpet.pt3{flex-shrink:.35}
+body.toy .camp .cground>.cpet:not(.pt3){max-height:11cqw;flex-shrink:2}
+body.toy .camp .cground>.cpet.p2{margin-inline:0}
+body.toy .camp .cground>.cpet{object-fit:contain}
 </style>
 </head>
 <body>
