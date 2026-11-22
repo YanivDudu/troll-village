@@ -5148,6 +5148,10 @@ var TrollModels = (function () {
     state.mute = !!snd.mute; state.music = snd.music !== false;
     if (state.mute && typeof silence === 'function') silence();
   }
+  // The device's switch is the only truth for sound: the state object is replaced in many places (a stage ends, the grade changes, progress
+  // arrives from another device), and a copy of the switch inside it can come back as "on".
+  function muted() { if (!snd) sndApply(); return !!snd.mute; }
+  function musicOn() { if (!snd) sndApply(); return snd.music !== false; }
   function sndSet(k, v) { sndApply(); snd[k] = v; lsSet(SNDKEY, JSON.stringify(snd)); state[k] = v; if (state.mute) silence(); else if (ac && master) { try { master.gain.value = 0.9; } catch (e) {} } }
   function load() {
     state = L.loadState(profiles.cur ? rawOf(profiles.cur) : null);
@@ -5737,14 +5741,14 @@ var TrollModels = (function () {
         ac = new AC(); master = ac.createGain(); master.gain.value = 0.9;
         var comp = ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
       }
-      if (state.mute) { master.gain.value = 0; return ac; } // silent means silent: nothing is resumed while the speaker is off
+      if (muted()) { master.gain.value = 0; return ac; } // silent means silent: nothing is resumed while the speaker is off
       master.gain.value = 0.9; if (ac.state === 'suspended') ac.resume();
       return ac;
     } catch (e) { return null; }
   }
   // o: {type, vol, attack, to (glide target), partials, gains, at (absolute time)}
   function note(f, t0, d, o) {
-    if (state.mute) return;
+    if (muted()) return;
     var a = actx(); if (!a) return;
     o = o || {};
     try {
@@ -5763,7 +5767,7 @@ var TrollModels = (function () {
     } catch (e) {}
   }
   function noise(t0, d, o) {
-    if (state.mute) return;
+    if (muted()) return;
     var a = actx(); if (!a) return;
     try {
       if (!nbuf) { nbuf = a.createBuffer(1, a.sampleRate, a.sampleRate); var ch = nbuf.getChannelData(0); for (var i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1; }
@@ -5810,7 +5814,7 @@ var TrollModels = (function () {
   // If a file cannot be played, the synthesised version above is used instead. ----------
   var sndPool = {}, sndBad = {}, live = []; // live: the effects that are sounding right now
   function playFile(name, vol, rate) {
-    if (state.mute) return true;
+    if (muted()) return true;
     if (sndBad[name]) return false;
     try {
       var base = sndPool[name];
@@ -5822,7 +5826,7 @@ var TrollModels = (function () {
       a.volume = vol;
       if (rate) { a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.playbackRate = rate; }
       live.push(a); a.addEventListener('ended', function () { var i = live.indexOf(a); if (i >= 0) live.splice(i, 1); });
-      var p = a.play(); if (p && p.then) p.then(function () { if (state.mute) a.pause(); }, function () {});
+      var p = a.play(); if (p && p.then) p.then(function () { if (muted()) a.pause(); }, function () {});
       return true;
     } catch (e) { return false; }
   }
@@ -5845,7 +5849,7 @@ var TrollModels = (function () {
   // Background music: one track per place, each keeps its position while another one plays.
   var TRACKS = { home: 'carefree', play: 'wholesome', shop: 'easylemon', race: 'race' }, bgm = {}, bgmWant = 'home', bgmBad = false, unlocked = false;
   function applyMusic() {
-    var on = !state.mute && state.music && unlocked && !document.hidden && !bgmBad, k;
+    var on = !muted() && musicOn() && unlocked && !document.hidden && !bgmBad, k;
     var want = race && race.on && !race.over && race.t0 ? 'race' : bgmWant; // a faster tune for as long as a race runs, on every screen
     for (k in bgm) if (!on || k !== want) bgm[k].pause();
     if (!on) return;
@@ -5855,7 +5859,7 @@ var TrollModels = (function () {
         a = bgm[want] = new Audio('assets/snd/' + TRACKS[want] + '.mp3'); a.loop = true; a.volume = 0.2;
         a.addEventListener('error', function () { bgmBad = true; });
       }
-      var p = a.play(); if (p && p.then) p.then(function () { if (state.mute || !state.music || document.hidden) a.pause(); }, function () {});
+      var p = a.play(); if (p && p.then) p.then(function () { if (muted() || !musicOn() || document.hidden) a.pause(); }, function () {});
     } catch (e) { bgmBad = true; }
   }
   // The speaker button means total silence, at once: music, effects that are already playing, notes scheduled ahead, and reading aloud.
@@ -5868,7 +5872,7 @@ var TrollModels = (function () {
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
     musicT = 0;
   }
-  tv.snd = function () { var k, n = 0; for (k in bgm) if (!bgm[k].paused) n++; return { music: n, fx: live.filter(function (x) { return !x.paused; }).length, ac: ac ? ac.state : 'none', gain: master ? master.gain.value : 0, mute: !!state.mute }; }; // for tests/mute.html
+  tv.snd = function () { var k, n = 0; for (k in bgm) if (!bgm[k].paused) n++; return { music: n, fx: live.filter(function (x) { return !x.paused; }).length, ac: ac ? ac.state : 'none', gain: master ? master.gain.value : 0, mute: !!muted() }; }; // for tests/mute.html
   function setMusic(name) { if (bgmWant !== name) { bgmWant = name; } applyMusic(); }
 
   // Quiet background tune: pentatonic melody with a soft bass, scheduled a little ahead of time.
@@ -5876,7 +5880,7 @@ var TrollModels = (function () {
   var BASS = [-24, -24, -15, -15, -19, -19, -17, -17];
   function musicTick() {
     if (!bgmBad) return; // the recorded music is playing; this synthesised tune is only the fallback
-    if (state.mute || !state.music || !ac || document.hidden) { musicT = 0; return; }
+    if (muted() || !musicOn() || !ac || document.hidden) { musicT = 0; return; }
     if (musicT < ac.currentTime) musicT = ac.currentTime + 0.1;
     while (musicT < ac.currentTime + 0.5) {
       var k = musicStep % MEL.length;
@@ -6002,8 +6006,8 @@ var TrollModels = (function () {
     if (box.parentNode) box.parentNode.classList.toggle('tight', d >= 12);
   }
   function topBar(withHome, backFn) {
-    var mute = iconBtn(state.mute ? 'sound-off' : 'sound', 'צְלִילִים', function () { sndSet('mute', !state.mute); save(true); setIcon(mute, state.mute ? 'sound-off' : 'sound'); mute.classList.toggle('off', !!state.mute); if (state.mute) hush(); applyMusic(); }, state.mute ? 'off' : '', true);
-    var music = iconBtn('music', 'מוּזִיקַת רֶקַע', function () { sndSet('music', !state.music); save(true); music.className = 'icon' + (state.music ? '' : ' dim off'); applyMusic(); }, state.music ? '' : 'dim off', true);
+    var mute = iconBtn(muted() ? 'sound-off' : 'sound', 'צְלִילִים', function () { sndSet('mute', !muted()); save(true); setIcon(mute, muted() ? 'sound-off' : 'sound'); mute.classList.toggle('off', !!muted()); if (muted()) hush(); applyMusic(); }, muted() ? 'off' : '', true);
+    var music = iconBtn('music', 'מוּזִיקַת רֶקַע', function () { sndSet('music', !musicOn()); save(true); music.className = 'icon' + (musicOn() ? '' : ' dim off'); applyMusic(); }, musicOn() ? '' : 'dim off', true);
     var homeB = withHome ? iconBtn('home', 'חֲזָרָה לַכְּפָר', function () { home(); }) : null;
     var backB = backFn ? iconBtn('back', 'חֲזָרָה', function () { backFn(); }) : null;
     var cnt = h('div', { class: 'chips cnt' },
@@ -6916,7 +6920,7 @@ var TrollModels = (function () {
   }
   // English is heard before it is read: the device reads the word out when the exercise opens. Without an English voice,
   // or with the sound switched off, the word is written on the card instead.
-  function canEn() { return !!(tts && enVoice && !state.mute); }
+  function canEn() { return !!(tts && enVoice && !muted()); }
   function speakEn(text) {
     if (!canEn()) return;
     try {
@@ -6943,7 +6947,7 @@ var TrollModels = (function () {
   function hush() { if (tts) try { tts.cancel(); } catch (e) {} duck(false); }
   function speak(text) {
     if (isBoy()) text = L.forBoy(text);
-    if (!tts || !heVoice || state.mute) return;
+    if (!tts || !heVoice || muted()) return;
     try {
       tts.cancel();
       var u = new SpeechSynthesisUtterance(spoken(text));
@@ -7132,7 +7136,6 @@ var TrollModels = (function () {
         (WIDGET[q.fmt] || WIDGET.choice)(q);
         roomFit();
         if (autoSay()) speak(sayQ()); else hush();
-        if (q.say) later(function () { speakEn(q.say.text); }, 450);
       }
       // Each activity format draws its own controls and reports through onAnswer(button, value, question).
       var ASKS = { order: 'הַקִּישִׁי לְפִי הַסֵּדֶר', tf: 'הַאִם זֶה נָכוֹן?', cmp: 'אֵיזֶה סִימָן מַתְאִים?', line: 'הַקִּישִׁי עַל הַתְּשׁוּבָה בִּישַׁר הַמִּסְפָּרִים', build: 'בְּנִי אֶת הַמִּסְפָּר מִקֻּבִּיּוֹת', array: 'בְּנִי מַעֲרָךְ מַתְאִים', pairs: 'הַתְאִימִי כָּל תַּרְגִּיל לַתּוֹצָאָה שֶׁלּוֹ', use: 'הֵעָזְרִי בַּתַּרְגִּיל הַפָּתוּר' };
@@ -8798,7 +8801,9 @@ var TrollModels = (function () {
     else if (hhome === 'done') L.SUBS.forEach(function (x) { L.topicsFor(state, x).forEach(function (id) { hfull(id); state.boss[id][state.grade] = true; }); });
   }
   state = L.updateStreak(state, L.todayStr()); save(true);
-  document.addEventListener('pointerdown', function () { actx(); unlocked = true; applyMusic(); }, { passive: true });
+  ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(function (ev) { // a touch gives the page the right to play only when the finger lifts: pointerdown alone is too early for the music
+    document.addEventListener(ev, function () { actx(); unlocked = true; applyMusic(); }, { passive: true, capture: true });
+  });
   document.addEventListener('visibilitychange', applyMusic); // browsers allow sound only after a tap
   document.addEventListener('visibilitychange', function () { if (sync.code) syncNow(null, document.hidden); });
   addEventListener('online', function () { ridSweep(); autoLink(true); if (sync.code) syncNow(); }); // the network is back: what was saved meanwhile goes up

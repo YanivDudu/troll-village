@@ -18,7 +18,7 @@ function run(cmd, args, ms) {
 }
 function edge(url, budget) { // every browser gets a profile of its own, so several can run side by side
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'troll-all-'));
-  return run(EDGE, ['--headless', '--disable-gpu', '--autoplay-policy=no-user-gesture-required', '--allow-file-access-from-files', '--no-first-run', '--user-data-dir=' + dir, '--window-size=2000,1400', '--virtual-time-budget=' + budget, '--dump-dom', url], 900000)
+  return run(EDGE, ['--headless', '--mute-audio', '--disable-gpu', '--autoplay-policy=no-user-gesture-required', '--allow-file-access-from-files', '--no-first-run', '--user-data-dir=' + dir, '--window-size=2000,1400', '--virtual-time-budget=' + budget, '--dump-dom', url], 900000)
     .then(out => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} const m = /<title>([^<]*)/.exec(out); return m ? m[1].replace(/&amp;/g, '&') : 'NO TITLE: the browser returned ' + (out === 'TIMEOUT' ? 'nothing in 15 minutes and was stopped' : out ? 'no page (' + out.slice(0, 80).replace(/\s+/g, ' ') + ')' : 'nothing') + '. This is a failure, not a pass'; });
 }
 const jobs = [];

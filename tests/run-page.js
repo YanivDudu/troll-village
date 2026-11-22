@@ -17,6 +17,6 @@ const server = http.createServer((req, res) => {
 });
 server.listen(0, 'localhost', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'troll-test-'));
-  edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', '--disable-gpu', '--no-first-run', '--window-size=1000,900', '--remote-debugging-port=0', '--user-data-dir=' + dir, 'http://localhost:' + server.address().port + '/' + page], { stdio: 'ignore' });
+  edge = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless=new', '--mute-audio', '--disable-gpu', '--no-first-run', '--window-size=1000,900', '--remote-debugging-port=0', '--user-data-dir=' + dir, 'http://localhost:' + server.address().port + '/' + page], { stdio: 'ignore' });
   timer = setTimeout(() => done('TIMEOUT after ' + limit / 1000 + ' s', 2), limit);
 });
