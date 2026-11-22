@@ -6568,7 +6568,7 @@ var TrollModels = (function () {
     setMusic('home');
     show(function (el) {
       el.classList.add('map', 'rmap');
-      el.appendChild(topBar(true, ch ? function () { topics(); } : subsHere().length > 1 ? subjects : home));
+      el.appendChild(topBar(true, ch ? function () { topics(); } : !TOY && subsHere().length > 1 ? subjects : home)); // the subjects stand on the camp itself now: back returns to where the child came from
       el.appendChild(h('h2', { class: 'h2', text: ch ? 'אֶתְגָּר: חֹמֶר שֶׁל כִּתָּה ' + GRADE_HE[state.grade + 1] : 'לְאָן נְטַיֵּל הַיּוֹם?' }));
       var sj = SUBJ[curSub] || SUBJ.math, msg = h('div', { class: 'banner rmsg', text: sj[1] + ' · כִּתָּה ' + GRADE_HE[state.grade + (ch ? 1 : 0)] });
       function say(text) { msg.textContent = text; restart(msg, 'pop'); }
