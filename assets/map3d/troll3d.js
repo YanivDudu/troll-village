@@ -1,4 +1,5 @@
-// troll3d.js: THE troll of the game as a living toy character that can turn around. A trial (spike/troll3d); nothing of the game is changed.
+// troll3d.js: THE troll of the game as a living toy character that can turn around. In the game it is the companion on the 3D camp (camp3d.js) and on the 3D
+// maps (map3d.js); every other screen, and every device without 3D, shows the drawn troll (TrollArt.trollSVG) made from the same spec.
 // Needs three.js r147 (classic build, global THREE) and toy3d.js (global Toy: the accumulator and the rounded shapes). Optional: items-data.js (the pictures of the shop items as data URLs).
 //   var t = Troll3D.create(spec, { scale })      spec is THE SAME object TrollArt.trollSVG takes: { id, body, hairColor, hair 0-5, acc, eyes 0-2, hatE, faceE, handE }
 //   scene.add(t.root);  t.cam = camera;  every frame: t.update(dt)
@@ -384,7 +385,9 @@ var Troll3D = (function () {
     var still = new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 46, specular: 0x1d1d1d }); still.onBeforeCompile = rim;
     var out = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, color: 0x67596e });
     out.onBeforeCompile = function (sh) { sh.uniforms.uOut = uOut; sh.vertexShader = 'uniform float uOut;\n' + sh.vertexShader.replace('#include <begin_vertex>', 'vec3 transformed = vec3( position ) + normalize( normal ) * uOut;'); };
-    var L = { mat: mat, still: still, out: out, uRim: uRim, uOut: uOut, tint: new THREE.Color('#ffffff'), uFill: uFill, set: function (P) { mat.color.set(P.tint).lerp(WHITE, 0.5).multiplyScalar(KD); still.color.copy(mat.color); mat.specular.set(P.spec); still.specular.set(P.spec); uRim.value.set(P.rim); out.color.set(P.tint).multiplyScalar(0.55); L.tint.set(P.tint).lerp(WHITE, 0.35); L.blob = P.blob; } }; L.set(DAY); return L; }
+    // set(P, n): the palette of the scene. n = how much the lights of the scene decide (0 by day: the troll keeps the colours of its drawing, lit mostly by its own fill;
+    // 1 at night: little fill, the whole tint of the night, and the lights of the scene, a campfire among them, do the rest: dark far from the fire, warm beside it)
+    var L = { mat: mat, still: still, out: out, uRim: uRim, uOut: uOut, tint: new THREE.Color('#ffffff'), uFill: uFill, set: function (P, n) { n = n || 0; mat.color.set(P.tint).lerp(WHITE, 0.5 * (1 - n)).multiplyScalar(KD + 0.22 * n); still.color.copy(mat.color); mat.specular.set(P.spec); still.specular.set(P.spec); uRim.value.set(P.rim); uFill.value = KF * (1 - 0.6 * n); out.color.set(P.tint).multiplyScalar(0.55); L.tint.set(P.tint).lerp(WHITE, 0.35 * (1 - n)).multiplyScalar(1 - 0.3 * n); L.blob = P.blob; } }; L.set(DAY); return L; }
   function look0() { return LOOK || (LOOK = Look()); }
   var blobTex = null;
   function blobMesh() { if (typeof document === 'undefined') return null;
@@ -406,7 +409,7 @@ var Troll3D = (function () {
     var n = list.length, cv = document.createElement('canvas'); cv.width = CELL * 4; cv.height = CELL; var x = cv.getContext('2d'); this.cv = cv;
     var tex = new THREE.CanvasTexture(cv); tex.premultiplyAlpha = true; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; this.tex = tex;
     list.forEach(function (c, i) { c.cell = i; if (c.kind === 'zz') { x.save(); x.translate(i * CELL, 0); x.scale(CELL / 50, CELL / 50); x.lineCap = x.lineJoin = 'round'; [['#ffffff', 8], ['#6c5a8e', 4]].forEach(function (p) { x.strokeStyle = p[0]; x.lineWidth = p[1]; x.beginPath(); x.moveTo(8, 30); x.lineTo(21, 30); x.lineTo(8, 45); x.lineTo(21, 45); x.moveTo(26, 6); x.lineTo(35, 6); x.lineTo(26, 17); x.lineTo(35, 17); x.stroke(); }); x.restore(); }
-      else loadIcon(c.cp, function (img) { x.clearRect(i * CELL, 0, CELL, CELL); x.drawImage(img, i * CELL + 4, 4, CELL - 8, CELL - 8); tex.needsUpdate = true; T.dirty = true; }); });
+      else loadIcon(c.cp, function (img) { try { var t = document.createElement('canvas'), tx; t.width = t.height = CELL; tx = t.getContext('2d'); tx.drawImage(img, 4, 4, CELL - 8, CELL - 8); tx.getImageData(0, 0, 1, 1); x.clearRect(i * CELL, 0, CELL, CELL); x.drawImage(t, i * CELL, 0); tex.needsUpdate = true; T.dirty = true; if (T.onDirty) T.onDirty(); } catch (e) {} }); }); // (a picture that may not be read back, as from file://, is left out: it would poison the atlas and the upload to WebGL would throw)
     var pos = new Float32Array(n * 12), uv = new Float32Array(n * 8), idx = [], i;
     for (i = 0; i < n; i++) { var u0 = i / 4, u1 = (i + 1) / 4; uv.set([u0, 0, u1, 0, u1, 1, u0, 1], i * 8); idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3); }
     var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx);
@@ -571,6 +574,10 @@ var Troll3D = (function () {
   P.path = function (pts, loop, run, done) { this.mode = 'path'; this.pathPts = pts; this.pathI = 0; this.pathLoop = !!loop; this.goal.run = !!run; this.onDone = done || null; this.target = null; this.wake(); return this; };
   P.follow = function (target) { this.mode = target ? 'follow' : 'idle'; this.target = target || null; this.pathPts = null; if (target) this.wake(); return this; };
   P.stop = function () { this.mode = 'idle'; this.target = null; this.pathPts = null; return this; };
+  // driven from outside (the game): every frame the caller says where the feet are; the troll turns to where it goes, walks or trots at the speed it is moved with, and
+  // turns to `face` (a heading; null = stays as it is) when it stands. A jump of the point (the caller put it elsewhere) is not walked.
+  P.drive = function (x, z, face) { var E = this.ext || (this.ext = { x: x, z: z, face: null, sp: 0 }); if (this.mode !== 'ext') { this.mode = 'ext'; this.target = null; this.pathPts = null; this.root.position.x = x; this.root.position.z = z; E.sp = 0; } E.x = x; E.z = z; E.face = face == null ? null : face; return this; };
+  P.setScale = function (s) { this.scale = s; this.root.scale.setScalar(s); this.r = 0.9 * s; return this; };
   P.turnTo = function (heading, done) { this.mode = 'turn'; this.faceTo = heading; this.onDone = done || null; this.wake(); return this; };
   P.lookAt = function (x, y, z) { if (x == null) this.lookPt = null; else if (typeof x === 'object') this.lookPt = x; else this.lookPt = { x: x, y: y, z: z }; return this; };
   P.play = function (name, done) { if (!ACT[name]) return this; var S = this.S; if (name !== 'jump' && name !== 'hop' && name !== 'door' && name !== 'nod' && name !== 'wave') this.hold = true; if (name !== 'doze' && name !== 'nod' && name !== 'wave' && name !== 'yawn') this.wake(); S.act = name; S.u = 0; S.dur = DUR[name] || 1; this.onAct = done || null; return this; };
@@ -606,8 +613,14 @@ var Troll3D = (function () {
       if (dd2 < (pass ? 0.5 * sc : arrive)) { if (this.mode === 'goto') { this.mode = this.faceTo == null ? 'idle' : 'turn'; if (this.faceTo == null && this.onDone) { var f = this.onDone; this.onDone = null; f(this); } } else if (this.mode === 'path') { this.pathI++; if (this.pathI >= this.pathPts.length) { if (this.pathLoop) this.pathI = 0; else { this.mode = 'idle'; this.pathPts = null; if (this.onDone) { var f3 = this.onDone; this.onDone = null; f3(this); } } } } }
       else { var err = wrap(Math.atan2(ddx, ddz) - S.h), ae = Math.abs(err), vm = (run ? RV : WV) * sc; wT = cl(err * 4, -wMax, wMax); vT = ae > 1.25 ? 0 : vm * Math.pow(Math.cos(ae), 1.5); if (!pass) vT = Math.min(vT, dd2 * 2.4 + 0.12 * sc); } }
     else if (face != null && up) { var e2 = wrap(face - S.h); if (Math.abs(e2) > (this.turning || this.mode === 'turn' ? 0.04 : 0.5)) { wT = cl(e2 * 4, -wMax, wMax); this.turning = true; } else { this.turning = false; if (this.mode === 'turn') { this.mode = 'idle'; if (this.onDone) { var f2 = this.onDone; this.onDone = null; f2(this); } } } }
+    if (this.mode === 'ext') { var E = this.ext, ex = E.x - this.x, ez = E.z - this.z, ed = Math.sqrt(ex * ex + ez * ez), sp = ed > 1.5 * sc ? 0 : ed / dt, go = sp > 0.3 * sc, hd = go ? Math.atan2(ex, ez) : E.face;
+      E.sp = ease(E.sp, Math.min(sp, 2.8 * sc), Math.min(1, dt * (sp > E.sp ? 12 : 7))); if (E.sp < 0.02 * sc) E.sp = 0;
+      if (hd != null) { var eh = wrap(hd - S.h); wT = Math.abs(eh) < 0.01 ? 0 : cl(eh * (go ? 9 : 5), -9, 9); }
+      S.w = ease(S.w, wT, Math.min(1, dt * 12)); if (Math.abs(S.w) < 0.002) S.w = 0; S.h = wrap(S.h + S.w * dt); S.v = E.sp;
+      this.root.position.x = E.x; this.root.position.z = E.z; this.root.rotation.y = S.h; }
+    else {
     S.v = ease(S.v, vT, Math.min(1, dt * (vT > S.v ? 3 : 5))); S.w = ease(S.w, wT, Math.min(1, dt * 7)); if (Math.abs(S.w) < 0.002) S.w = 0; if (S.v < 0.002 * sc) S.v = 0;
-    S.h = wrap(S.h + S.w * dt); this.root.position.x += Math.sin(S.h) * S.v * dt; this.root.position.z += Math.cos(S.h) * S.v * dt; this.root.rotation.y = S.h;
+    S.h = wrap(S.h + S.w * dt); this.root.position.x += Math.sin(S.h) * S.v * dt; this.root.position.z += Math.cos(S.h) * S.v * dt; this.root.rotation.y = S.h; }
     var av = this.avoid; if (av && S.v > 0) for (i = 0; i < av.length; i++) { var ox = this.x - av[i][0], oz = this.z - av[i][1], od = Math.sqrt(ox * ox + oz * oz), orr = av[i][2] * 0.85; if (od < orr && od > 1e-4) { this.root.position.x = av[i][0] + ox / od * orr; this.root.position.z = av[i][1] + oz / od * orr; } }
     var vt = S.v / sc, moving = vt > 0.03 || Math.abs(S.w) > 0.12; this.moving = moving; this.still = moving ? 0 : this.still + dt;
     var runT = cl((vt - WV * 1.1) / (RV - WV * 1.1), 0, 1); S.runW = ease(S.runW, runT, Math.min(1, dt * 4)); S.gaitW = ease(S.gaitW, moving ? 1 : 0, Math.min(1, dt * (moving ? 8 : 5)));
@@ -661,7 +674,11 @@ var Troll3D = (function () {
   function sprite(el, url, pose, dir8, size) { var r = Math.max(0, SPR.rows.indexOf(pose)), c = ((Math.round(dir8) % 8) + 8) % 8, st = el.style; size = size || SPR.cell; st.width = st.height = size + 'px'; st.backgroundImage = 'url(' + url + ')'; st.backgroundSize = SPR.cols * size + 'px ' + SPR.rows.length * size + 'px'; st.backgroundPosition = -c * size + 'px ' + -r * size + 'px'; st.backgroundRepeat = 'no-repeat'; return el; }
 
   api.MOODS = MOOD11; api.FACES = Object.keys(MOODS); api.ACTIONS = Object.keys(ACT); api.DUR = DUR; api.PROPS = Object.keys(PROPS); api.HAT3 = Object.keys(HAT3); api.FACE3 = Object.keys(FACE3); api.ACC = Object.keys(ACC).concat(Object.keys(BACK));
-  api.create = function (spec, o) { return new Troll(spec, o); }; api.Look = Look; api.look = look0; api.DAY = DAY; api.NIGHT = NIGHT; api.supported = supported; api.preload = preload; api.specIcons = specIcons; api.cpOf = cpOf;
+  api.create = function (spec, o) { return new Troll(spec, o); };
+  // the companion of the game: ONE troll for the session, taken by the camp and by every map in turn (made again only when its spec changes)
+  var one = null;
+  api.one = function (spec, o) { var k = JSON.stringify(spec); api.oneFresh = !one || one.k !== k; if (api.oneFresh) { if (one) { try { one.T.dispose(); } catch (e) {} } one = { k: k, T: new Troll(spec, o) }; } return one.T; };
+  api.oneDrop = function () { if (one) { try { one.T.dispose(); } catch (e) {} one = null; } }; api.Look = Look; api.look = look0; api.DAY = DAY; api.NIGHT = NIGHT; api.supported = supported; api.preload = preload; api.specIcons = specIcons; api.cpOf = cpOf;
   api.render = render; api.draw = draw; api.canvas = canvas; api.snapshot = snapshot; api.spriteSheet = spriteSheet; api.sprite = sprite; api.SPR = SPR; api.SPR_POSE = SPR_POSE; api.info = function () { return snap ? snap.r.info.render : null; }; api.tone = tone; api.U = U;
   return api;
 })();

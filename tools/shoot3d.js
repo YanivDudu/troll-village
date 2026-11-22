@@ -1,10 +1,10 @@
 // node tools/shoot3d.js <out.png> <WxH> "<hash, e.g. demo&s=region&t=add>" [wait ms] [js to evaluate, its value is printed]
 // (run through: sh tools/edge-slot.sh node tools/shoot3d.js ...)
 // Opens index.html from file:// in headless Edge WITH software WebGL (swiftshader), so the 3D map is really drawn, and saves a screenshot.
-// GL=0: no WebGL at all (--disable-gpu), the way the layout tests run.  DPR=2: device pixel ratio.  RM=1: prefers-reduced-motion.  PAGE=tests/x.html
+// GL=0: no WebGL at all (--disable-gpu), the way the layout tests run.  GL=hw: the real graphics chip (ANGLE on Direct3D 11) instead of swiftshader.  DPR=2: device pixel ratio.  RM=1: prefers-reduced-motion.  PAGE=tests/x.html
 const fs = require('fs'), path = require('path'), os = require('os'), { spawn, execSync } = require('child_process');
 const [out, size, hash, wait, js] = process.argv.slice(2), [W, H] = size.split('x').map(Number), ROOT = path.resolve(__dirname, '..');
-const GL = process.env.GL === '0' ? ['--disable-gpu'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
+const GL = process.env.GL === '0' ? ['--disable-gpu'] : process.env.GL === 'hw' ? ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--enable-gpu'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function cdp(url) { return new Promise((res, rej) => { const ws = new WebSocket(url), waitFor = {}; let id = 0;
   ws.onopen = () => res({ send: (method, params) => new Promise((ok, no) => { waitFor[++id] = [ok, no]; ws.send(JSON.stringify({ id, method, params: params || {} })); }) });

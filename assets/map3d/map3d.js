@@ -19,7 +19,7 @@ var TrollMap3D = (function () {
   var bodyC = document.body.classList, SKY = bodyC.contains('night') ? 'night' : bodyC.contains('dusk') ? 'dusk' : 'day', PAL = PALS[SKY];
 
   // ---------- shared for the whole session: ONE canvas, ONE renderer, the materials. A map builds its own geometry and gives it back when the child leaves ----------
-  var R = null, canvas = null, scene, cam, hemi, sun, toyMat, groundMat, gCan, gCtx, gTex, water, halo, sparks, puffTex, glTried = false, lost = false, lostT = 0, ctxLost = 0, ctxBack = 0;
+  var R = null, canvas = null, scene, cam, hemi, sun, fireL, toyMat, groundMat, gCan, gCtx, gTex, water, halo, sparks, puffTex, glTried = false, lost = false, lostT = 0, ctxLost = 0, ctxBack = 0;
   var uTime = { value: 0 }, uRim = { value: new THREE.Color(PAL.rim) }, v3 = new V3();
   var I = null;                                           // the map that is attached now (one at a time)
   function canvasTex(size, draw) { var c = document.createElement('canvas'); c.width = c.height = size; draw(c.getContext('2d'), size); return new THREE.CanvasTexture(c); }
@@ -51,6 +51,7 @@ var TrollMap3D = (function () {
     cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 900);
     hemi = new THREE.HemisphereLight(PAL.hemiS, PAL.hemiG, PAL.hemi); scene.add(hemi);
     sun = new THREE.DirectionalLight(PAL.sun, PAL.sunI); sun.castShadow = true; var big = window.innerWidth >= 1000 && window.innerHeight >= 600; sun.shadow.mapSize.set(big ? 2048 : 1024, big ? 2048 : 1024); sun.shadow.radius = 4; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03; scene.add(sun); scene.add(sun.target);
+    fireL = new THREE.PointLight('#ffa448', 0, 11, 1.5); scene.add(fireL);   // task "world3d": the campfire of the camp. It is in the scene from the start, dark on the maps, so that the camp and the maps use the same shader programs (the number of lights is part of a program)
     toyMat = makeToyMat();
     gCan = document.createElement('canvas'); gCtx = gCan.getContext('2d'); gTex = new THREE.CanvasTexture(gCan); if (R) gTex.anisotropy = Math.min(8, R.capabilities.getMaxAnisotropy());
     groundMat = new THREE.MeshLambertMaterial({ map: gTex });
@@ -102,6 +103,24 @@ var TrollMap3D = (function () {
           if (p.blob) p.blob.material.color.set('rgb(' + PAL.blob + ')'); p.place(ptg.x + (i ? -1 : 1) * 2.2 * p.scale, ptg.z + 0.25 + i * 0.3, 0); p.root.position.y = hgt(p.x, p.z); p.follow(ptg); world.add(p.root); pets.push(p); });
         box.classList.add('m3pets'); petT = performance.now(); dirty = true; } catch (e) { petsDrop(); } }
     function petsStep(dt, now) { var mov = false; pets.forEach(function (p) { p.update(dt); p.root.position.y = hgt(p.x, p.z); if (p.moving || p.S.act) mov = true; }); if (mov) petT = now; }
+    // task "world3d": the companion itself as a 3D actor (troll3d.js, with o.spec; the quality steps 0..3). It stands where the drawn companion stands in its stop and
+    // goes where the walker of the page goes (walker(px, py): the point under its feet): it turns to where it walks, and to the child when it stands. The page still
+    // owns the walk (the way, the times, the rules); the drawn companion and its walker rest meanwhile (.m3troll).
+    var troll = null, ttg = { x: 0, z: 0, on: false }, tHome = new V3(), trollT = 0, tv3 = new V3();
+    function trollOk() { return !plan && !RM && TIER <= 3 && !!window.Troll3D && !!o.spec && !!world; }
+    function trollDrop() { if (troll) { if (troll.root.parent) troll.root.parent.remove(troll.root); troll.onDirty = null; troll = null; } box.classList.remove('m3troll'); }
+    function trollMake() { var keep = troll && ttg.on ? [ttg.x, ttg.z] : null; trollDrop(); if (!trollOk()) return;
+      var bs = null; stops.forEach(function (s) { if (s.bud) bs = s; }); if (!bs) return;
+      var bh = bs.bud[3] - bs.bud[1]; toWorld((bs.bud[0] + bs.bud[2]) / 2, bs.bud[3] - bh * 0.03, tHome);
+      try { var lk = Troll3D.look(); lk.set(PAL, SKY === 'night' ? 0.7 : SKY === 'dusk' ? 0.3 : 0);
+        troll = Troll3D.one(o.spec, { look: lk }); troll.setScale(bh / (PPU * CP * 3.493)); troll.cam = cam; troll.avoid = null; troll.onDirty = function () { dirty = true; kick(); }; if (troll.blob) troll.blob.material.color.set('rgb(' + PAL.blob + ')');
+        troll.carry(null); troll.stand(); troll.S.act = null; troll.hold = false; troll.setMood('happy', { still: 1 }); troll.heading = 0; troll.mode = 'idle'; troll.root.visible = true;
+        if (keep) { ttg.x = keep[0]; ttg.z = keep[1]; } else { ttg.x = tHome.x; ttg.z = tHome.z; ttg.on = false; }
+        troll.drive(ttg.x, ttg.z, 0); troll.root.position.y = hgt(ttg.x, ttg.z); world.add(troll.root); troll.update(0.016); box.classList.add('m3troll'); trollT = performance.now(); dirty = true;
+      } catch (e) { trollDrop(); try { Troll3D.oneDrop(); } catch (e2) {} if (window.console) console.warn('troll3d', e); } }
+    function trollStep(dt, now) { var T = troll; T.drive(ttg.x, ttg.z, 0); T.lookAt(T.x, 4, T.z + 6); T.update(dt); T.root.position.y = hgt(T.x, T.z); if (T.moving || T.S.act || T.S.gaitW > 0.03 || Math.abs(T.S.w) > 0.01) trollT = now; }
+    var TACT = { wave: 'wave', proud: 'proud', oops: 'oops', surprised: 'surprised', cheer: 'jump' };
+    function trollPose(m) { if (!troll || dead || lost) return; if (Troll3D.FACES.indexOf(m) < 0) m = 'happy'; troll.setMood(m, { still: 1 }); if (TACT[m]) troll.play(TACT[m]); trollT = performance.now(); kick(); }
 
     // -- the frame: where the island lies in the box, and the ground under a point of the screen --
     function isleR(x, z) { return Math.pow(Math.pow(Math.abs(x / A), E) + Math.pow(Math.abs(z / B), E), 1 / E); }
@@ -229,7 +248,7 @@ var TrollMap3D = (function () {
       dots.forEach(function (d) { var q = toWorld(d[0], d[1]); c.beginPath(); c.arc(q.x, q.z, 3.75 * S / PPU, 0, 7); c.fillStyle = d[2] ? '#ff8a3d' : '#ffffff'; c.fill(); });
       gTex.needsUpdate = true; dirty = true;
     }
-    function disposeWorld(keepGeoms) { petsDrop(); if (world) { scene.remove(world); world.traverse(function (x) { if (x.isMesh) x.geometry.dispose(); if (x.isSprite && x !== halo) x.material.dispose(); }); world = null; fogs = []; }
+    function disposeWorld(keepGeoms) { petsDrop(); trollDrop(); if (world) { scene.remove(world); world.traverse(function (x) { if (x.isMesh) x.geometry.dispose(); if (x.isSprite && x !== halo) x.material.dispose(); }); world = null; fogs = []; }
       if (!keepGeoms) { Object.keys(geoms).forEach(function (k) { geoms[k].dispose(); }); geoms = {}; } }
     function buildWorld() {
       var t0 = performance.now(), i, j; disposeWorld(true);
@@ -270,7 +289,7 @@ var TrollMap3D = (function () {
       var ext = Math.max(A, B) + 3, sc2 = sun.shadow.camera; sun.target.position.set(0, 0, 0); sun.position.set(-11, 17, 9).multiplyScalar(Math.max(1, ext / 14)); sc2.left = -ext; sc2.right = ext; sc2.top = ext; sc2.bottom = -ext; sc2.near = 1; sc2.far = 60 * Math.max(1, ext / 14); sc2.updateProjectionMatrix(); sun.target.updateMatrixWorld();
       water.scale.set(A * 1.5 + 6, 1, B * 1.5 + 6); water.material.uniforms.uIsle.value.set(A, B); water.material.uniforms.uE.value = E; water.material.uniforms.uFade.value = FADE;
       world.traverse(function (x) { if (x.geometry && x.geometry.attributes.position) verts += x.geometry.attributes.position.count; });
-      paintGround(); applyTier(); petsMake();
+      paintGround(); applyTier(); petsMake(); trollMake();
       st.buildMs = Math.round(performance.now() - t0);
     }
 
@@ -278,7 +297,7 @@ var TrollMap3D = (function () {
     function restPR() { var dpr = Math.min(window.devicePixelRatio || 1, 2), cap = Math.min(dpr, TIER >= 1 ? 1.5 : 2), pr = TIER === 3 ? Math.max(0.6, cap * 0.66) : cap;
       pr = Math.min(pr, Math.sqrt(3.2e6 / (CW * CH)), 4096 / Math.max(CW, CH)); return Math.max(0.5, Math.round(pr * 100) / 100); }                    // a tall map that scrolls: never more than about three million pixels
     function applyTier() { if (!R) return; var sh = TIER < 2 && Math.max(A, B) < 34; if (sun.castShadow !== sh) sun.castShadow = sh; R.shadowMap.needsUpdate = true; dirty = true; }
-    function setTier(t) { TIER = t; if (t >= 5) { saveQ(5); fail('slow'); return; } applyTier(); if (pets.length && !petsOk()) petsDrop(); }
+    function setTier(t) { TIER = t; if (t >= 5) { saveQ(5); fail('slow'); return; } applyTier(); if (pets.length && !petsOk()) petsDrop(); if (troll && !trollOk()) trollDrop(); }
     function startProbe() { probe = { d: [], sum: 0, skip: 3 }; kick(); }                  // the first frames compile shaders and fill textures: they are not counted, and the middle value is taken, not the mean
     function endProbe(ms) { var prev = probeLog[probeLog.length - 1]; probeLog.push({ q: TIER, ms: +ms.toFixed(1) }); probe = null;
       if (TIER <= 3) { if (ms <= 28) { saveQ(TIER); return; }                                                                                              // keeps up: stay
@@ -307,18 +326,21 @@ var TrollMap3D = (function () {
     function tick(now) {
       if (document.hidden || dead || lost || !world) { running = false; return; }             // a hidden tab draws nothing
       var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016, raw = last ? now - last : 16.7; last = now; frameNo++;
-      var amb = ambient(now), pm = pets.length > 0 && now - petT < 1500;                     // (the animals walk: every frame, and a second and a half after they stood still)
+      var amb = ambient(now), pm = (pets.length > 0 && now - petT < 1500) || (!!troll && now - trollT < 1500);   // (the animals and the troll walk: every frame, and a second and a half after they stood still)
       if (!amb && !probe && !dirty && !pm) { running = false; return; }                      // nothing moves: nothing is drawn and the loop stops
       raf = requestAnimationFrame(tick);
       if (!probe && !dirty && !pm && (frameNo % 2)) return;                                    // only idle motion: every second frame is enough
       if (amb || probe) time += dt;
       if (pets.length && (amb || pm)) petsStep(pm ? dt : dt * 2, now);
+      if (troll && (amb || pm)) trollStep(pm ? dt : dt * 2, now);
       draw();
       if (probe) { if (probe.skip > 0) probe.skip--; else if (raw < 1000) { probe.d.push(raw); probe.sum += raw; if ((probe.sum >= 1000 && probe.d.length >= 3) || probe.d.length >= 60) { probe.d.sort(function (x, y) { return x - y; }); endProbe(probe.d[probe.d.length >> 1]); } } }
     }
     // the swap: the first 3D frame is in the canvas; in the same task the flat pictures are hidden, so the browser shows the change as one frame
-    function show() { shown = true; box.classList.add('m3on'); stops.forEach(function (s) { s.el.classList.toggle('m3k', !!s.kind); }); st.readyMs = Math.round(performance.now() - st.t0); if (o.onReady) o.onReady(); if (AUTO && !probeLog.length && !probe) startProbe(); }
-    function hide() { shown = false; box.classList.remove('m3on'); }
+    function show() { shown = true; box.classList.add('m3on'); if (troll) box.classList.add('m3troll'); stops.forEach(function (s) { s.el.classList.toggle('m3k', !!s.kind); }); st.readyMs = Math.round(performance.now() - st.t0);
+      if (o.q == null && !o.soft && st.buildMs > 4000) saveQ(5);   // a build this slow is not for this device: the next visits get the flat map (and one more try after three days)
+      if (o.onReady) o.onReady(); if (AUTO && !probeLog.length && !probe) startProbe(); }
+    function hide() { shown = false; box.classList.remove('m3on', 'm3troll'); }
     function fail(why) { if (dead) return; hide(); dispose(); if (o.onFlat) o.onFlat(why); }
 
     function rebuild() {
@@ -344,10 +366,13 @@ var TrollMap3D = (function () {
     }
     var self = { layout: layout, dispose: dispose, hide: hide, fail: fail, check: check, box: box,
       pets: function (list) { petList = list || []; if (world) petsMake(); },
-      walker: function (px, py, sitting) { if (!pets.length || dead || lost) return; toWorld(px, py, pv); ptg.x = pv.x; ptg.z = pv.z; ptg.sitting = !!sitting; petT = performance.now(); kick(); },
+      walker: function (px, py, sitting) { if ((!pets.length && !troll) || dead || lost) return;   // (px == null: the walk is over, the companion stands in its stop again)
+        if (px == null) { ttg.x = tHome.x; ttg.z = tHome.z; ttg.on = false; } else { toWorld(px, py, pv); ttg.x = pv.x; ttg.z = pv.z; ttg.on = true; }
+        ptg.x = ttg.x; ptg.z = ttg.z; ptg.sitting = !!sitting; petT = trollT = performance.now(); kick(); },
+      trollPose: trollPose, troll: function () { return troll; },
       react: function (el, ms) { if (dead || !world || lost) return; stops.forEach(function (s) { if (s.el === el && s.m) { rx = { s: s, t: performance.now(), d: ms || 420 }; dirty = true; kick(); } }); },
       restored: function () { curPR = 0; gTex.needsUpdate = true; if (world) { R.shadowMap.needsUpdate = true; draw(); kick(); } else { sig = ''; rebuild(); } },
-      stats: function () { var m = R ? R.info.memory : {}; return { q: TIER, pr: curPR, calls: st.calls || 0, tris: st.tris || 0, verts: verts, geometries: m.geometries || 0, textures: m.textures || 0, programs: R && R.info.programs ? R.info.programs.length : 0, buildMs: st.buildMs, readyMs: st.readyMs, frames: st.frames, stops: stops.length, models: stops.filter(function (s) { return s.kind; }).length, props: props.length, grow: G, shadow: !!(R && sun.castShadow), running: running, shown: shown, pets: pets.length, petTris: pets.reduce(function (n, p) { return n + p.tris; }, 0), probe: probeLog, lost: ctxLost, restored: ctxBack, sky: SKY, w: CW, h: CH }; } };
+      stats: function () { var m = R ? R.info.memory : {}; return { q: TIER, pr: curPR, calls: st.calls || 0, tris: st.tris || 0, verts: verts, geometries: m.geometries || 0, textures: m.textures || 0, programs: R && R.info.programs ? R.info.programs.length : 0, buildMs: st.buildMs, readyMs: st.readyMs, frames: st.frames, stops: stops.length, models: stops.filter(function (s) { return s.kind; }).length, props: props.length, grow: G, shadow: !!(R && sun.castShadow), running: running, shown: shown, pets: pets.length, petTris: pets.reduce(function (n, p) { return n + p.tris; }, 0), troll: troll ? troll.tris : 0, probe: probeLog, lost: ctxLost, restored: ctxBack, sky: SKY, w: CW, h: CH }; } };
     Object.defineProperty(self, 'dead', { get: function () { return dead; } });
     I = self;
     document.addEventListener('visibilitychange', onVis); box.addEventListener('pointerdown', onTouch, { passive: true }); if (box.parentNode) box.parentNode.addEventListener('scroll', onTouch, { passive: true });
@@ -355,7 +380,7 @@ var TrollMap3D = (function () {
   }
   // task "camp3d": the camp of the home screen is drawn by camp3d.js with the SAME canvas, renderer, lights and materials. It takes them here, and is the attached picture (I) while it is shown
   function shared(plan, forced) { if (!initShared(plan, forced)) return null;
-    return { R: R, canvas: canvas, scene: scene, hemi: hemi, sun: sun, toyMat: toyMat, groundMat: groundMat, gCan: gCan, gCtx: gCtx, gTex: function (fresh) { if (fresh) gTex.dispose(); return gTex; }, water: water, uTime: uTime, uRim: uRim, PAL: PAL, SKY: SKY, WATER: WATER, savedQ: savedQ, saveQ: saveQ, rnd: rnd, canvasTex: canvasTex,
+    return { R: R, canvas: canvas, scene: scene, hemi: hemi, sun: sun, fireL: fireL, toyMat: toyMat, groundMat: groundMat, gCan: gCan, gCtx: gCtx, gTex: function (fresh) { if (fresh) gTex.dispose(); return gTex; }, water: water, uTime: uTime, uRim: uRim, PAL: PAL, SKY: SKY, WATER: WATER, savedQ: savedQ, saveQ: saveQ, rnd: rnd, canvasTex: canvasTex,
       own: function (inst) { if (I && I !== inst) I.dispose(); I = inst; }, free: function (inst) { if (I === inst) I = null; }, lost: function () { return lost; }, counts: function () { return [ctxLost, ctxBack]; } }; }
   return { attach: attach, shared: shared, current: function () { return I; }, models: function () { return Object.keys(Toy.MODEL); },
     lose: function () { var e = R && R.getContext().getExtension('WEBGL_lose_context'); if (e) e.loseContext(); return e; }, memory: function () { return R ? { geometries: R.info.memory.geometries, textures: R.info.memory.textures, programs: R.info.programs.length } : null; } };

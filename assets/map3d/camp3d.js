@@ -19,13 +19,22 @@
 // real 3D actors (Pets.create: goTo / follow / sit / sleep / play) that follow state(). A 3D troll takes the place of the DOM one by offering the same four
 // functions (o.troll = its state) and by setting o.dom = false: then no shadow blob, no occlusion canvas and no tint are made for it.
 //
+// task "world3d". THE 3D TROLL: with o.spec (the spec of the drawn troll) and troll3d.js the companion is a Troll3D actor on the quality steps 0..3. It stands where
+// state() says (the life engine still owns the place and the timing, so the bubble, the heart, the tap target and the tests are the same), turns to where it goes,
+// walks at the speed it is moved with, sits, and takes its face and its one-shot motions from trollPose / trollAct / trollCarry. The drawn troll of the page rests
+// meanwhile (trollOn() says so); on step 4, under reduced motion and without troll3d.js the drawn troll stays, as before.
+// THE SESSION CACHE: the built island (KEEP) and the actors (ACT3) are kept between visits of the camp; only what belongs to one visit is thrown away.
+// THE STAGED BUILD (o.staged): the island, the troll, each animal and the first picture are made in tasks of their own, so nothing blocks the page for long.
+//
 //   TrollCamp3D.attach(view, { V, L, q, auto, rm, soft, t0, troll, pets, skip, onReady, onFlat, onPet })  ->  instance | null (then the flat camp simply stays)
 // Quality steps, the measuring of the first second and the saved step ('troll-m3q') are those of the maps. Drawing: every frame while something walks; the
 // flicker of the fire alone is drawn 24 times a second, 10 times after a minute without a touch; nothing in a hidden tab, one still picture on step 4.
 var TrollCamp3D = (function () {
   'use strict';
   var V3 = THREE.Vector3, TR = Toy.TR, PI = Math.PI, FIRE_I = { day: 0.55, dusk: 1.35, night: 2.1 }, GLOW = { day: 0.3, dusk: 0.55, night: 0.8 };
-  var mats = null;
+  var mats = null, KEEP = null, ACT3 = { troll: null, pets: [] };
+  function keepDrop() { var k = KEEP; KEEP = null; if (!k) return; k.world.traverse(function (x) { if (x.isMesh && (!mats || x.geometry !== mats.flame && x.geometry !== mats.plane) || x.isPoints) x.geometry.dispose(); }); }
+  function actDrop() { try { if (window.Troll3D) Troll3D.oneDrop(); } catch (e) {} ACT3.pets.forEach(function (c) { try { if (c) c.p.dispose(); } catch (e) {} }); ACT3 = { troll: null, pets: [] }; }
   function at(m, l) { return m.clone().multiply(l); }
   function shared2(sh) {                                  // made once for the session: the flames, the glow, the sparks, the soft shadow under the troll
     if (mats) return mats;
@@ -74,7 +83,8 @@ var TrollCamp3D = (function () {
     var AUTO = !!o.auto && o.q == null && !RM, probe = null, probeLog = [], st = { t0: o.t0 || performance.now(), buildMs: 0, readyMs: 0, frames: 0, occ: 0, cpu: 0, cpuN: 0 };
     var cam = new THREE.PerspectiveCamera(), fireL = null, glow = null, flames = [], sparks = null, SP = [], blob = null, flower = null, boat = null, terrain = null, occ = null, octx = null, occOn = false, hemi0 = sh.hemi.intensity;
     var clipP = new THREE.Plane(new V3(0, 0, 1), 0), clipOn = [clipP], clipOff = [], props = [], pgeo = {}, fxs = [], pets = [], hits = {}, ts = null, tg = { x: L.home[0], z: L.home[1], r: 0.8, y: 1.3, sitting: false }, perk = 0, flare = 0, petIdle = 0;
-    var skip = o.skip || {}, rndm = sh.rnd(17);
+    var skip = o.skip || {}, rndm = sh.rnd(17), troll = null, tq = { sit: false, look: null }, TS = L.TH / 3.493, camP = new V3();   // TS: the 3D troll is as tall as the drawn one (262 units of its picture = L.TH)
+    st.t = { world: 0, troll: 0, pets: [], first: 0, cached: 0 };
 
     function isleR(x, z) { return Math.pow(Math.pow(Math.abs(x / A), E) + Math.pow(Math.abs(z / B), E), 1 / E); }
     function hgt(x, z) { var r = isleR(x, z), t = (r - 0.8) / 0.25; return t > 0 ? -0.85 * t * t : 0; }                    // a flat top to walk on, a rounded shore that dives under the water
@@ -117,7 +127,20 @@ var TrollCamp3D = (function () {
       c.restore(); sh.gTex().needsUpdate = true; dirty = true;
     }
     function build() {
-      var t0 = performance.now(), i, j;
+      var t0 = performance.now(), key = SKY + '|' + Object.keys(skip).sort().join();
+      if (KEEP && KEEP.key !== key) keepDrop();
+      if (KEEP) { world = KEEP.world; terrain = KEEP.terrain; flower = KEEP.flower; boat = KEEP.boat; flames = KEEP.flames; glow = KEEP.glow; sparks = KEEP.sparks; SP = KEEP.SP; blob = KEEP.blob; verts = KEEP.verts; scene.add(world); st.t.cached = 1; }   // (the island of an earlier visit)
+      else { buildNew(); KEEP = { key: key, world: world, terrain: terrain, flower: flower, boat: boat, flames: flames, glow: glow, sparks: sparks, SP: SP, blob: blob, verts: verts }; }
+      fireL = sh.fireL; fireL.color.set('#ffa448'); fireL.distance = 11; fireL.decay = 1.5; fireL.intensity = FIRE_I[SKY]; fireL.position.set(L.fire[0], 0.95, L.fire[1] + 0.1);   // (the one point light of the session: it is dark on the maps, so the camp and the maps share their shader programs)
+      if (SKY === 'night') sh.hemi.intensity = hemi0 * 0.7;
+      // the sea round the island, the sun and its one shadow map
+      sh.water.scale.set(A * 1.5 + 6, 1, B * 1.5 + 6); sh.water.material.uniforms.uIsle.value.set(A, B); sh.water.material.uniforms.uE.value = E; sh.water.material.uniforms.uFade.value = L.fade || 1.1;
+      var ext = Math.max(A, B) + 2.5, sc2 = sh.sun.shadow.camera; sh.sun.target.position.set(0, 0, 0); sh.sun.position.set(-11, 17, 9); sc2.left = -ext; sc2.right = ext; sc2.top = ext; sc2.bottom = -ext; sc2.near = 1; sc2.far = 60; sc2.updateProjectionMatrix(); sh.sun.target.updateMatrixWorld();
+      paintGround(); applyTier();
+      st.buildMs = st.t.world = Math.round(performance.now() - t0);
+    }
+    function buildNew() {
+      var i, j;
       world = new THREE.Group(); scene.add(world);
       // the terrain
       var RINGS = 20, SEG = 84, FMAX = 1.06, P = [0, 0, 0], idx = [];
@@ -145,18 +168,41 @@ var TrollCamp3D = (function () {
       // the fire: three flames, a glow, sparks, and a warm light that falls on everything near it
       M.fl.forEach(function (mt, k) { var fm = new THREE.Mesh(M.flame, mt); fm.position.set(L.fire[0], 0.12 + k * 0.03, L.fire[1]); fm.userData.s = [1, 0.7, 0.42][k]; fm.userData.ph = k * 2.1; world.add(fm); flames.push(fm); });
       glow = new THREE.Sprite(M.glow); glow.position.set(L.fire[0], 0.7, L.fire[1] + 0.2); glow.renderOrder = 5; world.add(glow);
-      fireL = new THREE.PointLight('#ffa448', FIRE_I[SKY], 11, 1.5); fireL.position.set(L.fire[0], 0.95, L.fire[1] + 0.1); scene.add(fireL);
-      if (SKY === 'night') sh.hemi.intensity = hemi0 * 0.7;
+
       var sp = new Float32Array(24 * 3), sgm = new THREE.BufferGeometry(); sgm.setAttribute('position', new THREE.BufferAttribute(sp, 3)); sparks = new THREE.Points(sgm, M.spark); sparks.frustumCulled = false; sparks.renderOrder = 6; world.add(sparks);
       for (i = 0; i < 24; i++) { SP.push({ life: 0, x: 0, y: -9, z: 0, vx: 0, vy: 0, vz: 0 }); sp[i * 3 + 1] = -9; }
       // the shadow under the DOM troll
-      if (o.dom !== false) { blob = new THREE.Mesh(M.plane, M.blob); M.blob.color.set('rgb(' + PAL.blob + ')'); blob.renderOrder = 1; blob.position.y = 0.02; world.add(blob); }
-      // the sea round the island, the sun and its one shadow map
-      sh.water.scale.set(A * 1.5 + 6, 1, B * 1.5 + 6); sh.water.material.uniforms.uIsle.value.set(A, B); sh.water.material.uniforms.uE.value = E; sh.water.material.uniforms.uFade.value = L.fade || 1.1;
-      var ext = Math.max(A, B) + 2.5, sc2 = sh.sun.shadow.camera; sh.sun.target.position.set(0, 0, 0); sh.sun.position.set(-11, 17, 9); sc2.left = -ext; sc2.right = ext; sc2.top = ext; sc2.bottom = -ext; sc2.near = 1; sc2.far = 60; sc2.updateProjectionMatrix(); sh.sun.target.updateMatrixWorld();
+      blob = new THREE.Mesh(M.plane, M.blob); M.blob.color.set('rgb(' + PAL.blob + ')'); blob.renderOrder = 1; blob.position.y = 0.02; blob.visible = false; world.add(blob);
       world.traverse(function (x) { if (x.geometry && x.geometry.attributes.position) verts += x.geometry.attributes.position.count; });
-      paintGround(); applyTier(); petsMake();
-      st.buildMs = Math.round(performance.now() - t0);
+    }
+    // -- the companion as a 3D actor (troll3d.js). The life engine of the page says where it is and what it does; here it turns, walks, sits and looks --
+    function trollDrop() { if (troll) { if (troll.root.parent) troll.root.parent.remove(troll.root); troll.onDirty = null; troll = null; } }
+    function trollMake() {
+      trollDrop(); if (!window.Troll3D || !o.spec || TIER >= 4 || RM || !world) return; var t0 = performance.now();
+      try { var lk = Troll3D.look(); lk.set(PAL, SKY === 'night' ? 1 : SKY === 'dusk' ? 0.45 : 0);
+        troll = Troll3D.one(o.spec, { scale: TS, look: lk }); if (!Troll3D.oneFresh) st.t.cached |= 2;
+        troll.setScale(TS); troll.root.visible = true; troll.root.position.y = 0; troll.cam = cam; troll.avoid = null; troll.onDirty = function () { dirty = true; kick(); }; if (troll.blob) troll.blob.material.color.set('rgb(' + PAL.blob + ')');
+        troll.carry(null); troll.stand(); troll.S.act = null; troll.hold = false; troll.setMood('happy', { still: 1 }); troll.heading = 0; troll.mode = 'idle'; troll.drive(L.home[0], L.home[1], 0); troll.lookAt(camP); tq = { sit: false, look: null };
+        world.add(troll.root); troll.update(0.016);
+      } catch (e) { trollDrop(); try { Troll3D.oneDrop(); } catch (e2) {} if (window.console) console.warn('troll3d', e); }
+      st.t.troll = Math.round(performance.now() - t0);
+    }
+    var ACTS = { wave: 'wave', proud: 'proud', oops: 'oops', surprised: 'surprised', dance: 'dance', yawn: 'yawn', cheer: 'jump' };
+    function trollPose(mood, look) { // the mood of the drawn troll (the same names) and where it looks: { x: -1..1 to the left / right, y: -1..1 up / down } or nothing (then it looks at the child)
+      if (!troll) return; var m = mood === 'jug' ? 'cheer' : mood === 'sitn' ? 'sitn' : mood; if (Troll3D.FACES.indexOf(m) < 0) m = 'happy';
+      troll.setMood(m, { still: 1 }); if (ACTS[m]) troll.play(ACTS[m]);
+      tq.look = look || null; tq.sky = mood === 'sky';
+      busy(1800);
+    }
+    function trollAct(name) { if (!troll) return; if (name === 'jump' || name === 'nod' || name === 'hop' || name === 'door' || name === 'wave' || name === 'pickup' || name === 'dance') { troll.play(name); busy(2200); } }
+    function trollStep(dt) {
+      var T = troll, s = ts, face = s.face == null ? 0 : s.face, lk = tq.look;
+      if (T.root.visible !== !s.hidden) T.root.visible = !s.hidden;
+      if (!!s.sitting !== tq.sit) { tq.sit = !!s.sitting; if (tq.sit) T.sit({ warm: Math.hypot(s.x - L.fire[0], s.z - L.fire[1]) < 2.6 }); else T.stand(); }
+      T.drive(s.x, s.z, s.hidden ? null : face);
+      if (tq.sky) T.lookAt(s.x - 1.5, 6, s.z - 2); else if (lk) T.lookAt(s.x + Math.sin(T.heading) * 2 + lk.x * 2.5, 1.5 - lk.y * 1.6, s.z + Math.cos(T.heading) * 2 + 1.5); else T.lookAt(camP);
+      T.update(dt);
+      return T.moving || !!T.S.act || Math.abs(T.S.w) > 0.01 || T.S.gaitW > 0.03;
     }
 
     // -- the things an activity lays on the ground (pebbles, the book, the flag, the lines in the sand, the watering can): each a small mesh that pops in --
@@ -192,13 +238,18 @@ var TrollCamp3D = (function () {
 
     // -- the animals: real actors that follow the troll, sit when it sits, wait before the tent when it is inside, sleep there at night, and answer a tap --
     function petsMake() {
-      pets.forEach(function (p) { p.dispose(); }); pets = []; Object.keys(hits).forEach(function (k) { if (/^pet/.test(k)) { hits[k].remove(); delete hits[k]; } });
-      if (!window.Pets || TIER >= 4 || RM || !o.pets || !o.pets.length || !world) return;
-      try { var lk = Pets.look(); lk.set(PAL); var av = [[L.fire[0], L.fire[1], 1.0], [L.tent[0], L.tent[1], 1.7 * L.tent[3]]]; L.scn.forEach(function (s, n) { if (!skip[n] && /tree|pine|palm|sign/.test(s[0])) av.push([s[1], s[2], 0.5]); });
-        o.pets.slice(0, 2).forEach(function (d, i) { var p = Pets.create(d.kind, { variant: d.variant || 0, scale: 0.5, look: lk, avoid: av }), at0 = L.pets[i];
-          if (p.blob) p.blob.material.color.set('rgb(' + PAL.blob + ')'); p.place(at0[0], at0[1], i ? 0.5 : -0.4); p.follow(tg); p.userData = { i: i, mode: 'follow', next: 6 + i * 4 }; world.add(p.root); pets.push(p);
-          var hEl = document.createElement('span'); hEl.className = 'c3hit c3ph'; hEl.setAttribute('aria-hidden', 'true'); hEl.addEventListener('click', function () { petTap(i); }); view.appendChild(hEl); hits['pet' + i] = hEl; });
-      } catch (e) { pets.forEach(function (p) { try { p.dispose(); } catch (e2) {} }); pets = []; }
+      petsDrop(); for (var i = 0; i < 2; i++) petMake(i);
+    }
+    function petsDrop() { pets.forEach(function (p) { if (p.root.parent) p.root.parent.remove(p.root); }); pets = []; Object.keys(hits).forEach(function (k) { if (/^pet/.test(k)) { hits[k].remove(); delete hits[k]; } }); }
+    function petMake(i) { // the i-th animal (an animal of an earlier visit is taken as it is)
+      var d = o.pets && o.pets[i], t0 = performance.now(); if (!d || pets.length !== i || !window.Pets || TIER >= 4 || RM || !world) return;
+      try { var lk = Pets.look(), key = d.kind + '|' + (d.variant || 0), c = ACT3.pets[i], p, at0 = L.pets[i]; lk.set(PAL);
+        if (!c || c.key !== key) { if (c) c.p.dispose(); var av = [[L.fire[0], L.fire[1], 1.0], [L.tent[0], L.tent[1], 1.7 * L.tent[3]]]; L.scn.forEach(function (s, n) { if (!skip[n] && /tree|pine|palm|sign/.test(s[0])) av.push([s[1], s[2], 0.5]); });
+          c = ACT3.pets[i] = { key: key, p: Pets.create(d.kind, { variant: d.variant || 0, scale: 0.5, look: lk, avoid: av }) }; }
+        p = c.p; if (p.wake) p.wake(); if (p.blob) p.blob.material.color.set('rgb(' + PAL.blob + ')'); p.place(at0[0], at0[1], i ? 0.5 : -0.4); p.follow(tg); p.userData = { i: i, mode: 'follow', next: 6 + i * 4 }; world.add(p.root); pets.push(p);
+        var hEl = document.createElement('span'); hEl.className = 'c3hit c3ph'; hEl.setAttribute('aria-hidden', 'true'); hEl.addEventListener('click', function () { petTap(i); }); view.appendChild(hEl); hits['pet' + i] = hEl;
+      } catch (e) { try { if (ACT3.pets[i]) ACT3.pets[i].p.dispose(); } catch (e2) {} ACT3.pets[i] = null; }
+      st.t.pets[i] = Math.round(performance.now() - t0);
     }
     function petTap(i) { var p = pets[i]; if (!p) return; wake(); if (p.sleeping) { p.wake(); p.userData.mode = ''; } p.play(p.S.act ? 'jump' : ['happy', 'jump', 'spin'][(p.userData.n = (p.userData.n || 0) + 1) % 3]); busy(2400); if (o.onPet) o.onPet(i); }
     function petsStep(dt, now) {
@@ -215,7 +266,7 @@ var TrollCamp3D = (function () {
     // -- quality (the steps and the measuring of the maps) --
     function restPR() { var dpr = Math.min(window.devicePixelRatio || 1, 2), cap = Math.min(dpr, TIER >= 1 ? 1.5 : 2), pr = TIER === 3 ? Math.max(0.6, cap * 0.66) : cap; return Math.max(0.5, Math.round(Math.min(pr, Math.sqrt(3.2e6 / (V.W * V.H))) * 100) / 100); }
     function applyTier() { var s = TIER < 2; if (sh.sun.castShadow !== s) sh.sun.castShadow = s; R.shadowMap.needsUpdate = true; dirty = true; }
-    function setTier(t) { TIER = t; if (t >= 5) { sh.saveQ(5); fail('slow'); return; } applyTier(); if (t >= 4 && pets.length) { petsMake(); if (o.onReady) o.onReady(self); } }   // (a still picture has no animals: the page is told, and shows the flat picture of the pet again)
+    function setTier(t) { TIER = t; if (t >= 5) { sh.saveQ(5); fail('slow'); return; } applyTier(); if (t >= 4 && (pets.length || troll)) { petsDrop(); trollDrop(); if (o.onReady) o.onReady(self); } }   // (a still picture has no animals: the page is told, and shows the flat picture of the pet again)
     function startProbe() { probe = { d: [], sum: 0, skip: 3 }; kick(); }
     function endProbe(ms) { var prev = probeLog[probeLog.length - 1]; probeLog.push({ q: TIER, ms: +ms.toFixed(1) }); probe = null;
       if (TIER <= 3) { if (ms <= 28) { sh.saveQ(TIER); return; }
@@ -228,7 +279,7 @@ var TrollCamp3D = (function () {
     // is nearer than the troll is drawn once more, just in the troll's rectangle, and copied to a small canvas that lies OVER the troll (the technique of the map lab).
     // That is also how it goes into the tent: the frame of the door and the slopes are nearer than a troll that stands inside. Most frames draw nothing here.
     function occlude() {
-      if (!ts || ts.hidden || o.dom === false || !occ) { if (occOn) { occ.style.display = 'none'; occOn = false; } return; }
+      if (!ts || ts.hidden || troll || !occ) { if (occOn) { occ.style.display = 'none'; occOn = false; } return; }
       var q = V.p(ts.x, 0, ts.z), ppu = q[2], hw = L.TH * 0.44 * ppu, x0 = q[0] - hw, x1 = q[0] + hw, y1 = q[1] + 5, y0 = q[1] - L.TH * 1.12 * ppu, need = false, zc = ts.z + 0.3, i, b;
       for (i = 0; i < obst.length && !need; i++) { b = obst[i]; if (b[1] + b[2] * 0.6 < zc) continue; var p = V.p(b[0], 0, b[1]), rr = b[2] * p[2]; if (p[0] + rr > x0 && p[0] - rr < x1 && p[1] - b[3] * p[2] < y1 && p[1] + rr * 0.5 > y0) need = true; }
       for (i = 0; i < pets.length && !need; i++) { b = pets[i]; if (b.z < zc) continue; var pp = V.p(b.x, 0, b.z); if (pp[0] + 0.8 * pp[2] > x0 && pp[0] - 0.8 * pp[2] < x1 && pp[1] - 1.4 * pp[2] < y1 && pp[1] > y0) need = true; }
@@ -248,14 +299,15 @@ var TrollCamp3D = (function () {
 
     // -- drawing --
     function busy(ms) { busyT = Math.max(busyT, performance.now() + (ms || 800)); dirty = true; kick(); }
-    function kick() { if (!running && !document.hidden && !dead && world && !sh.lost()) { running = true; lastT = 0; raf = requestAnimationFrame(tick); } }
+    function kick() { if (!running && ready0 && !document.hidden && !dead && world && !sh.lost()) { running = true; lastT = 0; raf = requestAnimationFrame(tick); } }
     function wake() { lastInput = performance.now(); kick(); }
     function step(dt, now) {
       var still = RM || TIER >= 4, i, moving = false;
       sh.uTime.value = time;
       ts = o.troll ? o.troll() : null;
       if (ts) { tg.x = ts.x; tg.z = ts.z; tg.sitting = !!ts.sitting; if (ts.moving) moving = true;
-        if (blob) { blob.visible = !ts.hidden; var bs = L.TH * 0.66 * (ts.sitting ? 1.15 : 1); blob.position.set(ts.x + 0.06, 0.02, ts.z + 0.05); blob.scale.set(bs, 1, bs * 0.5); } }
+        if (troll) { blob.visible = false; if (trollStep(dt)) moving = true; }
+        else if (blob) { blob.visible = !ts.hidden; var bs = L.TH * 0.66 * (ts.sitting ? 1.15 : 1); blob.position.set(ts.x + 0.06, 0.02, ts.z + 0.05); blob.scale.set(bs, 1, bs * 0.5); } }
       // the fire: the flames breathe, the light flickers, a few sparks rise (more at night, a burst when it is poked)
       var fk = still ? 0.5 : 0.5 + 0.28 * Math.sin(time * 9.1) + 0.16 * Math.sin(time * 23.7 + 1.3) + 0.1 * Math.sin(time * 4.3 + 0.5); flare = Math.max(0, flare - dt * 0.9);
       flames.forEach(function (f) { var u = f.userData, w = still ? 0 : Math.sin(time * 7.3 + u.ph), hh = 1 + (still ? 0 : 0.16 * Math.sin(time * 11.7 + u.ph * 1.7)) + flare * 0.45; f.scale.set(u.s * (1 - 0.06 * w), u.s * hh, u.s * (1 + 0.06 * w)); f.rotation.y = time * 1.3 + u.ph; f.rotation.z = still ? 0 : 0.07 * w; });
@@ -292,12 +344,14 @@ var TrollCamp3D = (function () {
       step(still ? 0 : dt, now); draw(now);
       if (probe) { if (probe.skip > 0) probe.skip--; else if (raw < 1000) { probe.d.push(raw); probe.sum += raw; if ((probe.sum >= 1000 && probe.d.length >= 3) || probe.d.length >= 60) { probe.d.sort(function (x, y) { return x - y; }); endProbe(probe.d[probe.d.length >> 1]); } } }
     }
-    function show() { shown = true; st.readyMs = Math.round(performance.now() - st.t0); if (o.onReady) o.onReady(self); if (AUTO && !probeLog.length && !probe) startProbe(); }
+    function show() { shown = true; st.readyMs = Math.round(performance.now() - st.t0);
+      if (o.q == null && !o.soft && st.t.world + st.t.troll + (st.t.pets[0] || 0) + (st.t.pets[1] || 0) + st.t.first > 4000) sh.saveQ(5);   // a build this slow is not for this device: the next visits get the flat camp (and one more try after three days)
+      if (o.onReady) o.onReady(self); if (AUTO && !probeLog.length && !probe) startProbe(); }
     function hide() { shown = false; if (occ) occ.style.display = 'none'; if (o.onHide) o.onHide(); }
-    function fail(why) { if (dead) return; hide(); dispose(); if (o.onFlat) o.onFlat(why); }
+    function fail(why) { if (dead) return; hide(); dispose(); keepDrop(); actDrop(); if (o.onFlat) o.onFlat(why); }
     function onVis() { if (!document.hidden) wake(); }
     function onTouch() { wake(); }
-    function layout(v) { if (dead) return; V = v; if (!world) return; setCam(); Object.keys(hits).forEach(function (k) { if (hits[k].style) hits[k].style.width = ''; }); step(0, performance.now()); draw(); kick(); }
+    function layout(v) { if (dead) return; V = v; setCam(); if (!world || !shown) return; Object.keys(hits).forEach(function (k) { if (hits[k].style) hits[k].style.width = ''; }); step(0, performance.now()); draw(); kick(); }
     function dispose(keep) {
       if (dead) return; dead = true; cancelAnimationFrame(raf); running = false; sh.free(self);
       document.removeEventListener('visibilitychange', onVis); document.removeEventListener('pointerdown', onTouch);
@@ -306,30 +360,54 @@ var TrollCamp3D = (function () {
       // the screen that is left fades out for a third of a second: it keeps a copy of the last picture (a plain 2D canvas), and the graphics memory is given back at once
       if (keep && shown && !sh.lost() && canvas.parentNode === view) { try { R.render(scene, cam); var c = document.createElement('canvas'); c.className = 'm3c'; c.width = canvas.width; c.height = canvas.height; c.style.cssText = canvas.style.cssText; c.getContext('2d').drawImage(canvas, 0, 0); view.replaceChild(c, canvas); } catch (e) { hide(); } }
       else { hide(); if (canvas.parentNode === view) view.removeChild(canvas); }
-      pets.forEach(function (p) { try { p.dispose(); } catch (e) {} }); pets = [];
-      if (world) { scene.remove(world); world.traverse(function (x) { if (x.isMesh && x.geometry !== M.flame && x.geometry !== M.plane || x.isPoints) x.geometry.dispose(); }); world = null; }
-      Object.keys(pgeo).forEach(function (k) { pgeo[k].dispose(); }); pgeo = {}; props = [];
-      if (fireL) { scene.remove(fireL); fireL.dispose(); } sh.hemi.intensity = hemi0; R.clippingPlanes = clipOff; R.setScissorTest(false);
+      if (parts) { parts.forEach(function (g) { g.forEach(function (x) { x[0].visible = x[1]; }); }); parts = null; }
+      petsDrop(); trollDrop(); props.forEach(function (h) { if (h.m.parent) h.m.parent.remove(h.m); }); props = [];
+      if (world) { scene.remove(world); world = null; }                                          // (the island and the actors stay for the next visit: KEEP, ACT3)
+      Object.keys(pgeo).forEach(function (k) { pgeo[k].dispose(); }); pgeo = {};
+      if (fireL) fireL.intensity = 0; sh.hemi.intensity = hemi0; R.clippingPlanes = clipOff; R.setScissorTest(false);
       if (sh.sun.shadow.map) { sh.sun.shadow.map.dispose(); sh.sun.shadow.map = null; } R.renderLists.dispose(); R.setSize(1, 1, false);
     }
     var self = { view: view, box: view, layout: layout, dispose: dispose, hide: hide, fail: fail, prop: prop, clearProps: clearProps, fx: fx, wake: wake, busy: busy, petTap: petTap,
       restored: function () { curPR = 0; sh.gTex().needsUpdate = true; if (world) { R.shadowMap.needsUpdate = true; draw(); kick(); if (!shown) show(); else if (o.onReady) o.onReady(self); } },
       setPets: function (list) { o.pets = list; if (world) petsMake(); },
+      trollOn: function () { return !!troll; }, trollPose: trollPose, trollAct: trollAct, trollCarry: function (kind) { if (troll) { troll.carry(kind || null); busy(900); } }, troll: function () { return troll; },
       pets: function () { return pets; },
-      stats: function () { var m = R.info.memory; return { camp: 1, q: TIER, pr: curPR, calls: st.calls || 0, tris: st.tris || 0, verts: verts, geometries: m.geometries || 0, textures: m.textures || 0, programs: R.info.programs ? R.info.programs.length : 0, buildMs: st.buildMs, readyMs: st.readyMs, frames: st.frames, occ: st.occ, occOn: occOn, cpuMs: st.cpuN ? +(st.cpu / st.cpuN).toFixed(2) : 0, pets: pets.length, petTris: pets.reduce(function (n, p) { return n + p.tris; }, 0), props: props.length, shadow: !!sh.sun.castShadow, running: running, shown: shown, probe: probeLog, sky: SKY, w: V.W, h: V.H, K: V.K, lost: sh.counts()[0], restored: sh.counts()[1] }; } };
+      stats: function () { var m = R.info.memory; return { camp: 1, q: TIER, pr: curPR, calls: st.calls || 0, tris: st.tris || 0, verts: verts, geometries: m.geometries || 0, textures: m.textures || 0, programs: R.info.programs ? R.info.programs.length : 0, buildMs: st.buildMs, readyMs: st.readyMs, frames: st.frames, occ: st.occ, occOn: occOn, cpuMs: st.cpuN ? +(st.cpu / st.cpuN).toFixed(2) : 0, pets: pets.length, petTris: pets.reduce(function (n, p) { return n + p.tris; }, 0), troll: troll ? troll.tris : 0, t: st.t, props: props.length, shadow: !!sh.sun.castShadow, running: running, shown: shown, probe: probeLog, sky: SKY, w: V.W, h: V.H, K: V.K, lost: sh.counts()[0], restored: sh.counts()[1] }; } };
     Object.defineProperty(self, 'dead', { get: function () { return dead; } });
     sh.own(self);
-    try {
-      setCam(); obstMake(); build();
-      if (o.dom !== false) { occ = document.createElement('canvas'); occ.className = 'c3occ'; occ.setAttribute('aria-hidden', 'true'); octx = occ.getContext('2d'); view.appendChild(occ); }
+    // The first picture. A shader program is made (and, on a new device, compiled: the slow part) when the first thing that needs it is drawn. So the picture is drawn
+    // part by part into the canvas that is not shown yet, each part in a task of its own: first the ground and the sea, then one more kind of thing at a time.
+    var parts = null, partN = 0, ready0 = false;
+    function firstPrep() {
+      st.t0f = performance.now(); cam.getWorldPosition(camP);
       canvas.className = 'm3c'; if (canvas.parentNode !== view) view.insertBefore(canvas, view.firstChild);
-      document.addEventListener('visibilitychange', onVis); document.addEventListener('pointerdown', onTouch, { passive: true });
-      // the first picture, with the shaders of the occlusion pass made ready too (so the first walk behind the tent does not stop for them)
       step(0, performance.now()); var pr0 = restPR(); curPR = pr0; R.setPixelRatio(pr0); R.setSize(V.W, V.H, false); canvas.style.cssText = 'left:' + V.left + 'px;top:' + V.top + 'px;width:' + V.W + 'px;height:' + V.H + 'px'; M.spark.size = Math.max(3, 0.11 * V.ppu0) * pr0;
-      R.clippingPlanes = clipOn; clipP.constant = 99; R.setScissor(0, 0, 2, 2); R.setScissorTest(true); R.render(scene, cam); R.setScissorTest(false); R.clippingPlanes = clipOff;
-      draw(); kick();
+      var seen = {}; parts = []; st.t.parts = [];
+      world.children.forEach(function (c) { var k = c.material ? c.material.uuid + (c.isSkinnedMesh ? 's' : '') + (c.castShadow ? 'c' : '') : 'g' + c.id, i = seen[k]; if (i == null) { i = seen[k] = parts.length; parts.push([]); } parts[i].push([c, c.visible]); if (o.staged && i > 0) c.visible = false; });
+      partN = o.staged ? 1 : parts.length;
+    }
+    function firstPart() { // one more kind of thing is drawn (and its program made)
+      var t1 = performance.now(); if (partN < parts.length) parts[partN++].forEach(function (x) { x[0].visible = x[1]; });
+      R.shadowMap.needsUpdate = true; R.render(scene, cam); st.t.parts.push(Math.round(performance.now() - t1));
+      if (partN < parts.length) return true;
+      if (!troll) { R.clippingPlanes = clipOn; clipP.constant = 99; R.setScissor(0, 0, 2, 2); R.setScissorTest(true); R.render(scene, cam); R.setScissorTest(false); R.clippingPlanes = clipOff; }   // the shaders of the occlusion pass too (so the first walk of a drawn troll behind the tent does not stop for them)
+      parts = null; ready0 = true; st.t.first = Math.round(performance.now() - st.t0f);
+      step(0, performance.now()); R.shadowMap.needsUpdate = true; draw(); kick(); return false;
+    }
+    var STG = [build, trollMake, function () { petMake(0); }, function () { petMake(1); }, firstPrep, firstPart];
+    function stage(i) { // one part of the build in a task of its own; the page (and the cover of the transition) goes on between the parts
+      if (dead) return; var again = false;
+      try { again = STG[i]() === true; } catch (e) { if (window.console) console.warn('camp3d', e); fail('error'); return; }
+      if (!again) i++;
+      if (i < STG.length) { if (o.staged) setTimeout(function () { stage(i); }, 0); else stage(i); }
+    }
+    try {
+      setCam(); obstMake();
+      occ = document.createElement('canvas'); occ.className = 'c3occ'; occ.setAttribute('aria-hidden', 'true'); octx = occ.getContext('2d'); view.appendChild(occ);
+      document.addEventListener('visibilitychange', onVis); document.addEventListener('pointerdown', onTouch, { passive: true });
     } catch (e) { try { dispose(); } catch (e2) {} if (window.console) console.warn('camp3d', e); return null; }
+    if (o.staged) setTimeout(function () { stage(0); }, 0); else { stage(0); if (dead) return null; }
     return self;
   }
-  return { attach: attach };
+  return { attach: attach, drop: function () { keepDrop(); actDrop(); } };
 })();
