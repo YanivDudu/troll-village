@@ -31,13 +31,12 @@ async function invite(x, name) {
   var r = await until(function () { var b = row(x, name); return b && !b.classList.contains('off') && b; }, x + ' sees ' + name + ' in the pool', 300);
   r.click(); q(x, '.pgo').click();
 }
-async function toRound(x) { // first building, first house, discovery stage
+async function toRound(x) { // first building, first open house: one tap on the house starts a round
   if (!q(x, '.mnode[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.csb[data-sub="math"]') || q(x, '.csb') || q(x, '.mapb') || q(x, '.btn.big'); }, 'home ' + x)).click(); } // the small map button of the camp; the big button starts an exercise
   var first = await until(function () { return q(x, '.mnode[data-t]') || q(x, '.land[data-sub]'); }, 'map ' + x);
   if (first.hasAttribute('data-sub')) { q(x, '.land[data-sub="math"]').click(); first = await until(function () { return q(x, '.mnode[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
   first.click();
-  (await until(function () { return q(x, '.mnode:not(.far):not(.boss)'); }, 'region ' + x)).click(); // a house of the map opens its three stages
-  (await until(function () { return q(x, '.sbtn:not(.locked)'); }, 'stages ' + x)).click();
+  (await until(function () { return q(x, '.mnode:not(.far):not(.boss)'); }, 'region ' + x)).click(); // a tap on a house of the map starts a round of it
   await until(function () { return F[x].contentWindow.__tv.round; }, 'round ' + x);
 }
 async function solve(x) { // one correct answer, the way the self-play test gives it
