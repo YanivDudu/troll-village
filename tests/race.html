@@ -32,7 +32,7 @@ async function invite(x, name) {
   r.click(); q(x, '.pgo').click();
 }
 async function toRound(x) { // first building, first house, discovery stage
-  if (!q(x, '.mnode[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.mapb') || q(x, '.btn.big'); }, 'home ' + x)).click(); } // the small map button of the camp; the big button starts an exercise
+  if (!q(x, '.mnode[data-t]')) { var hb = doc(x).querySelector('.screen:not(.out) .top .icon[aria-label="חֲזָרָה לַכְּפָר"]'); if (hb) hb.click(); (await until(function () { return q(x, '.csb[data-sub="math"]') || q(x, '.csb') || q(x, '.mapb') || q(x, '.btn.big'); }, 'home ' + x)).click(); } // the small map button of the camp; the big button starts an exercise
   var first = await until(function () { return q(x, '.mnode[data-t]') || q(x, '.land[data-sub]'); }, 'map ' + x);
   if (first.hasAttribute('data-sub')) { q(x, '.land[data-sub="math"]').click(); first = await until(function () { return q(x, '.mnode[data-t]'); }, 'math map ' + x); } // the subjects screen comes first
   first.click();
