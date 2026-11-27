@@ -51,48 +51,50 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     // ---- every category, every item, on a small phone and on a laptop
     for (var size of [[360, 640], [1366, 650]]) {
       x = await frame('demo&s=dress&tab=3&coins=1000&many=1', size[0], size[1]); L = x.w.TrollLogic;
-      var tabs = qa(x, '.ctab'), slots = ['hair', 'hairColor', 'body', 'acc', 'hat', 'face', 'hand', 'pet', 'move', 'party'];
-      check(tabs.length === 10, size + ': ten categories');
+      var tabs = qa(x, '.ctab'), slots = ['hair', 'hairColor', 'body', 'acc', 'hat', 'hand', 'pet', 'move', 'party']; // task "animals": the glasses are among the accessories
+      check(tabs.length === 9 && !tabs.some(function (b) { return /מִשְׁקָפַיִם/.test(b.getAttribute('aria-label')); }), size + ': nine categories, none of them the glasses');
       for (i = 0; i < tabs.length; i++) {
         tabs[i].click();
-        var all = allCards(x), want = L.ITEMS.filter(function (it) { return it.slot === slots[i]; }).map(function (it) { return it.id; });
+        var all = allCards(x), want = L.ITEMS.filter(function (it) { return (it.slot === slots[i] || (slots[i] === 'acc' && it.slot === 'face')) && (!it.off || x.w.__tv.state.items.indexOf(it.id) >= 0); }).map(function (it) { return it.id; }); // for sale, or owned
         if (i < 3) check(all.seen.length === (i === 0 ? L.HAIR_STYLES : i === 1 ? L.HAIR_COLORS.length : L.BODIES.length) && all.inside, size + ': category ' + slots[i] + ' shows all its ' + all.seen.length + ' choices');
         else check(want.every(function (id) { return all.seen.indexOf(id) >= 0; }) && all.seen.length === want.length + (slots[i] === 'acc' ? 0 : 1) && all.inside && new Set(all.seen).size === all.seen.length,
           size + ': category ' + slots[i] + ': all ' + want.length + ' items are reachable by the arrows, in ' + all.pages + ' pages, none cut');
       }
       check(scr(x).scrollHeight <= scr(x).clientHeight + 1 && q(x, '.cgridc').scrollHeight <= q(x, '.cgridw').clientHeight + 1, size + ': nothing scrolls');
+      var tr = tabs.map(function (b) { return b.getBoundingClientRect(); }), rows = {}, box = q(x, '.ctabs').getBoundingClientRect(); tr.forEach(function (r) { var k = Math.round(r.top / 4), o = rows[k] = rows[k] || [1e9, -1e9]; o[0] = Math.min(o[0], r.left); o[1] = Math.max(o[1], r.right); });
+      check(Object.keys(rows).every(function (k) { return Math.abs(rows[k][0] - box.left) < 3 && Math.abs(rows[k][1] - box.right) < 3; }), size + ': the categories fill their rows (' + Object.keys(rows).length + ' rows)');
       x.f.remove();
     }
     // ---- try before buying, buy at the fixed price, take off, wear again
-    x = await frame('demo&s=dress&tab=7&coins=1000');
+    x = await frame('demo&s=dress&tab=6&coins=1000');
     check(L.priceOf({ items: ['none', 'bow'] }, 'unicorn') === 90 && L.priceOf({ items: L.ITEMS.map(function (it) { return it.id; }) }, 'unicorn') === 90, 'the price of an item does not depend on how many items are owned');
-    c = find(x, 'unicorn'); var uni = c.querySelector('.cpr').textContent;
-    c = find(x, 'dragon'); before = coins(x);
-    check(/100/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f409') && !!c.querySelector('.cdo svg.ic'), 'the card shows the item itself, its price and the icon of what it does');
+    c = find(x, 'gamepad'); var uni = c.querySelector('.cpr').textContent;
+    c = find(x, 'guitar'); before = coins(x);
+    check(/40/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f3b8') && !!c.querySelector('.cdo svg.ic'), 'the card shows the item itself, its price and the icon of what it does');
     c.click();
-    check(hasPic(q(x, '.cprev'), '1f409') && coins(x) === before && c.classList.contains('pick'), 'a tap tries the item on the troll, and nothing is paid yet');
-    b = qa(x, '.cbtn'); check(b.length === 1 && /100/.test(b[0].textContent), 'one button: buy, with the price');
+    check(hasPic(q(x, '.cprev'), '1f3b8') && coins(x) === before && c.classList.contains('pick'), 'a tap tries the item on the troll, and nothing is paid yet');
+    b = qa(x, '.cbtn'); check(b.length === 1 && /40/.test(b[0].textContent), 'one button: buy, with the price');
     b[0].click();
-    c = cardOf(x, 'dragon');
-    check(coins(x) === before - 100 && c.classList.contains('worn') && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'bought once for 100: owned and worn');
-    check(find(x, 'unicorn').querySelector('.cpr').textContent === uni, 'the other prices did not move after a purchase');
-    c = find(x, 'dragon'); c.click(); b = qa(x, '.cbtn'); check(b.length === 1, 'an owned and worn item: one button'); b[0].click();
-    check(!cardOf(x, 'dragon').classList.contains('worn') && !hasPic(q(x, '.cprev'), '1f409') && coins(x) === before - 100, 'taken off: still owned, no coins moved');
-    c = cardOf(x, 'dragon'); c.click(); b = qa(x, '.cbtn'); b[0].click();
-    check(cardOf(x, 'dragon').classList.contains('worn') && hasPic(q(x, '.cprev'), '1f409') && coins(x) === before - 100, 'worn again without paying again');
+    c = cardOf(x, 'guitar');
+    check(coins(x) === before - 40 && c.classList.contains('worn') && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'bought once for 40: owned and worn');
+    check(find(x, 'gamepad').querySelector('.cpr').textContent === uni, 'the other prices did not move after a purchase');
+    c = find(x, 'guitar'); c.click(); b = qa(x, '.cbtn'); check(b.length === 1, 'an owned and worn item: one button'); b[0].click();
+    check(!cardOf(x, 'guitar').classList.contains('worn') && !hasPic(q(x, '.cprev'), '1f3b8') && coins(x) === before - 40, 'taken off: still owned, no coins moved');
+    c = cardOf(x, 'guitar'); c.click(); b = qa(x, '.cbtn'); b[0].click();
+    check(cardOf(x, 'guitar').classList.contains('worn') && hasPic(q(x, '.cprev'), '1f3b8') && coins(x) === before - 40, 'worn again without paying again');
     // what the demo player already owned is still owned and wearable: the kitten (worn), the top hat (worn), the scarf and the wand
-    check(/שֶׁלִּי/.test(find(x, 'kitty').querySelector('.cpr').textContent), 'an item owned before is still owned (kitten)');
+    qa(x, '.ctab')[6].click(); check(/שֶׁלִּי/.test(find(x, 'kitty').querySelector('.cpr').textContent), 'an item owned before is still owned (kitten)');
     qa(x, '.ctab')[3].click(); c = find(x, 'scarf'); check(/שֶׁלִּי/.test(c.querySelector('.cpr').textContent), 'an accessory owned before is still owned (scarf)');
     c.click(); qa(x, '.cbtn')[0].click(); check(cardOf(x, 'scarf').classList.contains('worn'), 'and it can be worn');
     qa(x, '.ctab')[4].click(); check(find(x, 'tophat').classList.contains('worn'), 'what was worn before is still worn (top hat)');
     // ---- a move and a celebration: shown on the troll before buying; chosen after
-    qa(x, '.ctab')[8].click(); c = find(x, 'spin'); c.click();
+    qa(x, '.ctab')[7].click(); c = find(x, 'spin'); c.click();
     check(q(x, '.cprev').classList.contains('mv-spin') && !!q(x, '.cprev .troll.cheer'), 'a tap on a move makes the troll do it');
     await wait(1300);
     check(!q(x, '.cprev').classList.contains('mv-spin') && !q(x, '.cprev .troll.cheer'), 'the move is done once and stops');
     before = coins(x); qa(x, '.cbtn')[0].click();
     check(coins(x) === before - 70 && cardOf(x, 'spin').classList.contains('worn'), 'the move is bought and chosen');
-    qa(x, '.ctab')[9].click(); c = find(x, 'pstar'); var sparks = x.d.querySelectorAll('#fx .spark').length; c.click();
+    qa(x, '.ctab')[8].click(); c = find(x, 'pstar'); var sparks = x.d.querySelectorAll('#fx .spark').length; c.click();
     check(x.d.querySelectorAll('#fx .spark').length > sparks, 'a tap on a celebration sets it off once');
     qa(x, '.cbtn')[0].click(); check(cardOf(x, 'pstar').classList.contains('worn'), 'the celebration is bought and chosen');
     x.f.remove();
@@ -116,10 +118,41 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     check(worn() === 'puppy' && beside() === 'dog' && coins(x) === before - 126 && paws() === '1/2', 'pets: sent away: the dog stays, no coins moved (' + worn() + ' ' + beside() + ')');
     cardOf(x, 'kitty').click(); tap1();
     check(worn() === 'kitty,puppy' && beside() === 'dog,cat' && coins(x) === before - 126, 'pets: an owned pet joins again for free, as the newer of the two (' + beside() + ')');
-    c = find(x, 'fox'); c.click(); tap1(); find(x, 'kitty');
-    check(worn() === 'kitty' && coins(x) === before - 186 && hasPic(q(x, '.cprev'), '1f98a') && beside() === 'cat', 'pets: a flat pet and a living one together (the fox took the place of the dog)');
+    var petCards = allCards(x).seen;
+    check(petCards.join() === ',chick,puppy,kitty,monkey,croc,lion,elephant' && L.ITEMS.filter(function (it) { return it.off; }).length === 29, 'animals: the pets for sale are the seven living ones; none of the 29 flat pets is offered (' + petCards.length + ' cards)');
     cardOf(x, '').click();
     check(worn() === '' && beside() === '' && !q(x, '.cprev .pet') && paws() === '0/2', 'pets: "without" sends both away (' + worn() + ')');
+    x.f.remove();
+    // ---- task "animals": a child who owns flat pets keeps them: their cards are there (and only theirs), worn as before, taken off and chosen again for free
+    x = await frame('demo&s=dress&tab=7&coins=1000&own=owl&wear=fox'); before = coins(x);
+    petCards = allCards(x).seen; c = find(x, 'fox');
+    check(petCards.join() === ',chick,puppy,kitty,monkey,croc,lion,elephant,fox,owl' && !find(x, 'dragon'), 'animals: an owner of the fox and the owl sees these two after the living ones, and no other flat pet (' + petCards.join() + ')');
+    c = find(x, 'fox'); check(worn() === 'fox,kitty' && /שֶׁלִּי/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f98a') && hasPic(q(x, '.cprev'), '1f98a') && beside() === 'cat', 'animals: the owned fox is still worn beside the cat, with its picture (' + worn() + ')');
+    c.click(); tap1(); check(worn() === 'kitty' && !hasPic(q(x, '.cprev'), '1f98a') && !!find(x, 'fox') && coins(x) === before, 'animals: sent away, the fox is still a card of the child');
+    c = find(x, 'owl'); c.click(); check(hasPic(q(x, '.cprev'), '1f989') && qa(x, '.cbtn').length === 1 && !/\d/.test(qa(x, '.cbtn')[0].textContent), 'animals: an owned flat pet that is not worn: one button, no price'); tap1();
+    c = find(x, 'fox'); c.click(); tap1(); find(x, 'fox');
+    check(worn() === 'fox,owl' && coins(x) === before && x.w.__tv.state.items.indexOf('fox') >= 0 && x.w.__tv.state.items.indexOf('owl') >= 0 && x.w.__tv.state.items.indexOf('kitty') >= 0, 'animals: two owned flat pets are chosen again for free; nothing owned was lost (' + worn() + ')');
+    x.f.remove();
+    x = await frame('demo&wear=fox.owl', 390, 800, '.screen.camp .cground');
+    check(hasPic(x.d.querySelector('.screen.camp'), '1f98a') && hasPic(x.d.querySelector('.screen.camp'), '1f989'), 'animals: the camp still shows the two flat pets of their owner');
+    x.f.remove();
+    // a goal that was set on a flat pet before: the child keeps it (the card, the meter) and may cancel it; then the pet is offered no more
+    x = await frame('demo&s=dress&tab=7&coins=10&goal=dragon&sel=dragon');
+    c = cardOf(x, 'dragon') || find(x, 'dragon'); check(!!c && !!c.querySelector('.cgl') && !find(x, 'unicorn'), 'animals: a flat pet a child was saving for is still its goal, and the only flat pet on the cards');
+    find(x, 'dragon').click(); b = qa(x, '.cbtn'); check(b.length === 1 && /יַּעַד/.test(b[0].textContent), 'animals: one button: cancel the goal'); b[0].click();
+    check(!find(x, 'dragon') && !qa(x, '.cbtn').length && !L.goalOf(x.w.__tv.state), 'animals: cancelled: the flat pet left the cards');
+    x.f.remove();
+    // ---- task "animals": the glasses are among the accessories: same slot, worn together with an accessory, taken off by their own card
+    x = await frame('demo&s=dress&tab=3&coins=1000&own=shades'); before = coins(x);
+    var accCards = allCards(x).seen;
+    check(['specs', 'goggles', 'shades', 'diving', 'mask', 'sunglasses', 'glasses', 'crown'].every(function (v) { return accCards.indexOf(v) >= 0; }) && accCards[0] === 'none', 'glasses: the five items of the old category are cards of the accessories');
+    c = find(x, 'shades'); check(/שֶׁלִּי/.test(c.querySelector('.cpr').textContent) && hasPic(c, '1f576'), 'glasses: what was owned is still owned, with its picture'); c.click(); qa(x, '.cbtn')[0].click();
+    check(x.w.__tv.state.dress[5].face === 'shades' && hasPic(q(x, '.cprev'), '1f576') && find(x, 'shades').classList.contains('worn') && coins(x) === before, 'glasses: worn on the face (the slot of before), for free');
+    c = find(x, 'scarf'); c.click(); qa(x, '.cbtn')[0].click(); find(x, 'shades');
+    check(x.w.__tv.state.dress[5].face === 'shades' && x.w.__tv.state.dress[5].acc === 'scarf' && hasPic(q(x, '.cprev'), '1f576'), 'glasses: an accessory does not take the glasses off');
+    c = find(x, 'goggles'); check(/^24/.test(c.querySelector('.cpr').textContent.trim()), 'glasses: the price of before (24)'); c.click(); qa(x, '.cbtn')[0].click();
+    check(x.w.__tv.state.dress[5].face === 'goggles' && coins(x) === before - 24 && x.w.__tv.state.dress[5].acc === 'scarf' && !find(x, 'shades').classList.contains('worn'), 'glasses: bought and worn in the place of the other glasses');
+    c = find(x, 'goggles'); c.click(); qa(x, '.cbtn')[0].click(); check(x.w.__tv.state.dress[5].face === '' && x.w.__tv.state.dress[5].acc === 'scarf' && !hasPic(q(x, '.cprev'), '1f97d'), 'glasses: taken off by their own card; the accessory stays');
     x.f.remove();
     // the two pets beside the companion at the camp (living pictures), on a map, and sitting on the exercise screen
     x = await frame('demo&wear=puppy.lion', 390, 800, '.screen.camp .cground');
@@ -134,21 +167,21 @@ function hasPic(el, cp) { return !!el.querySelector('image[href$="' + cp + '.png
     x.f.remove();
     // ---- an item that costs too much: no lock, a muted price, and it can become the one savings goal
     x = await frame('demo&s=dress&tab=7&coins=10');
-    c = find(x, 'dragon'); c.click();
-    check(c.querySelector('.cpr').classList.contains('cant') && !/🔒/.test(c.textContent) && hasPic(q(x, '.cprev'), '1f409'), 'too dear: a normal card with a muted price, and it can still be tried on');
+    c = find(x, 'elephant'); c.click();
+    check(c.querySelector('.cpr').classList.contains('cant') && !/🔒/.test(c.textContent) && !!q(x, '.cprev svg.troll .p3[data-k="elephant"]'), 'too dear: a normal card with a muted price, and it can still be tried on');
     b = qa(x, '.cbtn'); check(b.length === 1 && /חוֹסֶכֶת/.test(b[0].textContent), 'one button: I am saving for this');
     b[0].click();
-    check(!!cardOf(x, 'dragon').querySelector('.cgl') && /10/.test(q(x, '.kmsg').textContent) && /100/.test(q(x, '.kmsg').textContent) && coins(x) === 10, 'the goal is marked on the card, with coins out of price');
-    c = find(x, 'unicorn'); c.click(); qa(x, '.cbtn')[0].click();
-    check(qa(x, '.cgl').length === 1 && !!cardOf(x, 'unicorn').querySelector('.cgl'), 'one goal at a time: the new one replaces the old one');
+    check(!!cardOf(x, 'elephant').querySelector('.cgl') && /10/.test(q(x, '.kmsg').textContent) && /84/.test(q(x, '.kmsg').textContent) && coins(x) === 10, 'the goal is marked on the card, with coins out of price');
+    c = find(x, 'lion'); c.click(); qa(x, '.cbtn')[0].click();
+    check(qa(x, '.cgl').length === 1 && !!cardOf(x, 'lion').querySelector('.cgl'), 'one goal at a time: the new one replaces the old one');
     x.d.querySelector('.screen.cart .top .icon[aria-label="חֲזָרָה לַכְּפָר"]').click(); await wait(500);
     var hb = x.d.querySelector('.screen.camp:not(.out) .dressb.hasgoal');
-    check(!!hb && /10\/90/.test(hb.textContent) && hasPic(hb, '1f984'), 'the camp shows the meter of the goal on the cart button: 10/90 and the picture');
+    check(!!hb && /10\/76/.test(hb.textContent) && /lion_s\.webp$/.test((hb.querySelector('img.p3s') || { getAttribute: function () { return ''; } }).getAttribute('src')), 'the camp shows the meter of the goal on the cart button: 10/76 and the picture');
     hb.click(); await wait(500);
-    c = q(x, '.citem.pick'); check(!!c && c.getAttribute('data-v') === 'unicorn', 'one tap on the meter opens the cart on that item');
+    c = q(x, '.citem.pick'); check(!!c && c.getAttribute('data-v') === 'lion', 'one tap on the meter opens the cart on that item');
     x.f.remove();
     // ---- a boy reads the masculine form
-    x = await frame('demo&s=dress&tab=7&coins=10&boy=1'); find(x, 'dragon').click(); await wait(300);
+    x = await frame('demo&s=dress&tab=7&coins=10&boy=1'); find(x, 'elephant').click(); await wait(300);
     check(/חוֹסֵךְ/.test(qa(x, '.cbtn')[0].textContent), 'a boy reads the masculine form on the goal button');
     x.f.remove();
     // ---- 30 trolls: every one is reachable by taps only, on a phone (the arrows step) and on a laptop (pages of thumbnails), and wears what the child owns

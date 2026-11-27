@@ -223,7 +223,7 @@ console.log(n + ' test groups passed');
 t('prize accessories: one new item each time until all are collected', () => {
   const s = L.newState(); let k = 0;
   for (;;) { const it = L.rollItem(s.items, Math.random); if (!it) break; assert(!s.items.includes(it)); s.items.push(it); k++; }
-  assert.strictEqual(s.items.length, L.ITEMS.length); assert(k >= 10);
+  assert.strictEqual(s.items.length, L.ITEMS.filter(it => !it.off).length); assert(k >= 10); // (task "animals": every item that is for sale; the flat pets are not)
   const ld = L.loadState('{"items":["wand","wand","bogus",5]}');
   assert.deepStrictEqual(Array.from(ld.items), ['none', 'bow', 'wand']);
   for (let i = 0; i < 200; i++) assert(L.ACCESSORIES.indexOf(L.trollFromId(i).acc) < 6);
