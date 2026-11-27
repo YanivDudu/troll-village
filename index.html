@@ -2864,6 +2864,9 @@ body.toy .ground .node.done{background:var(--success);color:#fff}body.toy .groun
 }
 @media (max-width:380px){.gln{font-size:16px}.gopt{font-size:16px}.gqt,.k-word .gqt{font-size:17px}.gil{font-size:17px}}
 /* GIFT-CSS-END */
+/* task "animals": nine categories in the cart (the glasses moved into the accessories): one row of nine, or on a phone five and four that fill their rows */
+.ctabs{grid-template-columns:repeat(9,minmax(0,1fr))}
+@media (max-width:640px){.ctabs{grid-template-columns:repeat(20,minmax(0,1fr))}.ctab{grid-column:span 4}.ctab:nth-child(n+6){grid-column:span 5}}
 </style>
 </head>
 <body>
@@ -4968,6 +4971,12 @@ var TrollLogic = (function () {
   // older saves; an older page ignores it and drops it at its next save, and then the troll simply has its first pet only). All pure.
   var PET3 = { puppy: ['dog', 0], kitty: ['cat', 0], chick: ['bird', 2], monkey: ['monkey', 0], lion: ['lion', 0], croc: ['croc', 0], elephant: ['elephant', 0] }, PET_MAX = 2;
   Object.keys(PET3).forEach(function (id) { ITEM[id].pet3 = PET3[id][0]; ITEM[id].pv = PET3[id][1]; });
+  // ---- task "animals": the pets that are flat pictures (every pet that is not in PET3) are no longer for sale: item.off. They stay in the catalogue with
+  // their ids, names and prices, so a child who owns one keeps it and its troll wears it exactly as before; the cart only stops OFFERING them (it still
+  // shows the ones the child owns, and the one the child was already saving for), and the surprise item of the daily gift never brings one.
+  // Nothing saved changes: state.items, the dress, the goal and buy() are as they were.
+  ITEMS.forEach(function (it) { if (it.slot === 'pet' && !it.pet3) it.off = 1; });
+  function forSale(id) { return !!ITEM[id] && !ITEM[id].off; }
   function isPet(id) { return typeof id === 'string' && !!ITEM[id] && ITEM[id].slot === 'pet'; }
   // the pets of one troll, the older choice first. d: its dress (or a spec). items: when given, a second pet must be an owned item.
   function petsOf(d, items) {
@@ -5146,7 +5155,7 @@ var TrollLogic = (function () {
   // A surprise item not yet in the collection (cheaper ones first), or null when everything is collected.
   function rollItem(items, rng) {
     rng = rng || Math.random;
-    var left = ITEMS.filter(function (it) { return (items || []).indexOf(it.id) < 0; });
+    var left = ITEMS.filter(function (it) { return !it.off && (items || []).indexOf(it.id) < 0; }); // (task "animals": never an item that is no longer for sale)
     var cheap = left.filter(function (it) { return it.price <= 40; });
     return left.length ? pick(rng, cheap.length ? cheap : left).id : null;
   }
@@ -5600,7 +5609,7 @@ var TrollLogic = (function () {
     GIFT: GIFT, GIFT_IDS: GIFT_IDS, GIFT_GRADES: GIFT_GRADES, GOLD_ID: GOLD_ID, GOLD_BODY: GOLD_BODY, giftQ: giftQ, giftOn: giftOn, hasGold: hasGold, giveGold: giveGold,
     MALE: MALE, forBoy: forBoy,
     RACE: RACE, racePoints: racePoints, raceRank: raceRank, raceDone: raceDone,
-    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, PET3: PET3, PET_MAX: PET_MAX, petsOf: petsOf, petsAdd: petsAdd, petPut: petPut, petDrop: petDrop, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
+    ITEMS: ITEMS, ITEM: ITEM, EMOJI_SLOTS: EMOJI_SLOTS, PET3: PET3, PET_MAX: PET_MAX, forSale: forSale, petsOf: petsOf, petsAdd: petsAdd, petPut: petPut, petDrop: petDrop, buy: buy, priceOf: priceOf, fxOf: fxOf, setFx: setFx, goalOf: goalOf, setGoal: setGoal, roundReward: roundReward,
     loadProfiles: loadProfiles, addProfile: addProfile, removeProfile: removeProfile,
     newCode: newCode, mergeCloud: mergeCloud, revSeed: revSeed, cloudNum: cloudNum, stampOf: stampOf, linkKey: linkKey, CODE_RE: CODE_RE,
     explain: explain, hop: hop, startLevel: startLevel, span: span, setGrade: setGrade, topicsFor: topicsFor, challengeFor: challengeFor, challengeOpen: challengeOpen, nextStep: nextStep, tileOf: tileOf, SRC: SRC, ownTopic: ownTopic, shiftOf: shiftOf, toFmt: toFmt, formatsFor: formatsFor, semOf: semOf,
@@ -7363,6 +7372,7 @@ var TrollModels = (function () {
   //   PETS.el(spec, i, cls, face)                             the picture element of today, to keep as the silent fallback
   // Layout checks (sandbox): &wear=puppy.lion (two pets on the companion), &petpose=sit|sleep|happy|walk1 (the pose of the living pictures, frozen),
   // &pet3d=0 (the cart never asks for 3D).
+  if (sandbox) Object.defineProperty(tv, 'state', { get: function () { return state; } }); // (task "animals": tests/cart.html reads what the page holds; sandbox only)
   function petKind(itemId) { var x = L.ITEM[itemId]; return x && x.pet3 ? x.pet3 : null; }
   function petActors(trollId) {
     if (sandbox && /[#&]pets3=0/.test(hash)) return []; // layout checks: &pets3=0 no 3D animal, &pets3=dog,lion these two
@@ -10149,10 +10159,14 @@ var TrollModels = (function () {
   ICONS.balloon = 'M128,16a88.1,88.1,0,0,0-88,88c0,23.43,9.4,49.42,25.13,69.5,12.08,15.41,26.5,26,41.91,31.09L96.65,228.85A8,8,0,0,0,104,240h48a8,8,0,0,0,7.35-11.15L149,204.59c15.4-5.07,29.83-15.68,41.91-31.09C206.6,153.42,216,127.43,216,104A88.1,88.1,0,0,0,128,16Zm49.32,87.89A8.52,8.52,0,0,1,176,104a8,8,0,0,1-7.88-6.68,41.29,41.29,0,0,0-33.43-33.43,8,8,0,1,1,2.64-15.78,57.5,57.5,0,0,1,46.57,46.57A8,8,0,0,1,177.32,103.89Z';
   ICONS.move = 'M100,36a28,28,0,1,1,28,28A28,28,0,0,1,100,36ZM227.6,92.57A15.7,15.7,0,0,0,212,80H44a16,16,0,0,0-6.7,30.53l.06,0,53.89,23.73-21.92,83.3a16,16,0,0,0,7.9,20.91A15.83,15.83,0,0,0,84,240a16,16,0,0,0,14.44-9.06L128,180l29.58,51a16,16,0,0,0,29.07-13.35l-21.92-83.3,54-23.76A15.7,15.7,0,0,0,227.6,92.57Z';
   ICONS.confetti = 'M111.49,52.63a15.8,15.8,0,0,0-26,5.77L33,202.78A15.83,15.83,0,0,0,47.76,224a16,16,0,0,0,5.46-1l144.37-52.5a15.8,15.8,0,0,0,5.78-26ZM65.14,161.13l19.2-52.79,63.32,63.32-52.8,19.2ZM160,72a37.8,37.8,0,0,1,3.84-15.58C169.14,45.83,179.14,40,192,40c6.7,0,11-2.29,13.65-7.21A22,22,0,0,0,208,23.94,8,8,0,0,1,224,24c0,12.86-8.52,32-32,32-6.7,0-11,2.29-13.65,7.21A22,22,0,0,0,176,72.06,8,8,0,0,1,160,72ZM136,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm101.66,82.34a8,8,0,1,1-11.32,11.31l-16-16a8,8,0,0,1,11.32-11.32Zm4.87-42.75-24,8a8,8,0,0,1-5.06-15.18l24-8a8,8,0,0,1,5.06,15.18Z';
-  var TABS = [['hair', 'תִּסְרֹקֶת', 'scissors'], ['hairColor', 'צֶבַע שֵׂעָר', 'sw-hair'], ['body', 'צֶבַע גּוּף', 'sw-body'], ['acc', 'אֲבִיזָרִים', 'crown'], ['hat', 'כּוֹבָעִים', 'hat'], ['face', 'מִשְׁקָפַיִם', 'glasses'], ['hand', 'בַּיָּד', 'balloon'], ['pet', 'חַיּוֹת מַחְמָד', 'paw'], ['move', 'תְּנוּעוֹת', 'move'], ['party', 'חֲגִיגוֹת', 'confetti']];
+  var TABS = [['hair', 'תִּסְרֹקֶת', 'scissors'], ['hairColor', 'צֶבַע שֵׂעָר', 'sw-hair'], ['body', 'צֶבַע גּוּף', 'sw-body'], ['acc', 'אֲבִיזָרִים', 'crown'], ['hat', 'כּוֹבָעִים', 'hat'], ['hand', 'בַּיָּד', 'balloon'], ['pet', 'חַיּוֹת מַחְמָד', 'paw'], ['move', 'תְּנוּעוֹת', 'move'], ['party', 'חֲגִיגוֹת', 'confetti']];
   // what an item does: the small icon on its card, and the line under the cards when it is tapped
   var DOES = { look: ['dress', 'לְבוּשׁ לַטְּרוֹל'], pet: ['paw', 'חַיָּה שֶׁבָּאָה גַּם לַמַּחֲנֶה וְגַם לַמַּפָּה'], move: ['move', 'תְּנוּעַת נִצָּחוֹן אַחֲרֵי תְּשׁוּבָה נְכוֹנָה'], party: ['confetti', 'חֲגִיגָה בְּסוֹף שָׁלָב'] };
   function doesOf(it) { return DOES[it.slot] || DOES.look; }
+  // task "animals": the glasses and masks (the slot "face") have no category of their own any more: their cards are among the accessories, by price. The
+  // items, their slot and what a troll wears did not change. inTab: does the item belong to the category with this key.
+  function inTab(it, key) { return it.slot === key || (key === 'acc' && it.slot === 'face'); }
+  var TAB_OLD = [0, 1, 2, 3, 4, 3, 5, 6, 7, 8]; // the layout checks name a category by its number of before (&tab=5 was the glasses, 6 the hand, 7 the pets, 8, 9)
   function tabOf(it) { for (var i = 0; i < TABS.length; i++) if (TABS[i][0] === it.slot) return i; return 3; }
   function icoImg(e, cls) { var cp = cpOf(e); if (!cls && TOY && IC_OF[cp]) return icon(IC_OF[cp], 't'); return ICO[cp] ? h('img', { class: cls || 'ico', src: icoSrc(cp), alt: e, draggable: 'false' }) : h('span', { class: 'emo', text: e }); }
   // code-drawn pieces (accessories, hairstyles): the viewBox hugs the drawing, measured once the piece is in the page
@@ -10233,7 +10247,8 @@ var TrollModels = (function () {
         else if (key === 'body') L.BODIES.forEach(function (c, i) { list.push({ key: key, val: c, name: '', label: TABS[2][1] + ' ' + (i + 1), pic: sw(c) }); });
         else {
           if (key !== 'acc') list.push({ key: key, val: '', name: 'בְּלִי', pic: icoImg('🚫', 'pimg') });
-          L.ITEMS.filter(function (it) { return it.slot === key; }).sort(function (a, b) { return (b.pet3 ? 1 : 0) - (a.pet3 ? 1 : 0); }).forEach(function (it) { list.push({ key: key, val: it.id, name: it.name, item: it.id === 'none' ? null : it, pic: itemPic(it) }); }); // task "pets": the living animals first, each group by price
+          var gl0 = L.goalOf(state); // task "animals": an item that is no longer for sale is a card only for the child who owns it, or who was already saving for it
+          L.ITEMS.filter(function (it) { return inTab(it, key) && (!it.off || owns(it) || (!!gl0 && gl0.id === it.id)); }).sort(function (a, b) { return (b.pet3 ? 1 : 0) - (a.pet3 ? 1 : 0); }).forEach(function (it) { list.push({ key: it.slot, val: it.id, name: it.name, item: it.id === 'none' ? null : it, pic: itemPic(it) }); }); // task "pets": the living animals first, each group by price
         }
         return list;
       }
@@ -10267,7 +10282,7 @@ var TrollModels = (function () {
           }, '', true);
         } else if (gl && gl.id === it.id) {
           say('הַיַּעַד שֶׁלִּי: ' + state.coins + ' מִתּוֹךְ ' + cost + ' '); msg.appendChild(icon('coin', 't'));
-          one('לְבַטֵּל אֶת הַיַּעַד', 'koff', function () { sfx.tap(); state = L.setGoal(state, ''); save(); drawGrid(); drawAct(); });
+          one('לְבַטֵּל אֶת הַיַּעַד', 'koff', function () { sfx.tap(); state = L.setGoal(state, ''); save(); if (it.off) { pick = null; drawPrev(false); } drawGrid(); drawAct(); }); // (task "animals": an item that is no longer for sale leaves the cards with its goal)
         } else {
           say('חֲסֵרִים עוֹד ' + (cost - state.coins) + ' '); msg.appendChild(icon('coin', 't'));
           one('אֲנִי חוֹסֶכֶת לָזֶה', 'kgoal', function () { sfx.pop(); state = L.setGoal(state, it.id); save(); drawGrid(); drawAct(); }, 'target');
@@ -12006,7 +12021,7 @@ var TrollModels = (function () {
     if (scr === 'hint') { tv.born = 0; var q0 = tv.round.current(), all = cur.querySelectorAll('[data-v]'); for (var n = 0; n < all.length; n++) if (all[n].getAttribute('data-v') !== String(q0.answer)) { all[n].click(); break; }
       if (!all.length && tv.flub) tv.flub(); }
   } else if (scr === 'topics') topics(/&ch/.test(hash));
-  else if (scr === 'dress') dress(/[#&]new=1/.test(hash) ? { id: state.owned[state.owned.length - 1] } : /[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, +((/tab=(\d)/.exec(hash) || [])[1] || 3), (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
+  else if (scr === 'dress') dress(/[#&]new=1/.test(hash) ? { id: state.owned[state.owned.length - 1] } : /[#&]tr=(\d+)/.test(hash) ? +/[#&]tr=(\d+)/.exec(hash)[1] : null, TAB_OLD[+((/tab=(\d)/.exec(hash) || [])[1] || 3)], (/[#&]sel=(\w+)/.exec(hash) || [])[1], (/[#&]pg=(\w+)/.exec(hash) || [])[1]);
   else if (scr === 'gift') { gift(); if (/[#&]open=1/.test(hash)) cur.querySelector('.gift').click(); }
   else if (scr === 'subjects') subjects();
   else if (scr === 'village') village(vilDemoCard());

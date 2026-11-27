@@ -56,33 +56,33 @@
   ],
   "monkey": [
    0.82,
-   1.06
+   1.02
   ],
   "bird": [
    0.78,
    0.98
   ],
   "elephant": [
-   0.7,
-   0.98
+   0.86,
+   1.06
   ]
  },
  "bytes": {
   "dog": 79754,
-  "cat": 74646,
-  "lion": 77072,
-  "croc": 54282,
-  "monkey": 72374,
-  "bird": 78688,
-  "elephant": 72522
+  "cat": 75532,
+  "lion": 85978,
+  "croc": 71730,
+  "monkey": 76286,
+  "bird": 79286,
+  "elephant": 73048
  },
  "stillBytes": {
   "dog": 16910,
-  "cat": 14144,
-  "lion": 13416,
-  "croc": 10184,
-  "monkey": 14200,
-  "bird": 14744,
-  "elephant": 16006
+  "cat": 14142,
+  "lion": 14586,
+  "croc": 12836,
+  "monkey": 14154,
+  "bird": 14882,
+  "elephant": 13762
  }
 }

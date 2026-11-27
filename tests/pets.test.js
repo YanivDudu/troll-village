@@ -110,4 +110,35 @@ t('the gift of the day can bring the crocodile like any other item; buying it co
   let s = L.newState(2); s.coins = 64; const r = L.buy(s, 'croc'); assert(r.ok && r.state.coins === 0 && r.state.items.includes('croc'));
   assert(!L.buy(r.state, 'croc').ok); s.coins = 63; assert(!L.buy(s, 'croc').ok);
 });
+
+// task "animals": the flat pets are no longer for sale, and nothing a child owns changes
+t('the 29 flat pets are no longer for sale: still in the catalogue at their price, never a gift; an owned one loads, is worn and is chosen as before', () => {
+  const flat = L.ITEMS.filter(it => it.slot === 'pet' && !it.pet3).map(it => it.id);
+  assert.strictEqual(flat.length, 29); assert.deepStrictEqual(plain(flat.slice().sort()), Object.keys(OLD).filter(id => !(id in LIVING)).sort());
+  assert.deepStrictEqual(plain(L.ITEMS.filter(it => it.off).map(it => it.id)), plain(flat), 'only they are off');
+  for (const id of flat) { assert(!L.forSale(id), id); assert.strictEqual(L.ITEM[id].slot, 'pet'); assert.strictEqual(L.priceOf(L.newState(2), id), OLD[id]); }
+  for (const id in LIVING) assert(L.forSale(id), id);
+  assert(L.forSale('shades') && L.forSale('tophat') && !L.forSale('nothing'));
+  const got = new Set(), have = L.newState(2).items.slice(); for (;;) { const id = L.rollItem(have, Math.random); if (!id) break; got.add(id); have.push(id); }
+  assert(flat.every(id => !got.has(id)), 'the surprise item of the gift is never a flat pet'); assert.strictEqual(got.size, L.ITEMS.filter(it => !it.off && it.price).length);
+  assert.strictEqual(L.rollItem(L.ITEMS.filter(it => !it.off).map(it => it.id), Math.random), null, 'everything that is for sale is owned: no item');
+  // a child who owns flat pets, wears two of them and saves for a third
+  let s = L.newState(2); s.owned = [5, 42]; s.buddy = 5; s.coins = 30; s.items = s.items.concat(['fox', 'dragon', 'owl', 'puppy']); s.dress = { 5: { pet: 'fox', pet2: 'dragon', hat: 'tophat' }, 42: { pet: 'owl' } }; s.items.push('tophat'); s.fx = { goal: 'unicorn' };
+  const r = L.loadState(JSON.stringify(s));
+  assert.deepStrictEqual(plain(r.items), plain(s.items), 'every owned item is still owned'); assert.deepStrictEqual(plain(r.dress[5]), { hat: 'tophat', pet: 'fox', pet2: 'dragon' }); assert.deepStrictEqual(plain(r.dress[42]), { pet: 'owl' });
+  assert.strictEqual(r.v, 4); assert.strictEqual(r.coins, 30); assert.strictEqual(L.goalOf(r).id, 'unicorn', 'the goal a child set is still the goal');
+  assert.deepStrictEqual(plain(L.petsOf(r.dress[5], r.items)), ['fox', 'dragon']);
+  assert.deepStrictEqual(plain(L.petPut(r, 42, 'dragon').dress[42]), { pet: 'owl', pet2: 'dragon' }, 'an owned flat pet joins another troll');
+  assert.deepStrictEqual(plain(L.petPut(L.petDrop(r, 5, 'fox'), 5, 'fox').dress[5]), { hat: 'tophat', pet: 'dragon', pet2: 'fox' }, 'sent away and chosen again');
+  assert.strictEqual(JSON.stringify(L.loadState(JSON.stringify(r))), JSON.stringify(r));
+});
+t('the glasses have no category of their own, and nothing about the items changed: same ids, slot and prices', () => {
+  const FACE = { specs: 16, goggles: 24, shades: 28, diving: 32, mask: 40 };
+  assert.deepStrictEqual(plain(L.ITEMS.filter(it => it.slot === 'face').map(it => it.id)), Object.keys(FACE));
+  for (const id in FACE) { assert.strictEqual(L.priceOf(L.newState(2), id), FACE[id], id); assert(L.forSale(id)); }
+  assert(L.EMOJI_SLOTS.indexOf('face') >= 0, 'still its own slot on the troll');
+  let s = L.newState(2); s.owned = [5]; s.items = s.items.concat(['shades', 'sunglasses']); s.dress = { 5: { face: 'shades', acc: 'sunglasses' } };
+  assert.deepStrictEqual(plain(L.loadState(JSON.stringify(s)).dress[5]), { acc: 'sunglasses', face: 'shades' }, 'worn as before, together with an accessory');
+  assert(/var TABS = \[(?:(?!\]\];)[\s\S])*\]\];/.test(html) && !/\['face', '[^']*', 'glasses'\]/.test(html), 'no tab of the cart is the slot face');
+});
 console.log('all ' + n + ' passed (pets)');

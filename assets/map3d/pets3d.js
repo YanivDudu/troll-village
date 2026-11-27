@@ -87,9 +87,9 @@ var Pets = (function () {
   var VAR = {
     dog: [{ fur: '#f7dfb6', patch: '#a9683f', saddle: '#de9650', belly: '#fff7ea', collar: '#ff5a4f' }, { fur: '#eaa560', patch: '#8a5234', saddle: '#c9803f', belly: '#fff0d2', collar: '#4aa8ff' }, { fur: '#9aa3ba', patch: '#565c78', saddle: '#7b849d', belly: '#f4f5fb', collar: '#ffc83d' }],
     cat: [{ fur: '#ff9a3c', stripe: '#d9661a', belly: '#fff0d2', ear: '#ff8fb1', collar: '#a58bff' }, { fur: '#a9b0c6', stripe: '#6d7592', belly: '#f6f6fc', ear: '#ff9db4', collar: '#ff5a4f' }, { fur: '#5f5670', stripe: '#463e57', belly: '#f1ecf7', ear: '#ff8fb1', collar: '#ffc83d' }],
-    lion: [{ fur: '#ffc440', mane: '#c95f1d', mane2: '#e8842b', belly: '#fff0c8', nose: '#8a4a2c' }, { fur: '#f6dfa6', mane: '#a8693c', mane2: '#c98a55', belly: '#fff8e6', nose: '#8a5a4a' }, { fur: '#ffb14a', mane: '#6e3f2b', mane2: '#8f5638', belly: '#ffe9c4', nose: '#5e3524' }],
-    croc: [{ fur: '#4fc45c', back: '#2e9f4b', belly: '#fff3a6' }, { fur: '#37c3b0', back: '#1f9a90', belly: '#fdf3c0' }, { fur: '#9ccc3c', back: '#6fa82a', belly: '#fff6c9' }],
-    monkey: [{ fur: '#a8694b', face: '#ffd9a8', ear: '#ffb38a' }, { fur: '#6f6577', face: '#ffe1c2', ear: '#ffb3a0' }, { fur: '#e58a3c', face: '#fff0d2', ear: '#ffc09a' }],
+    lion: [{ fur: '#ffc83f', mane: '#d2571a', mane2: '#f6892a', belly: '#fff3d2', nose: '#7d4129' }, { fur: '#f6dfa6', mane: '#a8693c', mane2: '#c98a55', belly: '#fff8e6', nose: '#8a5a4a' }, { fur: '#ffb14a', mane: '#6e3f2b', mane2: '#8f5638', belly: '#ffe9c4', nose: '#5e3524' }],
+    croc: [{ fur: '#52c95f', back: '#d9f06a', belly: '#fff3a6' }, { fur: '#37c3b0', back: '#b9f2d8', belly: '#fdf3c0' }, { fur: '#9ccc3c', back: '#f3ee7a', belly: '#fff6c9' }],
+    monkey: [{ fur: '#bb7040', face: '#ffdfb0', ear: '#ffb38a' }, { fur: '#6f6577', face: '#ffe1c2', ear: '#ffb3a0' }, { fur: '#e58a3c', face: '#fff0d2', ear: '#ffc09a' }],
     bird: [{ fur: '#3fa9ff', wing: '#2b7fe4', belly: '#fff6e0', beak: '#ff9f1c', crest: '#ffd23f' }, { fur: '#ff6b6b', wing: '#e0453f', belly: '#fff0d2', beak: '#ffc83d', crest: '#ff9f1c' }, { fur: '#ffd23f', wing: '#f0a400', belly: '#fffbe6', beak: '#ff7a3d', crest: '#ff5a4f' }],
     elephant: [{ fur: '#93b3ee', ear: '#ffaac4', nail: '#fff3dc', dark: '#6c8cd4' }, { fur: '#c3b0e6', ear: '#ffc2d6', nail: '#fff6e6', dark: '#9c86c9' }, { fur: '#b9c0c9', ear: '#ffb9b0', nail: '#fff3dc', dark: '#8f98a6' }] };
   function mouth(R, x, y, z, w, h, d, jawCol, py, pz) {      // a lower jaw that swings open over a dark mouth with a tongue
@@ -116,59 +116,61 @@ var Pets = (function () {
       core(R, 0.8, -0.1, 0.6, -0.46, 1.05, 0.28);
       R.put('body', new THREE.SphereGeometry(1, 12, 12).rotateX(PI / 2), TR(0, 0.76, -0.12, 0, 0.44, 0.44, 0.66), function (k, x, y, z) { var i = Math.round(Math.acos(cl((z + 0.12) / 0.66, -1, 1)) / PI * 12); return (i === 3 || i === 5 || i === 7 || i === 9) && y > 0.9 ? st : fu; });
       R.patch('body', [0, 0.76, -0.12], [0.44, 0.44, 0.66], 0, -0.25, 0.26, 0.3, 0.09, v.belly, 14, 3, {});
-      R.legs4(0.25, 0.6, 0.6, 0.28, -0.46, 0.14, v.fur, v.belly, 0.6);
+      R.legs4(0.25, 0.6, 0.6, 0.28, -0.46, 0.155, v.fur, v.belly, 0.6);
       R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 16, 10, NA);
       [[0, 1.02, 0.05, 0.16], [0.42, 0.95, 0.045, 0.13], [-0.42, 0.95, 0.045, 0.13]].forEach(function (s) { R.patch('head', HC, HR, s[0], s[1], s[2], s[3], 0.06, v.stripe, 6, 4); });
       [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.4, 1.9, 0.4, 'YXZ');
         R.put(n, Toy.lathe([[0.3, 0], [0.25, 0.14], [0.1, 0.38], [0.03, 0.45], [0, 0.46]], 8), TR(s * 0.4, 1.84, 0.38, 0, 1, 1, 0.68, 0, -s * 0.4), v.fur, NA);
         R.put(n, Toy.lathe([[0.18, 0], [0.14, 0.1], [0.05, 0.27], [0, 0.31]], 6), TR(s * 0.42, 1.9, 0.52, 0, 1, 1, 0.3, 0, -s * 0.4), v.ear, NA);
-        R.E('head', s * 0.12, 1.4, 0.92, 0.18, 0.14, 0.13, v.belly, 8, 5, NA);
-        for (var i = -1; i <= 1; i++) R.put('head', stick([s * 0.2, 1.4 + i * 0.02, 0.98], [s * 0.66, 1.4 + i * 0.13, 0.86], 0.016), null, '#ffffff', { noAO: 1, g: 0 }); });
+        R.E('head', s * 0.125, 1.4, 0.92, 0.2, 0.155, 0.14, v.belly, 8, 5, NA);
+        for (var i = -1; i <= 1; i++) R.put('head', stick([s * 0.2, 1.4 + i * 0.02, 0.98], [s * 0.68, 1.4 + i * 0.13, 0.86], 0.021), null, '#ffffff', { noAO: 1, g: 0 }); });
       R.E('head', 0, 1.49, 1.01, 0.07, 0.05, 0.05, v.ear, 6, 4, NA); R.smile('head', 0.07, 1.42, 1.045, 0.065, 0.018); mouth(R, 0, 1.3, 0.9, 0.12, 0.07, 0.12, v.belly, 1.36, 0.76);
-      R.eyes(HC, HR, 0.45, 0.16, 0.16, 0.45, v.fur); R.cheeks(HC, HR, 0.9, -0.2, 0.12, v.fur);
-      var tp = [[0, 0.92, -0.7, 0.1], [0, 1.1, -1.05, 0.1], [0, 1.55, -1.2, 0.1], [0, 1.95, -1.05, 0.095], [0, 2.06, -0.8, 0.085]], tb = R.chain('tail', 'body', tp, 4);
+      R.eyes(HC, HR, 0.45, 0.16, 0.172, 0.45, v.fur); R.cheeks(HC, HR, 0.9, -0.2, 0.12, v.fur);
+      var tp = [[0, 0.92, -0.7, 0.118], [0, 1.1, -1.05, 0.118], [0, 1.55, -1.2, 0.118], [0, 1.95, -1.05, 0.112], [0, 2.06, -0.8, 0.1]], tb = R.chain('tail', 'body', tp, 4);
       R.limb(tb, tp, 7, 2, 0, 1, function (t) { return t > 0.86 ? v.stripe : (t > 0.2 && t < 0.3) || (t > 0.45 && t < 0.55) || (t > 0.68 && t < 0.76) ? v.stripe : v.fur; }, NA);
       R.put('body', new THREE.TorusGeometry(0.36, 0.055, 4, 12), TR(0, 1.1, 0.36, 0, 1, 1, 1, PI / 2 - 0.1), v.collar, NA); R.E('body', 0, 1.0, 0.7, 0.085, 0.085, 0.075, '#ffc83d', 6, 4, NA);
       return { type: 'quad', ear: 'up', size: 0.9, H: 2.4, hipY: 0.6, hipZ: -0.46, shY: 0.6, shZ: 0.28, clear: 0.32, sitHip: 0.24, sitTh: 0.66, sitPhi: 0.1, sitTail: [-1.5, 0.5], lieTail: [-1.1, 0.5], headDrop: 0.26, wA: 0.42, rA: 0.62, wV: 0.95, rV: 2.5, sig: 'groom', sigDur: 3.8, tailIdle: 0.16 }; },
 
-    lion: function (R, v) { var HC = [0, 1.68, 0.5], HR = [0.6, 0.56, 0.54];
+    // the lion of task "animals": a big round head in a mane with volume: a ball behind the head and a ring of round tufts around the face (all on the bone "mane")
+    lion: function (R, v) { var HC = [0, 1.7, 0.52], HR = [0.66, 0.6, 0.58], i, dk = mix(v.mane2, v.mane, 0.38);
       core(R, 0.9, -0.12, 0.66, -0.55, 1.2, 0.25);
-      R.E('body', 0, 0.86, -0.15, 0.54, 0.52, 0.74, v.fur, 12, 9); R.patch('body', [0, 0.86, -0.15], [0.54, 0.52, 0.74], 0, -0.3, 0.33, 0.34, 0.09, v.belly, 14, 3, {});
-      R.legs4(0.3, 0.66, 0.66, 0.28, -0.55, 0.19, v.fur, mix(v.fur, '#ffffff', 0.45), 0.62);
-      R.bone('mane', 'head', 0, 1.6, 0.2, 'YXZ');
-      var mg = new THREE.SphereGeometry(1, 27, 5).rotateX(PI / 2), P = mg.attributes.position, i; for (i = 0; i < P.count; i++) { var a = Math.atan2(P.getY(i), P.getX(i)), k = 0.9 + 0.2 * Math.pow(Math.abs(Math.sin(a * 4.5 + 0.3)), 0.7); P.setXYZ(i, P.getX(i) * 0.96 * k, P.getY(i) * 0.94 * k, P.getZ(i) * 0.42); }
-      R.put('mane', Toy.smooth(mg, 80), TR(0, 1.68, 0.3), v.mane2, NA); R.E('mane', 0, 1.5, -0.02, 0.8, 0.8, 0.52, v.mane, 10, 7, NA);
-      R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 14, 9, NA);
-      [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.42, 2.08, 0.5, 'YXZ'); R.D(n, s * 0.46, 2.2, 0.52, 0.19, 0.19, 0.12, v.fur, 10, 4, NA); R.D(n, s * 0.46, 2.19, 0.6, 0.1, 0.1, 0.05, v.mane, 8, 3, NA); });
-      R.E('head', 0, 1.52, 0.96, 0.34, 0.24, 0.24, v.belly, 8, 6, NA); R.E('head', 0, 1.64, 1.18, 0.14, 0.09, 0.07, v.nose, 8, 5, { noAO: 1, g: 0.5 });
-      R.smile('head', 0.1, 1.5, 1.175, 0.1); mouth(R, 0, 1.32, 0.92, 0.21, 0.1, 0.19, v.belly, 1.4, 0.74);
-      [1, -1].forEach(function (s) { R.put('head', new THREE.ConeGeometry(0.035, 0.1, 4), TR(s * 0.1, 1.33, 1.06, 0, 1, 1, 1, PI), '#ffffff', { noAO: 1, g: 0 }); });
-      R.eyes(HC, HR, 0.45, 0.2, 0.15, 0.45, v.fur); R.cheeks(HC, HR, 0.85, -0.18, 0.12, v.fur);
-      var tp = [[0, 1.0, -0.85, 0.08], [0, 0.95, -1.25, 0.07], [0, 1.25, -1.55, 0.065], [0, 1.62, -1.5, 0.06]], tb = R.chain('tail', 'body', tp, 4); R.limb(tb, tp, 6, 2, 0, 1, v.fur, NA); R.E('tail3', 0, 1.74, -1.46, 0.16, 0.21, 0.16, v.mane, 8, 6, NA, 0, 0.3);
-      return { type: 'quad', ear: 'up', size: 0.95, H: 2.7, hipY: 0.66, hipZ: -0.55, shY: 0.66, shZ: 0.28, clear: 0.34, sitHip: 0.3, sitTh: 0.55, sitPhi: 0.1, sitTail: [-0.7, 0.4], lieTail: [-0.5, 0.45], headDrop: 0.3, wA: 0.4, rA: 0.58, wV: 0.95, rV: 2.4, sig: 'roar', sigDur: 3.4, tailIdle: 0.18, jawK: 1.0 }; },
+      R.E('body', 0, 0.86, -0.15, 0.56, 0.54, 0.76, v.fur, 12, 9); R.patch('body', [0, 0.86, -0.15], [0.56, 0.54, 0.76], 0, -0.3, 0.33, 0.34, 0.09, v.belly, 14, 3, {});
+      R.legs4(0.3, 0.66, 0.66, 0.28, -0.55, 0.2, v.fur, v.belly, 0.6);
+      R.bone('mane', 'head', 0, 1.66, 0.2, 'YXZ');
+      R.E('mane', 0, 1.66, 0.06, 0.86, 0.84, 0.52, v.mane, 14, 8, NA);
+      for (i = 0; i < 12; i++) { var a = (i + 0.5) * PI / 6, k = 0.9 + 0.1 * Math.cos(a); R.D('mane', Math.sin(a) * 0.8, 1.68 + Math.cos(a) * 0.8, 0.27, 0.31 * k, 0.31 * k, 0.29 * k, i % 2 ? v.mane2 : dk, 10, 4, NA); }
+      R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 16, 10, NA);
+      [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.44, 2.06, 0.6, 'YXZ'); R.D(n, s * 0.5, 2.18, 0.64, 0.23, 0.23, 0.14, v.fur, 10, 4, NA); R.D(n, s * 0.5, 2.17, 0.74, 0.125, 0.125, 0.05, mix(v.fur, v.mane, 0.55), 8, 3, NA); });
+      R.E('head', 0, 1.53, 1.0, 0.37, 0.27, 0.26, v.belly, 10, 7, NA); R.E('head', 0, 1.67, 1.22, 0.15, 0.1, 0.08, v.nose, 8, 5, { noAO: 1, g: 0.5 });
+      R.smile('head', 0.1, 1.52, 1.235, 0.1); mouth(R, 0, 1.33, 0.95, 0.22, 0.1, 0.2, v.belly, 1.41, 0.76);
+      [1, -1].forEach(function (s) { R.put('head', new THREE.ConeGeometry(0.035, 0.1, 4), TR(s * 0.1, 1.34, 1.09, 0, 1, 1, 1, PI), '#ffffff', { noAO: 1, g: 0 }); });
+      R.eyes(HC, HR, 0.45, 0.2, 0.168, 0.45, v.fur); R.cheeks(HC, HR, 0.86, -0.2, 0.13, v.fur);
+      var tp = [[0, 1.0, -0.85, 0.095], [0, 0.95, -1.25, 0.085], [0, 1.25, -1.55, 0.078], [0, 1.62, -1.5, 0.07]], tb = R.chain('tail', 'body', tp, 4); R.limb(tb, tp, 6, 2, 0, 1, v.fur, NA); R.E('tail3', 0, 1.76, -1.46, 0.19, 0.24, 0.19, v.mane2, 8, 6, NA, 0, 0.3);
+      return { type: 'quad', ear: 'up', size: 0.95, H: 2.75, hipY: 0.66, hipZ: -0.55, shY: 0.66, shZ: 0.28, clear: 0.34, sitHip: 0.3, sitTh: 0.55, sitPhi: 0.1, sitTail: [-0.7, 0.4], lieTail: [-0.5, 0.45], headDrop: 0.3, wA: 0.4, rA: 0.58, wV: 0.95, rV: 2.4, sig: 'roar', sigDur: 3.4, tailIdle: 0.18, jawK: 1.0 }; },
 
-    croc: function (R, v) { var HC = [0, 0.64, 0.82], HR = [0.52, 0.36, 0.44], fu = C(v.fur), be = C(v.belly), i;
+    // the crocodile of task "animals": shorter and chunkier, so it is not a thin line at small sizes: a big head, big eyes on two bumps, a pale jaw, few big teeth, round spikes in a lighter colour
+    croc: function (R, v) { var HC = [0, 0.72, 0.8], HR = [0.56, 0.42, 0.46], fu = C(v.fur), be = C(v.belly), i;
       function two(lim) { return function (k, x, y) { return y < lim ? be : fu; }; }
       core(R, 0.5, -0.2, 0.42, -0.7, 0.5, 0.5);
-      R.put('body', us(14, 10), TR(0, 0.5, -0.15, 0, 0.6, 0.42, 0.92), two(0.34));
-      [['legFL', 1, 0.32], ['legFR', -1, 0.32], ['legBL', 1, -0.62], ['legBR', -1, -0.62]].forEach(function (l) { var s = l[1], z = l[2]; R.bone(l[0], 'body', s * 0.42, 0.4, z, 'YXZ');
-        R.limb(l[0], [[s * 0.36, 0.44, z, 0.17], [s * 0.7, 0.32, z + 0.03, 0.15], [s * 0.82, 0.13, z + 0.1, 0.15]], 7, 1, 0, 0.9, v.fur); R.E(l[0], s * 0.86, 0.09, z + 0.2, 0.17, 0.085, 0.2, v.fur, 6, 4); });
+      R.put('body', us(14, 10), TR(0, 0.57, -0.14, 0, 0.66, 0.5, 0.84), two(0.36));
+      [['legFL', 1, 0.3], ['legFR', -1, 0.3], ['legBL', 1, -0.6], ['legBR', -1, -0.6]].forEach(function (l) { var s = l[1], z = l[2]; R.bone(l[0], 'body', s * 0.42, 0.4, z, 'YXZ');
+        R.limb(l[0], [[s * 0.36, 0.46, z, 0.19], [s * 0.72, 0.33, z + 0.03, 0.17], [s * 0.84, 0.14, z + 0.1, 0.17]], 7, 1, 0, 0.9, v.fur); R.E(l[0], s * 0.88, 0.1, z + 0.22, 0.2, 0.1, 0.23, v.fur, 6, 4); });
       R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 14, 8, NA);
-      R.limb('head', [[0, 0.62, 0.9, 0.44, 0.22], [0, 0.6, 1.3, 0.36, 0.17], [0, 0.59, 1.66, 0.31, 0.15]], 10, 2, 0, 0.9, v.fur, NA);
-      [1, -1].forEach(function (s) { R.E('head', s * 0.14, 0.72, 1.74, 0.08, 0.07, 0.08, v.fur, 6, 4, NA); R.E('head', s * 0.14, 0.75, 1.8, 0.03, 0.025, 0.02, INK, 4, 3, { noAO: 1, g: 0 }); R.E('head', s * 0.29, 0.93, 0.74, 0.22, 0.22, 0.24, v.fur, 8, 6, NA); });
-      R.E('head', 0, 0.46, 1.25, 0.26, 0.05, 0.46, TONGUE, 8, 4, { noAO: 1, g: 0.3 });
-      for (i = 0; i < 4; i++) [1, -1].forEach(function (s) { R.put('head', new THREE.ConeGeometry(0.055, 0.15, 5), TR(s * (0.36 - i * 0.03), 0.42, 1.0 + i * 0.22, 0, 1, 1, 1, PI), '#ffffff', { noAO: 1, g: 0 }); });
-      R.bone('jaw', 'head', 0, 0.46, 0.72);
-      R.limb('jaw', [[0, 0.42, 0.86, 0.36, 0.14], [0, 0.4, 1.3, 0.28, 0.11], [0, 0.4, 1.6, 0.23, 0.1]], 10, 2, 0, 0.9, mix(v.belly, v.fur, 0.25), NA); R.E('jaw', 0, 0.5, 1.2, 0.2, 0.04, 0.4, MOUTH, 8, 4, { noAO: 1, g: 0.3 });
-      R.eyes([0, 0.93, 0.76], [0.5, 0.24, 0.26], 0.62, 0.25, 0.155, 0.75, v.fur, 0.3); R.cheeks(HC, HR, 1.05, -0.05, 0.11, v.fur);
-      var tp = [[0, 0.5, -0.85, 0.4, 0.33], [0, 0.4, -1.3, 0.27, 0.23], [0, 0.3, -1.72, 0.15, 0.13], [0, 0.25, -2.05, 0.06, 0.06]], tb = R.chain('tail', 'body', tp, 4); R.limb(tb, tp, 9, 2, 0, 1, function () { return v.fur; });
-      var sc = Toy.lathe([[0.13, 0], [0.1, 0.09], [0.035, 0.2], [0, 0.23]], 5);
-      [[0.2, 0.85, 0.35], [-0.2, 0.85, 0.35], [0.22, 0.9, 0.02], [-0.22, 0.9, 0.02], [0.22, 0.88, -0.32], [-0.22, 0.88, -0.32], [0.18, 0.82, -0.64], [-0.18, 0.82, -0.64]].forEach(function (s) { R.put('body', sc, TR(s[0], s[1] - 0.06, s[2], 0, 1, 1, 1, 0, -s[0] * 1.2), v.back, NA); });
-      [[0.78, -1.0, 1, 0], [0.63, -1.32, 0.85, 1], [0.48, -1.6, 0.7, 2], [0.36, -1.86, 0.5, 3]].forEach(function (s) { R.put('tail' + s[3], sc, TR(0, s[0] - 0.05, s[1], 0, s[2], s[2], s[2] * 1.2), v.back, NA); });
-      return { type: 'croc', ear: null, size: 0.95, H: 1.2, len: 2.0, hipY: 0.4, clear: 0.07, wA: 0.5, rA: 0.65, wV: 0.7, rV: 1.7, sig: 'snap', sigDur: 3.2, tailIdle: 0.1, jawK: 1.0, frame: [2.15, 0.45] }; },
+      R.limb('head', [[0, 0.7, 0.9, 0.47, 0.25], [0, 0.68, 1.22, 0.41, 0.2], [0, 0.67, 1.5, 0.35, 0.18]], 10, 2, 0, 0.9, v.fur, NA);
+      [1, -1].forEach(function (s) { R.E('head', s * 0.15, 0.82, 1.58, 0.09, 0.08, 0.09, v.fur, 6, 4, NA); R.E('head', s * 0.15, 0.855, 1.645, 0.035, 0.03, 0.022, INK, 4, 3, { noAO: 1, g: 0 }); R.E('head', s * 0.31, 1.03, 0.68, 0.26, 0.25, 0.26, v.fur, 8, 6, NA); });
+      R.E('head', 0, 0.54, 1.2, 0.3, 0.05, 0.44, TONGUE, 8, 4, { noAO: 1, g: 0.3 });
+      for (i = 0; i < 3; i++) [1, -1].forEach(function (s) { R.put('head', new THREE.ConeGeometry(0.065, 0.16, 5), TR(s * (0.39 - i * 0.04), 0.5, 1.0 + i * 0.21, 0, 1, 1, 1, PI), '#ffffff', { noAO: 1, g: 0 }); });
+      R.bone('jaw', 'head', 0, 0.54, 0.72);
+      R.limb('jaw', [[0, 0.5, 0.86, 0.39, 0.15], [0, 0.48, 1.22, 0.32, 0.12], [0, 0.48, 1.45, 0.26, 0.11]], 10, 2, 0, 0.9, mix(v.belly, v.fur, 0.12), NA); R.E('jaw', 0, 0.58, 1.14, 0.22, 0.04, 0.38, MOUTH, 8, 4, { noAO: 1, g: 0.3 });
+      R.eyes([0, 1.04, 0.74], [0.54, 0.27, 0.28], 0.6, 0.3, 0.2, 0.42, v.fur, 0.3); R.cheeks(HC, HR, 1.05, -0.05, 0.12, v.fur);
+      var tp = [[0, 0.56, -0.8, 0.44, 0.38], [0, 0.45, -1.15, 0.3, 0.26], [0, 0.35, -1.45, 0.18, 0.16], [0, 0.3, -1.68, 0.08, 0.08]], tb = R.chain('tail', 'body', tp, 4); R.limb(tb, tp, 9, 2, 0, 1, function () { return v.fur; });
+      var sc = Toy.lathe([[0.15, 0], [0.125, 0.09], [0.06, 0.2], [0, 0.25]], 6);
+      [[0.2, 1.0, 0.3], [-0.2, 1.0, 0.3], [0.22, 1.05, 0.0], [-0.22, 1.05, 0.0], [0.22, 1.02, -0.3], [-0.22, 1.02, -0.3], [0.18, 0.95, -0.58], [-0.18, 0.95, -0.58]].forEach(function (s) { R.put('body', sc, TR(s[0], s[1] - 0.06, s[2], 0, 1, 1, 1, 0, -s[0] * 1.2), v.back, NA); });
+      [[0.88, -0.92, 1, 0], [0.71, -1.18, 0.85, 1], [0.54, -1.4, 0.7, 2], [0.42, -1.58, 0.5, 3]].forEach(function (s) { R.put('tail' + s[3], sc, TR(0, s[0] - 0.05, s[1], 0, s[2], s[2], s[2] * 1.2), v.back, NA); });
+      return { type: 'croc', ear: null, size: 1.05, H: 1.3, len: 1.75, hipY: 0.4, clear: 0.07, wA: 0.5, rA: 0.65, wV: 0.7, rV: 1.7, sig: 'snap', sigDur: 3.2, tailIdle: 0.1, jawK: 1.0, frame: [1.8, 0.52] }; },
 
     // the monkey of phase 1 (task "pets"): a round body, full arms and legs, a bigger head and ears, a thick tail with a clear curl. K: the head grew by this about HC0
-    monkey: function (R, v) { var K = 1.14, HC0 = [0, 1.85, 0.48], HC = [0, 1.95, 0.5], HR = [0.58 * K, 0.55 * K, 0.54 * K];
+    monkey: function (R, v) { var K = 1.24, HC0 = [0, 1.85, 0.48], HC = [0, 1.95, 0.5], HR = [0.58 * K, 0.55 * K, 0.54 * K];
       function Y(y) { return HC[1] + (y - HC0[1]) * K; } function Z(z) { return HC[2] + (z - HC0[2]) * K; }
       core(R, 1.0, -0.08, 0.78, -0.42, 1.4, 0.3);
       R.E('body', 0, 0.98, -0.08, 0.6, 0.56, 0.6, v.fur, 14, 10, null, 0, -0.25); R.patch('body', [0, 0.98, -0.08], [0.6, 0.56, 0.6], 0, -0.72, 0.38, 0.42, 0.1, v.face, 14, 3, {});
@@ -180,7 +182,7 @@ var Pets = (function () {
       [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.5 * K, Y(1.9), Z(0.42), 'YXZ'); R.D(n, s * 0.74 * K, Y(1.92), Z(0.4), 0.4, 0.4, 0.12, v.fur, 14, 4, NA, s * 0.45); R.D(n, s * 0.78 * K, Y(1.92), Z(0.47), 0.264, 0.264, 0.075, v.ear, 12, 3, NA, s * 0.45); R.E('head', s * 0.06 * K, Y(1.74), Z(1.14), 0.028, 0.034, 0.022, INK, 4, 3, { noAO: 1, g: 0 }); });
       R.smile('head', 0, Y(1.67), Z(1.1), 0.17 * K, 0.026); mouth(R, 0, Y(1.5), Z(0.9), 0.21 * K, 0.09 * K, 0.17 * K, v.face, Y(1.56), Z(0.76));
       R.put('head', Toy.lathe([[0.15, 0], [0.115, 0.1], [0.035, 0.26], [0, 0.3]], 6), TR(0, HC[1] + HR[1] * 0.9, HC[2] - 0.06, 0, 1, 1, 1, -0.3), v.fur, NA);
-      R.eyes(HC, HR, 0.33, 0.16, 0.15 * K, 0.3, v.face); R.cheeks(HC, HR, 0.8, -0.2, 0.11 * K, v.face);
+      R.eyes(HC, HR, 0.33, 0.16, 0.168 * K, 0.3, v.face); R.cheeks(HC, HR, 0.8, -0.2, 0.11 * K, v.face);
       var tw = 1.5, tp = [[0, 0.95, -0.62, 0.085 * tw], [0, 0.96, -1.08, 0.082 * tw], [0, 1.3, -1.46, 0.078 * tw], [0, 1.84, -1.46, 0.072 * tw], [0, 2.1, -1.12, 0.066 * tw], [0, 1.86, -0.84, 0.06 * tw], [0, 1.56, -1.02, 0.055 * tw], [0, 1.7, -1.22, 0.05 * tw]], tb = R.chain('tail', 'body', tp, 5); R.limb(tb, tp, 6, 2, 0, 1, v.fur, NA);
       return { type: 'quad', ear: 'disc', size: 0.9, H: 2.65, hipY: 0.78, hipZ: -0.42, shY: 1.12, shZ: 0.28, clear: 0.5, sitHip: 0.26, sitTh: 0.95, sitPhi: 0.5, sitTail: [-1.0, 0.3], lieTail: [-0.2, 0.4], lieRx: 0.25, lieBack: 1, headDrop: 0, sleepRx: 0.02, wA: 0.4, rA: 0.6, wV: 1.0, rV: 2.5, sig: 'flip', sigDur: 3.8, tailIdle: 0.12, upright: 1, HU: 3.2 }; },
 
@@ -190,9 +192,9 @@ var Pets = (function () {
       R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 16, 10, NA);
       R.put('head', Toy.lathe([[0.18, 0], [0.16, 0.1], [0.07, 0.32], [0, 0.4]], 8).rotateX(PI / 2), TR(0, 1.64, 0.62, 0, 1, 0.62, 1), v.beak, NA);
       R.bone('jaw', 'head', 0, 1.58, 0.6); R.put('jaw', Toy.lathe([[0.15, 0], [0.13, 0.08], [0.05, 0.25], [0, 0.31]], 8).rotateX(PI / 2), TR(0, 1.57, 0.62, 0, 1, 0.45, 1), mix(v.beak, '#c0392b', 0.25), NA);
-      R.eyes(HC, HR, 0.62, 0.12, 0.15, 0.4, v.fur, 0.25); R.cheeks(HC, HR, 1.0, -0.28, 0.12, v.fur);
+      R.eyes(HC, HR, 0.6, 0.18, 0.168, 0.4, v.fur, 0.42); R.cheeks(HC, HR, 1.0, -0.28, 0.12, v.fur);
       R.bone('crest', 'head', 0, 2.12, 0.15, 'YXZ'); [[0, 0.07, 0.36, 0], [0.13, 0.06, 0.26, -0.5], [-0.13, 0.06, 0.26, 0.5]].forEach(function (c) { R.limb('crest', [[c[0], 2.08, 0.2, c[1]], [c[0] * 1.5, 2.08 + c[2], 0.1, c[1] * 0.9], [c[0] * 1.9, 2.1 + c[2] * 1.3, -0.14, c[1] * 0.45]], 5, 1, 0, 1, v.crest, NA); });
-      [1, -1].forEach(function (s) { var n = s > 0 ? 'wingL' : 'wingR'; R.bone(n, 'body', s * 0.5, 1.22, 0.05, 'YXZ'); R.E(n, s * 0.6, 0.86, -0.12, 0.1, 0.44, 0.34, v.wing, 8, 6, NA, 0, 0.35, s * 0.1);
+      [1, -1].forEach(function (s) { var n = s > 0 ? 'wingL' : 'wingR'; R.bone(n, 'body', s * 0.5, 1.22, 0.05, 'YXZ'); R.E(n, s * 0.6, 0.88, -0.1, 0.15, 0.44, 0.36, v.wing, 8, 6, NA, 0, 0.35, s * 0.1);
         R.E(n, s * 0.64, 0.56, -0.38, 0.07, 0.2, 0.13, mix(v.wing, '#ffffff', 0.4), 6, 4, NA, 0, 0.5); R.E(n, s * 0.65, 0.68, -0.48, 0.06, 0.17, 0.1, mix(v.wing, '#ffffff', 0.65), 6, 4, NA, 0, 0.8);
         var l = s > 0 ? 'legBL' : 'legBR'; R.bone(l, 'body', s * 0.22, 0.42, 0.02, 'YXZ'); R.limb(l, [[s * 0.22, 0.5, 0.02, 0.06], [s * 0.22, 0.08, 0.02, 0.055]], 5, 1, 0, 0, v.beak); R.E(l, s * 0.23, 0.05, 0.12, 0.17, 0.05, 0.21, v.beak, 8, 4); });
       R.bone('tail0', 'body', 0, 0.85, -0.58, 'YXZ'); [[0, 1], [0.5, 0.86], [-0.5, 0.86]].forEach(function (f) { R.E('tail0', Math.sin(f[0]) * -0.36, 1.26 - Math.abs(f[0]) * 0.12, -0.84, 0.2, 0.06, 0.5 * f[1], f[0] ? v.wing : mix(v.wing, '#ffffff', 0.45), 7, 4, NA, -f[0], 1.0); });
@@ -204,14 +206,14 @@ var Pets = (function () {
       [['legFL', 1, 0.28], ['legFR', -1, 0.28], ['legBL', 1, -0.62], ['legBR', -1, -0.62]].forEach(function (l) { var x = l[1] * 0.4, z = l[2]; R.bone(l[0], 'body', x, 0.75, z, 'YXZ');
         R.limb(l[0], [[x, 0.86, z, 0.25], [x, 0.4, z, 0.24], [x, 0.14, z + 0.02, 0.265]], 8, 1, 1, 0.5, v.fur, { g: 0.4 }); for (i = -1; i <= 1; i += (z > 0 ? 1 : 2)) R.E(l[0], x + i * 0.13, 0.08, z + 0.25 - Math.abs(i) * 0.04, 0.07, 0.07, 0.05, v.nail, 5, 3); });
       R.E('head', 0, HC[1], HC[2], HR[0], HR[1], HR[2], v.fur, 14, 10, NA);
-      [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.5, 1.88, 0.42, 'YXZ'); R.D(n, s * 1.0, 1.76, 0.3, 0.54, 0.6, 0.1, v.fur, 20, 4, NA, s * 0.32); R.D(n, s * 1.02, 1.74, 0.36, 0.4, 0.46, 0.07, v.ear, 18, 3, NA, s * 0.32);
+      [1, -1].forEach(function (s) { var n = s > 0 ? 'earL' : 'earR'; R.bone(n, 'head', s * 0.5, 1.88, 0.42, 'YXZ'); R.D(n, s * 0.98, 1.78, 0.32, 0.5, 0.56, 0.09, v.fur, 20, 4, NA, s * 0.42); R.D(n, s * 1.0, 1.76, 0.375, 0.39, 0.45, 0.06, v.ear, 18, 3, NA, s * 0.42);
         R.limb('head', [[s * 0.3, 1.44, 1.0, 0.075], [s * 0.37, 1.24, 1.26, 0.065], [s * 0.4, 1.24, 1.46, 0.03]], 5, 1, 0, 1, '#ffffff', { noAO: 1, g: 0.5 }); });
-      var kp = [[0, 1.62, 1.08, 0.26], [0, 1.3, 1.42, 0.215], [0, 0.9, 1.52, 0.175], [0, 0.55, 1.5, 0.145], [0, 0.38, 1.66, 0.125]], kb = R.chain('trunk', 'head', kp, 5); R.limb(kb, kp, 8, 2, 0, 0.7, function (t) { return t > 0.97 ? v.ear : v.fur; }, NA);
+      var kp = [[0, 1.6, 1.1, 0.26], [0, 1.28, 1.38, 0.215], [0, 0.98, 1.46, 0.18], [0, 0.76, 1.56, 0.155], [0, 0.82, 1.76, 0.135]], kb = R.chain('trunk', 'head', kp, 5); R.limb(kb, kp, 8, 2, 0, 0.7, v.fur, NA);
       mouth(R, 0, 1.3, 0.98, 0.2, 0.1, 0.16, v.fur, 1.38, 0.8);
-      R.eyes(HC, HR, 0.6, 0.14, 0.135, 0.4, v.fur, 0.3); R.cheeks(HC, HR, 0.82, -0.3, 0.12, v.fur);
+      R.eyes(HC, HR, 0.52, 0.16, 0.165, 0.4, v.fur, 0.3); R.cheeks(HC, HR, 0.92, -0.26, 0.13, v.fur);
       var tp = [[0, 1.2, -1.0, 0.06], [0, 0.95, -1.17, 0.05], [0, 0.7, -1.15, 0.045]], tb = R.chain('tail', 'body', tp, 2); R.limb(tb, tp, 5, 2, 0, 1, v.fur, NA); R.E('tail1', 0, 0.62, -1.14, 0.08, 0.13, 0.08, v.dark, 6, 4, NA);
-      for (i = 0; i < 3; i++) { R.bone('drop' + i, 'trunk4', 0, 0.42, 1.62); R.E('drop' + i, 0.03 * (i - 1), 0.42, 1.62, 0.08, 0.1, 0.08, '#5fc8ff', 5, 3, { noAO: 1, g: 0.3 }); R.E('drop' + i, -0.03 * (i - 1), 0.47, 1.6, 0.055, 0.07, 0.055, '#a6e2ff', 5, 3, { noAO: 1, g: 0.3 }); }
-      return { type: 'quad', ear: 'fan', size: 1.05, H: 2.45, hipY: 0.75, hipZ: -0.62, shY: 0.75, shZ: 0.28, clear: 0.32, sitHip: 0.36, sitTh: 0.45, sitPhi: 0.08, sitTail: [0, 0], lieTail: [0, 0.3], headDrop: 0.2, wA: 0.32, rA: 0.45, wV: 0.8, rV: 1.8, sig: 'spray', sigDur: 3.8, tailIdle: 0.25, slow: 1, frame: [1.6, 1.2] }; }
+      for (i = 0; i < 3; i++) { R.bone('drop' + i, 'trunk4', 0, 0.84, 1.8); R.E('drop' + i, 0.03 * (i - 1), 0.84, 1.8, 0.08, 0.1, 0.08, '#5fc8ff', 5, 3, { noAO: 1, g: 0.3 }); R.E('drop' + i, -0.03 * (i - 1), 0.89, 1.78, 0.055, 0.07, 0.055, '#a6e2ff', 5, 3, { noAO: 1, g: 0.3 }); }
+      return { type: 'quad', ear: 'fan', size: 1.05, H: 2.45, hipY: 0.75, hipZ: -0.62, shY: 0.75, shZ: 0.28, clear: 0.32, sitHip: 0.36, sitTh: 0.45, sitPhi: 0.08, sitTail: [0, 0], lieTail: [0, 0.3], headDrop: 0.2, wA: 0.32, rA: 0.45, wV: 0.8, rV: 1.8, sig: 'spray', sigDur: 3.8, tailIdle: 0.25, slow: 1, frame: [1.95, 1.2] }; }
   };
   var KINDS = ['dog', 'cat', 'lion', 'croc', 'monkey', 'bird', 'elephant'];
 
