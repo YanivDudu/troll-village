@@ -26,3 +26,5 @@ The 3D picture of the trail maps (map3d/): "three.js" r147 by the three.js autho
   A stop whose picture has no 3D model keeps its Fluent Emoji picture (toy/*.png, above).
 The living pets (pets/): the dog, the cat, the lion, the crocodile, the monkey, the bird and the elephant are original works of the owner of this game (all rights reserved, see LICENSE): 3D models built in code
   (map3d/pets3d.js, on three.js r147 and map3d/toy3d.js, above). pets/<animal>.webp and pets/<animal>_s.webp are pictures of those models, made by tools/pets/make-sprites.js. No model files and nothing from outside.
+The 3D camp of the home screen (map3d/camp3d.js: the tent, the campfire, the log and the island, built in code) and the 3D troll (map3d/troll3d.js: the companion as a 3D character, built in code from the
+  same parameters as the drawn troll; its picture items are the Fluent Emoji pictures of ico/, above): original works of the owner of this game (all rights reserved, see LICENSE). No model files and nothing from outside.

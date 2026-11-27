@@ -17,7 +17,7 @@ var TIMEOUT = 4000;
 // a map is shown). They are saved at install when they arrive; when one does not, the worker is installed all the same and the game shows its flat map.
 // They follow the rule of every script: the network first, the saved copy when there is no network.
 // Task "pets": assets/map3d/pets3d.js (the 3D models of the living pets) is asked for the first time a pet is tried on in the cart.
-var OPTIONAL = ['assets/map3d/three.min.js', 'assets/map3d/toy3d.js', 'assets/map3d/toy3d_more.js', 'assets/map3d/map3d.js', 'assets/map3d/pets3d.js'];
+var OPTIONAL = ['assets/map3d/three.min.js', 'assets/map3d/toy3d.js', 'assets/map3d/toy3d_more.js', 'assets/map3d/map3d.js', 'assets/map3d/camp3d.js', 'assets/map3d/pets3d.js', 'assets/map3d/troll3d.js']; // (troll3d.js: the companion as a 3D character on the 3D camp and the 3D maps)
 var FRESH_EXT = /\.(html?|js|mjs|json|webmanifest)$/i, ASSET_EXT = /\.(png|jpe?g|gif|webp|svg|ico|woff2?|mp3|ogg|wav)$/i;
 
 // Pure: what to do with a request. 'pass' = the worker does not answer, the browser does what it always did.

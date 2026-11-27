@@ -57,6 +57,8 @@ job('walk', /^WALK OK/, () => edge(page + '/tests/walk.html', 120000)); // task 
 job('life', /^LIFE OK/, () => edge(page + '/tests/life.html', 200000)); // task "camp life": the companion that lives on the island of the camp (its activities, taps, night, the walk before a screen opens)
 job('pets', /^all \d+ passed/m, () => run('node', ['tests/pets.test.js'], 60000).then(o => o.trim().split('\n').pop())); // task "pets": the living pets as items, two pets per troll, loading old data
 job('onboard', /^ONBOARD OK/, () => process.argv[2] === 'cloud' ? run('node', ['tests/run-page.js', 'tests/onboard.html', '240'], 270000).then(o => o.split('\n')[0]) : edge(page + '/tests/onboard.html?local', 150000)); // task "onboard": the invitation to the family account. Default: when it appears, "not now", the reminders (nothing is made in the cloud); `cloud`: also sign-up and sign-in against the real database (one throw-away account, deleted)
+job('life3d', /^LIFE OK/, () => edge(page + '/tests/life.html#3d', 240000)); // task "camp3d": the same life of the camp on the 3D ground (the camera and the DOM of the 3D camp, without WebGL)
+job('veil', /^VEIL OK/, () => edge(page + '/tests/veil.html', 60000)); // task "world3d": a device without 3D gets the flat camp and the flat map at once, with no cover and no mist (the 3D side of the transition needs WebGL: tests/veil.html#gl through tools/shoot3d.js)
 (async () => {
   const t0 = Date.now(), bad = [], again = []; let next = 0, done = 0;
   // the two node checks first, on their own: they are quick when nothing else loads the machine

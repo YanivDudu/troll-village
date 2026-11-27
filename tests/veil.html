@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Task "world3d": the transition to a 3D screen. A child must never see the flat picture first and the 3D picture after it.
+     tests/veil.html        a device WITHOUT 3D (the hidden test browser, --disable-gpu): the flat camp and the flat map are there at once, with no cover and no mist.
+     tests/veil.html#gl     a device WITH 3D (a browser with WebGL: node tools/shoot3d.js with GL=hw and PAGE=tests/veil.html, hash "gl"; "gl&soft" takes software WebGL):
+                            while the cover is up and until the 3D picture is drawn no flat picture is ever seen (sampled every 40 ms); a slow build (&m3slow=) reaches the
+                            cap of the cover (&veilcap=): the screen is shown with the mist on the picture and the big button in use; a tap on the cover opens it at once and
+                            presses the big button under the finger; the 3D troll is on the camp and the drawn one rests.
+     Result in document.title: VEIL OK n / VEIL FAIL ... -->
+<style>body{margin:8px;font:13px sans-serif;background:#333;color:#fff}iframe{border:2px solid #000;margin:4px;background:#fff}</style>
+<div id="frames"></div><pre id="out"></pre>
+<script>
+var fails = [], checks = 0, GL = /gl/.test(location.hash), Q = /soft/.test(location.hash) ? '&q=0' : '';
+function check(ok, what) { checks++; if (!ok) fails.push(what); document.getElementById('out').textContent += (ok ? 'ok   ' : 'FAIL ') + what + '\n'; }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function frame(hash, w, h) {
+  return new Promise(function (res) {
+    var f = document.createElement('iframe'); f.width = w || 390; f.height = h || 800; f.src = '../index.html#' + hash;
+    document.getElementById('frames').appendChild(f);
+    (function poll() { var d = f.contentDocument, s = d && d.querySelector('.screen'); if (s && f.contentWindow.__tv) res({ f: f, d: d, w: f.contentWindow, tv: f.contentWindow.__tv }); else setTimeout(poll, 10); })();
+  });
+}
+async function until(fn, max) { var t0 = Date.now(); while (Date.now() - t0 < (max || 3000)) { if (fn()) return Date.now() - t0; await wait(20); } return -1; }
+function q(x, sel) { return x.d.querySelector('.screen:not(.out) ' + sel); }
+function seen(x, el, pseudo) { // is this thing drawn: it and every ancestor are displayed, visible and not transparent
+  if (!el) return false; var cs = x.w.getComputedStyle(el, pseudo || null); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+  for (var n = pseudo ? el : el.parentElement; n && n.nodeType === 1 && !n.classList.contains('screen'); n = n.parentElement) { cs = x.w.getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; }
+  return true;
+}
+function flatCamp(x) { var cg = q(x, '.cground'), out = []; if (!cg) return ['no camp']; // the flat pictures of the camp that are seen now
+  if (seen(x, q(x, '.ctent'))) out.push('tent'); if (seen(x, q(x, '.cfire'))) out.push('fire'); if (seen(x, cg, '::before')) out.push('island'); if (seen(x, q(x, '.cbud .lfw'))) out.push('drawn troll');
+  [].forEach.call(cg.querySelectorAll('.lfd'), function (e) { if (seen(x, e)) out.push('scenery'); }); return out; }
+function flatMap(x) { var b = q(x, '.tmap'), out = []; if (!b) return ['no map'];
+  if (seen(x, b, '::before')) out.push('island'); [].forEach.call(b.querySelectorAll('.mnode.m3k .mic>img:first-child'), function (e) { if (seen(x, e)) out.push('house'); });
+  [].forEach.call(b.querySelectorAll(':scope>.mdeco,:scope>.mtrail'), function (e) { if (seen(x, e)) out.push('scenery'); }); return out; }
+function tappable(x, b) { if (!b) return false; var r = b.getBoundingClientRect(), t = x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); }
+
+(async function () {
+  var x, s, k, bad, t;
+  try {
+    if (!GL) {
+      // ---- a device without 3D: the flat pictures at once, no cover, no mist ----
+      x = await frame('demo&s=home&veil=1&hour=10'); await wait(60);
+      check(!x.d.querySelector('.veil') && !q(x, '.m3mist') && !q(x, '.campv.c3w') && !q(x, '.campv.c3on'), 'no 3D on this device: the camp has no cover, no mist and waits for nothing');
+      s = flatCamp(x); check(s.indexOf('tent') >= 0 && s.indexOf('fire') >= 0 && s.indexOf('island') >= 0 && s.indexOf('drawn troll') >= 0, 'no 3D: the flat camp is there at once (' + s.join(',') + ')');
+      check(tappable(x, q(x, '.cgo')), 'no 3D: the big button is in use at once');
+      check(x.w.__tv.m3t && x.w.__tv.m3t.s0 == null, 'no 3D: the 3D scripts are not even asked for');
+      x.f.remove();
+      x = await frame('demo&s=region&t=add&veil=1&hour=10'); await wait(120);
+      check(!x.d.querySelector('.veil') && !q(x, '.m3mist') && !q(x, '.tmap.m3on'), 'no 3D: a map has no cover and no mist');
+      s = flatMap(x); check(q(x, '.tmap') && seen(x, q(x, '.tmap'), '::before') && seen(x, q(x, '.mnode .mic>img')), 'no 3D: the flat map is there at once');
+      x.f.remove();
+      x = await frame('demo&s=home&veil=1&flat=1&q=0&hour=10'); await wait(60);
+      check(!x.d.querySelector('.veil') && !q(x, '.m3mist') && flatCamp(x).indexOf('tent') >= 0, '&flat=1: the flat camp at once, no cover');
+      x.f.remove();
+    } else {
+      // ---- a device with 3D, the camp: the cover is up from the first moment, no flat picture is ever seen, the 3D picture is revealed built ----
+      x = await frame('demo&s=home&veil=1&hour=10&wear=puppy.lion' + Q);
+      check(!!x.d.querySelector('.veil:not(.open)') && !!q(x, '.campv.c3w') && !!q(x, '.campv>.m3mist'), 'the camp on a 3D device: the cover of clouds is up at once, the mist lies on the place of the picture');
+      bad = []; k = 0; t = Date.now();
+      while (Date.now() - t < 9000 && !(q(x, '.campv.c3on') && !x.d.querySelector('.veil'))) { s = q(x, '.campv.c3on') ? [] : flatCamp(x); if (s.length) bad.push(s.join('+') + '@' + (Date.now() - t)); k++; await wait(40); }
+      check(!bad.length && k > 3, 'from the first moment to the 3D picture no flat picture of the camp is seen (' + k + ' looks' + (bad.length ? ': ' + bad.slice(0, 4).join(' ') : '') + ')');
+      check(!!q(x, '.campv.c3on') && !q(x, '.campv.c3w') && !x.d.querySelector('.veil'), 'the cover opened on the 3D camp');
+      var lg = x.tv.veil[0] || {};
+      check(lg.ms >= 340 && lg.ms <= x.w.__tv.m3t.camp + 700, 'the cover stayed at least 0.35 s and opened when the picture was ready (' + lg.ms + ' ms, ' + lg.why + '; the picture after ' + x.tv.m3t.camp + ' ms)');
+      var i3 = x.w.TrollMap3D.current();
+      check(!!i3 && i3.trollOn() && !!q(x, '.campv.c3t') && +x.w.getComputedStyle(q(x, '.cbud .lfw')).opacity === 0, 'the companion of the 3D camp is the 3D troll, the drawn one rests');
+      check(i3.stats().pets === 2 && [].every.call(x.d.querySelectorAll('.cpet.pt3'), function (e) { return +x.w.getComputedStyle(e).opacity === 0; }), 'both living pets are 3D actors, their pictures rest');
+      check(tappable(x, q(x, '.cbud .lfw')) || tappable(x, q(x, '.cbud')), 'the place of the troll still answers a tap');
+      x.f.remove();
+      // ---- a slow build: the cap of the cover. The screen is shown with the mist on the picture and every button in use; the mist lifts when the picture comes ----
+      x = await frame('demo&s=home&veil=1&hour=10&m3slow=2600&veilcap=600' + Q);
+      await until(function () { return !x.d.querySelector('.veil:not(.open)'); }, 3000); await wait(450);
+      check(!x.d.querySelector('.veil') && !!q(x, '.campv.c3w') && !!q(x, '.campv>.m3mist:not(.off)') && !q(x, '.campv.c3on'), 'a slow build: after the cap the cover is gone and the mist is still on the place of the picture');
+      s = flatCamp(x); check(!s.length, 'a slow build: under the mist there is no flat picture (' + s.join(',') + ')');
+      check(tappable(x, q(x, '.cgo')) && tappable(x, q(x, '.cdress') || q(x, '.cgo')) && tappable(x, q(x, '.jrnb')), 'a slow build: the big button and the other buttons are in use while the mist is there');
+      t = await until(function () { return !!q(x, '.campv.c3on') && !q(x, '.campv.c3w'); }, 9000); await wait(700);
+      check(t >= 0 && !q(x, '.campv>.m3mist'), 'a slow build: the mist lifts when the 3D picture comes');
+      x.f.remove();
+      // ---- a tap during the cover: it opens at once and the big button under the finger is pressed; the 3D build that was on its way is dropped ----
+      x = await frame('demo&s=home&veil=1&hour=10&m3slow=1500&veilcap=5000' + Q); await wait(120);
+      var go = q(x, '.cgo'), r = go.getBoundingClientRect(), v = x.d.querySelector('.veil');
+      check(!!v && x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === v || v.contains(x.d.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)), 'while the cover is up it lies over the big button');
+      v.dispatchEvent(new x.w.PointerEvent('pointerdown', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }));
+      await wait(80);
+      check(!!x.tv.round && !!x.d.querySelector('.screen:not(.out) .answers, .screen:not(.out) .q'), 'a tap on the cover over the big button: the exercise is on the screen at once');
+      await wait(2600);
+      check(!x.d.querySelector('.veil') && !x.d.querySelector('.m3c') && !!x.tv.round, 'the 3D build of the camp that was left is dropped: nothing comes after it, the exercise stays');
+      x.f.remove();
+      // ---- a map on a 3D device ----
+      x = await frame('demo&s=region&t=add&veil=1&hour=10&m3slow=300' + Q);
+      await until(function () { return !!q(x, '.tmap.m3w'); }, 2000);
+      check(!!x.d.querySelector('.veil:not(.open)') && !!q(x, '.tmap.m3w>.m3mist'), 'a map on a 3D device: the cover is up, the mist lies on the map');
+      bad = []; k = 0; t = Date.now();
+      while (Date.now() - t < 9000 && !(q(x, '.tmap.m3on:not(.m3w)') && !x.d.querySelector('.veil'))) { s = flatMap(x); if (s.length) bad.push(s.join('+') + '@' + (Date.now() - t)); k++; await wait(40); }
+      check(!bad.length && k > 3, 'from the first moment to the 3D picture no flat picture of the map is seen (' + k + ' looks' + (bad.length ? ': ' + bad.slice(0, 4).join(' ') : '') + ')');
+      check(!!q(x, '.tmap.m3on.m3troll') && !q(x, '.tmap>.m3mist:not(.off)'), 'the cover opened on the 3D map, with the 3D troll');
+      x.f.remove();
+    }
+  } catch (e) { fails.push('exception: ' + (e && e.stack || e)); }
+  document.title = fails.length ? 'VEIL FAIL ' + fails.length + ': ' + fails.join(' | ').slice(0, 1200) : 'VEIL OK ' + checks;
+})();
+</script>

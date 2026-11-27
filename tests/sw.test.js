@@ -97,9 +97,9 @@ for (const u of ['file:///C:/Users/x/troll-math/index.html', 'http://localhost:8
 // (network first), is asked for by index.html from exactly that address, and index.html does not load it with a <script src> of its own
 {
   const { OPTIONAL } = require(path.join(root, 'sw.js'));
-  assert(Array.isArray(OPTIONAL) && OPTIONAL.length === 5);
+  assert(Array.isArray(OPTIONAL) && OPTIONAL.length === 7);
   const files = /FILES = \[([^\]]+)\]/.exec(html)[1].split(',').map(x => 'assets/map3d/' + x.trim().replace(/'/g, ''));
-  assert.deepStrictEqual(files.concat(['assets/map3d/pets3d.js']), OPTIONAL); // task "pets": the 3D models of the living pets, asked for by the cart
+  assert.deepStrictEqual(files, OPTIONAL); // task "pets": the 3D models of the living pets, asked for by the cart
   assert(/need\('assets\/map3d\/pets3d\.js'/.test(html));
   for (const p of OPTIONAL) {
     assert(fs.statSync(path.join(root, p)).size > 1000, p);
