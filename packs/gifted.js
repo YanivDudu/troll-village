@@ -14,8 +14,8 @@
 
   // ---------- part 2: exercises with a missing number (open answer) ----------
   // forms: the gap at the end, in the middle, at the start. lv 1: + and − up to 50; lv 2: up to 100 and easy tables; lv 3: regrouping, tables up to 9
-  function genMiss(r, lv) {
-    var mul = lv === 1 ? false : r() < (lv === 2 ? 0.4 : 0.5), pos = r() < 0.3 ? 2 : r() < 0.5 ? 1 : 0, a, b, c, op, x, text, ex, wrong, k2;
+  function genMiss(r, lv, noMul) {
+    var mul = lv === 1 || noMul ? false : r() < (lv === 2 ? 0.4 : 0.5), pos = r() < 0.3 ? 2 : r() < 0.5 ? 1 : 0, a, b, c, op, x, text, ex, wrong, k2;
     if (mul) {
       a = lv === 2 ? pick(r, [2, 3, 4, 5, 10]) : ri(r, 3, 9); b = lv === 2 ? ri(r, 2, 10) : ri(r, 3, 10);
       if (r() < 0.5) { c = a; a = b; b = c; }
@@ -169,9 +169,9 @@
 
   // ---------- the tiles (for the logic block of index.html) ----------
   var PARTS = ['giftread', 'giftmiss', 'giftword', 'gifttri'], KIND = { giftread: 'read', giftmiss: 'miss', giftword: 'word', gifttri: 'tri' };
-  function item(tile, lv, r) {
+  function item(tile, lv, r, noMul) {
     lv = Math.max(1, Math.min(3, lv | 0 || 1));
-    var it = tile === 'giftmiss' ? genMiss(r, lv) : tile === 'giftword' ? genWord(r, lv) : tile === 'gifttri' ? genTri(r, lv) : null;
+    var it = tile === 'giftmiss' ? genMiss(r, lv, noMul) : tile === 'giftword' ? genWord(r, lv) : tile === 'gifttri' ? genTri(r, lv) : null;
     if (it) { it.lv = it.part === 'tri' ? triLevel(it.text) : lv; return it; } // (a triangle exercise that fell back to an easier form says so)
     var p = pick(r, passagesFor(lv)); return readItem(p, ri(r, 0, p.qs.length - 1));
   }
@@ -183,7 +183,7 @@
     while (out.length < n && tries++ < 400) {
       // mostly the level itself; the first two a step easier, and one from the level above near the end
       var at = out.length, l = at < 2 && lv > 1 ? lv - 1 : at === n - 2 && lv < 3 ? lv + 1 : lv;
-      it = item(tile, l, r);
+      it = item(tile, l, r, tile === 'giftmiss' && lv === 1); // the level named "addition and subtraction" never shows multiplication, also in its harder item
       if (seen[it.key] && tries < 300) continue;
       if (tile === 'giftword' && tries < 200) { var tk = it.key.split('|')[1], same = out.filter(function (o) { return o.key.split('|')[1] === tk; }).length; if (same > 1 || (same && (out.length < 5 || out[out.length - 1].key.split('|')[1] === tk))) continue; } // a story comes back at most once, late in the round and never right after itself
       seen[it.key] = true; out.push(it);
