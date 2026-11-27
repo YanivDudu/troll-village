@@ -11425,7 +11425,7 @@ var TrollModels = (function () {
         else { var o1 = ob2[0].getBoundingClientRect(), o2 = ob2[1].getBoundingClientRect(); if (Math.abs(o1.width - o2.width) > 1 || Math.abs(o1.height - o2.height) > 1 || Math.abs(o1.top - o2.top) > 1 || o1.left - o2.right < 7.5 || o2.bottom > ovis + 1) no('onb-notnow'); }
       }
       if (ostep !== 'ok' && ostep !== 'remind' && !cur.querySelector('.ocard input')) no('onb-field');
-      if (!cur.classList.contains('kb') && (cur.querySelectorAll('.oscr svg').length !== 2 || !cur.querySelector('.olink svg'))) no('onb-pic');
+      if (!cur.classList.contains('kb') && (cur.querySelectorAll('.oscr svg.troll').length !== 2 || !cur.querySelector('.olink svg'))) no('onb-pic'); // (the trolls are counted, not every svg: a living pet beside a troll is a drawing of its own)
     }
     // the camp: the book of the journal is a whole touch target above the bottom tenth, nothing is pushed out of the scene, the heart
     // stays on the companion, and what the companion says has at most three lines
