@@ -2726,11 +2726,11 @@ body.toy .csubs.gsubs .csb{min-width:0;padding:2px 0}
 @media (max-width:420px){body.toy .csubs.gsubs .csb .cl{font-size:11px;letter-spacing:-.2px}}
 /* shared pieces */
 .screen.gft{gap:var(--sp2,8px)}
-.gpic{flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center}.gpic img{display:block;width:100%;height:100%;object-fit:contain}
+.gfpic{flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center}.gfpic img{display:block;width:100%;height:100%;object-fit:contain}
 .gpt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
 .gpt b{font-size:var(--t-body,16px);line-height:22px;font-weight:800}.gpt small{font-size:13px;line-height:18px;color:var(--ink-2,#5a5177);font-weight:500}
 .gcard{background:var(--surface,#fff);color:var(--ink,#2e2350);border-radius:var(--r-l,24px);box-shadow:var(--e2);padding:var(--sp3,12px);display:flex;flex-direction:column;gap:var(--sp2,8px);min-height:0;width:100%}
-.gch{display:flex;align-items:center;gap:var(--sp2,8px);flex:0 0 auto}.gch b{flex:1;min-width:0;font-size:var(--t-lead,18px);line-height:24px;font-weight:800}.gch .gct{width:40px;height:50px}.gch .gpic{width:32px;height:32px}
+.gch{display:flex;align-items:center;gap:var(--sp2,8px);flex:0 0 auto}.gch b{flex:1;min-width:0;font-size:var(--t-lead,18px);line-height:24px;font-weight:800}.gch .gct{width:40px;height:50px}.gch .gfpic{width:32px;height:32px}
 .gft .sayb.icon{flex:0 0 48px;width:48px;height:48px}
 .gil{margin:0;font-size:var(--t-lead,18px);line-height:1.45;font-weight:700}
 .gnote{width:100%;background:#fff8dc;color:var(--ink,#2e2350);border-radius:var(--r-m,16px);box-shadow:inset 0 0 0 2px #f2cf63;padding:8px 12px;display:flex;flex-direction:column;gap:4px;font-size:var(--t-body,16px);line-height:var(--lh-body,24px);font-weight:700;flex:0 0 auto}
@@ -2756,12 +2756,12 @@ body.night .gft .gsub{color:var(--ink,#2e2350)}
 .gpips i.open{background:#fff;box-shadow:inset 0 0 0 2px var(--edge,#c9bfe6)}.gpips i.on{background:#ffe9ad}.gpips i.won{background:var(--accent,#ffc83d)}.gpips i svg{width:13px;height:13px}
 .gpinfo{flex:0 0 52px;width:52px;border:0;border-radius:var(--r-m,16px);background:var(--surface,#fff);color:var(--ink-2,#5a5177);box-shadow:var(--e1);display:grid;place-items:center;transition:transform .12s}
 .gtrialb{flex:0 0 auto;width:100%;max-width:640px;min-height:76px;background:linear-gradient(160deg,#fff7cf,#ffdb6e 58%,#f7bd2a);box-shadow:0 4px 0 #c98a00,0 10px 20px rgba(120,80,0,.22),inset 0 0 0 2px rgba(255,255,255,.6);color:#4a2c00}
-.gtrialb .gpic{width:48px;height:48px}.gtrialb .gpt b{font-size:var(--t-lead,18px);line-height:26px}.gtrialb .gpt small{color:#6b4700;font-weight:700}
+.gtrialb .gfpic{width:48px;height:48px}.gtrialb .gpt b{font-size:var(--t-lead,18px);line-height:26px}.gtrialb .gpt small{color:#6b4700;font-weight:700}
 .gprize{flex:0 0 auto;display:flex;align-items:center;gap:2px;color:#7a4a00}.gprize .gct{width:44px;height:56px}
 .ggo{flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#fff;color:#7a4a00;display:grid;place-items:center}
 @media (min-width:700px){.gparts{grid-template-columns:1fr 1fr}}
 /* the instructions and the example */
-.gft .gtitle{display:flex;align-items:center;justify-content:center;gap:var(--sp2,8px);margin:0;font-size:var(--t-h2,22px);line-height:var(--lh-h2,32px);flex:0 0 auto}.gtitle .gpic{width:32px;height:32px}
+.gft .gtitle{display:flex;align-items:center;justify-content:center;gap:var(--sp2,8px);margin:0;font-size:var(--t-h2,22px);line-height:var(--lh-h2,32px);flex:0 0 auto}.gtitle .gfpic{width:32px;height:32px}
 .gibody{flex:1 1 auto;min-height:0;width:100%;max-width:640px;display:flex;flex-direction:column;gap:var(--sp2,8px)}
 .gexc{flex:0 1 auto;min-height:0;padding:var(--sp2,8px) var(--sp3,12px)}
 .gsay{display:flex;align-items:center;gap:8px;background:#fff8dc;color:var(--ink,#2e2350);border-radius:var(--r-m,16px);box-shadow:inset 0 0 0 2px #f2cf63;padding:4px 10px;min-height:76px;flex:0 0 auto;width:100%}
@@ -2809,7 +2809,7 @@ body.toy[data-k="calm"]:has(.gbook) #bg .nsky i{animation:none}
 body.toy .ground .node{width:24px;height:24px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.78);color:var(--ink);font-size:var(--t-cap);font-weight:var(--w-bold);font-style:normal;line-height:1;box-shadow:none;animation:none;transform:none;transition:none}
 body.toy .ground .node.now{width:32px;height:32px;margin:-4px 0;background:var(--accent);color:var(--ink);box-shadow:0 2px 0 var(--accent-edge)}
 body.toy .ground .node.done{background:var(--success);color:#fff}body.toy .ground .node.done .ic{width:14px;height:14px;color:#fff}
-.gbud{flex:0 0 48px;width:48px;height:52px;border:0;background:none;padding:0;display:block}.gbud svg{display:block;width:100%;height:100%}
+.gfbud{flex:0 0 48px;width:48px;height:52px;border:0;background:none;padding:0;display:block}.gfbud svg{display:block;width:100%;height:100%}
 .gcn{font-size:13px;line-height:18px;font-weight:500;color:var(--ink-2,#5a5177)}
 .gline{position:absolute;inset-inline-start:56px;top:50%;margin-top:-18px;max-width:calc(100% - 60px);font-size:var(--t-cap,14px);line-height:20px;font-weight:800;border-radius:14px;padding:8px 12px;background:#fff;color:var(--ink,#2e2350);box-shadow:var(--e1);z-index:2}.gline:empty{display:none}.gline.good{color:var(--success,#1b7f3b)}
 .gact{display:flex;gap:8px;width:100%;max-width:980px;flex:0 0 auto;align-items:stretch}
@@ -2819,14 +2819,14 @@ body.toy .ground .node.done{background:var(--success);color:#fff}body.toy .groun
 .gtbody{flex:1 1 auto;min-height:0;width:100%;max-width:980px;display:flex;flex-direction:column;gap:var(--sp2,8px)}
 .gtbody.gcov,.gtbody.gpi{max-width:640px}
 .gthd{display:flex;align-items:center;justify-content:space-between;gap:6px 8px;flex-wrap:wrap;width:100%;max-width:980px;flex:0 0 auto}
-.gthead{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.9);color:var(--ink,#2e2350);border-radius:999px;padding:2px 12px;font-size:var(--t-cap,14px);line-height:24px;font-weight:800;min-width:0}.gthead .gpic{width:24px;height:24px}
+.gthead{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.9);color:var(--ink,#2e2350);border-radius:999px;padding:2px 12px;font-size:var(--t-cap,14px);line-height:24px;font-weight:800;min-width:0}.gthead .gfpic{width:24px;height:24px}
 .gdots{display:flex;gap:4px;direction:rtl}.gdots i{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.8);color:var(--ink-2,#5a5177);font-style:normal;font-size:12px;font-weight:800;display:grid;place-items:center}
 .gdots i.has{background:#1d4ed8;color:#fff}.gdots i.cur{box-shadow:0 0 0 3px var(--accent,#ffc83d)}
 .gtnav .gprev{flex:0 0 auto}
 .govl .card{max-width:420px;text-align:center;gap:var(--sp3,12px);padding:var(--sp4,16px)}.govt{font-size:var(--t-lead,18px);line-height:26px;font-weight:800}.govs{margin:0;font-weight:700;color:var(--ink-2,#5a5177)}
 .govr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.govr .btn{min-height:52px;padding:0 16px;font-size:var(--t-body,16px);flex:1 1 auto}
 .gres{max-width:640px;gap:4px;flex:0 0 auto}
-.grow{display:flex;align-items:center;gap:8px;min-height:44px}.grow .gpic{width:32px;height:32px}.grn{flex:1;min-width:0;font-size:var(--t-body,16px);line-height:22px;font-weight:800}
+.gfrow{display:flex;align-items:center;gap:8px;min-height:44px}.gfrow .gfpic{width:32px;height:32px}.grn{flex:1;min-width:0;font-size:var(--t-body,16px);line-height:22px;font-weight:800}
 .grd{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,12px);gap:3px;direction:rtl}.grd i{width:12px;height:12px;border-radius:50%;background:var(--line,#e2dcf1)}.grd i.ok{background:var(--success,#1b7f3b)}
 .grs{flex:0 0 auto;font-size:var(--t-cap,14px);font-weight:800;color:var(--ink-2,#5a5177);min-width:74px;text-align:end;white-space:nowrap}
 .gft .gcoins{font-size:var(--t-body,16px);padding:4px 16px;flex:0 0 auto}
@@ -2851,10 +2851,10 @@ body.toy .ground .node.done{background:var(--success);color:#fff}body.toy .groun
   .ggpic{width:min(30vw,44vh)}.ggbox{gap:4px}
   .gibody,.gtbody.gcov,.gtbody.gpi{max-width:980px}
   .gintro .gibody{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:4px 8px}.gintro .gibody>.gcard{flex:1 1 58%;width:auto;padding:6px 10px;gap:4px}.gintro .gibody>.gnote,.gintro .gibody>.gsay{flex:1 1 32%;width:auto;align-self:stretch}.gintro .gibody>.gnav{flex:1 1 100%}
-  .gft .gtitle{font-size:var(--t-lead,18px);line-height:24px}.gtitle .gpic{width:24px;height:24px}
+  .gft .gtitle{font-size:var(--t-lead,18px);line-height:24px}.gtitle .gfpic{width:24px;height:24px}
   .gopt{font-size:15px;line-height:1.25;min-height:48px}.m-demo.k-read .gopts,.m-review.k-read .gopts{grid-template-columns:1fr}.gsay{min-height:48px}.m-demo .gex{font-size:26px}.m-demo .gopt{min-height:30px}.m-demo .glet{flex-basis:30px;width:30px;height:30px;font-size:16px}.m-demo .gcirc{width:36px;height:36px}
   .gq{padding:6px 10px;gap:4px}.gexc .gch{display:none}.gbig.on{font-size:18px;line-height:26px}
-  .gres{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;padding:6px 12px}.grow{min-height:36px}.gft .gcoins{display:none}
+  .gres{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;padding:6px 12px}.gfrow{min-height:36px}.gft .gcoins{display:none}
   .gft .ghead .h2{font-size:var(--t-lead,18px);line-height:24px}
   .m-review .gopt{min-height:34px}.grev .gwas{display:none}
 }
@@ -11520,12 +11520,12 @@ var TrollModels = (function () {
         for (k = 1; k <= 3; k++) { var pr = L.progOf(state, id, k), best = Math.max(pr[0], pr[1], pr[2]); pips.appendChild(h('i', { class: L.houseWon(state, id, k) ? 'won' : best ? 'on' : L.houseOpen(state, id, k) ? 'open' : '' }, L.houseWon(state, id, k) ? icon('star', 's') : null)); }
         list.appendChild(h('div', { class: 'gpart p' + n },
           h('button', { class: 'gpmain', 'data-part': id, 'aria-label': t.world + ', ' + t.levels[lv - 1].name, on: { click: function () { sfx.pop(); giftStart(id, lv); } } },
-            h('span', { class: 'gpic' }, gimg(id)), h('span', { class: 'gpt' }, h('b', { text: t.world }), h('small', { text: t.levels[lv - 1].name })), pips),
+            h('span', { class: 'gfpic' }, gimg(id)), h('span', { class: 'gpt' }, h('b', { text: t.world }), h('small', { text: t.levels[lv - 1].name })), pips),
           h('button', { class: 'gpinfo', 'aria-label': 'הוֹרָאוֹת וְדֻגְמָה: ' + t.world, on: { click: function () { sfx.tap(); giftIntro(id, giftMap, giftMap); } } }, icon('info'))));
       });
       el.appendChild(list);
       el.appendChild(h('button', { class: 'gtrialb' + (has ? '' : ' prize'), 'data-part': 'trial', 'aria-label': 'מִבְחַן נִסָּיוֹן', on: { click: function () { sfx.pop(); giftTrial(); } } },
-        h('span', { class: 'gpic' }, gimg('test')), h('span', { class: 'gpt' }, h('b', { text: 'מִבְחַן נִסָּיוֹן' }), h('small', { text: GFT ? 'מַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעָצַרְנוּ' : 'כָּל אַרְבַּעַת הַחֲלָקִים, כְּמוֹ בַּחוֹבֶרֶת' })),
+        h('span', { class: 'gfpic' }, gimg('test')), h('span', { class: 'gpt' }, h('b', { text: 'מִבְחַן נִסָּיוֹן' }), h('small', { text: GFT ? 'מַמְשִׁיכִים מֵהַמָּקוֹם שֶׁעָצַרְנוּ' : 'כָּל אַרְבַּעַת הַחֲלָקִים, כְּמוֹ בַּחוֹבֶרֶת' })),
         has ? h('span', { class: 'ggo', 'aria-hidden': 'true' }, icon('next', 'm')) : h('span', { class: 'gprize', 'aria-hidden': 'true' }, icon('gift', 'm'), h('span', { class: 'gct', html: A.trollSVG(goldSpec(), { size: 44 }) }))));
     });
   }
@@ -11543,7 +11543,7 @@ var TrollModels = (function () {
     show(function (el) {
       el.classList.add('gft', 'gintro');
       el.appendChild(topBar(true, back || giftMap));
-      el.appendChild(h('h2', { class: 'h2 gtitle' }, h('span', { class: 'gpic' }, gimg(id)), h('span', { text: (n ? 'מְשִׂימָה ' + GF.LET[n - 1] + "': " : '') + I.name })));
+      el.appendChild(h('h2', { class: 'h2 gtitle' }, h('span', { class: 'gfpic' }, gimg(id)), h('span', { text: (n ? 'מְשִׂימָה ' + GF.LET[n - 1] + "': " : '') + I.name })));
       var body = h('div', { class: 'gibody' }); el.appendChild(body);
       function fin() { if (!sandbox || /auto/.test(hash)) { state.intro[id] = true; save(true); } done(); }
       function draw() {
@@ -11597,7 +11597,7 @@ var TrollModels = (function () {
     show(function (el) {
       el.classList.add('gft', 'ground');
       el.appendChild(topBar(true, giftMap));
-      var nodes = [], path = h('div', { class: 'path ds-stones' }), bud = h('button', { class: 'gbud', 'aria-label': buddy.name }), say = h('div', { class: 'gline' }), i;
+      var nodes = [], path = h('div', { class: 'path ds-stones' }), bud = h('button', { class: 'gfbud', 'aria-label': buddy.name }), say = h('div', { class: 'gline' }), i;
       for (i = 0; i < round.qs.length; i++) { nodes.push(h('i', { class: 'node ds-stone' })); path.appendChild(nodes[i]); }
       var book = giftBook({ mode: 'practice', cap: function (it) { return t.world + ' · ' + t.levels[(it.lv || lv) - 1].name; }, onPick: function (v) { ok.disabled = v == null; } });
       var ok = h('button', { class: 'btn check gcheck', 'data-ui': '' }, 'בְּדִיקָה', icon('check', 'm'));
@@ -11670,10 +11670,10 @@ var TrollModels = (function () {
       var body = h('div', { class: 'gtbody' }); el.appendChild(body);
       var book = null;
       function part() { return T.parts[T.p]; }
-      function head(text) { return h('div', { class: 'gthead' }, h('span', { class: 'gpic' }, gimg(part().id)), h('b', { text: text })); }
+      function head(text) { return h('div', { class: 'gthead' }, h('span', { class: 'gfpic' }, gimg(part().id)), h('b', { text: text })); }
       function cover() {
         body.textContent = ''; body.className = 'gtbody gcov';
-        var card = h('div', { class: 'gcard gins gcover' }, h('div', { class: 'gch' }, h('span', { class: 'gpic' }, gimg('test')), h('b', { text: 'מִבְחַן נִסָּיוֹן' }), sayBtn(function () { return giftSayAll(GF_COVER) + ' ' + GF.GUESS; }, 'icon gsay')));
+        var card = h('div', { class: 'gcard gins gcover' }, h('div', { class: 'gch' }, h('span', { class: 'gfpic' }, gimg('test')), h('b', { text: 'מִבְחַן נִסָּיוֹן' }), sayBtn(function () { return giftSayAll(GF_COVER) + ' ' + GF.GUESS; }, 'icon gsay')));
         GF_COVER.forEach(function (s) { card.appendChild(h('p', { class: 'gil', text: s })); });
         body.appendChild(card); body.appendChild(giftNote(true));
         body.appendChild(h('div', { class: 'row gnav' }, h('button', { class: 'btn gnext', on: { click: function () { sfx.tap(); T.phase = 'intro'; draw(); } } }, 'מַתְחִילִים', icon('next', 'm'))));
@@ -11681,7 +11681,7 @@ var TrollModels = (function () {
       function intro() {
         var I = GF.INTRO[part().id];
         body.textContent = ''; body.className = 'gtbody gpi';
-        var card = h('div', { class: 'gcard gins' }, h('div', { class: 'gch' }, h('span', { class: 'gpic' }, gimg(part().id)), h('b', { text: 'חֵלֶק ' + (T.p + 1) + ' מִתּוֹךְ 4: ' + I.name }), sayBtn(function () { return giftSayAll(I.lines); }, 'icon gsay')));
+        var card = h('div', { class: 'gcard gins' }, h('div', { class: 'gch' }, h('span', { class: 'gfpic' }, gimg(part().id)), h('b', { text: 'חֵלֶק ' + (T.p + 1) + ' מִתּוֹךְ 4: ' + I.name }), sayBtn(function () { return giftSayAll(I.lines); }, 'icon gsay')));
         I.lines.forEach(function (s) { card.appendChild(h('p', { class: 'gil', text: s })); });
         body.appendChild(card);
         body.appendChild(h('div', { class: 'row gnav' },
@@ -11746,7 +11746,7 @@ var TrollModels = (function () {
     res.parts.forEach(function (p) { right += p.right; all += p.items.length; state.recent[p.id] = (state.recent[p.id] || []).concat(p.items.map(function (x) { return x.key; })).slice(-10); });
     res.right = right; res.all = all; res.coins = 10 + 2 * right; res.gold = !L.hasGold(state);
     state.coins += res.coins; state.xp += all; state.rounds++; state = L.updateStreak(state, L.todayStr());
-    state = L.giveGold(state); res.grow = growBuddy();
+    state = L.giveGold(state); res.gfrow = growBuddy();
     save(); GFT = null; GFL = res; tv.gres = { right: right, all: all, gold: res.gold, coins: res.coins };
     if (res.gold) giftGold(function () { giftSummary(res); }); else giftSummary(res);
   }
@@ -11778,7 +11778,7 @@ var TrollModels = (function () {
       var tab = h('div', { class: 'gcard gres' });
       res.parts.forEach(function (p) {
         var dots = h('span', { class: 'grd', 'aria-hidden': 'true' }); p.ok.forEach(function (o) { dots.appendChild(h('i', { class: o ? 'ok' : '' })); });
-        tab.appendChild(h('div', { class: 'grow' }, h('span', { class: 'gpic' }, gimg(p.id)), h('b', { class: 'grn', text: GF.INTRO[p.id].name }), dots, h('span', { class: 'grs', text: p.right + ' מִתּוֹךְ ' + p.items.length })));
+        tab.appendChild(h('div', { class: 'gfrow' }, h('span', { class: 'gfpic' }, gimg(p.id)), h('b', { class: 'grn', text: GF.INTRO[p.id].name }), dots, h('span', { class: 'grs', text: p.right + ' מִתּוֹךְ ' + p.items.length })));
       });
       el.appendChild(tab);
       el.appendChild(h('div', { class: 'banner gcoins', text: '+' + res.coins + ' 🪙' }));
@@ -11800,7 +11800,7 @@ var TrollModels = (function () {
       var w = wrong[at], P = res.parts[w[0]], it = P.items[w[1]], a = P.ans[w[1]], book = giftBook({ mode: 'review' }), q = giftQs(P.id, 1, [it])[0];
       book.show(it, null);
       if (it.open) book.fill(it.answer); else { book.mark(it.options.indexOf(it.answer)); if (a != null) book.was(a); }
-      el.appendChild(h('div', { class: 'gthd' }, h('div', { class: 'gthead' }, h('span', { class: 'gpic' }, gimg(P.id)), h('b', { text: 'טָעוּת ' + (at + 1) + ' מִתּוֹךְ ' + wrong.length + ' · ' + GF.INTRO[P.id].name })),
+      el.appendChild(h('div', { class: 'gthd' }, h('div', { class: 'gthead' }, h('span', { class: 'gfpic' }, gimg(P.id)), h('b', { text: 'טָעוּת ' + (at + 1) + ' מִתּוֹךְ ' + wrong.length + ' · ' + GF.INTRO[P.id].name })),
         h('div', { class: 'gwas', text: a == null ? 'לֹא סֻמְּנָה תְּשׁוּבָה. הַתְּשׁוּבָה הַנְּכוֹנָה מֻקֶּפֶת בְּיָרֹק.' : it.open ? 'נִכְתַּב ' + a + '. הַמִּסְפָּר הַנָּכוֹן כָּתוּב בְּיָרֹק.' : 'סֻמְּנָה ' + GF.LET[a] + '. הַתְּשׁוּבָה הַנְּכוֹנָה מֻקֶּפֶת בְּיָרֹק.' })));
       el.appendChild(book.el);
       el.appendChild(h('div', { class: 'row gnav gtnav' },
@@ -11852,7 +11852,7 @@ var TrollModels = (function () {
       if (cur.classList.contains('gtest')) { if (cur.querySelector('.gopt.ok,.gopt.out,.gblank.ok,.gblank.no')) return fail('feedback during the test'); tv.gtrial.step(); return; }
       if (cur.classList.contains('ggold')) { seen.gold = L.hasGold(state) && !!cur.querySelector('.ggpic svg.troll.gold'); cur.querySelector('.gnext').click(); return; }
       if (cur.classList.contains('gsum')) {
-        if (seen.sum == null) { seen.sum = tv.gsum.wrong; seen.rows = cur.querySelectorAll('.grow').length; if (cur.querySelector('.grevb')) { cur.querySelector('.grevb').click(); return; } }
+        if (seen.sum == null) { seen.sum = tv.gsum.wrong; seen.rows = cur.querySelectorAll('.gfrow').length; if (cur.querySelector('.grevb')) { cur.querySelector('.grevb').click(); return; } }
         cur.querySelector('.gdone').click(); return;
       }
       if (cur.classList.contains('grev')) { if (!cur.getAttribute('data-how')) { cur.setAttribute('data-how', 1); seen.rev++; if (!cur.querySelector('.gopt.ok,.gblank.ok')) return fail('the review does not show the right answer'); cur.querySelector('.ghow').click(); return; } cur.querySelector('.gnext').click(); return; }
