@@ -3636,18 +3636,18 @@ var TrollLogic = (function () {
       } }
     ],
     miss: [
-      { g: 4, name: 'אִזּוּן בְּלִי לְחַשֵּׁב', f: function (r) {
+      { g: 4, name: 'שׁוֹמְרִים עַל אִזּוּן', f: function (r) {
         var a = ri(r, 12, 5400), b = ri(r, 15, 900), d = pick(r, [1, 1, 2, 10, -1, -2]), n = Math.abs(d), plus = r() < 0.6, text, ans, M;
         if (plus) {
           text = fmt(a) + ' + ' + b + ' = ' + fmt(a + d) + ' + □'; ans = b - d; M = { t: 'expr', s: text, small: true };
           return Q(r, text, ans, { extra: [b + d, b], tip: 'אִם מְחֻבָּר אֶחָד גָּדֵל, הַשֵּׁנִי צָרִיךְ לִקְטֹן בְּאוֹתָהּ מִדָּה',
-            ex: exOf('balance', [S('מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
-              S('כְּדֵי שֶׁהַסְּכוּם יִשָּׁאֵר שָׁוֶה, הַמְּחֻבָּר הַשֵּׁנִי צָרִיךְ ' + (d > 0 ? 'לִקְטֹן' : 'לִגְדֹּל') + ' בְּ-' + n + '. מָה הַמִּסְפָּר הֶחָסֵר?', M)]) });
+            ex: exOf('balance', [S('לֹא צָרִיךְ לְחַבֵּר אֶת הַמִּסְפָּרִים הַגְּדוֹלִים. מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
+              S('כְּדֵי שֶׁהַסְּכוּם יִשָּׁאֵר שָׁוֶה, הַמְּחֻבָּר הַשֵּׁנִי צָרִיךְ ' + (d > 0 ? 'לִקְטֹן' : 'לִגְדֹּל') + ' בְּ-' + n + '. נִשְׁאָר רַק צַעַד קָטָן: ' + b + (d > 0 ? ' − ' : ' + ') + n + ' = ?', M)]) });
         }
         a += 1000; text = fmt(a) + ' − ' + b + ' = ' + fmt(a + d) + ' − □'; ans = b + d; M = { t: 'expr', s: text, small: true };
         return Q(r, text, ans, { extra: [b - d, b], tip: 'אִם הַמְּחֻסָּר גָּדֵל, גַּם הַמְּחַסֵּר צָרִיךְ לִגְדֹּל בְּאוֹתָהּ מִדָּה',
-          ex: exOf('balance', [S('מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
-            S('כְּדֵי שֶׁהַהֶפְרֵשׁ יִשָּׁאֵר שָׁוֶה, גַּם הַמְּחַסֵּר צָרִיךְ ' + (d > 0 ? 'לִגְדֹּל' : 'לִקְטֹן') + ' בְּ-' + n + '. מָה הַמִּסְפָּר הֶחָסֵר?', M)]) });
+          ex: exOf('balance', [S('לֹא צָרִיךְ לְחַסֵּר אֶת הַמִּסְפָּרִים הַגְּדוֹלִים. מַשְׁוִים בֵּין שְׁנֵי הַצְּדָדִים: ' + fmt(a) + ' הָפַךְ לְ-' + fmt(a + d) + ', הוּא ' + (d > 0 ? 'גָּדַל' : 'קָטַן') + ' בְּ-' + n, M),
+            S('כְּדֵי שֶׁהַהֶפְרֵשׁ יִשָּׁאֵר שָׁוֶה, גַּם הַמְּחַסֵּר צָרִיךְ ' + (d > 0 ? 'לִגְדֹּל' : 'לִקְטֹן') + ' בְּ-' + n + '. נִשְׁאָר רַק צַעַד קָטָן: ' + b + (d > 0 ? ' + ' : ' − ') + n + ' = ?', M)]) });
       } },
       { g: 4, name: 'שֶׁבֶר חָסֵר', f: function (r) {
         var d = pick(r, [2, 3, 4, 5, 6, 8]), a = ri(r, 1, d - 1), ans = fr(d - a, d), M = function (ask) { return { t: 'fb', bars: [{ den: d, num: a, ask: ask }] }; };
@@ -9300,7 +9300,7 @@ var TrollModels = (function () {
         label.textContent = '';
         if (cfg.race) { label.appendChild(icon('flag', 't')); label.appendChild(document.createTextNode(' ' + (round.i + 1) + ' / ' + round.qs.length + ' · ')); }
         if (lhead) { label.appendChild(h('b', { text: lhead })); label.appendChild(document.createTextNode(' · ')); }
-        label.appendChild(document.createTextNode(t.levels[(q.ahead ? cfg.level : q.level) - 1].name + (q.review ? ' · חֲזָרָה' : ''))); // an exercise from the next house is not announced
+        label.appendChild(document.createTextNode(t.levels[(q.level || cfg.level) - 1].name + (q.review ? ' · חֲזָרָה' : ''))); // the title is always that of the exercise itself (a title of another kind of exercise misleads: "without calculating" over an exercise to calculate)
         mood('curious', firstRound && round.i === 0 ? 'רוֹצָה לִרְאוֹת אֵיךְ פּוֹתְרִים? הַקִּישִׁי עַל הַנּוּרָה 💡' : memo && round.i === 0 ? voice(L.MEMO[memo], 'memo-' + memo) : voice(ASK, 'ask'));
         if (memo && round.i === 0) bubble.setAttribute('data-mem', memo); else bubble.removeAttribute('data-mem');
         helpB.classList.toggle('glow', firstRound);
