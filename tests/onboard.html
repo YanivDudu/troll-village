@@ -113,7 +113,7 @@ async function run() {
   await until(function () { return camp() || onb(); }, 'the game opened after a new troll');
   check(onb('remind') && seen().n === 2 && seen().o === 3, 'the next day after a new troll: the reminder card, counted as the second time');
   await wait(800);
-  check(!q('input') && q('.oyes') && q('.onot') && q('.onot').getBoundingClientRect().height >= 48, 'the reminder is two buttons, no field');
+  check(!q('input') && q('.oyes') && q('.onot') && q('.onot').offsetHeight >= 48, 'the reminder is two buttons, no field'); // (offsetHeight: the size in the layout. The rectangle on the screen is up to 8% smaller while the screen is still coming in, and a hidden test browser may stay in that motion: the same cause as the two flaky checks of tests/walk.html and tests/village.html)
   q('.onot').click();
   await until(camp, 'the camp after the reminder');
 

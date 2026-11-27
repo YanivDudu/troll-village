@@ -394,19 +394,20 @@ var TrollCamp3D = (function () {
       parts = null; ready0 = true; st.t.first = Math.round(performance.now() - st.t0f);
       step(0, performance.now()); R.shadowMap.needsUpdate = true; draw(); kick(); return false;
     }
-    var STG = [build, trollMake, function () { petMake(0); }, function () { petMake(1); }, firstPrep, firstPart];
+    function soon(f) { try { var c = new MessageChannel(); c.port1.onmessage = function () { c.port1.close(); f(); }; c.port2.postMessage(0); } catch (e) { setTimeout(f, 0); } }   // the next task, without the wait a timer gets while a page is still loading its pictures
+    var STG = [build, function () { trollMake(); petMake(0); petMake(1); firstPrep(); }, firstPart];   // (the island; the actors, which are small; the picture, part by part)
     function stage(i) { // one part of the build in a task of its own; the page (and the cover of the transition) goes on between the parts
       if (dead) return; var again = false;
       try { again = STG[i]() === true; } catch (e) { if (window.console) console.warn('camp3d', e); fail('error'); return; }
       if (!again) i++;
-      if (i < STG.length) { if (o.staged) setTimeout(function () { stage(i); }, 0); else stage(i); }
+      if (i < STG.length) { if (o.staged) soon(function () { stage(i); }); else stage(i); }
     }
     try {
       setCam(); obstMake();
       occ = document.createElement('canvas'); occ.className = 'c3occ'; occ.setAttribute('aria-hidden', 'true'); octx = occ.getContext('2d'); view.appendChild(occ);
       document.addEventListener('visibilitychange', onVis); document.addEventListener('pointerdown', onTouch, { passive: true });
     } catch (e) { try { dispose(); } catch (e2) {} if (window.console) console.warn('camp3d', e); return null; }
-    if (o.staged) setTimeout(function () { stage(0); }, 0); else { stage(0); if (dead) return null; }
+    if (o.staged) soon(function () { stage(0); }); else { stage(0); if (dead) return null; }
     return self;
   }
   return { attach: attach, drop: function () { keepDrop(); actDrop(); } };
